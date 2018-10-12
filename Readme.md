@@ -2,7 +2,7 @@
 
 **TODO: Add travis CI**
 
-Tracer is a simple network speed test app
+Kahla is a cross-platform business messaging app. This is the server side code repo for Kahla.
 
 ## Requirements
 
