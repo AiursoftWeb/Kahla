@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "500 Error";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - @Values.ProjectName</title>
+    <link rel="icon" type="image/x-icon" href="@ServiceLocation.CDN/favicon.ico">
+    <link href="@ServiceLocation.CDN/dist/AiurCore.min.css" rel="stylesheet">
+    <link href="@ServiceLocation.CDN/dist/AiurDashboard.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark lines">
+    <div class="container">
+        <div class="card card-register mx-auto mt-5">
+            <div class="card-header">@ViewData["Title"]</div>
+            <div class="card-body">
+                <h1 class="text-danger">500 - Server error</h1>
+                <h3>This operation caused an error on our server.</h3>
+                <p>Sorry about it. Please try again and tell us about the problem.</p>
+            </div>
+            <a class="card-footer clearfix small z-1" href="@ServiceLocation.WWW">
+                <span class="float-left">Back to Home</span>
+                <span class="float-right">
+                    <i class="fa fa-angle-right"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+    <script src="@ServiceLocation.CDN/dist/AiurCore.min.js"></script>
+    <script src="@ServiceLocation.CDN/dist/AiurDashboard.min.js"></script>
+</body>
+</html>
+
+

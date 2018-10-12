@@ -1,0 +1,26 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    @this.UseDisableZoom()
+    @this.UseDnsPrefetch()
+    <title>Kahla App | @Values.ProjectName</title>
+    @this.UseAiurFavicon()
+    <link href="@ServiceLocation.CDN/dist/AiurCore.min.css" rel="stylesheet">
+    <link href="@ServiceLocation.CDN/dist/AiurProduct.min.css" rel="stylesheet">
+</head>
+<body>
+    @RenderBody()
+    <footer class="py-6 px-3 text-gray text-center">
+        <p class="copyright">© @DateTime.Now.Year 
+            <a class="text-gray" href="@ServiceLocation.WWW">@Values.ProjectName</a>
+            -
+             All rights reserved.
+        </p>
+        @this.UseChinaRegisterInfo()
+    </footer>
+    <script src="@ServiceLocation.CDN/dist/AiurCore.min.js"></script>
+    <script src="@ServiceLocation.CDN/dist/AiurProduct.min.js"></script>
+</body>
+</html>
