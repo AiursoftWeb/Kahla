@@ -8,7 +8,7 @@ Kahla is a cross-platform business messaging app. This is the server side code r
 
 Requirements about how to run
 * [Windows Server](http://www.microsoft.com/en-us/cloud-platform/windows-server) or [Ubuntu Server](https://www.ubuntu.com/server)
-* [dot net Core 2.1.403 or later](https://github.com/dotnet/core/tree/master/release-notes)
+* [.NET Core SDK 2.1.403 or later](https://github.com/dotnet/core/tree/master/release-notes)
 * [Git](https://git-scm.com)
 * [SQL Server](https://hub.docker.com/r/microsoft/mssql-server-linux/) (Strongly suggest installing it via docker)
 * [VS Code](https://code.visualstudio.com) (Strongly suggest)
