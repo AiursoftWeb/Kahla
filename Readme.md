@@ -16,12 +16,12 @@ Requirements about how to run
 ## How to run locally
 
 1. Modify your `appsettings.json` to set all app settings to correct values.
-    * Kahla is using SQL Server as default database. Install SQL Server and set your connection string in `ConnectionString.DatabaseConnection`
+    * Kahla is using SQL Server as this default database. Install SQL Server and set your connection string in `ConnectionString.DatabaseConnection`
     * Kahla is using Aiursoft integrated Authentication. Create a new app in [Aiursoft Developer Center](https://developer.aiursoft.com) and set your appId and appSecret
-    * Kahla is using Aiursoft OSS to storage files. Create a new bucket in [Aiursoft Developer Center](https://developer.aiursoft.com/buckets) and set your bucket id.
-2. Excute `dotnet restore` under `./Kahla.Server` to restore all dotnet requirements
-3. Excute `dotnet ef database update` to seed your database
-4. Excute `dotnet run` to run the app
+    * Kahla is using Aiursoft OSS to store files. Create a new bucket in [Aiursoft Developer Center](https://developer.aiursoft.com/buckets) and set your bucket id.
+2. Execute `dotnet restore` under `./Kahla.Server` to restore all dotnet requirements
+3. Execute `dotnet ef database update` to seed your database
+4. Execute `dotnet run` to run the app
 5. Use your browser to view [http://localhost:5000](http://localhost:5000)
 
 ## How to contribute
