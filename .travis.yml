@@ -5,4 +5,4 @@ dist: trusty
 install:
   - dotnet restore
 script:
-  - dotnet publish -c Release -v diag
+  - dotnet publish -c Release
