@@ -42,7 +42,7 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
-                .SwitchMap(t => t.Group)
+                .Select(t => t.Group)
                 .ToList();
             var myConversations = new List<Conversation>();
             myConversations.AddRange(personalRelations);

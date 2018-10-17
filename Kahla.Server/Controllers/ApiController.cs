@@ -252,7 +252,7 @@ namespace Kahla.Server.Controllers
                 var pending = _dbContext.Requests
                     .Where(t => t.CreatorId == user.Id)
                     .Where(t => t.TargetId == id)
-                    .Exists(t => !t.Completed);
+                    .Any(t => !t.Completed);
                 if (pending)
                     return this.Protocal(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
                 request = new Request { CreatorId = user.Id, TargetId = id };
@@ -500,7 +500,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             model.GroupName = model.GroupName.Trim().ToLower();
-            var exsists = _dbContext.GroupConversations.Exists(t => t.GroupName == model.GroupName);
+            var exsists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
             if (exsists)
             {
                 return this.Protocal(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
@@ -541,7 +541,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
-            var joined = _dbContext.UserGroupRelations.Exists(t => t.UserId == user.Id && t.GroupId == group.Id);
+            var joined = _dbContext.UserGroupRelations.Any(t => t.UserId == user.Id && t.GroupId == group.Id);
             if (joined)
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
