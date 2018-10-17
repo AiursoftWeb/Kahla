@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToOSSServer;
+using Kahla.Server.Middlewares;
 
 namespace Kahla.Server
 {
@@ -62,7 +63,7 @@ namespace Kahla.Server
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
-            app.UseHandleKahlaOptions();
+            app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseMvcWithDefaultRoute();
