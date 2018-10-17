@@ -38,12 +38,12 @@ namespace Kahla.Server.Data
                 .Include(t => t.TargetUser)
                 .Include(t => t.Messages)
                 .ToListAsync();
-            var groupRelations = this.UserGroupRelations
+            var groups = this.UserGroupRelations
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
-                .Select(t => t.Group)
                 .ToList();
+            var groupRelations = groups.Select(t => t.Group);
             var myConversations = new List<Conversation>();
             myConversations.AddRange(personalRelations);
             myConversations.AddRange(groupRelations);
