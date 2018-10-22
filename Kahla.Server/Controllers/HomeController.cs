@@ -22,7 +22,7 @@ namespace Kahla.Server.Controllers
 
         public IActionResult Index()
         {
-            return this.Protocal(ErrorType.Success, "A song from Github to Microsoft: Don't Let Me Down" + _serviceLocation.Wiki);
+            return this.Protocal(ErrorType.Success, "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki);
         }
 
         public IActionResult Error()
