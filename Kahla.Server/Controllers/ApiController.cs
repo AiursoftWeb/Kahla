@@ -11,6 +11,7 @@ using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,7 @@ namespace Kahla.Server.Controllers
         private readonly StorageService _storageService;
         private readonly AppsContainer _appsContainer;
         private readonly UserService _userService;
+        private readonly IHostingEnvironment _env;
         private readonly object _obj = new object();
 
         public ApiController(
@@ -66,7 +68,8 @@ namespace Kahla.Server.Controllers
             ChannelService channelService,
             StorageService storageService,
             AppsContainer appsContainer,
-            UserService userService)
+            UserService userService,
+            IHostingEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -80,6 +83,7 @@ namespace Kahla.Server.Controllers
             _storageService = storageService;
             _appsContainer = appsContainer;
             _userService = userService;
+            _env = env;
         }
 
         public IActionResult Index()
@@ -87,11 +91,10 @@ namespace Kahla.Server.Controllers
             return Json(new
             {
                 Code = ErrorType.Success,
-                Message = "Welcome to Aiursoft Kahla API!",
+                Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
                 WikiPath = _serviceLocation.Wiki,
                 ServerTime = DateTime.Now,
-                UTCTime = DateTime.UtcNow,
-                Authenticated = User.Identity.IsAuthenticated
+                UTCTime = DateTime.UtcNow
             });
         }
 
@@ -101,7 +104,7 @@ namespace Kahla.Server.Controllers
             {
                 LatestVersion = _configuration["AppVersion"],
                 OldestSupportedVersion = _configuration["AppVersion"],
-                Message = "Successfully get the lastest version number for Kahla.",
+                Message = "Successfully get the lastest version number for Kahla App.",
                 DownloadAddress = _serviceLocation.KahlaHome
             });
         }
@@ -319,6 +322,7 @@ namespace Kahla.Server.Controllers
                 .Users
                 .AsNoTracking()
                 .Where(t => t.NickName.ToLower().Contains(model.NickName.ToLower()))
+                .Take(20)
                 .ToListAsync();
 
             return Json(new AiurCollection<KahlaUser>(users)
@@ -335,6 +339,7 @@ namespace Kahla.Server.Controllers
                 .GroupConversations
                 .AsNoTracking()
                 .Where(t => t.GroupName.ToLower().Contains(model.GroupName.ToLower()))
+                .Take(20)
                 .ToListAsync();
 
             return Json(new AiurCollection<GroupConversation>(groups)
