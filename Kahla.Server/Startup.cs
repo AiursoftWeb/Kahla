@@ -25,10 +25,12 @@ namespace Kahla.Server
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        public SameSiteMode Mode { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            Mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -39,7 +41,7 @@ namespace Kahla.Server
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
+            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
             services.AddMvc();
             services.AddAiursoftAuth<KahlaUser>();
