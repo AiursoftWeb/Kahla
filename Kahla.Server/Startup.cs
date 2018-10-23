@@ -25,10 +25,12 @@ namespace Kahla.Server
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        public SameSiteMode Mode { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            Mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
         }
 
         public void ConfigureServices(IServiceCollection services)
