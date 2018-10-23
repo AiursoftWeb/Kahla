@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
+using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
 using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
@@ -187,6 +188,22 @@ namespace Kahla.Server.Controllers
             await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
             await _userManager.UpdateAsync(cuser);
             return this.Protocal(ErrorType.Success, "Successfully set your personal info.");
+        }
+
+        [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> ChangePassword(ChangePasswordAddresModel model)
+        {
+            var cuser = await GetKahlaUser();
+            try
+            {
+                var result = await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
+                return this.Protocal(ErrorType.Success, "Successfully changed your password!");
+            }
+            catch (AiurUnexceptedResponse e)
+            {
+                return this.Protocal(e.Response.Code, e.Response.Message);
+            }
         }
 
         [AiurForceAuth(directlyReject: true)]
