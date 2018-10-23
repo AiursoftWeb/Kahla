@@ -195,15 +195,8 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordAddresModel model)
         {
             var cuser = await GetKahlaUser();
-            try
-            {
-                var result = await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
-                return this.Protocal(ErrorType.Success, "Successfully changed your password!");
-            }
-            catch (AiurUnexceptedResponse e)
-            {
-                return this.Protocal(e.Response.Code, e.Response.Message);
-            }
+            var result = await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
+            return this.Protocal(ErrorType.Success, "Successfully changed your password!");
         }
 
         [AiurForceAuth(directlyReject: true)]
