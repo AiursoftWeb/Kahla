@@ -348,8 +348,8 @@ namespace Kahla.Server.Controllers
             var groups = await _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.ToLower().Contains(model.GroupName.ToLower()))
-                .Take(20)
+                .Where(t => t.GroupName.Contains(model.GroupName, StringComparison.CurrentCultureIgnoreCase))
+                .Take(model.Take)
                 .ToListAsync();
 
             return Json(new AiurCollection<GroupConversation>(groups)
