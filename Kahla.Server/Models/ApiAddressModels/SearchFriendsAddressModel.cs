@@ -11,5 +11,7 @@ namespace Kahla.Server.Models.ApiAddressModels
         [MinLength(3)]
         [Required]
         public string NickName { get; set; }
+
+        public int Take { get; set; } = 20;
     }
 }

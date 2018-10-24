@@ -331,8 +331,8 @@ namespace Kahla.Server.Controllers
             var users = await _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.ToLower().Contains(model.NickName.ToLower()))
-                .Take(20)
+                .Where(t => t.NickName.Contains(model.NickName, StringComparison.CurrentCultureIgnoreCase))
+                .Take(model.Take)
                 .ToListAsync();
 
             return Json(new AiurCollection<KahlaUser>(users)
