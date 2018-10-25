@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Kahla.Server/Kahla.Server.csproj"
+                "${workspaceFolder}/Kahla.Home/Kahla.Home.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
