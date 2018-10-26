@@ -22,6 +22,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -136,13 +137,22 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UploadFile()
         {
             var file = Request.Form.Files.First();
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 365, SaveFileOptions.RandomName);
+            var user = await GetKahlaUser();
+            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 20, SaveFileOptions.RandomName);
+            var fileRecord = new FileRecord
+            {
+                FileKey = uploadedFile.FileKey,
+                SourceName = Path.GetFileName(file.FileName.Replace(" ", "")),
+                UploaderId = user.Id
+            };
+            _dbContext.FileRecords.Add(fileRecord);
+            await _dbContext.SaveChangesAsync();
             return Json(new UploadFileViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your file!",
                 FileKey = uploadedFile.FileKey,
-                Path = uploadedFile.Path
+                SavedFileName = fileRecord.SourceName
             });
         }
 

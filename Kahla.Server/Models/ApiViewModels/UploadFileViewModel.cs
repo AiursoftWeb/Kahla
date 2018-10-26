@@ -9,7 +9,7 @@ namespace Kahla.Server.Models.ApiViewModels
 {
     public class UploadFileViewModel : AiurProtocal
     {
-        public string Path { get; set; }
+        public string SavedFileName { get; set; }
         public int FileKey { get; set; }
     }
 }

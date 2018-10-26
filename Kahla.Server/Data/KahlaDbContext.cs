@@ -27,7 +27,7 @@ namespace Kahla.Server.Data
         public DbSet<GroupConversation> GroupConversations { get; set; }
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<Credential> Credentials { get; set; }
+        public DbSet<FileRecord> FileRecords { get; set; }
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {
