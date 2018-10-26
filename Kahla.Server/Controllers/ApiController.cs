@@ -134,10 +134,19 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UploadFile()
+        public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
-            var file = Request.Form.Files.First();
+            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
+            if (conversation == null)
+            {
+                return this.Protocal(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
+            }
             var user = await GetKahlaUser();
+            if (!await _dbContext.VerifyJoined(user.Id, conversation))
+            {
+                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
+            }
+            var file = Request.Form.Files.First();
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 20, SaveFileOptions.RandomName);
             var fileRecord = new FileRecord
             {
@@ -154,6 +163,11 @@ namespace Kahla.Server.Controllers
                 FileKey = uploadedFile.FileKey,
                 SavedFileName = fileRecord.SourceName
             });
+        }
+
+        public async Task<IActionResult> FileDownloadAddress()
+        {
+            throw new NotFiniteNumberException();
         }
 
         [HttpPost]
@@ -248,7 +262,7 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
                 return this.Protocal(ErrorType.NotFound, "We can not find target user.");
-            if (!await _dbContext.AreFriendsAsync(user.Id, target.Id))
+            if (!await _dbContext.AreFriends(user.Id, target.Id))
                 return this.Protocal(ErrorType.NotEnoughResources, "He is not your friend at all.");
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
@@ -266,7 +280,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocal(ErrorType.NotFound, "We can not find your target user!");
             if (target.Id == user.Id)
                 return this.Protocal(ErrorType.RequireAttention, "You can't request yourself!");
-            var areFriends = await _dbContext.AreFriendsAsync(user.Id, target.Id);
+            var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
                 return this.Protocal(ErrorType.HasDoneAlready, "You two are already friends!");
             Request request = null;
@@ -305,7 +319,7 @@ namespace Kahla.Server.Controllers
             request.Completed = true;
             if (model.Accept)
             {
-                if (await _dbContext.AreFriendsAsync(request.CreatorId, request.TargetId))
+                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
                 {
                     await _dbContext.SaveChangesAsync();
                     return this.Protocal(ErrorType.RequireAttention, "You two are already friends.");
@@ -458,20 +472,17 @@ namespace Kahla.Server.Controllers
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
             if (conversation != null)
             {
-                model.User = target;
                 model.AreFriends = true;
                 model.ConversationId = conversation.Id;
-                model.Message = "Found that user.";
-                model.Code = ErrorType.Success;
             }
             else
             {
-                model.User = target;
                 model.AreFriends = false;
-                model.ConversationId = 0;
-                model.Message = "Found that user.";
-                model.Code = ErrorType.Success;
+                model.ConversationId = null;
             }
+            model.User = target;
+            model.Message = "Found that user.";
+            model.Code = ErrorType.Success;
             return Json(model);
         }
 
