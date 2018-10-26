@@ -165,8 +165,10 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        public async Task<IActionResult> FileDownloadAddress()
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
         {
+            await Task.Delay(0);
             throw new NotFiniteNumberException();
         }
 

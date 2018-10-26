@@ -16,5 +16,9 @@ namespace Kahla.Server.Models
         public string UploaderId { get; set; }
         [ForeignKey(nameof(UploaderId))]
         public KahlaUser Uploader { get; set; }
+
+        public int ConversationId { get; set; }
+        [ForeignKey(nameof(ConversationId))]
+        public Conversation Conversation { get; set; }
     }
 }
