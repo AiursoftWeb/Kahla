@@ -12,13 +12,8 @@ namespace Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
-        private readonly ServiceLocation _serviceLocation;
-        public KahlaDbContext(
-            DbContextOptions<KahlaDbContext> options,
-            ServiceLocation serviceLocation)
-            : base(options)
+        public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
         {
-            _serviceLocation = serviceLocation;
         }
 
         public DbSet<Message> Messages { get; set; }
