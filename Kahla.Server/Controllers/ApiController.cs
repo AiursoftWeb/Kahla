@@ -6,6 +6,7 @@ using Aiursoft.Pylon.Models.ForApps.AddressModels;
 using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
+using Aiursoft.Pylon.Services.ToOSSServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
@@ -56,6 +57,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly UserService _userService;
         private readonly IHostingEnvironment _env;
+        private readonly SecretService _secretService;
         private readonly object _obj = new object();
 
         public ApiController(
@@ -71,7 +73,8 @@ namespace Kahla.Server.Controllers
             StorageService storageService,
             AppsContainer appsContainer,
             UserService userService,
-            IHostingEnvironment env)
+            IHostingEnvironment env,
+            SecretService secretService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -86,6 +89,7 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _userService = userService;
             _env = env;
+            _secretService = secretService;
         }
 
         public IActionResult Index()
@@ -165,11 +169,25 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [HttpPost]
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
         {
-            await Task.Delay(0);
-            throw new NotFiniteNumberException();
+            var record = await _dbContext
+                .FileRecords
+                .Include(t => t.Conversation)
+                .SingleOrDefaultAsync(t => t.FileKey == model.FileKey);
+            if (record == null || record.Conversation == null)
+            {
+                return this.Protocal(ErrorType.NotFound, "Could not find your file!");
+            }
+            var user = await GetKahlaUser();
+            if (!await _dbContext.VerifyJoined(user.Id, record.Conversation))
+            {
+                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
+            }
+            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken());
+            return Json(secret);
         }
 
         [HttpPost]
