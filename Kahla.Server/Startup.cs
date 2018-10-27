@@ -48,6 +48,7 @@ namespace Kahla.Server
 
             services.AddScoped<ChannelService>();
             services.AddScoped<UserService>();
+            services.AddScoped<SecretService>();
             services.AddScoped<PushMessageService>();
             services.AddScoped<PushKahlaMessageService>();
         }
