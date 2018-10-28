@@ -157,7 +157,8 @@ namespace Kahla.Server.Controllers
             {
                 FileKey = uploadedFile.FileKey,
                 SourceName = Path.GetFileName(file.FileName.Replace(" ", "")),
-                UploaderId = user.Id
+                UploaderId = user.Id,
+                ConversationId = conversation.Id
             };
             _dbContext.FileRecords.Add(fileRecord);
             await _dbContext.SaveChangesAsync();
