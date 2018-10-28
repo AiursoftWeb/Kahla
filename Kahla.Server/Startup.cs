@@ -35,6 +35,7 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.ConfigureLargeFileUploadable();
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
 
