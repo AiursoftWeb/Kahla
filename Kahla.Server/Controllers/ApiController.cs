@@ -141,10 +141,6 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    return ResultGenerator.GetInvalidModelStateErrorResponse(ModelState);
-            //}
             var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {
