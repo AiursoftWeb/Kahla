@@ -1,4 +1,5 @@
-﻿<!doctype html>
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!doctype html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -9,6 +10,7 @@
     @this.UseAiurFavicon()
     <link href="@ServiceLocation.CDN/dist/AiurCore.min.css" rel="stylesheet">
     <link href="@ServiceLocation.CDN/dist/AiurProduct.min.css" rel="stylesheet">
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
     @RenderBody()
