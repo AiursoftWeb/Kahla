@@ -12,13 +12,8 @@ namespace Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
-        private readonly ServiceLocation _serviceLocation;
-        public KahlaDbContext(
-            DbContextOptions<KahlaDbContext> options,
-            ServiceLocation serviceLocation)
-            : base(options)
+        public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
         {
-            _serviceLocation = serviceLocation;
         }
 
         public DbSet<Message> Messages { get; set; }
@@ -27,7 +22,7 @@ namespace Kahla.Server.Data
         public DbSet<GroupConversation> GroupConversations { get; set; }
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<Credential> Credentials { get; set; }
+        public DbSet<FileRecord> FileRecords { get; set; }
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {
@@ -49,21 +44,6 @@ namespace Kahla.Server.Data
             myConversations.AddRange(groupRelations);
             return myConversations;
         }
-
-        // public IQueryable<PrivateConversation> AllConversations(string userId)
-        // {
-        //     var myConversations = this.PrivateConversations
-        //         .Where(t => t.RequesterId == userId || t.TargetId == userId);
-        //     return myConversations;
-        // }
-
-        // public IQueryable<GroupConversation> AllGroupConversations(string userId)
-        // {
-        //     var myGroupConversations = this.GroupConversations
-        //         .Include(t => t.Users)
-        //         .Where(t => t.Users.Exists(p => p.UserId == userId));
-        //     return myGroupConversations;
-        //}
 
         public async Task<bool> VerifyJoined(string userId, Conversation target)
         {
@@ -87,14 +67,6 @@ namespace Kahla.Server.Data
             }
             return true;
         }
-        public PrivateConversation FindConversation(string userId1, string userId2)
-        {
-            var relation = this.PrivateConversations.SingleOrDefault(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            var belation = this.PrivateConversations.SingleOrDefault(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            if (relation != null) return relation;
-            else if (belation != null) return belation;
-            else return null;
-        }
 
         public async Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
@@ -105,15 +77,9 @@ namespace Kahla.Server.Data
             else return null;
         }
 
-        public async Task<bool> AreFriendsAsync(string userId1, string userId2)
+        public async Task<bool> AreFriends(string userId1, string userId2)
         {
             var conversation = await FindConversationAsync(userId1, userId2);
-            return conversation != null;
-        }
-
-        public bool AreFriends(string userId1, string userId2)
-        {
-            var conversation = FindConversation(userId1, userId2);
             return conversation != null;
         }
 

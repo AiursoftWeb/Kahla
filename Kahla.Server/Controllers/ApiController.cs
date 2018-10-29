@@ -6,6 +6,7 @@ using Aiursoft.Pylon.Models.ForApps.AddressModels;
 using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
+using Aiursoft.Pylon.Services.ToOSSServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
@@ -22,6 +23,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -55,6 +57,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly UserService _userService;
         private readonly IHostingEnvironment _env;
+        private readonly SecretService _secretService;
         private readonly object _obj = new object();
 
         public ApiController(
@@ -70,7 +73,8 @@ namespace Kahla.Server.Controllers
             StorageService storageService,
             AppsContainer appsContainer,
             UserService userService,
-            IHostingEnvironment env)
+            IHostingEnvironment env,
+            SecretService secretService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -85,6 +89,7 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _userService = userService;
             _env = env;
+            _secretService = secretService;
         }
 
         public IActionResult Index()
@@ -139,17 +144,64 @@ namespace Kahla.Server.Controllers
 
         [HttpPost]
         [FileChecker]
+        [APIModelStateChecker]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UploadFile()
+        public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
+            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
+            if (conversation == null)
+            {
+                return this.Protocal(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
+            }
+            var user = await GetKahlaUser();
+            if (!await _dbContext.VerifyJoined(user.Id, conversation))
+            {
+                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
+            }
             var file = Request.Form.Files.First();
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 365, SaveFileOptions.RandomName);
+            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 20, SaveFileOptions.RandomName);
+            var fileRecord = new FileRecord
+            {
+                FileKey = uploadedFile.FileKey,
+                SourceName = Path.GetFileName(file.FileName.Replace(" ", "")),
+                UploaderId = user.Id,
+                ConversationId = conversation.Id
+            };
+            _dbContext.FileRecords.Add(fileRecord);
+            await _dbContext.SaveChangesAsync();
             return Json(new UploadFileViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your file!",
                 FileKey = uploadedFile.FileKey,
-                Path = uploadedFile.Path
+                SavedFileName = fileRecord.SourceName
+            });
+        }
+
+        [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
+        {
+            var record = await _dbContext
+                .FileRecords
+                .Include(t => t.Conversation)
+                .SingleOrDefaultAsync(t => t.FileKey == model.FileKey);
+            if (record == null || record.Conversation == null)
+            {
+                return this.Protocal(ErrorType.NotFound, "Could not find your file!");
+            }
+            var user = await GetKahlaUser();
+            if (!await _dbContext.VerifyJoined(user.Id, record.Conversation))
+            {
+                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
+            }
+            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken());
+            return Json(new FileDownloadAddressViewModel
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully generated your file download address!",
+                FileName = record.SourceName,
+                DownloadPath = $"{_serviceLocation.OSS}/Download/FromSecret?Sec={secret.Value}"
             });
         }
 
@@ -245,7 +297,7 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
                 return this.Protocal(ErrorType.NotFound, "We can not find target user.");
-            if (!await _dbContext.AreFriendsAsync(user.Id, target.Id))
+            if (!await _dbContext.AreFriends(user.Id, target.Id))
                 return this.Protocal(ErrorType.NotEnoughResources, "He is not your friend at all.");
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
@@ -263,7 +315,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocal(ErrorType.NotFound, "We can not find your target user!");
             if (target.Id == user.Id)
                 return this.Protocal(ErrorType.RequireAttention, "You can't request yourself!");
-            var areFriends = await _dbContext.AreFriendsAsync(user.Id, target.Id);
+            var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
                 return this.Protocal(ErrorType.HasDoneAlready, "You two are already friends!");
             Request request = null;
@@ -302,7 +354,7 @@ namespace Kahla.Server.Controllers
             request.Completed = true;
             if (model.Accept)
             {
-                if (await _dbContext.AreFriendsAsync(request.CreatorId, request.TargetId))
+                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
                 {
                     await _dbContext.SaveChangesAsync();
                     return this.Protocal(ErrorType.RequireAttention, "You two are already friends.");
@@ -338,8 +390,8 @@ namespace Kahla.Server.Controllers
             var users = await _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.ToLower().Contains(model.NickName.ToLower()))
-                .Take(20)
+                .Where(t => t.NickName.Contains(model.NickName, StringComparison.CurrentCultureIgnoreCase))
+                .Take(model.Take)
                 .ToListAsync();
 
             return Json(new AiurCollection<KahlaUser>(users)
@@ -355,8 +407,8 @@ namespace Kahla.Server.Controllers
             var groups = await _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.ToLower().Contains(model.GroupName.ToLower()))
-                .Take(20)
+                .Where(t => t.GroupName.Contains(model.GroupName, StringComparison.CurrentCultureIgnoreCase))
+                .Take(model.Take)
                 .ToListAsync();
 
             return Json(new AiurCollection<GroupConversation>(groups)
@@ -455,20 +507,17 @@ namespace Kahla.Server.Controllers
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
             if (conversation != null)
             {
-                model.User = target;
                 model.AreFriends = true;
                 model.ConversationId = conversation.Id;
-                model.Message = "Found that user.";
-                model.Code = ErrorType.Success;
             }
             else
             {
-                model.User = target;
                 model.AreFriends = false;
-                model.ConversationId = 0;
-                model.Message = "Found that user.";
-                model.Code = ErrorType.Success;
+                model.ConversationId = null;
             }
+            model.User = target;
+            model.Message = "Found that user.";
+            model.Code = ErrorType.Success;
             return Json(model);
         }
 

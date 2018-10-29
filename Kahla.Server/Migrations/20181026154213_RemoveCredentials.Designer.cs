@@ -4,14 +4,16 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181026154213_RemoveCredentials")]
+    partial class RemoveCredentials
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,8 +47,6 @@ namespace Kahla.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ConversationId");
-
                     b.Property<int>("FileKey");
 
                     b.Property<string>("SourceName");
@@ -56,8 +56,6 @@ namespace Kahla.Server.Migrations
                     b.Property<string>("UploaderId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
 
                     b.HasIndex("UploaderId");
 
@@ -346,11 +344,6 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Kahla.Server.Models.FileRecord", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.Conversation", "Conversation")
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Kahla.Server.Models.KahlaUser", "Uploader")
                         .WithMany()
                         .HasForeignKey("UploaderId");

@@ -9,11 +9,18 @@
     <Product>AiursoftWeb</Product>
     <Authors>Anduin</Authors>
     <Description>The home page application for Kahla app.</Description>
+    <ApplicationInsightsResourceId>/subscriptions/6eedf4ae-3d30-41a0-91cf-0d1ff1ed8ccb/resourcegroups/Kahla/providers/microsoft.insights/components/Kahla.Home</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/6eedf4ae-3d30-41a0-91cf-0d1ff1ed8ccb/resourcegroups/Kahla/providers/microsoft.insights/components/Kahla.Home</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aiursoft.Pylon" Version="0.9.4" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
 </Project>

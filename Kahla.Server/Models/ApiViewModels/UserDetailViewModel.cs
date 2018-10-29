@@ -11,6 +11,6 @@ namespace Kahla.Server.Models.ApiViewModels
     {
         public KahlaUser User { get; set; }
         public bool AreFriends { get; set; }
-        public int ConversationId { get; set; }
+        public int? ConversationId { get; set; }
     }
 }
