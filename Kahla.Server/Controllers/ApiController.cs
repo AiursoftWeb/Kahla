@@ -475,7 +475,7 @@ namespace Kahla.Server.Controllers
                 ConversationId = target.Id
             };
             _dbContext.Messages.Add(message);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync()
             //Push the message to reciever
             if (target.Discriminator == nameof(PrivateConversation))
             {
