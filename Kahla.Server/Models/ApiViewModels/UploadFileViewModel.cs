@@ -11,5 +11,6 @@ namespace Kahla.Server.Models.ApiViewModels
     {
         public string SavedFileName { get; set; }
         public int FileKey { get; set; }
+        public long FileSize { get; set; }
     }
 }

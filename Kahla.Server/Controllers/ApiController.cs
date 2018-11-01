@@ -174,7 +174,8 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your file!",
                 FileKey = uploadedFile.FileKey,
-                SavedFileName = fileRecord.SourceName
+                SavedFileName = fileRecord.SourceName,
+                FileSize = file.Length
             });
         }
 
