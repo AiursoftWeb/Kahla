@@ -17,5 +17,6 @@ namespace Kahla.Server.Models.ApiViewModels
     public class UploadImageViewModel : AiurProtocal
     {
         public int FileKey { get; set; }
+        public string DownloadPath { get; set; }
     }
 }

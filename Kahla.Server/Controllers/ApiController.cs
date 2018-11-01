@@ -155,11 +155,12 @@ namespace Kahla.Server.Controllers
                 return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png` or `bmp`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 20, SaveFileOptions.RandomName);
-            return Json(new UploadFileViewModel
+            return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your image!",
-                FileKey = uploadedFile.FileKey
+                FileKey = uploadedFile.FileKey,
+                DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
             });
         }
 
