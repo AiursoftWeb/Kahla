@@ -26,6 +26,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Pylon.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -146,6 +147,26 @@ namespace Kahla.Server.Controllers
         [FileChecker]
         [APIModelStateChecker]
         [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> UploadImage()
+        {
+            var file = Request.Form.Files.First();
+            if (!file.FileName.IsImage())
+            {
+                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png` or `bmp`.");
+            }
+            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 20, SaveFileOptions.RandomName);
+            return Json(new UploadFileViewModel
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully uploaded your image!",
+                FileKey = uploadedFile.FileKey
+            });
+        }
+
+        [HttpPost]
+        [FileChecker]
+        [APIModelStateChecker]
+        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
             var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
@@ -159,7 +180,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var file = Request.Form.Files.First();
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaBucketId"]), 20, SaveFileOptions.RandomName);
+            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaSecretBucketId"]), 20, SaveFileOptions.RandomName);
             var fileRecord = new FileRecord
             {
                 FileKey = uploadedFile.FileKey,
