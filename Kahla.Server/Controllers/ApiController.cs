@@ -26,17 +26,14 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Aiursoft.Pylon.Services;
 
 namespace Kahla.Server.Controllers
 {
-    [APIExpHandler]
-    [APIModelStateChecker]
-    public class ApiController : Controller
+    public static class KahlaExtends
     {
-        public override JsonResult Json(object obj)
+        public static JsonResult AiurJson(this Controller controller ,object obj)
         {
-            return base.Json(obj, new JsonSerializerSettings
+            return controller.Json(obj, new JsonSerializerSettings
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
                 ContractResolver = new DefaultContractResolver
@@ -45,14 +42,20 @@ namespace Kahla.Server.Controllers
                 }
             });
         }
+    }
+
+    [APIExpHandler]
+    [APIModelStateChecker]
+    public class ApiController : Controller
+    {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
         private readonly KahlaDbContext _dbContext;
         private readonly PushKahlaMessageService _pusher;
         private readonly IConfiguration _configuration;
         private readonly AuthService<KahlaUser> _authService;
-        private readonly ServiceLocation _serviceLocation;
         private readonly OAuthService _oauthService;
+        private readonly ServiceLocation _serviceLocation;
         private readonly ChannelService _channelService;
         private readonly StorageService _storageService;
         private readonly AppsContainer _appsContainer;
@@ -68,8 +71,8 @@ namespace Kahla.Server.Controllers
             PushKahlaMessageService pushService,
             IConfiguration configuration,
             AuthService<KahlaUser> authService,
-            ServiceLocation serviceLocation,
             OAuthService oauthService,
+            ServiceLocation serviceLocation,
             ChannelService channelService,
             StorageService storageService,
             AppsContainer appsContainer,
@@ -93,141 +96,11 @@ namespace Kahla.Server.Controllers
             _secretService = secretService;
         }
 
-        public IActionResult Index()
-        {
-            return Json(new
-            {
-                Code = ErrorType.Success,
-                Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
-                WikiPath = _serviceLocation.Wiki,
-                ServerTime = DateTime.Now,
-                UTCTime = DateTime.UtcNow
-            });
-        }
 
-        public IActionResult Version()
-        {
-            return Json(new VersionViewModel
-            {
-                LatestVersion = _configuration["AppVersion"],
-                OldestSupportedVersion = _configuration["AppVersion"],
-                Message = "Successfully get the lastest version number for Kahla App.",
-                DownloadAddress = _serviceLocation.KahlaHome
-            });
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> AuthByPassword(AuthByPasswordAddressModel model)
-        {
-            try
-            {
-                var pack = await _oauthService.PasswordAuthAsync(Extends.CurrentAppId, model.Email, model.Password);
-                if (pack.Code != ErrorType.Success)
-                {
-                    return this.Protocal(ErrorType.Unauthorized, pack.Message);
-                }
-                var user = await _authService.AuthApp(new AuthResultAddressModel
-                {
-                    code = pack.Value,
-                    state = string.Empty
-                }, isPersistent: true);
-            }
-            catch (AiurUnexceptedResponse e)
-            {
-                return Json(e.Response);
-            }
-            return Json(new AiurProtocal()
-            {
-                Code = ErrorType.Success,
-                Message = "Auth success."
-            });
-        }
 
-        [HttpPost]
-        [FileChecker]
-        [APIModelStateChecker]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UploadImage()
-        {
-            var file = Request.Form.Files.First();
-            if (!file.FileName.IsImage())
-            {
-                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png` or `bmp`.");
-            }
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 20, SaveFileOptions.RandomName);
-            return Json(new UploadImageViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully uploaded your image!",
-                FileKey = uploadedFile.FileKey,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
-            });
-        }
 
-        [HttpPost]
-        [FileChecker]
-        [APIModelStateChecker]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
-        {
-            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
-            if (conversation == null)
-            {
-                return this.Protocal(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
-            }
-            var user = await GetKahlaUser();
-            if (!await _dbContext.VerifyJoined(user.Id, conversation))
-            {
-                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
-            }
-            var file = Request.Form.Files.First();
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaSecretBucketId"]), 20, SaveFileOptions.RandomName);
-            var fileRecord = new FileRecord
-            {
-                FileKey = uploadedFile.FileKey,
-                SourceName = Path.GetFileName(file.FileName.Replace(" ", "")),
-                UploaderId = user.Id,
-                ConversationId = conversation.Id
-            };
-            _dbContext.FileRecords.Add(fileRecord);
-            await _dbContext.SaveChangesAsync();
-            return Json(new UploadFileViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully uploaded your file!",
-                FileKey = uploadedFile.FileKey,
-                SavedFileName = fileRecord.SourceName,
-                FileSize = file.Length
-            });
-        }
-
-        [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
-        {
-            var record = await _dbContext
-                .FileRecords
-                .Include(t => t.Conversation)
-                .SingleOrDefaultAsync(t => t.FileKey == model.FileKey);
-            if (record == null || record.Conversation == null)
-            {
-                return this.Protocal(ErrorType.NotFound, "Could not find your file!");
-            }
-            var user = await GetKahlaUser();
-            if (!await _dbContext.VerifyJoined(user.Id, record.Conversation))
-            {
-                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
-            }
-            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken());
-            return Json(new FileDownloadAddressViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully generated your file download address!",
-                FileName = record.SourceName,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromSecret?Sec={secret.Value}"
-            });
-        }
-
+      
         [HttpPost]
         public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
         {
