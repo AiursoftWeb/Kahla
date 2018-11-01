@@ -3,11 +3,14 @@ using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
+using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
+using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
+using Kahla.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,8 +32,11 @@ namespace Kahla.Server.Controllers
         private readonly AuthService<KahlaUser> _authService;
         private readonly OAuthService _oauthService;
         private readonly UserManager<KahlaUser> _userManager;
+        private readonly SignInManager<KahlaUser> _signInManager;
         private readonly UserService _userService;
         private readonly AppsContainer _appsContainer;
+        private readonly PushKahlaMessageService _pusher;
+        private readonly ChannelService _channelService;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -39,8 +45,11 @@ namespace Kahla.Server.Controllers
             AuthService<KahlaUser> authService,
             OAuthService oauthService,
             UserManager<KahlaUser> userManager,
+            SignInManager<KahlaUser> signInManager,
             UserService userService,
-            AppsContainer appsContainer)
+            AppsContainer appsContainer,
+            PushKahlaMessageService pusher,
+            ChannelService channelService)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -48,8 +57,11 @@ namespace Kahla.Server.Controllers
             _authService = authService;
             _oauthService = oauthService;
             _userManager = userManager;
+            _signInManager = signInManager;
             _userService = userService;
             _appsContainer = appsContainer;
+            _pusher = pusher;
+            _channelService = channelService;
         }
 
         public IActionResult Index()
@@ -107,14 +119,14 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
         {
             var result = await _oauthService.AppRegisterAsync(model.Email, model.Password, model.ConfirmPassword);
-            return Json(result);
+            return this.AiurJson(result);
         }
 
         public async Task<IActionResult> SignInStatus()
         {
             var user = await GetKahlaUser();
             var signedIn = user != null;
-            return Json(new AiurValue<bool>(signedIn)
+            return this.AiurJson(new AiurValue<bool>(signedIn)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your signin status."
@@ -125,7 +137,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
-            return Json(new AiurValue<KahlaUser>(user)
+            return this.AiurJson(new AiurValue<KahlaUser>(user)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your information."
@@ -154,6 +166,39 @@ namespace Kahla.Server.Controllers
             var cuser = await GetKahlaUser();
             var result = await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
             return this.Protocal(ErrorType.Success, "Successfully changed your password!");
+        }
+
+
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> InitPusher()
+        {
+            var user = await GetKahlaUser();
+            if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != ErrorType.Success)
+            {
+                var channel = await _pusher.Init(user.Id);
+                user.CurrentChannel = channel.ChannelId;
+                user.ConnectKey = channel.ConnectKey;
+                await _userManager.UpdateAsync(user);
+            }
+            var model = new InitPusherViewModel
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get your channel.",
+                ChannelId = user.CurrentChannel,
+                ConnectKey = user.ConnectKey,
+                ServerPath = new AiurUrl(_serviceLocation.StargateListenAddress, "Listen", "Channel", new ChannelAddressModel
+                {
+                    Id = user.CurrentChannel,
+                    Key = user.ConnectKey
+                }).ToString()
+            };
+            return this.AiurJson(model);
+        }
+
+        public async Task<IActionResult> LogOff()
+        {
+            await _signInManager.SignOutAsync();
+            return this.Protocal(ErrorType.Success, "Success.");
         }
 
         private async Task<KahlaUser> GetKahlaUser()

@@ -66,7 +66,7 @@ namespace Kahla.Server.Controllers
             list = orderByName == true ?
                 list.OrderBy(t => t.DisplayName).ToList() :
                 list.OrderByDescending(t => t.LatestMessageTime).ToList();
-            return Json(new AiurCollection<ContactInfo>(list)
+            return this.AiurJson(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your friends."
@@ -116,7 +116,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.SaveChanges();
             }
             await _pusher.NewFriendRequestEvent(target.Id, user.Id);
-            return Json(new AiurValue<int>(request.Id)
+            return this.AiurJson(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully created your request!"
@@ -161,7 +161,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.TargetId == user.Id)
                 .OrderByDescending(t => t.CreateTime)
                 .ToListAsync();
-            return Json(new AiurCollection<Request>(requests)
+            return this.AiurJson(new AiurCollection<Request>(requests)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your requests list."
@@ -178,7 +178,7 @@ namespace Kahla.Server.Controllers
                 .Take(model.Take)
                 .ToListAsync();
 
-            return Json(new AiurCollection<KahlaUser>(users)
+            return this.AiurJson(new AiurCollection<KahlaUser>(users)
             {
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
@@ -195,7 +195,7 @@ namespace Kahla.Server.Controllers
             {
                 model.Message = "We can not find target user.";
                 model.Code = ErrorType.NotFound;
-                return Json(model);
+                return this.AiurJson(model);
             }
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
             if (conversation != null)
@@ -211,7 +211,7 @@ namespace Kahla.Server.Controllers
             model.User = target;
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
-            return Json(model);
+            return this.AiurJson(model);
         }
 
         private async Task<KahlaUser> GetKahlaUser()

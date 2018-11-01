@@ -67,7 +67,7 @@ namespace Kahla.Server.Controllers
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();
-            return Json(new AiurCollection<Message>(allMessages)
+            return this.AiurJson(new AiurCollection<Message>(allMessages)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
@@ -127,7 +127,7 @@ namespace Kahla.Server.Controllers
             {
                 var pTarget = target as PrivateConversation;
                 pTarget.AnotherUserId = pTarget.AnotherUser(user.Id).Id;
-                return Json(new AiurValue<PrivateConversation>(pTarget)
+                return this.AiurJson(new AiurValue<PrivateConversation>(pTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
@@ -143,7 +143,7 @@ namespace Kahla.Server.Controllers
                     .Where(t => t.GroupId == gtarget.Id)
                     .ToListAsync();
                 gtarget.Users = relations;
-                return Json(new AiurValue<GroupConversation>(gtarget)
+                return this.AiurJson(new AiurValue<GroupConversation>(gtarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."

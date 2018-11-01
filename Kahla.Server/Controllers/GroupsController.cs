@@ -1,9 +1,6 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Models.ForApps.AddressModels;
-using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToOSSServer;
@@ -11,97 +8,34 @@ using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
-using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
-    public static class KahlaExtends
-    {
-        public static JsonResult AiurJson(this Controller controller ,object obj)
-        {
-            return controller.Json(obj, new JsonSerializerSettings
-            {
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy()
-                }
-            });
-        }
-    }
-
-    [APIExpHandler]
-    [APIModelStateChecker]
-    public class ApiController : Controller
+    public class GroupsController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
-        private readonly SignInManager<KahlaUser> _signInManager;
         private readonly KahlaDbContext _dbContext;
-        private readonly PushKahlaMessageService _pusher;
-        private readonly IConfiguration _configuration;
-        private readonly AuthService<KahlaUser> _authService;
-        private readonly OAuthService _oauthService;
-        private readonly ServiceLocation _serviceLocation;
-        private readonly ChannelService _channelService;
-        private readonly StorageService _storageService;
-        private readonly AppsContainer _appsContainer;
-        private readonly UserService _userService;
-        private readonly IHostingEnvironment _env;
-        private readonly SecretService _secretService;
-        private readonly object _obj = new object();
 
-        public ApiController(
+        public GroupsController(
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
-            KahlaDbContext dbContext,
-            PushKahlaMessageService pushService,
-            IConfiguration configuration,
-            AuthService<KahlaUser> authService,
-            OAuthService oauthService,
-            ServiceLocation serviceLocation,
-            ChannelService channelService,
-            StorageService storageService,
-            AppsContainer appsContainer,
-            UserService userService,
-            IHostingEnvironment env,
-            SecretService secretService)
+            KahlaDbContext dbContext)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _dbContext = dbContext;
-            _pusher = pushService;
-            _configuration = configuration;
-            _authService = authService;
-            _serviceLocation = serviceLocation;
-            _oauthService = oauthService;
-            _channelService = channelService;
-            _storageService = storageService;
-            _appsContainer = appsContainer;
-            _userService = userService;
-            _env = env;
-            _secretService = secretService;
         }
 
-
-
-
-
-
-        [AiurForceAuth]
+        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> SearchGroup(SearchGroupAddressModel model)
         {
             var groups = await _dbContext
@@ -111,7 +45,7 @@ namespace Kahla.Server.Controllers
                 .Take(model.Take)
                 .ToListAsync();
 
-            return Json(new AiurCollection<GroupConversation>(groups)
+            return this.AiurJson(new AiurCollection<GroupConversation>(groups)
             {
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
@@ -149,7 +83,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.UserGroupRelations.Add(newRelationship);
             await _dbContext.SaveChangesAsync();
-            return Json(new AiurValue<int>(createdGroup.Id)
+            return this.AiurJson(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
                 Message = "You have successfully created a new group and joined it!"
@@ -208,38 +142,6 @@ namespace Kahla.Server.Controllers
                 await _dbContext.SaveChangesAsync();
             }
             return this.Protocal(ErrorType.Success, $"You have successfully left the group: {groupName}!");
-        }
-
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> InitPusher()
-        {
-            var user = await GetKahlaUser();
-            if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != ErrorType.Success)
-            {
-                var channel = await _pusher.Init(user.Id);
-                user.CurrentChannel = channel.ChannelId;
-                user.ConnectKey = channel.ConnectKey;
-                await _userManager.UpdateAsync(user);
-            }
-            var model = new InitPusherViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully get your channel.",
-                ChannelId = user.CurrentChannel,
-                ConnectKey = user.ConnectKey,
-                ServerPath = new AiurUrl(_serviceLocation.StargateListenAddress, "Listen", "Channel", new ChannelAddressModel
-                {
-                    Id = user.CurrentChannel,
-                    Key = user.ConnectKey
-                }).ToString()
-            };
-            return Json(model);
-        }
-
-        public async Task<IActionResult> LogOff()
-        {
-            await _signInManager.SignOutAsync();
-            return this.Protocal(ErrorType.Success, "Success.");
         }
 
         private async Task<KahlaUser> GetKahlaUser()
