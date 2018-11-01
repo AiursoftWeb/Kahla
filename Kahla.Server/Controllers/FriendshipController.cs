@@ -23,6 +23,8 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [APIExpHandler]
+    [APIModelStateChecker]
     public class FriendshipController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -181,6 +183,35 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
             });
+        }
+
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> UserDetail([Required]string id)
+        {
+            var user = await GetKahlaUser();
+            var target = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
+            var model = new UserDetailViewModel();
+            if (target == null)
+            {
+                model.Message = "We can not find target user.";
+                model.Code = ErrorType.NotFound;
+                return Json(model);
+            }
+            var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
+            if (conversation != null)
+            {
+                model.AreFriends = true;
+                model.ConversationId = conversation.Id;
+            }
+            else
+            {
+                model.AreFriends = false;
+                model.ConversationId = null;
+            }
+            model.User = target;
+            model.Message = "Found that user.";
+            model.Code = ErrorType.Success;
+            return Json(model);
         }
 
         private async Task<KahlaUser> GetKahlaUser()
