@@ -130,7 +130,7 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully generated your file download address!",
                 FileName = record.SourceName,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromSecret?Sec={secret.Value}&sd=true"
+                DownloadPath = $"{_serviceLocation.OSS}/Download/FromSecret?Sec={secret.Value}&sd=true&name={record.SourceName}"
             });
         }
 
