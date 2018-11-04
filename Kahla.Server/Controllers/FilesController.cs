@@ -49,22 +49,26 @@ namespace Kahla.Server.Controllers
             _secretService = secretService;
         }
 
+        /// <summary>
+        /// Used to upload images and videos.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UploadImage()
+        public async Task<IActionResult> UploadMedia()
         {
             var file = Request.Form.Files.First();
-            if (!file.FileName.IsImage())
+            if (!file.FileName.IsImage() && !file.FileName.IsVideo())
             {
-                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png` or `bmp`.");
+                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 20, SaveFileOptions.RandomName);
             return this.AiurJson(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
-                Message = "Successfully uploaded your image!",
+                Message = "Successfully uploaded your media file!",
                 FileKey = uploadedFile.FileKey,
                 DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
             });
