@@ -88,23 +88,16 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> AuthByPassword(AuthByPasswordAddressModel model)
         {
-            try
+            var pack = await _oauthService.PasswordAuthAsync(Extends.CurrentAppId, model.Email, model.Password);
+            if (pack.Code != ErrorType.Success)
             {
-                var pack = await _oauthService.PasswordAuthAsync(Extends.CurrentAppId, model.Email, model.Password);
-                if (pack.Code != ErrorType.Success)
-                {
-                    return this.Protocal(ErrorType.Unauthorized, pack.Message);
-                }
-                var user = await _authService.AuthApp(new AuthResultAddressModel
-                {
-                    code = pack.Value,
-                    state = string.Empty
-                }, isPersistent: true);
+                return this.Protocal(ErrorType.Unauthorized, pack.Message);
             }
-            catch (AiurUnexceptedResponse e)
+            var user = await _authService.AuthApp(new AuthResultAddressModel
             {
-                return this.AiurJson(e.Response);
-            }
+                code = pack.Value,
+                state = string.Empty
+            }, isPersistent: true);
             return this.AiurJson(new AiurProtocal()
             {
                 Code = ErrorType.Success,
