@@ -49,6 +49,27 @@ namespace Kahla.Server.Controllers
             _secretService = secretService;
         }
 
+        [HttpPost]
+        [FileChecker(MaxSize = 5 * 1024 * 1024)]
+        [APIModelStateChecker]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> UploadIcon()
+        {
+            var file = Request.Form.Files.First();
+            if (!file.FileName.IsImage())
+            {
+                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
+            }
+            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaUserIconsBucketId"]), 365, SaveFileOptions.RandomName);
+            return this.AiurJson(new UploadImageViewModel
+            {
+                Code = ErrorType.Success,
+                Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
+                FileKey = uploadedFile.FileKey,
+                DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
+            });
+        }
+
         /// <summary>
         /// Used to upload images and videos.
         /// </summary>
