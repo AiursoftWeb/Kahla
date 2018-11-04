@@ -139,10 +139,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateInfo(UpdateInfoAddressModel model)
         {
             var cuser = await GetKahlaUser();
-            if (model.HeadImgKey != -1)
-            {
-                cuser.HeadImgFileKey = model.HeadImgKey;
-            }
+            cuser.HeadImgFileKey = model.HeadImgKey;
             cuser.NickName = model.NickName;
             cuser.Bio = model.Bio;
             await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
