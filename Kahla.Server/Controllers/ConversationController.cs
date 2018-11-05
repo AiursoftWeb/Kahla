@@ -107,8 +107,6 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, "Your message has been sent.");
         }
 
-
-
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
