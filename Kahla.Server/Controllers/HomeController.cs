@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -40,23 +41,33 @@ namespace Kahla.Server.Controllers
                             var args = new List<Argument>();
                             foreach (var param in method.GetParameters())
                             {
-                                if (param.ParameterType.IsClass)
+                                if (param.ParameterType.IsClass && param.ParameterType != typeof(string))
                                 {
                                     foreach (var prop in param.ParameterType.GetProperties())
                                     {
-                                        args.Add(new Argument { Name = prop.Name });
+                                        args.Add(new Argument
+                                        {
+                                            Name = prop.Name,
+                                            Required = JudgeRequired(prop.PropertyType, prop.CustomAttributes),
+                                            Type = ConvertTypeToArgumentType(prop.PropertyType)
+                                        });
                                     }
                                 }
                                 else
                                 {
-                                    args.Add(new Argument { Name = param.Name });
+                                    args.Add(new Argument
+                                    {
+                                        Name = param.Name,
+                                        Required = param.HasDefaultValue ? false : JudgeRequired(param.ParameterType, param.CustomAttributes),
+                                        Type = ConvertTypeToArgumentType(param.ParameterType)
+                                    });
                                 }
                             }
                             var api = new API
                             {
                                 ControllerName = item.Name,
                                 ActionName = method.Name,
-                                IsPost = method.CustomAttributes.Any(t => t.AttributeType == typeof(HttpPostAttribute)).ToString(),
+                                IsPost = method.CustomAttributes.Any(t => t.AttributeType == typeof(HttpPostAttribute)),
                                 Arguments = args
                             };
                             actionsMatches.Add(api);
@@ -91,18 +102,55 @@ namespace Kahla.Server.Controllers
                 !method.IsConstructor &&
                 method.Module.ToString() == "Kahla.Server.dll";
         }
+
+        private ArgumentType ConvertTypeToArgumentType(Type t)
+        {
+            return
+                t == typeof(int) ? ArgumentType.number :
+                t == typeof(int?) ? ArgumentType.number :
+                t == typeof(string) ? ArgumentType.text :
+                t == typeof(DateTime) ? ArgumentType.datetime :
+                t == typeof(DateTime?) ? ArgumentType.datetime :
+                t == typeof(bool) ? ArgumentType.boolean :
+                t == typeof(bool?) ? ArgumentType.boolean :
+                ArgumentType.unknown;
+        }
+
+        private bool JudgeRequired(Type source, IEnumerable<CustomAttributeData> attributes)
+        {
+            if (attributes.Any(t => t.AttributeType == typeof(RequiredAttribute)))
+            {
+                return true;
+            }
+            return
+                source == typeof(int) ? true :
+                source == typeof(DateTime) ? true :
+                source == typeof(bool) ? true :
+                false;
+        }
     }
 
     public class API
     {
         public string ControllerName { get; set; }
         public string ActionName { get; set; }
-        public string IsPost { get; set; }
+        public bool IsPost { get; set; }
         public List<Argument> Arguments { get; set; }
     }
 
     public class Argument
     {
         public string Name { get; set; }
+        public bool Required { get; set; }
+        public ArgumentType Type { get; set; }
+    }
+
+    public enum ArgumentType
+    {
+        text = 0,
+        number = 1,
+        boolean = 2,
+        datetime = 3,
+        unknown = 4
     }
 }
