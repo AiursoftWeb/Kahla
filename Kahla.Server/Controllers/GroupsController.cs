@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [AiurForceAuth(directlyReject: true)]
     public class GroupsController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -29,7 +30,6 @@ namespace Kahla.Server.Controllers
             _dbContext = dbContext;
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> SearchGroup(SearchGroupAddressModel model)
         {
             var groups = await _dbContext
@@ -48,7 +48,6 @@ namespace Kahla.Server.Controllers
 
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -85,7 +84,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> JoinGroup([Required]string groupName)
         {
             var user = await GetKahlaUser();
@@ -112,7 +110,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> LeaveGroup(string groupName)
         {
             var user = await GetKahlaUser();

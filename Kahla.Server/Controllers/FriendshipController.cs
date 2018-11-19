@@ -19,6 +19,7 @@ namespace Kahla.Server.Controllers
 {
     [APIExpHandler]
     [APIModelStateChecker]
+    [AiurForceAuth(directlyReject: true)]
     public class FriendshipController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -36,7 +37,6 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> MyFriends([Required]bool? orderByName)
         {
             var user = await GetKahlaUser();
@@ -68,7 +68,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> DeleteFriend([Required]string id)
         {
             var user = await GetKahlaUser();
@@ -84,7 +83,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> CreateRequest([Required]string id)
         {
             var user = await GetKahlaUser();
@@ -118,7 +116,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> CompleteRequest(CompleteRequestAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -144,7 +141,6 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, "You have successfully completed this request.");
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> MyRequests()
         {
             var user = await GetKahlaUser();
@@ -162,7 +158,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> SearchFriends(SearchFriendsAddressModel model)
         {
             var users = await _dbContext
@@ -179,7 +174,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UserDetail([Required]string id)
         {
             var user = await GetKahlaUser();

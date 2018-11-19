@@ -136,6 +136,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UpdateInfo(UpdateInfoAddressModel model)
         {
             var cuser = await GetKahlaUser();
@@ -183,6 +184,7 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(model);
         }
 
+        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> LogOff()
         {
             await _signInManager.SignOutAsync();

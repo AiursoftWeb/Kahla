@@ -17,6 +17,7 @@ namespace Kahla.Server.Controllers
 {
     [APIExpHandler]
     [APIModelStateChecker]
+    [AiurForceAuth(directlyReject: true)]
     public class ConversationController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -33,7 +34,6 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> GetMessage([Required]int id, int take = 15)
         {
             var user = await GetKahlaUser();
@@ -73,7 +73,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -107,7 +106,6 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, "Your message has been sent.");
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();

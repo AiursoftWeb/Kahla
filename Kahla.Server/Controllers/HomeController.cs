@@ -1,6 +1,8 @@
 ﻿using Aiursoft.Pylon;
+using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -30,11 +32,11 @@ namespace Kahla.Server.Controllers
             var actionsMatches = new List<API>();
             await Task.Delay(0);
             actionsMatches.Clear();
-            foreach (var item in Assembly.GetEntryAssembly().GetTypes())
+            foreach (var controller in Assembly.GetEntryAssembly().GetTypes())
             {
-                if (IsController(item))
+                if (IsController(controller))
                 {
-                    foreach (var method in item.GetMethods())
+                    foreach (var method in controller.GetMethods())
                     {
                         if (IsAction(method))
                         {
@@ -65,10 +67,13 @@ namespace Kahla.Server.Controllers
                             }
                             var api = new API
                             {
-                                ControllerName = item.Name,
+                                ControllerName = controller.Name,
                                 ActionName = method.Name,
                                 IsPost = method.CustomAttributes.Any(t => t.AttributeType == typeof(HttpPostAttribute)),
-                                Arguments = args
+                                Arguments = args,
+                                AuthRequired =
+                                    method.CustomAttributes.Any(t => t.AttributeType == typeof(AiurForceAuth)) ||
+                                    controller.CustomAttributes.Any(t => t.AttributeType == typeof(AiurForceAuth))
                             };
                             actionsMatches.Add(api);
                         }
@@ -134,6 +139,7 @@ namespace Kahla.Server.Controllers
     {
         public string ControllerName { get; set; }
         public string ActionName { get; set; }
+        public bool AuthRequired { get; set; }
         public bool IsPost { get; set; }
         public List<Argument> Arguments { get; set; }
     }

@@ -21,6 +21,7 @@ namespace Kahla.Server.Controllers
 {
     [APIExpHandler]
     [APIModelStateChecker]
+    [AiurForceAuth(directlyReject: true)]
     public class FilesController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -52,7 +53,6 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker(MaxSize = 5 * 1024 * 1024)]
         [APIModelStateChecker]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UploadIcon()
         {
             var file = Request.Form.Files.First();
@@ -77,7 +77,6 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UploadMedia()
         {
             var file = Request.Form.Files.First();
@@ -98,7 +97,6 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
             var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
@@ -133,7 +131,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
         {
             var record = await _dbContext
