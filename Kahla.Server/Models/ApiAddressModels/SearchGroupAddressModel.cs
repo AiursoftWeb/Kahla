@@ -11,5 +11,6 @@ namespace Kahla.Server.Models.ApiAddressModels
         [MinLength(3)]
         [Required]
         public string GroupName { get; set; }
+        public int Take { get; set; } = 20;
     }
 }

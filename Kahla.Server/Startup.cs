@@ -35,6 +35,7 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.ConfigureLargeFileUploadable();
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
 
@@ -48,6 +49,7 @@ namespace Kahla.Server
 
             services.AddScoped<ChannelService>();
             services.AddScoped<UserService>();
+            services.AddScoped<SecretService>();
             services.AddScoped<PushMessageService>();
             services.AddScoped<PushKahlaMessageService>();
         }

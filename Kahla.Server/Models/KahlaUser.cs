@@ -32,10 +32,6 @@ namespace Kahla.Server.Models
         public IEnumerable<Message> MessagesSent { get; set; }
 
         [JsonIgnore]
-        [InverseProperty(nameof(Credential.User))]
-        public IEnumerable<Credential> Credentials { get; set; }
-
-        [JsonIgnore]
         public int CurrentChannel { get; set; } = -1;
         [JsonIgnore]
         public string ConnectKey { get; set; }

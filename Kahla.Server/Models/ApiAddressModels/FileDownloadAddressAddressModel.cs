@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
-    public class SearchFriendsAddressModel
+    public class FileDownloadAddressAddressModel
     {
-        [MinLength(1)]
         [Required]
-        public string NickName { get; set; }
-
-        public int Take { get; set; } = 20;
+        public int FileKey { get; set; }
     }
 }
