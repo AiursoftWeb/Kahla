@@ -71,6 +71,7 @@ namespace Kahla.Server
             app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseMvcWithDefaultRoute();
+            app.UseMiddleware<APIDocGeneratorMiddleware>();
         }
     }
 }
