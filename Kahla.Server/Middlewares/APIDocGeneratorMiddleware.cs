@@ -32,13 +32,13 @@ namespace Kahla.Server.Middlewares
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = 200;
             var actionsMatches = new List<API>();
-            foreach (var controller in Assembly.GetEntryAssembly().GetTypes())
+            foreach (var controller in Assembly.GetEntryAssembly().GetTypes().Where(type => typeof(Controller).IsAssignableFrom(type)))
             {
                 if (!IsController(controller))
                 {
                     continue;
                 }
-                foreach (var method in controller.GetMethods())
+                foreach (var method in controller.GetMethods(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public))
                 {
                     if (!IsAction(method))
                     {
@@ -52,7 +52,6 @@ namespace Kahla.Server.Middlewares
                         IsPost = method.CustomAttributes.Any(t => t.AttributeType == typeof(HttpPostAttribute)),
                         Arguments = args,
                         AuthRequired = JudgeAuthorized(method, controller)
-
                     };
                     actionsMatches.Add(api);
                 }
@@ -95,7 +94,6 @@ namespace Kahla.Server.Middlewares
         {
             return
                 type.Name.EndsWith("Controller") &&
-                type.Namespace.EndsWith("Kahla.Server.Controllers") &&
                 type.Name != "Controller" &&
                 type.IsSubclassOf(typeof(Controller)) &&
                 type.IsPublic;
@@ -108,7 +106,7 @@ namespace Kahla.Server.Middlewares
                 !method.IsVirtual &&
                 !method.IsStatic &&
                 !method.IsConstructor &&
-                method.Module == Assembly.GetEntryAssembly().ManifestModule;
+                !method.IsDefined(typeof(NonActionAttribute));
         }
 
         private ArgumentType ConvertTypeToArgumentType(Type t)
