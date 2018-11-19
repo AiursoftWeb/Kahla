@@ -18,19 +18,5 @@ namespace Kahla.Server.Services
                 }
             });
         }
-
-        public static bool IsVideo(this string filename)
-        {
-            var AvaliableExtensions = new string[] { "mp4", "webm", "ogg" };
-            var ext = Path.GetExtension(filename);
-            foreach (var extension in AvaliableExtensions)
-            {
-                if (ext.Trim('.').ToLower() == extension)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }

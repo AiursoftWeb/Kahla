@@ -56,7 +56,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UploadIcon()
         {
             var file = Request.Form.Files.First();
-            if (!file.FileName.IsImage())
+            if (!file.FileName.IsStaticImage())
             {
                 return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
@@ -80,7 +80,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UploadMedia()
         {
             var file = Request.Form.Files.First();
-            if (!file.FileName.IsImage() && !file.FileName.IsVideo())
+            if (!file.FileName.IsImageMedia() && !file.FileName.IsVideo())
             {
                 return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
             }
