@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [APIExpHandler]
+    [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
     public class GroupsController : Controller
     {
