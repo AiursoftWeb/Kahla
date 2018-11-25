@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -100,10 +101,17 @@ namespace Kahla.Server.Controllers
             else if (target.Discriminator == nameof(GroupConversation))
             {
                 var usersJoined = _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id);
-                await usersJoined.ForEachAsync(async t =>
+
+                var taskList = new List<Task>();
+                foreach (var relation in usersJoined)
                 {
-                    await _pusher.NewMessageEvent(t.UserId, target.Id, model.Content, user, target.AESKey, t.Muted);
-                });
+                    async Task sendNotification()
+                    {
+                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted);
+                    };
+                    taskList.Add(sendNotification());
+                }
+                await Task.WhenAll(taskList);
             }
             //Return success message.
             return this.Protocal(ErrorType.Success, "Your message has been sent.");
