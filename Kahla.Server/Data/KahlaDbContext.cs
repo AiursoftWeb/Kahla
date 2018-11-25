@@ -38,11 +38,16 @@ namespace Kahla.Server.Data
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
                 .ToListAsync();
-            var groupRelations = groups.Select(t => t.Group);
             var myConversations = new List<Conversation>();
             myConversations.AddRange(personalRelations);
-            myConversations.AddRange(groupRelations);
+            myConversations.AddRange(groups.Select(t => t.Group));
             return myConversations;
+        }
+
+        public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
+        {
+            return await this.UserGroupRelations
+                .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
 
         public async Task<bool> VerifyJoined(string userId, Conversation target)

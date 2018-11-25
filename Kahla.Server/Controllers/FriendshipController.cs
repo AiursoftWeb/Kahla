@@ -54,7 +54,8 @@ namespace Kahla.Server.Controllers
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
                     UserId = conversation is PrivateConversation ? (conversation as PrivateConversation).AnotherUser(user.Id).Id : null,
-                    AesKey = conversation.AESKey
+                    AesKey = conversation.AESKey,
+                    Muted = conversation is GroupConversation ? (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted : false
                 });
             }
             list = orderByName == true ?

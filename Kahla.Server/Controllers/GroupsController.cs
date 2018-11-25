@@ -48,7 +48,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-
         [HttpPost]
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
@@ -120,7 +119,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
-            var joined = await _dbContext.UserGroupRelations.SingleOrDefaultAsync(t => t.UserId == user.Id && t.GroupId == group.Id);
+            var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You did not joined the group: {groupName} at all!");
@@ -138,7 +137,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SetGroupBlocked([Required]string groupName, [Required]bool setBlocked)
+        public async Task<IActionResult> SetGroupMuted([Required]string groupName, [Required]bool setMuted)
         {
             var user = await GetKahlaUser();
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
@@ -146,18 +145,18 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
-            var joined = await _dbContext.UserGroupRelations.SingleOrDefaultAsync(t => t.UserId == user.Id && t.GroupId == group.Id);
+            var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
                 return this.Protocal(ErrorType.Unauthorized, $"You did not joined the group: {groupName} at all!");
             }
-            if (joined.Blocked == setBlocked)
+            if (joined.Muted == setMuted)
             {
-                return this.Protocal(ErrorType.HasDoneAlready, $"You have already {(joined.Blocked ? "blocked" : "unblocked")} the group: {groupName}!");
+                return this.Protocal(ErrorType.HasDoneAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
             }
-            joined.Blocked = setBlocked;
+            joined.Muted = setMuted;
             await _dbContext.SaveChangesAsync();
-            return this.Protocal(ErrorType.Success, $"Successfully {(setBlocked ? "blocked" : "unblocked")} the group '{groupName}'!");
+            return this.Protocal(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
         }
 
         private async Task<KahlaUser> GetKahlaUser()

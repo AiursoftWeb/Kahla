@@ -49,7 +49,7 @@ namespace Kahla.Server.Models
         public int Id { get; set; }
         public DateTime JoinTime { get; set; } = DateTime.UtcNow;
 
-        public bool Blocked { get; set; }
+        public bool Muted { get; set; }
 
         public string UserId { get; set; }
         [ForeignKey(nameof(UserId))]
