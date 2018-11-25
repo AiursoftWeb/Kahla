@@ -10,6 +10,7 @@ using Kahla.Server.Events;
 using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kahla.Server.Services
 {
@@ -50,7 +51,7 @@ namespace Kahla.Server.Services
         public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(recieverId);
+            var user = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
             var channel = user.CurrentChannel;
             var nevent = new NewMessageEvent
             {

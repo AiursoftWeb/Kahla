@@ -100,7 +100,7 @@ namespace Kahla.Server.Controllers
             }
             else if (target.Discriminator == nameof(GroupConversation))
             {
-                var usersJoined = _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id);
+                var usersJoined = await _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id).ToListAsync();
 
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
