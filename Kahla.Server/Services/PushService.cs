@@ -48,11 +48,19 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false)
+        public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false, List<KahlaUser> usersTable = null)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
-            var channel = user.CurrentChannel;
+            KahlaUser targetUser = null;
+            if(usersTable == null)
+            {
+                targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
+            }
+            else
+            {
+                targetUser = usersTable.SingleOrDefault(t => t.Id == recieverId);
+            }
+            var channel = targetUser.CurrentChannel;
             var nevent = new NewMessageEvent
             {
                 Type = EventType.NewMessage,

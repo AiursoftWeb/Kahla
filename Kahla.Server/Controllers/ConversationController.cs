@@ -100,14 +100,18 @@ namespace Kahla.Server.Controllers
             }
             else if (target.Discriminator == nameof(GroupConversation))
             {
-                var usersJoined = await _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id).ToListAsync();
-
+                var usersJoined = await _dbContext
+                    .UserGroupRelations
+                    .Include(t => t.User)
+                    .Where(t => t.GroupId == target.Id)
+                    .ToListAsync();
+                var usersInGroup = usersJoined.Select(t => t.User).ToList();
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
                     async Task sendNotification()
                     {
-                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted);
+                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
                     };
                     taskList.Add(sendNotification());
                 }
