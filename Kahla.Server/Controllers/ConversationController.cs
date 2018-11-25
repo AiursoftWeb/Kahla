@@ -100,7 +100,10 @@ namespace Kahla.Server.Controllers
             else if (target.Discriminator == nameof(GroupConversation))
             {
                 var usersJoined = _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id);
-                await usersJoined.ForEachAsync(async t => await _pusher.NewMessageEvent(t.UserId, target.Id, model.Content, user, target.AESKey));
+                await usersJoined.ForEachAsync(async t =>
+                {
+                    await _pusher.NewMessageEvent(t.UserId, target.Id, model.Content, user, target.AESKey, t.Muted);
+                });
             }
             //Return success message.
             return this.Protocal(ErrorType.Success, "Your message has been sent.");
