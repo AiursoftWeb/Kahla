@@ -1,6 +1,6 @@
 # Aiursoft Kahla Backend
 
-[![Build Status](https://travis-ci.org/AiursoftWeb/Kahla.svg?branch=master)](https://travis-ci.org/AiursoftWeb/Kahla)
+[![Build status](https://aiursoft.visualstudio.com/Kahla/_apis/build/status/Kahla%20CI)](https://aiursoft.visualstudio.com/Kahla/_build/latest?definitionId=6)
 
 Kahla is a cross-platform business messaging app. This is the server side code repo for Kahla.
 

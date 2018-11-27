@@ -6,10 +6,11 @@ using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
 using Kahla.Server.Data;
-using Aiursoft.Pylon.Models;
+using Kahla.Server.Events;
 using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kahla.Server.Services
 {
@@ -17,13 +18,13 @@ namespace Kahla.Server.Services
     {
         private readonly KahlaDbContext _dbContext;
         private readonly PushMessageService _pushMessageService;
-        private readonly AppsContainer _appsContainer;
+        private readonly Aiursoft.Pylon.Models.AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
 
         public PushKahlaMessageService(
             KahlaDbContext dbContext,
             PushMessageService pushMessageService,
-            AppsContainer appsContainer,
+            Aiursoft.Pylon.Models.AppsContainer appsContainer,
             ChannelService channelService)
         {
             _dbContext = dbContext;
@@ -47,18 +48,27 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey)
+        public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false, List<KahlaUser> usersTable = null)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(recieverId);
-            var channel = user.CurrentChannel;
+            KahlaUser targetUser = null;
+            if(usersTable == null)
+            {
+                targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
+            }
+            else
+            {
+                targetUser = usersTable.SingleOrDefault(t => t.Id == recieverId);
+            }
+            var channel = targetUser.CurrentChannel;
             var nevent = new NewMessageEvent
             {
                 Type = EventType.NewMessage,
                 ConversationId = conversationId,
                 Sender = sender,
                 Content = content,
-                AESKey = aesKey
+                AESKey = aesKey,
+                Muted = muted
             };
             if (channel != -1)
                 await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);

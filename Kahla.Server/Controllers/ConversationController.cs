@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Kahla.Server.Controllers
 {
     [APIExpHandler]
     [APIModelStateChecker]
+    [AiurForceAuth(directlyReject: true)]
     public class ConversationController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -33,7 +35,6 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> GetMessage([Required]int id, int take = 15)
         {
             var user = await GetKahlaUser();
@@ -73,7 +74,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -100,14 +100,27 @@ namespace Kahla.Server.Controllers
             }
             else if (target.Discriminator == nameof(GroupConversation))
             {
-                var usersJoined = _dbContext.UserGroupRelations.Where(t => t.GroupId == target.Id);
-                await usersJoined.ForEachAsync(async t => await _pusher.NewMessageEvent(t.UserId, target.Id, model.Content, user, target.AESKey));
+                var usersJoined = await _dbContext
+                    .UserGroupRelations
+                    .Include(t => t.User)
+                    .Where(t => t.GroupId == target.Id)
+                    .ToListAsync();
+                var usersInGroup = usersJoined.Select(t => t.User).ToList();
+                var taskList = new List<Task>();
+                foreach (var relation in usersJoined)
+                {
+                    async Task sendNotification()
+                    {
+                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
+                    };
+                    taskList.Add(sendNotification());
+                }
+                await Task.WhenAll(taskList);
             }
             //Return success message.
             return this.Protocal(ErrorType.Success, "Your message has been sent.");
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
