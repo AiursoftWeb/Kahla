@@ -16,7 +16,7 @@ namespace Kahla.Server.Models
         [ForeignKey(nameof(ConversationId))]
         public Conversation Conversation { get; set; }
         public string SenderId { get; set; }
-        //[JsonIgnore]
+        [JsonIgnore]
         [ForeignKey(nameof(SenderId))]
         public KahlaUser Sender { get; set; }
 
