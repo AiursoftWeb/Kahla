@@ -46,7 +46,6 @@ namespace Kahla.Server.Controllers
                 .Messages
                 .AsNoTracking()
                 .Where(t => t.ConversationId == target.Id)
-                .Include(t => t.Sender)
                 .OrderByDescending(t => t.SendTime)
                 .Take(take)
                 .OrderBy(t => t.SendTime)
