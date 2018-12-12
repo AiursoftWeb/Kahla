@@ -35,6 +35,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly PushKahlaMessageService _pusher;
         private readonly ChannelService _channelService;
+        private readonly VersionChecker _version;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -47,7 +48,8 @@ namespace Kahla.Server.Controllers
             UserService userService,
             AppsContainer appsContainer,
             PushKahlaMessageService pusher,
-            ChannelService channelService)
+            ChannelService channelService,
+            VersionChecker version)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -60,6 +62,7 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _pusher = pusher;
             _channelService = channelService;
+            _version = version;
         }
 
         public IActionResult Index()
@@ -74,12 +77,13 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        public IActionResult Version()
+        public async Task<IActionResult> Version()
         {
+            var latest = await _version.CheckKahla();
             return this.AiurJson(new VersionViewModel
             {
-                LatestVersion = _configuration["AppVersion"],
-                OldestSupportedVersion = _configuration["AppVersion"],
+                LatestVersion = latest,
+                OldestSupportedVersion = latest,
                 Message = "Successfully get the lastest version number for Kahla App.",
                 DownloadAddress = _serviceLocation.KahlaHome
             });
