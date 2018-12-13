@@ -52,6 +52,7 @@ namespace Kahla.Server
             services.AddScoped<SecretService>();
             services.AddScoped<PushMessageService>();
             services.AddScoped<PushKahlaMessageService>();
+            services.AddScoped<VersionChecker>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
