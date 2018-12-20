@@ -14,6 +14,7 @@ namespace Kahla.Server.Data
     {
         public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
         {
+
         }
 
         public DbSet<Message> Messages { get; set; }
@@ -23,6 +24,7 @@ namespace Kahla.Server.Data
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<FileRecord> FileRecords { get; set; }
+        public DbSet<Report> Reports { get; set; }
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {

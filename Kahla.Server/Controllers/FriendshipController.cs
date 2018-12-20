@@ -203,6 +203,33 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(model);
         }
 
+        public async Task<IActionResult> ReportHim(string targetId)
+        {
+            var cuser = await GetKahlaUser();
+            var user = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == targetId);
+            if (user == null)
+            {
+                return this.Protocal(ErrorType.NotFound, $"Could not find target user with id `{targetId}`!");
+            }
+            if (cuser.Id == user.Id)
+            {
+                return this.Protocal(ErrorType.HasDoneAlready, $"You can not report yourself!");
+            }
+            var exists = await _dbContext.Reports.AnyAsync(t => t.TriggerId == cuser.Id && t.TargetId == user.Id);
+            if (exists)
+            {
+                return this.Protocal(ErrorType.HasDoneAlready, "You have already reported the target user!");
+            }
+            // All chedk passed. Report him now!
+            _dbContext.Reports.Add(new Report
+            {
+                TargetId = user.Id,
+                TriggerId = user.Id
+            });
+            await _dbContext.SaveChangesAsync();
+            return this.Protocal(ErrorType.Success, "Successfully reported target user!");
+        }
+
         private async Task<KahlaUser> GetKahlaUser()
         {
             if (!User.Identity.IsAuthenticated)
