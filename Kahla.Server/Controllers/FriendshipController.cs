@@ -203,13 +203,13 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(model);
         }
 
-        public async Task<IActionResult> ReportHim(string targetId)
+        public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
         {
             var cuser = await GetKahlaUser();
-            var targetUser = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == targetId);
+            var targetUser = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
             if (targetUser == null)
             {
-                return this.Protocal(ErrorType.NotFound, $"Could not find target user with id `{targetId}`!");
+                return this.Protocal(ErrorType.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
             }
             if (cuser.Id == targetUser.Id)
             {
@@ -224,7 +224,8 @@ namespace Kahla.Server.Controllers
             _dbContext.Reports.Add(new Report
             {
                 TargetId = targetUser.Id,
-                TriggerId = cuser.Id
+                TriggerId = cuser.Id,
+                Reason = model.Reason
             });
             await _dbContext.SaveChangesAsync();
             return this.Protocal(ErrorType.Success, "Successfully reported target user!");
