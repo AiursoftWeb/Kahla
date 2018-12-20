@@ -203,6 +203,7 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(model);
         }
 
+        [HttpPost]
         public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
         {
             var cuser = await GetKahlaUser();
