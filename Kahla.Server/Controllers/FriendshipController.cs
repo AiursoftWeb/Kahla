@@ -215,7 +215,9 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You can not report yourself!");
             }
-            var exists = await _dbContext.Reports.AnyAsync(t => t.TriggerId == cuser.Id && t.TargetId == targetUser.Id);
+            var exists = await _dbContext
+                .Reports
+                .AnyAsync((t) => t.TriggerId == cuser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
             if (exists)
             {
                 return this.Protocal(ErrorType.HasDoneAlready, "You have already reported the target user!");
