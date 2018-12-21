@@ -175,6 +175,13 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        //public async Task<IActionResult> DiscoverFriends()
+        //{
+        //    var user = await GetKahlaUser();
+        //    var allRelations = _dbContext
+        //        .Users
+        //}
+
         public async Task<IActionResult> UserDetail([Required]string id)
         {
             var user = await GetKahlaUser();
