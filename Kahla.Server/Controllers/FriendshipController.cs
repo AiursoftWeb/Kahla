@@ -175,19 +175,27 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        public async Task<IActionResult> DiscoverFriends()
+        public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             var cuser = await GetKahlaUser();
             var myfriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
             var calculated = new List<KeyValuePair<int, KahlaUser>>();
             foreach (var user in await _dbContext.Users.ToListAsync())
             {
-                if (await _dbContext.AreFriends(user.Id, cuser.Id))
+                if (await _dbContext.AreFriends(user.Id, cuser.Id) || user.Id == cuser.Id)
                 {
                     continue;
                 }
                 var hisfriends = await _dbContext.MyPersonalFriendsId(user.Id);
-                calculated.Add(new KeyValuePair<int, KahlaUser>(myfriends.Intersect(hisfriends).Count(), user));
+                var commonFriends = myfriends.Intersect(hisfriends).Count();
+                if (commonFriends > 0)
+                {
+                    calculated.Add(new KeyValuePair<int, KahlaUser>(commonFriends, user));
+                }
+                if (calculated.Count >= take)
+                {
+                    break;
+                }
             }
             var ordered = calculated.OrderByDescending(t => t.Key);
             return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
