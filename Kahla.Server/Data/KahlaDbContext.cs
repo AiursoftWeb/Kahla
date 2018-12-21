@@ -26,6 +26,16 @@ namespace Kahla.Server.Data
         public DbSet<FileRecord> FileRecords { get; set; }
         public DbSet<Report> Reports { get; set; }
 
+        public async Task<List<string>> MyPersonalFriendsId(string userId)
+        {
+            var personalRelations = await this.PrivateConversations
+                .AsNoTracking()
+                .Where(t => t.RequesterId == userId || t.TargetId == userId)
+                .Select(t => userId == t.RequesterId ? t.TargetId : t.RequesterId)
+                .ToListAsync();
+            return personalRelations;
+        }
+
         public async Task<List<Conversation>> MyConversations(string userId)
         {
             var personalRelations = await this.PrivateConversations

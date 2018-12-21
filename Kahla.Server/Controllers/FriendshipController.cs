@@ -175,12 +175,27 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        //public async Task<IActionResult> DiscoverFriends()
-        //{
-        //    var user = await GetKahlaUser();
-        //    var allRelations = _dbContext
-        //        .Users
-        //}
+        public async Task<IActionResult> DiscoverFriends()
+        {
+            var cuser = await GetKahlaUser();
+            var myfriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
+            var calculated = new Dictionary<int, KahlaUser>();
+            foreach (var user in await _dbContext.Users.ToListAsync())
+            {
+                if (await _dbContext.AreFriends(user.Id, cuser.Id))
+                {
+                    continue;
+                }
+                var hisfriends = await _dbContext.MyPersonalFriendsId(user.Id);
+                calculated.Add(myfriends.Intersect(hisfriends).Count(), user);
+            }
+            var ordered = calculated.OrderByDescending(t => t.Key);
+            return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get your suggested friends."
+            });
+        }
 
         public async Task<IActionResult> UserDetail([Required]string id)
         {
