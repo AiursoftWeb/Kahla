@@ -179,7 +179,7 @@ namespace Kahla.Server.Controllers
         {
             var cuser = await GetKahlaUser();
             var myfriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
-            var calculated = new Dictionary<int, KahlaUser>();
+            var calculated = new List<KeyValuePair<int, KahlaUser>>();
             foreach (var user in await _dbContext.Users.ToListAsync())
             {
                 if (await _dbContext.AreFriends(user.Id, cuser.Id))
@@ -187,7 +187,7 @@ namespace Kahla.Server.Controllers
                     continue;
                 }
                 var hisfriends = await _dbContext.MyPersonalFriendsId(user.Id);
-                calculated.Add(myfriends.Intersect(hisfriends).Count(), user);
+                calculated.Add(new KeyValuePair<int, KahlaUser>(myfriends.Intersect(hisfriends).Count(), user));
             }
             var ordered = calculated.OrderByDescending(t => t.Key);
             return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
