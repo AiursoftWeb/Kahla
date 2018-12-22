@@ -68,7 +68,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
             }
-            var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id, model.JoinPassword?.Trim());
+            var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
             {
                 UserId = user.Id,
@@ -98,7 +98,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
             }
-            if (group.HasPassword && group.JoinPassword.Trim() != joinPassword?.Trim())
+            if (group.HasPassword && group.JoinPassword != joinPassword?.Trim())
             {
                 return this.Protocal(ErrorType.WrongKey, "The group requires password and your password was not correct!");
             }
