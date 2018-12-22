@@ -116,7 +116,7 @@ namespace Kahla.Server.Data
                 GroupImageKey = Values.DefaultGroupImageId,
                 AESKey = Guid.NewGuid().ToString("N"),
                 OwnerId = creatorId,
-                JoinPassword = joinPassword
+                JoinPassword = joinPassword ?? string.Empty
             };
             this.GroupConversations.Add(newGroup);
             await this.SaveChangesAsync();
