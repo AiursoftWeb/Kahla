@@ -98,7 +98,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
             }
-            if (group.HasPassword && group.JoinPassword.Trim() != joinPassword.Trim())
+            if (group.HasPassword && group.JoinPassword.Trim() != joinPassword?.Trim())
             {
                 return this.Protocal(ErrorType.WrongKey, "The group requires password and your password was not correct!");
             }
