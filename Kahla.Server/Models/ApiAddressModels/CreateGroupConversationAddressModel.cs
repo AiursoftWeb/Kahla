@@ -18,6 +18,7 @@ namespace Kahla.Server.Models.ApiAddressModels
 
         [MaxLength(100, ErrorMessage = "Your password was too long.")]
         [DataType(DataType.Password)]
+        [NoSpace]
         public string JoinPassword { get; set; }
     }
 }
