@@ -108,14 +108,15 @@ namespace Kahla.Server.Data
             if (belation != null) this.PrivateConversations.Remove(belation);
         }
 
-        public async Task<GroupConversation> CreateGroup(string groupName, string creatorId)
+        public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
         {
             var newGroup = new GroupConversation
             {
                 GroupName = groupName,
                 GroupImageKey = Values.DefaultGroupImageId,
                 AESKey = Guid.NewGuid().ToString("N"),
-                OwnerId = creatorId
+                OwnerId = creatorId,
+                JoinPassword = joinPassword
             };
             this.GroupConversations.Add(newGroup);
             await this.SaveChangesAsync();

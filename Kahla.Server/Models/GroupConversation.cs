@@ -13,6 +13,13 @@ namespace Kahla.Server.Models
         public List<UserGroupRelation> Users { get; set; }
         public int GroupImageKey { get; set; }
         public string GroupName { get; set; }
+        [JsonIgnore]
+        public string JoinPassword { get; set; }
+
+        [JsonProperty]
+        [NotMapped]
+        public bool HasPassword => !string.IsNullOrEmpty(this.JoinPassword);
+
         public string OwnerId { get; set; }
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }

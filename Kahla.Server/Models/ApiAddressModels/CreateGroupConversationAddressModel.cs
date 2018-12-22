@@ -15,5 +15,9 @@ namespace Kahla.Server.Models.ApiAddressModels
         [NoSpace]
         [Display(Name ="new group's name")]
         public string GroupName { get; set; }
+
+        [MaxLength(100, ErrorMessage = "Your password was too long.")]
+        [DataType(DataType.Password)]
+        public string JoinPassword { get; set; }
     }
 }
