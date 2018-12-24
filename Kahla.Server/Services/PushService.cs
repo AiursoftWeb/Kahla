@@ -18,13 +18,13 @@ namespace Kahla.Server.Services
     {
         private readonly KahlaDbContext _dbContext;
         private readonly PushMessageService _pushMessageService;
-        private readonly Aiursoft.Pylon.Models.AppsContainer _appsContainer;
+        private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
 
         public PushKahlaMessageService(
             KahlaDbContext dbContext,
             PushMessageService pushMessageService,
-            Aiursoft.Pylon.Models.AppsContainer appsContainer,
+            AppsContainer appsContainer,
             ChannelService channelService)
         {
             _dbContext = dbContext;

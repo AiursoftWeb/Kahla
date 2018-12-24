@@ -14,6 +14,7 @@ namespace Kahla.Server.Data
     {
         public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
         {
+
         }
 
         public DbSet<Message> Messages { get; set; }
@@ -23,6 +24,17 @@ namespace Kahla.Server.Data
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<FileRecord> FileRecords { get; set; }
+        public DbSet<Report> Reports { get; set; }
+
+        public async Task<List<string>> MyPersonalFriendsId(string userId)
+        {
+            var personalRelations = await this.PrivateConversations
+                .AsNoTracking()
+                .Where(t => t.RequesterId == userId || t.TargetId == userId)
+                .Select(t => userId == t.RequesterId ? t.TargetId : t.RequesterId)
+                .ToListAsync();
+            return personalRelations;
+        }
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {
@@ -96,14 +108,15 @@ namespace Kahla.Server.Data
             if (belation != null) this.PrivateConversations.Remove(belation);
         }
 
-        public async Task<GroupConversation> CreateGroup(string groupName, string creatorId)
+        public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
         {
             var newGroup = new GroupConversation
             {
                 GroupName = groupName,
                 GroupImageKey = Values.DefaultGroupImageId,
                 AESKey = Guid.NewGuid().ToString("N"),
-                OwnerId = creatorId
+                OwnerId = creatorId,
+                JoinPassword = joinPassword ?? string.Empty
             };
             this.GroupConversations.Add(newGroup);
             await this.SaveChangesAsync();

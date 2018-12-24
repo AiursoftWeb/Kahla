@@ -175,6 +175,36 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        public async Task<IActionResult> DiscoverFriends(int take = 15)
+        {
+            var cuser = await GetKahlaUser();
+            var myfriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
+            var calculated = new List<KeyValuePair<int, KahlaUser>>();
+            foreach (var user in await _dbContext.Users.ToListAsync())
+            {
+                if (await _dbContext.AreFriends(user.Id, cuser.Id) || user.Id == cuser.Id)
+                {
+                    continue;
+                }
+                var hisfriends = await _dbContext.MyPersonalFriendsId(user.Id);
+                var commonFriends = myfriends.Intersect(hisfriends).Count();
+                if (commonFriends > 0)
+                {
+                    calculated.Add(new KeyValuePair<int, KahlaUser>(commonFriends, user));
+                }
+                if (calculated.Count >= take)
+                {
+                    break;
+                }
+            }
+            var ordered = calculated.OrderByDescending(t => t.Key);
+            return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get your suggested friends."
+            });
+        }
+
         public async Task<IActionResult> UserDetail([Required]string id)
         {
             var user = await GetKahlaUser();
@@ -201,6 +231,37 @@ namespace Kahla.Server.Controllers
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return this.AiurJson(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
+        {
+            var cuser = await GetKahlaUser();
+            var targetUser = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
+            if (targetUser == null)
+            {
+                return this.Protocal(ErrorType.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
+            }
+            if (cuser.Id == targetUser.Id)
+            {
+                return this.Protocal(ErrorType.HasDoneAlready, $"You can not report yourself!");
+            }
+            var exists = await _dbContext
+                .Reports
+                .AnyAsync((t) => t.TriggerId == cuser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
+            if (exists)
+            {
+                return this.Protocal(ErrorType.HasDoneAlready, "You have already reported the target user!");
+            }
+            // All chedk passed. Report him now!
+            _dbContext.Reports.Add(new Report
+            {
+                TargetId = targetUser.Id,
+                TriggerId = cuser.Id,
+                Reason = model.Reason
+            });
+            await _dbContext.SaveChangesAsync();
+            return this.Protocal(ErrorType.Success, "Successfully reported target user!");
         }
 
         private async Task<KahlaUser> GetKahlaUser()

@@ -32,6 +32,14 @@ namespace Kahla.Server.Models
         public IEnumerable<Message> MessagesSent { get; set; }
 
         [JsonIgnore]
+        [InverseProperty(nameof(Report.Trigger))]
+        public IEnumerable<Report> Reported { get; set; }
+
+        [JsonIgnore]
+        [InverseProperty(nameof(Report.Target))]
+        public IEnumerable<Report> ByReported { get; set; }
+
+        [JsonIgnore]
         public int CurrentChannel { get; set; } = -1;
         [JsonIgnore]
         public string ConnectKey { get; set; }

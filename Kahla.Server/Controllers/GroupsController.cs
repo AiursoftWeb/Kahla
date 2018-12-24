@@ -68,7 +68,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
             }
-            var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id);
+            var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
             {
                 UserId = user.Id,
@@ -85,7 +85,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> JoinGroup([Required]string groupName)
+        public async Task<IActionResult> JoinGroup([Required]string groupName, string joinPassword)
         {
             var user = await GetKahlaUser();
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
@@ -97,6 +97,10 @@ namespace Kahla.Server.Controllers
             if (joined)
             {
                 return this.Protocal(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
+            }
+            if (group.HasPassword && group.JoinPassword != joinPassword?.Trim())
+            {
+                return this.Protocal(ErrorType.WrongKey, "The group requires password and your password was not correct!");
             }
             // All checked and able to join him.
             // Warning: Currently we do not have invitation system for invitation control is too complicated.

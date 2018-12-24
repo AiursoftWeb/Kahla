@@ -4,14 +4,16 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181220121230_AddReport")]
+    partial class AddReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,8 +163,6 @@ namespace Kahla.Server.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Reason");
-
-                    b.Property<int>("Status");
 
                     b.Property<string>("TargetId");
 
@@ -343,8 +343,6 @@ namespace Kahla.Server.Migrations
 
                     b.Property<string>("GroupName");
 
-                    b.Property<string>("JoinPassword");
-
                     b.Property<string>("OwnerId");
 
                     b.HasIndex("OwnerId");
@@ -398,11 +396,11 @@ namespace Kahla.Server.Migrations
             modelBuilder.Entity("Kahla.Server.Models.Report", b =>
                 {
                     b.HasOne("Kahla.Server.Models.KahlaUser", "Target")
-                        .WithMany("ByReported")
+                        .WithMany()
                         .HasForeignKey("TargetId");
 
                     b.HasOne("Kahla.Server.Models.KahlaUser", "Trigger")
-                        .WithMany("Reported")
+                        .WithMany()
                         .HasForeignKey("TriggerId");
                 });
 

@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
-    public class SendMessageAddressModel
+    public class ReportHimAddressModel
     {
         [Required]
-        public int Id { get; set; }
+        public string TargetUserId { get; set; }
+
         [Required]
-        [MaxLength(1000)]
-        public string Content { get; set; }
+        [MinLength(5)]
+        [MaxLength(200)]
+        public string Reason { get; set; }
     }
 }
