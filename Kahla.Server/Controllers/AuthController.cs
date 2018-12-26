@@ -109,6 +109,7 @@ namespace Kahla.Server.Controllers
             if (!await _dbContext.AreFriends(user.Id, user.Id))
             {
                 _dbContext.AddFriend(user.Id, user.Id);
+                await _dbContext.SaveChangesAsync();
             }
             return this.AiurJson(new AiurProtocal()
             {
