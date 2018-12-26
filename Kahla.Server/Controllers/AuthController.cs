@@ -7,6 +7,7 @@ using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
+using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
@@ -36,6 +37,7 @@ namespace Kahla.Server.Controllers
         private readonly PushKahlaMessageService _pusher;
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
+        private readonly KahlaDbContext _dbContext;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -49,7 +51,8 @@ namespace Kahla.Server.Controllers
             AppsContainer appsContainer,
             PushKahlaMessageService pusher,
             ChannelService channelService,
-            VersionChecker version)
+            VersionChecker version,
+            KahlaDbContext dbContext)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -63,6 +66,7 @@ namespace Kahla.Server.Controllers
             _pusher = pusher;
             _channelService = channelService;
             _version = version;
+            _dbContext = dbContext;
         }
 
         public IActionResult Index()
@@ -102,6 +106,10 @@ namespace Kahla.Server.Controllers
                 code = pack.Value,
                 state = string.Empty
             }, isPersistent: true);
+            if (!await _dbContext.AreFriends(user.Id, user.Id))
+            {
+                _dbContext.AddFriend(user.Id, user.Id);
+            }
             return this.AiurJson(new AiurProtocal()
             {
                 Code = ErrorType.Success,
