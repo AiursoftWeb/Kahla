@@ -89,7 +89,7 @@ namespace Kahla.Server.Controllers
                 LatestVersion = latest,
                 OldestSupportedVersion = latest,
                 Message = "Successfully get the lastest version number for Kahla App.",
-                DownloadAddress = _serviceLocation.KahlaHome
+                DownloadAddress = "https://www.kahla.app"
             });
         }
 
