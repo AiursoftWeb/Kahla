@@ -163,13 +163,9 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
         }
 
-        private async Task<KahlaUser> GetKahlaUser()
+        private Task<KahlaUser> GetKahlaUser()
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return null;
-            }
-            return await _userManager.FindByNameAsync(User.Identity.Name);
+            return _userManager.GetUserAsync(User);
         }
     }
 }
