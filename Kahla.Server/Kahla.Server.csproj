@@ -19,8 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Pylon" Version="0.9.8" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
+    <PackageReference Include="Aiursoft.Pylon" Version="0.10.1" />
   </ItemGroup>
 
   <ItemGroup>

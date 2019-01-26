@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -89,7 +90,7 @@ namespace Kahla.Server.Controllers
                 LatestVersion = latest,
                 OldestSupportedVersion = latest,
                 Message = "Successfully get the lastest version number for Kahla App.",
-                DownloadAddress = _serviceLocation.KahlaHome
+                DownloadAddress = "https://www.kahla.app"
             });
         }
 
@@ -141,6 +142,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
+            user = await _authService.OnlyUpdate(user);
             return this.AiurJson(new AiurValue<KahlaUser>(user)
             {
                 Code = ErrorType.Success,
@@ -170,6 +172,15 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, "Successfully changed your password!");
         }
 
+        [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> SendEmail([EmailAddress][Required]string email)
+        {
+            var user = await GetKahlaUser();
+            var token = await _appsContainer.AccessToken();
+            var result = await _userService.SendConfirmationEmailAsync(token, user.Id, email);
+            return Json(result);
+        }
 
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> InitPusher()
@@ -204,13 +215,9 @@ namespace Kahla.Server.Controllers
             return this.Protocal(ErrorType.Success, "Success.");
         }
 
-        private async Task<KahlaUser> GetKahlaUser()
+        private Task<KahlaUser> GetKahlaUser()
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return null;
-            }
-            return await _userManager.FindByNameAsync(User.Identity.Name);
+            return _userManager.GetUserAsync(User);
         }
     }
 }

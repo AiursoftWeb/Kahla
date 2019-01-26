@@ -24,25 +24,25 @@ namespace Kahla.Server
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-        public SameSiteMode Mode { get; }
+        private IConfiguration _configuration { get; }
+        private SameSiteMode _mode { get; }
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            Configuration = configuration;
-            Mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
+            _configuration = configuration;
+            _mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureLargeFileUploadable();
             services.AddDbContext<KahlaDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
+                options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
+            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = _mode);
 
             services.AddMvc();
             services.AddAiursoftAuth<KahlaUser>();
@@ -67,7 +67,7 @@ namespace Kahla.Server
                 app.UseEnforceHttps();
                 app.UseExceptionHandler("/Home/Error");
             }
-            app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
+            app.UseAiursoftAuthenticationFromConfiguration(_configuration, "Kahla");
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseAuthentication();
             app.UseLanguageSwitcher();
