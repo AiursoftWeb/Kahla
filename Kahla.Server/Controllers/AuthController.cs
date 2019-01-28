@@ -158,6 +158,7 @@ namespace Kahla.Server.Controllers
             cuser.HeadImgFileKey = model.HeadImgKey;
             cuser.NickName = model.NickName;
             cuser.Bio = model.Bio;
+            cuser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
             await _userManager.UpdateAsync(cuser);
             return this.Protocal(ErrorType.Success, "Successfully set your personal info.");

@@ -15,5 +15,7 @@ namespace Kahla.Server.Models.ApiAddressModels
         public virtual string Bio { get; set; }
         [Required]
         public virtual int HeadImgKey { get; set; }
+        [Required]
+        public bool HideMyEmail { get; set; } = false;
     }
 }
