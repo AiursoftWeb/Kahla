@@ -43,9 +43,8 @@ namespace Kahla.Server.Models
         public int CurrentChannel { get; set; } = -1;
         [JsonIgnore]
         public string ConnectKey { get; set; }
-        [JsonIgnore]
         public bool MakeEmailPublic { get; set; } = true;
-
+        public override string Email { get; set; }
         public bool ShouldSerializeEmail() => MakeEmailPublic;
     }
 }
