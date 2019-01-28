@@ -52,6 +52,10 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
             var user = await GetKahlaUser();
+            if (!user.EmailConfirmed)
+            {
+                return this.Protocal(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
+            }
             model.GroupName = model.GroupName.Trim().ToLower();
             var exsists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
             if (exsists)
@@ -88,6 +92,10 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> JoinGroup([Required]string groupName, string joinPassword)
         {
             var user = await GetKahlaUser();
+            if (!user.EmailConfirmed)
+            {
+                return this.Protocal(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
+            }
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
