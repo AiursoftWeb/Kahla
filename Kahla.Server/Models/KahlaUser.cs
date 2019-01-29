@@ -36,7 +36,9 @@ namespace Kahla.Server.Models
         public string ConnectKey { get; set; }
         [JsonProperty]
         public bool MakeEmailPublic { get; set; } = true;
+        [NotMapped]
+        public bool IsMe { get; set; }
         public override string Email { get; set; }
-        public bool ShouldSerializeEmail() => MakeEmailPublic;
+        public bool ShouldSerializeEmail() => MakeEmailPublic || IsMe;
     }
 }
