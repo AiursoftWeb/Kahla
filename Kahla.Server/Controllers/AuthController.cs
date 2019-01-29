@@ -143,6 +143,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             user = await _authService.OnlyUpdate(user);
+            user.MakeEmailPublic = true;
             return this.AiurJson(new AiurValue<KahlaUser>(user)
             {
                 Code = ErrorType.Success,
