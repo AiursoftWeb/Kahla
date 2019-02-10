@@ -27,7 +27,6 @@ namespace Kahla.Server.Controllers
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly AuthService<KahlaUser> _authService;
         private readonly OAuthService _oauthService;
@@ -42,7 +41,6 @@ namespace Kahla.Server.Controllers
 
         public AuthController(
             ServiceLocation serviceLocation,
-            IConfiguration configuration,
             IHostingEnvironment env,
             AuthService<KahlaUser> authService,
             OAuthService oauthService,
@@ -56,7 +54,6 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext)
         {
             _serviceLocation = serviceLocation;
-            _configuration = configuration;
             _env = env;
             _authService = authService;
             _oauthService = oauthService;
@@ -143,6 +140,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             user = await _authService.OnlyUpdate(user);
+            user.IsMe = true;
             return this.AiurJson(new AiurValue<KahlaUser>(user)
             {
                 Code = ErrorType.Success,
@@ -158,6 +156,7 @@ namespace Kahla.Server.Controllers
             cuser.HeadImgFileKey = model.HeadImgKey;
             cuser.NickName = model.NickName;
             cuser.Bio = model.Bio;
+            cuser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
             await _userManager.UpdateAsync(cuser);
             return this.Protocal(ErrorType.Success, "Successfully set your personal info.");

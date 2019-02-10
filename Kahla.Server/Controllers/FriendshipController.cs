@@ -87,6 +87,8 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CreateRequest([Required]string id)
         {
             var user = await GetKahlaUser();
+            if (!user.EmailConfirmed)
+                return this.Protocal(ErrorType.Unauthorized, "You are not allowed to create friend requests without confirming your email!");
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
                 return this.Protocal(ErrorType.NotFound, "We can not find your target user!");
