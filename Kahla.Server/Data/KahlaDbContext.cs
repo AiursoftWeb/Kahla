@@ -7,14 +7,18 @@ using Microsoft.EntityFrameworkCore;
 using Kahla.Server.Models;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon;
+using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
-        public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
+        private readonly IConfiguration _configuration;
+        public KahlaDbContext(
+            DbContextOptions<KahlaDbContext> options,
+            IConfiguration configuration) : base(options)
         {
-
+            _configuration = configuration;
         }
 
         public DbSet<Message> Messages { get; set; }
@@ -113,7 +117,7 @@ namespace Kahla.Server.Data
             var newGroup = new GroupConversation
             {
                 GroupName = groupName,
-                GroupImageKey = Values.DefaultGroupImageId,
+                GroupImageKey = Convert.ToInt32(_configuration["GroupImageKey"]),
                 AESKey = Guid.NewGuid().ToString("N"),
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty
