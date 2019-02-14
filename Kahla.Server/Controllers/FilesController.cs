@@ -146,7 +146,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
             }
-            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken());
+            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken(), 1);
             return this.AiurJson(new FileDownloadAddressViewModel
             {
                 Code = ErrorType.Success,
