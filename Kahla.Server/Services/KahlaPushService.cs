@@ -16,29 +16,29 @@ using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Services
 {
-    public class PushKahlaMessageService
+    public class KahlaPushService
     {
         private readonly KahlaDbContext _dbContext;
-        private readonly PushMessageService _pushMessageService;
+        private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
         private readonly IConfiguration _configuration;
-        private readonly WebPushClient _webPushClient;
+        private readonly ThirdPartyPushService _thirdPartyPushService;
 
-        public PushKahlaMessageService(
+        public KahlaPushService(
             KahlaDbContext dbContext,
-            PushMessageService pushMessageService,
+            PushMessageService stargatePushService,
             AppsContainer appsContainer,
             ChannelService channelService,
             IConfiguration configuration,
-            WebPushClient webPushClient)
+            ThirdPartyPushService thirdPartyPushService)
         {
             _dbContext = dbContext;
-            _pushMessageService = pushMessageService;
+            _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
             _channelService = channelService;
             _configuration = configuration;
-            _webPushClient = webPushClient;
+            _thirdPartyPushService = thirdPartyPushService;
         }
 
         private string _CammalSer(object obj)
@@ -80,51 +80,25 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
             {
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
-
-                var devices = _dbContext.Devices
-                    .Where(m => m.UserID == recieverId)
-                    .ToList();
-
-                string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
-                string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
-
-                foreach (var device in devices)
-                {
-                    var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-                    var vapidDetails = new VapidDetails("mailto:" + targetUser.Email, vapidPublicKey, vapidPrivateKey);
-
-                    string payload = JsonConvert.SerializeObject(new
-                    {
-                        Title = sender.NickName,
-                        Message = content,
-                        AesKey = aesKey
-                    });
-                    try
-                    {
-                        _webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
-                    }
-                    catch (WebPushException exception)
-                    {
-                        Console.WriteLine(exception);
-                    }
-                }
-
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
             }
+            await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _CammalSer(nevent));
         }
 
         public async Task NewFriendRequestEvent(string recieverId, string requesterId)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(recieverId);
-            var channel = user.CurrentChannel;
+            var reciever = await _dbContext.Users.FindAsync(recieverId);
+            var requester = await _dbContext.Users.FindAsync(requesterId);
+            var channel = reciever.CurrentChannel;
             var nevent = new NewFriendRequest
             {
                 Type = EventType.NewFriendRequest,
                 RequesterId = requesterId
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(reciever.Id, requester.Email, _CammalSer(nevent));
         }
 
         public async Task WereDeletedEvent(string recieverId)
@@ -137,7 +111,7 @@ namespace Kahla.Server.Services
                 Type = EventType.WereDeletedEvent
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
         }
 
         public async Task FriendAcceptedEvent(string recieverId)
@@ -150,7 +124,7 @@ namespace Kahla.Server.Services
                 Type = EventType.FriendAcceptedEvent
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
         }
     }
 }
