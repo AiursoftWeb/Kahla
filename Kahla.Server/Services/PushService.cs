@@ -93,7 +93,8 @@ namespace Kahla.Server.Services
                     var webPushClient = new WebPushClient();
                     string payload = JsonConvert.SerializeObject(new {
                         title = sender.NickName,
-                        message = content});
+                        message = content,
+                        aesKey = aesKey});
                     try
                     {
                         webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
