@@ -19,6 +19,7 @@ using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToOSSServer;
 using Kahla.Server.Middlewares;
+using WebPush;
 
 namespace Kahla.Server
 {
@@ -47,12 +48,17 @@ namespace Kahla.Server
             services.AddMvc();
             services.AddAiursoftAuth<KahlaUser>();
 
-            services.AddScoped<ChannelService>();
             services.AddScoped<UserService>();
             services.AddScoped<SecretService>();
-            services.AddScoped<PushMessageService>();
-            services.AddScoped<PushKahlaMessageService>();
             services.AddScoped<VersionChecker>();
+            // Web Push Service
+            services.AddScoped<WebPushClient>();
+            services.AddScoped<ThirdPartyPushService>();
+            // Stargate Push Service
+            services.AddScoped<ChannelService>();
+            services.AddScoped<PushMessageService>();
+            // Final Kahla Push Service
+            services.AddScoped<KahlaPushService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

@@ -34,7 +34,7 @@ namespace Kahla.Server.Controllers
         private readonly SignInManager<KahlaUser> _signInManager;
         private readonly UserService _userService;
         private readonly AppsContainer _appsContainer;
-        private readonly PushKahlaMessageService _pusher;
+        private readonly KahlaPushService _pusher;
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
@@ -48,7 +48,7 @@ namespace Kahla.Server.Controllers
             SignInManager<KahlaUser> signInManager,
             UserService userService,
             AppsContainer appsContainer,
-            PushKahlaMessageService pusher,
+            KahlaPushService pusher,
             ChannelService channelService,
             VersionChecker version,
             KahlaDbContext dbContext)
@@ -217,6 +217,23 @@ namespace Kahla.Server.Controllers
         private Task<KahlaUser> GetKahlaUser()
         {
             return _userManager.GetUserAsync(User);
+        }
+
+        [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var device = new Device
+            {
+                UserID = user.Id,
+                PushAuth = model.PushAuth,
+                PushEndpoint = model.PushEndpoint,
+                PushP256DH = model.PushP256DH
+            };
+            _dbContext.Devices.Add(device);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocal(ErrorType.Success, "Success.");
         }
     }
 }

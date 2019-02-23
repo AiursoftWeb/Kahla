@@ -32,6 +32,9 @@ namespace Kahla.Server.Models
         [InverseProperty(nameof(Report.Target))]
         public IEnumerable<Report> ByReported { get; set; }
 
+        [InverseProperty(nameof(Device.KahlaUser))]
+        public IEnumerable<Device> HisDevices { get; set; }
+
         public int CurrentChannel { get; set; } = -1;
         public string ConnectKey { get; set; }
         [JsonProperty]

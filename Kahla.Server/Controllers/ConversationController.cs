@@ -23,12 +23,12 @@ namespace Kahla.Server.Controllers
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
-        private readonly PushKahlaMessageService _pusher;
+        private readonly KahlaPushService _pusher;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            PushKahlaMessageService pushService)
+            KahlaPushService pushService)
         {
             _userManager = userManager;
             _dbContext = dbContext;

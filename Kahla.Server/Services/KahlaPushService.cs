@@ -11,26 +11,34 @@ using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using WebPush;
+using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Services
 {
-    public class PushKahlaMessageService
+    public class KahlaPushService
     {
         private readonly KahlaDbContext _dbContext;
-        private readonly PushMessageService _pushMessageService;
+        private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
+        private readonly IConfiguration _configuration;
+        private readonly ThirdPartyPushService _thirdPartyPushService;
 
-        public PushKahlaMessageService(
+        public KahlaPushService(
             KahlaDbContext dbContext,
-            PushMessageService pushMessageService,
+            PushMessageService stargatePushService,
             AppsContainer appsContainer,
-            ChannelService channelService)
+            ChannelService channelService,
+            IConfiguration configuration,
+            ThirdPartyPushService thirdPartyPushService)
         {
             _dbContext = dbContext;
-            _pushMessageService = pushMessageService;
+            _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
             _channelService = channelService;
+            _configuration = configuration;
+            _thirdPartyPushService = thirdPartyPushService;
         }
 
         private string _CammalSer(object obj)
@@ -52,7 +60,7 @@ namespace Kahla.Server.Services
         {
             var token = await _appsContainer.AccessToken();
             KahlaUser targetUser = null;
-            if(usersTable == null)
+            if (usersTable == null)
             {
                 targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
             }
@@ -71,21 +79,26 @@ namespace Kahla.Server.Services
                 Muted = muted
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            }
+            await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _CammalSer(nevent));
         }
 
         public async Task NewFriendRequestEvent(string recieverId, string requesterId)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(recieverId);
-            var channel = user.CurrentChannel;
+            var reciever = await _dbContext.Users.FindAsync(recieverId);
+            var requester = await _dbContext.Users.FindAsync(requesterId);
+            var channel = reciever.CurrentChannel;
             var nevent = new NewFriendRequest
             {
                 Type = EventType.NewFriendRequest,
                 RequesterId = requesterId
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(reciever.Id, requester.Email, _CammalSer(nevent));
         }
 
         public async Task WereDeletedEvent(string recieverId)
@@ -98,7 +111,8 @@ namespace Kahla.Server.Services
                 Type = EventType.WereDeletedEvent
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
         }
 
         public async Task FriendAcceptedEvent(string recieverId)
@@ -111,7 +125,8 @@ namespace Kahla.Server.Services
                 Type = EventType.FriendAcceptedEvent
             };
             if (channel != -1)
-                await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
         }
     }
 }
