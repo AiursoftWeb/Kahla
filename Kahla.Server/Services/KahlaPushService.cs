@@ -112,6 +112,7 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
         }
 
         public async Task FriendAcceptedEvent(string recieverId)
@@ -125,6 +126,7 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
         }
     }
 }
