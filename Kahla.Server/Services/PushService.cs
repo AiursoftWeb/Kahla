@@ -23,19 +23,22 @@ namespace Kahla.Server.Services
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
         private readonly IConfiguration _configuration;
+        private readonly WebPushClient _webPushClient;
 
         public PushKahlaMessageService(
             KahlaDbContext dbContext,
             PushMessageService pushMessageService,
             AppsContainer appsContainer,
             ChannelService channelService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            WebPushClient webPushClient)
         {
             _dbContext = dbContext;
             _pushMessageService = pushMessageService;
             _appsContainer = appsContainer;
             _channelService = channelService;
             _configuration = configuration;
+            _webPushClient = webPushClient;
         }
 
         private string _CammalSer(object obj)
@@ -57,7 +60,7 @@ namespace Kahla.Server.Services
         {
             var token = await _appsContainer.AccessToken();
             KahlaUser targetUser = null;
-            if(usersTable == null)
+            if (usersTable == null)
             {
                 targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
             }
@@ -75,7 +78,8 @@ namespace Kahla.Server.Services
                 AESKey = aesKey,
                 Muted = muted
             };
-            if (channel != -1) {
+            if (channel != -1)
+            {
                 await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
 
                 var devices = _dbContext.Devices
@@ -90,14 +94,15 @@ namespace Kahla.Server.Services
                     var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
                     var vapidDetails = new VapidDetails("mailto:" + targetUser.Email, vapidPublicKey, vapidPrivateKey);
 
-                    var webPushClient = new WebPushClient();
-                    string payload = JsonConvert.SerializeObject(new {
-                        title = sender.NickName,
-                        message = content,
-                        aesKey = aesKey});
+                    string payload = JsonConvert.SerializeObject(new
+                    {
+                        Title = sender.NickName,
+                        Message = content,
+                        AesKey = aesKey
+                    });
                     try
                     {
-                        webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                        _webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
                     }
                     catch (WebPushException exception)
                     {
