@@ -221,7 +221,7 @@ namespace Kahla.Server.Controllers
 
         [HttpPost]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> AddDevice(Device model)
+        public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
             var device = new Device
