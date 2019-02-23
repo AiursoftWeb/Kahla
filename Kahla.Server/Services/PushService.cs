@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using WebPush;
+using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Services
 {
@@ -20,17 +22,20 @@ namespace Kahla.Server.Services
         private readonly PushMessageService _pushMessageService;
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
+        private readonly IConfiguration _configuration;
 
         public PushKahlaMessageService(
             KahlaDbContext dbContext,
             PushMessageService pushMessageService,
             AppsContainer appsContainer,
-            ChannelService channelService)
+            ChannelService channelService,
+            IConfiguration configuration)
         {
             _dbContext = dbContext;
             _pushMessageService = pushMessageService;
             _appsContainer = appsContainer;
             _channelService = channelService;
+            _configuration = configuration;
         }
 
         private string _CammalSer(object obj)
@@ -70,8 +75,36 @@ namespace Kahla.Server.Services
                 AESKey = aesKey,
                 Muted = muted
             };
-            if (channel != -1)
+            if (channel != -1) {
                 await _pushMessageService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+
+                var devices = _dbContext.Devices
+                    .Where(m => m.UserID == recieverId)
+                    .ToList();
+
+                string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
+                string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
+
+                foreach (var device in devices)
+                {
+                    var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                    var vapidDetails = new VapidDetails("mailto:" + targetUser.Email, vapidPublicKey, vapidPrivateKey);
+
+                    var webPushClient = new WebPushClient();
+                    string payload = JsonConvert.SerializeObject(new {
+                        title = sender.NickName,
+                        message = content});
+                    try
+                    {
+                        webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                    }
+                    catch (WebPushException exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
+                }
+
+            }
         }
 
         public async Task NewFriendRequestEvent(string recieverId, string requesterId)
