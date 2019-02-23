@@ -82,7 +82,10 @@ namespace Kahla.Server.Services
             {
                 await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
             }
-            await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _CammalSer(nevent));
+            if (!muted)
+            {
+                await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _CammalSer(nevent));
+            }
         }
 
         public async Task NewFriendRequestEvent(string recieverId, string requesterId)
