@@ -44,14 +44,7 @@ namespace Kahla.Server.Services
             {
                 var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
                 var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
-                try
-                {
-                    await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
-                }
-                catch (WebPushException exception)
-                {
-                    Console.WriteLine(exception);
-                }
+                await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
             }
         }
     }
