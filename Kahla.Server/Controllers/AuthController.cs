@@ -220,7 +220,17 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddDevice([FromForm] Device device) {
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> AddDevice(Device model)
+        {
+            var user = await GetKahlaUser();
+            var device = new Device
+            {
+                UserID = user.Id,
+                PushAuth = model.PushAuth,
+                PushEndpoint = model.PushEndpoint,
+                PushP256DH = model.PushP256DH
+            };
             _dbContext.Devices.Add(device);
             await _dbContext.SaveChangesAsync();
             return this.Protocal(ErrorType.Success, "Success.");
