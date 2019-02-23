@@ -29,6 +29,7 @@ namespace Kahla.Server.Data
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<FileRecord> FileRecords { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Device> Devices { get; set; }
 
         public async Task<List<string>> MyPersonalFriendsId(string userId)
         {

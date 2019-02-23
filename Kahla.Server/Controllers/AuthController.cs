@@ -218,5 +218,12 @@ namespace Kahla.Server.Controllers
         {
             return _userManager.GetUserAsync(User);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddDevice([FromForm] Device device) {
+            _dbContext.Devices.Add(device);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocal(ErrorType.Success, "Success.");
+        }
     }
 }
