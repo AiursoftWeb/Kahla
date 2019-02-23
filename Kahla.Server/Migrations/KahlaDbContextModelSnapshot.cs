@@ -41,7 +41,7 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Kahla.Server.Models.Device", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 

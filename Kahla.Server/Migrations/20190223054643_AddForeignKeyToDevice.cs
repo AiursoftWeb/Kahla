@@ -14,14 +14,6 @@ namespace Kahla.Server.Migrations
                 oldClrType: typeof(string),
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Devices",
-                nullable: false,
-                oldClrType: typeof(long))
-                .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
-                .OldAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Devices_UserID",
                 table: "Devices",
@@ -52,14 +44,6 @@ namespace Kahla.Server.Migrations
                 nullable: true,
                 oldClrType: typeof(string),
                 oldNullable: true);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "Id",
-                table: "Devices",
-                nullable: false,
-                oldClrType: typeof(int))
-                .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
-                .OldAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
         }
     }
 }
