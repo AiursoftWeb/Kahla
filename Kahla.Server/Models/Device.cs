@@ -4,7 +4,7 @@ namespace Kahla.Server.Models
 {
     public class Device
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string UserID { get; set; }
         [ForeignKey(nameof(UserID))]
         public KahlaUser KahlaUser { get; set; }
