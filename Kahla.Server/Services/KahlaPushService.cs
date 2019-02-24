@@ -76,7 +76,8 @@ namespace Kahla.Server.Services
                 Sender = sender,
                 Content = content,
                 AESKey = aesKey,
-                Muted = muted
+                Muted = muted,
+                SentByMe = targetUser.Id == sender.Id
             };
             if (channel != -1)
             {
