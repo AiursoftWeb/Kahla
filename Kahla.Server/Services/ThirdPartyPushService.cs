@@ -53,12 +53,16 @@ namespace Kahla.Server.Services
                 {
                     await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
                 }
-                catch (Exception e)
+                catch (WebPushException e)
                 {
-                    _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
+                    _logger.LogCritical(e, "A WebPush error occoured while calling WebPush API: " + e.Message);
                     // Try remove this device.
                     _dbContext.Devices.Remove(device);
                     await _dbContext.SaveChangesAsync();
+                }
+                catch(Exception e)
+                {
+                    _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
                 }
             }
         }
