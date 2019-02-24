@@ -286,5 +286,20 @@ namespace Kahla.Server.Controllers
                 Message = "Successfully updated your new device with id: " + device.Id
             });
         }
+
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> MyDevices()
+        {
+            var user = await GetKahlaUser();
+            var devices = await _dbContext
+                .Devices
+                .Where(t => t.UserID == user.Id)
+                .ToListAsync();
+            return this.AiurJson(new AiurCollection<Device>(devices)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get all your devices."
+            });
+        }
     }
 }
