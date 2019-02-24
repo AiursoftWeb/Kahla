@@ -259,5 +259,32 @@ namespace Kahla.Server.Controllers
                 Message = "Successfully created your new device with id: " + device.Id
             });
         }
+
+        [HttpPost]
+        [AiurForceAuth(directlyReject: true)]
+        public async Task<IActionResult> UpdateDevice(UpdateDeviceAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var device = await _dbContext
+                .Devices
+                .Where(t => t.UserID == user.Id)
+                .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
+            if (device == null)
+            {
+                return this.Protocal(ErrorType.NotFound, "Can not find a deivce with ID: " + model.DeviceId);
+            }
+            device.Name = model.Name;
+            device.PushAuth = model.PushAuth;
+            device.PushEndpoint = model.PushEndpoint;
+            device.PushP256DH = model.PushP256DH;
+            _dbContext.Devices.Update(device);
+            await _dbContext.SaveChangesAsync();
+            //ErrorType.Success, 
+            return this.AiurJson(new AiurValue<Device>(device)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully updated your new device with id: " + device.Id
+            });
+        }
     }
 }
