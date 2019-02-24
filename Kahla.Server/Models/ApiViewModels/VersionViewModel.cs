@@ -7,7 +7,7 @@ using Aiursoft.Pylon;
 
 namespace Kahla.Server.Models.ApiViewModels
 {
-    public class VersionViewModel : AiurProtocal
+    public class VersionViewModel : AiurProtocol
     {
         public string LatestVersion { get; set; }
         public string OldestSupportedVersion { get; set; }

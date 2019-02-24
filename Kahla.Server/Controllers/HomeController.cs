@@ -24,12 +24,12 @@ namespace Kahla.Server.Controllers
 
         public IActionResult Index()
         {
-            return this.Protocal(ErrorType.Success, "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki);
+            return this.Protocol(ErrorType.Success, "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki);
         }
 
         public IActionResult Error()
         {
-            return this.Protocal(ErrorType.UnknownError, "Kahla server was crashed! Please tell us!");
+            return this.Protocol(ErrorType.UnknownError, "Kahla server was crashed! Please tell us!");
         }
     }
 }

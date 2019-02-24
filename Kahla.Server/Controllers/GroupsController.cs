@@ -54,13 +54,13 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             if (!user.EmailConfirmed)
             {
-                return this.Protocal(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
+                return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
             model.GroupName = model.GroupName.Trim().ToLower();
             var exsists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
             if (exsists)
             {
-                return this.Protocal(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
+                return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
             }
             var limitedDate = DateTime.UtcNow - new TimeSpan(1, 0, 0, 0);
             var todayCreated = await _dbContext
@@ -70,7 +70,7 @@ namespace Kahla.Server.Controllers
                 .CountAsync();
             if (todayCreated > 4)
             {
-                return this.Protocal(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
+                return this.Protocol(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
             }
             var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
@@ -94,21 +94,21 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             if (!user.EmailConfirmed)
             {
-                return this.Protocal(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
+                return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
             var joined = _dbContext.UserGroupRelations.Any(t => t.UserId == user.Id && t.GroupId == group.Id);
             if (joined)
             {
-                return this.Protocal(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
+                return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
             }
             if (group.HasPassword && group.JoinPassword != joinPassword?.Trim())
             {
-                return this.Protocal(ErrorType.WrongKey, "The group requires password and your password was not correct!");
+                return this.Protocol(ErrorType.WrongKey, "The group requires password and your password was not correct!");
             }
             // All checked and able to join him.
             // Warning: Currently we do not have invitation system for invitation control is too complicated.
@@ -119,7 +119,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.UserGroupRelations.Add(newRelationship);
             await _dbContext.SaveChangesAsync();
-            return this.Protocal(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
+            return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
         }
 
         [HttpPost]
@@ -129,12 +129,12 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocal(ErrorType.HasDoneAlready, $"You did not joined the group: {groupName} at all!");
+                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: {groupName} at all!");
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
@@ -145,7 +145,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.GroupConversations.Remove(group);
                 await _dbContext.SaveChangesAsync();
             }
-            return this.Protocal(ErrorType.Success, $"You have successfully left the group: {groupName}!");
+            return this.Protocol(ErrorType.Success, $"You have successfully left the group: {groupName}!");
         }
 
         [HttpPost]
@@ -155,20 +155,20 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocal(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocal(ErrorType.Unauthorized, $"You did not joined the group: {groupName} at all!");
+                return this.Protocol(ErrorType.Unauthorized, $"You did not joined the group: {groupName} at all!");
             }
             if (joined.Muted == setMuted)
             {
-                return this.Protocal(ErrorType.HasDoneAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
+                return this.Protocol(ErrorType.HasDoneAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
             }
             joined.Muted = setMuted;
             await _dbContext.SaveChangesAsync();
-            return this.Protocal(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
+            return this.Protocol(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
         }
 
         private Task<KahlaUser> GetKahlaUser()

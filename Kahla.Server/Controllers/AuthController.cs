@@ -100,7 +100,7 @@ namespace Kahla.Server.Controllers
             var pack = await _oauthService.PasswordAuthAsync(Extends.CurrentAppId, model.Email, model.Password);
             if (pack.Code != ErrorType.Success)
             {
-                return this.Protocal(ErrorType.Unauthorized, pack.Message);
+                return this.Protocol(ErrorType.Unauthorized, pack.Message);
             }
             var user = await _authService.AuthApp(new AuthResultAddressModel
             {
@@ -112,7 +112,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.AddFriend(user.Id, user.Id);
                 await _dbContext.SaveChangesAsync();
             }
-            return this.AiurJson(new AiurProtocal()
+            return this.AiurJson(new AiurProtocol()
             {
                 Code = ErrorType.Success,
                 Message = "Auth success."
@@ -162,7 +162,7 @@ namespace Kahla.Server.Controllers
             cuser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
             await _userManager.UpdateAsync(cuser);
-            return this.Protocal(ErrorType.Success, "Successfully set your personal info.");
+            return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
 
         [HttpPost]
@@ -171,7 +171,7 @@ namespace Kahla.Server.Controllers
         {
             var cuser = await GetKahlaUser();
             var result = await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
-            return this.Protocal(ErrorType.Success, "Successfully changed your password!");
+            return this.Protocol(ErrorType.Success, "Successfully changed your password!");
         }
 
         [HttpPost]
@@ -221,11 +221,11 @@ namespace Kahla.Server.Controllers
             await _signInManager.SignOutAsync();
             if (device == null)
             {
-                return this.Protocal(ErrorType.RequireAttention, "Successfully logged you off, but we did not find deivce with id: " + model.DeviceId);
+                return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find deivce with id: " + model.DeviceId);
             }
             _dbContext.Devices.Remove(device);
             await _dbContext.SaveChangesAsync();
-            return this.Protocal(ErrorType.Success, "Success.");
+            return this.Protocol(ErrorType.Success, "Success.");
         }
 
         private Task<KahlaUser> GetKahlaUser()
@@ -240,7 +240,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             if (_dbContext.Devices.Any(t => t.PushP256DH == model.PushP256DH))
             {
-                return this.Protocal(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
+                return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
             }
             var device = new Device
             {
@@ -271,7 +271,7 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             if (device == null)
             {
-                return this.Protocal(ErrorType.NotFound, "Can not find a deivce with ID: " + model.DeviceId);
+                return this.Protocol(ErrorType.NotFound, "Can not find a deivce with ID: " + model.DeviceId);
             }
             device.Name = model.Name;
             device.PushAuth = model.PushAuth;

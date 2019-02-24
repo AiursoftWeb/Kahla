@@ -58,7 +58,7 @@ namespace Kahla.Server.Controllers
             var file = Request.Form.Files.First();
             if (!file.FileName.IsStaticImage())
             {
-                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
+                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaUserIconsBucketId"]), 365, SaveFileOptions.RandomName);
             return this.AiurJson(new UploadImageViewModel
@@ -82,7 +82,7 @@ namespace Kahla.Server.Controllers
             var file = Request.Form.Files.First();
             if (!file.FileName.IsImageMedia() && !file.FileName.IsVideo())
             {
-                return this.Protocal(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
+                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 30, SaveFileOptions.RandomName);
             return this.AiurJson(new UploadImageViewModel
@@ -102,12 +102,12 @@ namespace Kahla.Server.Controllers
             var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {
-                return this.Protocal(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
+                return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
             }
             var user = await GetKahlaUser();
             if (!await _dbContext.VerifyJoined(user.Id, conversation))
             {
-                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
+                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var file = Request.Form.Files.First();
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaSecretBucketId"]), 20, SaveFileOptions.RandomName);
@@ -139,12 +139,12 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.FileKey == model.FileKey);
             if (record == null || record.Conversation == null)
             {
-                return this.Protocal(ErrorType.NotFound, "Could not find your file!");
+                return this.Protocol(ErrorType.NotFound, "Could not find your file!");
             }
             var user = await GetKahlaUser();
             if (!await _dbContext.VerifyJoined(user.Id, record.Conversation))
             {
-                return this.Protocal(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
+                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
             }
             var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken(), 1);
             return this.AiurJson(new FileDownloadAddressViewModel

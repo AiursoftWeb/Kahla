@@ -40,7 +40,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
-                return this.Protocal(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             //Get Messages
             var allMessages = await _dbContext
                 .Messages
@@ -78,9 +78,9 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
-                return this.Protocal(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             if (model.Content.Trim().Length == 0)
-                return this.Protocal(ErrorType.InvalidInput, "Can not send empty message.");
+                return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             //Create message.
             var message = new Message
             {
@@ -117,7 +117,7 @@ namespace Kahla.Server.Controllers
                 await Task.WhenAll(taskList);
             }
             //Return success message.
-            return this.Protocal(ErrorType.Success, "Your message has been sent.");
+            return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
         public async Task<IActionResult> ConversationDetail([Required]int id)
@@ -127,7 +127,7 @@ namespace Kahla.Server.Controllers
             var target = conversations.SingleOrDefault(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocal(ErrorType.NotFound, "Could not find target conversation in your friends.");
+                return this.Protocol(ErrorType.NotFound, "Could not find target conversation in your friends.");
             }
             target.DisplayName = target.GetDisplayName(user.Id);
             target.DisplayImage = target.GetDisplayImage(user.Id);
