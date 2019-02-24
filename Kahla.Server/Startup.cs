@@ -37,6 +37,7 @@ namespace Kahla.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureLargeFileUpload();
+            services.AddApplicationInsightsTelemetry();
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
 
