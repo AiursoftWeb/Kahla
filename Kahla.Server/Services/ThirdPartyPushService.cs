@@ -43,7 +43,7 @@ namespace Kahla.Server.Services
 
             string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
-
+            // Push to all devices.
             foreach (var device in devices)
             {
                 var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
@@ -56,6 +56,9 @@ namespace Kahla.Server.Services
                 catch (Exception e)
                 {
                     _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
+                    // Try remove this device.
+                    _dbContext.Devices.Remove(device);
+                    await _dbContext.SaveChangesAsync();
                 }
             }
         }

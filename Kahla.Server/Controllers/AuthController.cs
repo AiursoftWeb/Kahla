@@ -15,9 +15,12 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -208,9 +211,20 @@ namespace Kahla.Server.Controllers
         }
 
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> LogOff()
+        public async Task<IActionResult> LogOff(LogOffAddressModel model)
         {
+            var user = await GetKahlaUser();
+            var device = await _dbContext
+                .Devices
+                .Where(t => t.UserID == user.Id)
+                .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             await _signInManager.SignOutAsync();
+            if (device == null)
+            {
+                return this.Protocal(ErrorType.RequireAttention, "Successfully logged you off, but we did not find deivce with id: " + model.DeviceId);
+            }
+            _dbContext.Devices.Remove(device);
+            await _dbContext.SaveChangesAsync();
             return this.Protocal(ErrorType.Success, "Success.");
         }
 
@@ -224,8 +238,13 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
+            if (_dbContext.Devices.Any(t => t.PushP256DH == model.PushP256DH))
+            {
+                return this.Protocal(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
+            }
             var device = new Device
             {
+                Name = model.Name,
                 UserID = user.Id,
                 PushAuth = model.PushAuth,
                 PushEndpoint = model.PushEndpoint,
@@ -233,7 +252,12 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Devices.Add(device);
             await _dbContext.SaveChangesAsync();
-            return this.Protocal(ErrorType.Success, "Success.");
+            //ErrorType.Success, 
+            return this.AiurJson(new AiurValue<long>(device.Id)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully created your new device with id: " + device.Id
+            });
         }
     }
 }
