@@ -1,4 +1,5 @@
 ﻿using Kahla.Server.Data;
+using Kahla.Server.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +44,8 @@ namespace Kahla.Server.Services
             {
                 throw new ArgumentNullException($"User with id :{recieverId} is null!");
             }
-            var devices = user.HisDevices;
+            var devices = user.HisDevices.ToList();
+            var devicesToRemove = new List<Device>();
 
             string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
@@ -61,16 +63,16 @@ namespace Kahla.Server.Services
                 {
                     _logger.LogCritical(e, "A WebPush error occoured while calling WebPush API: " + e.Message);
                     _telemetry.TrackException(e);
-                    // Try remove this device.
-                    _dbContext.Devices.Remove(device);
-                    await _dbContext.SaveChangesAsync();
+                    devicesToRemove.Add(device);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _telemetry.TrackException(e);
                     _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
                 }
             }
+            _dbContext.Devices.RemoveRange(devicesToRemove);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
