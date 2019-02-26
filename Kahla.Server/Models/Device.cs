@@ -8,6 +8,7 @@ namespace Kahla.Server.Models
     {
         public long Id { get; set; }
         public string Name { get; set; }
+        public string IPAddress { get; set; }
         public string UserID { get; set; }
         [JsonIgnore]
         [ForeignKey(nameof(UserID))]

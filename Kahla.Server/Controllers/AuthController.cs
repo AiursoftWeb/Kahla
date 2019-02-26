@@ -248,7 +248,8 @@ namespace Kahla.Server.Controllers
                 UserID = user.Id,
                 PushAuth = model.PushAuth,
                 PushEndpoint = model.PushEndpoint,
-                PushP256DH = model.PushP256DH
+                PushP256DH = model.PushP256DH,
+                IPAddress = HttpContext.Connection.RemoteIpAddress.ToString()
             };
             _dbContext.Devices.Add(device);
             await _dbContext.SaveChangesAsync();
