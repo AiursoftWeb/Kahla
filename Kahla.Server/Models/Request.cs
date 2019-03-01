@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -23,6 +20,6 @@ namespace Kahla.Server.Models
         public KahlaUser Target { get; set; }
 
         public DateTime CreateTime { get; set; } = DateTime.UtcNow;
-        public bool Completed { get; set; } = false;
+        public bool Completed { get; set; }
     }
 }

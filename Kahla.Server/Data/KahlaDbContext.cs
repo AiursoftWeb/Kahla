@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Kahla.Server.Models;
-using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon;
 using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Data
@@ -33,7 +31,7 @@ namespace Kahla.Server.Data
 
         public async Task<List<string>> MyPersonalFriendsId(string userId)
         {
-            var personalRelations = await this.PrivateConversations
+            var personalRelations = await PrivateConversations
                 .AsNoTracking()
                 .Where(t => t.RequesterId == userId || t.TargetId == userId)
                 .Select(t => userId == t.RequesterId ? t.TargetId : t.RequesterId)
@@ -43,14 +41,14 @@ namespace Kahla.Server.Data
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {
-            var personalRelations = await this.PrivateConversations
+            var personalRelations = await PrivateConversations
                 .AsNoTracking()
                 .Where(t => t.RequesterId == userId || t.TargetId == userId)
                 .Include(t => t.RequestUser)
                 .Include(t => t.TargetUser)
                 .Include(t => t.Messages)
                 .ToListAsync();
-            var groups = await this.UserGroupRelations
+            var groups = await UserGroupRelations
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
@@ -63,7 +61,7 @@ namespace Kahla.Server.Data
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
         {
-            return await this.UserGroupRelations
+            return await UserGroupRelations
                 .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
 
@@ -73,30 +71,33 @@ namespace Kahla.Server.Data
             {
                 return false;
             }
-            else if (target.Discriminator == nameof(GroupConversation))
+            switch (target.Discriminator)
             {
-                var relation = await this
-                    .UserGroupRelations
-                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
-                if (relation == null)
-                    return false;
-            }
-            else if (target.Discriminator == nameof(PrivateConversation))
-            {
-                var privateConversation = target as PrivateConversation;
-                if (privateConversation.RequesterId != userId && privateConversation.TargetId != userId)
-                    return false;
+                case nameof(GroupConversation):
+                {
+                    var relation = await UserGroupRelations
+                        .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
+                    if (relation == null)
+                        return false;
+                    break;
+                }
+                case nameof(PrivateConversation):
+                {
+                    var privateConversation = target as PrivateConversation;
+                    if (privateConversation?.RequesterId != userId && privateConversation?.TargetId != userId)
+                        return false;
+                    break;
+                }
             }
             return true;
         }
 
         public async Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
-            var relation = await this.PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            var belation = await this.PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
+            var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
+            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
             if (relation != null) return relation;
-            else if (belation != null) return belation;
-            else return null;
+            return belation;
         }
 
         public async Task<bool> AreFriends(string userId1, string userId2)
@@ -107,10 +108,10 @@ namespace Kahla.Server.Data
 
         public async Task RemoveFriend(string userId1, string userId2)
         {
-            var relation = await this.PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            var belation = await this.PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            if (relation != null) this.PrivateConversations.Remove(relation);
-            if (belation != null) this.PrivateConversations.Remove(belation);
+            var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
+            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
+            if (relation != null) PrivateConversations.Remove(relation);
+            if (belation != null) PrivateConversations.Remove(belation);
         }
 
         public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
@@ -123,14 +124,14 @@ namespace Kahla.Server.Data
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty
             };
-            this.GroupConversations.Add(newGroup);
-            await this.SaveChangesAsync();
+            GroupConversations.Add(newGroup);
+            await SaveChangesAsync();
             return newGroup;
         }
 
         public void AddFriend(string userId1, string userId2)
         {
-            this.PrivateConversations.Add(new PrivateConversation
+            PrivateConversations.Add(new PrivateConversation
             {
                 RequesterId = userId1,
                 TargetId = userId2,
