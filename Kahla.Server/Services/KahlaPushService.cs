@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Pylon.Exceptions;
+using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
@@ -11,8 +12,6 @@ using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using WebPush;
-using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Services
 {
@@ -22,7 +21,6 @@ namespace Kahla.Server.Services
         private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
-        private readonly IConfiguration _configuration;
         private readonly ThirdPartyPushService _thirdPartyPushService;
 
         public KahlaPushService(
@@ -30,18 +28,16 @@ namespace Kahla.Server.Services
             PushMessageService stargatePushService,
             AppsContainer appsContainer,
             ChannelService channelService,
-            IConfiguration configuration,
             ThirdPartyPushService thirdPartyPushService)
         {
             _dbContext = dbContext;
             _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
             _channelService = channelService;
-            _configuration = configuration;
             _thirdPartyPushService = thirdPartyPushService;
         }
 
-        private string _CammalSer(object obj)
+        private static string _Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj, Formatting.Indented, new JsonSerializerSettings
             {
@@ -59,7 +55,7 @@ namespace Kahla.Server.Services
         public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false, List<KahlaUser> usersTable = null)
         {
             var token = await _appsContainer.AccessToken();
-            KahlaUser targetUser = null;
+            KahlaUser targetUser;
             if (usersTable == null)
             {
                 targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
@@ -68,24 +64,33 @@ namespace Kahla.Server.Services
             {
                 targetUser = usersTable.SingleOrDefault(t => t.Id == recieverId);
             }
-            var channel = targetUser.CurrentChannel;
-            var nevent = new NewMessageEvent
+
+            if (targetUser == null)
             {
-                Type = EventType.NewMessage,
-                ConversationId = conversationId,
-                Sender = sender,
-                Content = content,
-                AESKey = aesKey,
-                Muted = muted,
-                SentByMe = targetUser.Id == sender.Id
-            };
-            if (channel != -1)
-            {
-                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
+                throw new AiurAPIModelException(ErrorType.NotFound, "Can not find target user with ID: " + recieverId);
             }
-            if (!muted)
+            else
             {
-                await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _CammalSer(nevent));
+                var channel = targetUser.CurrentChannel;
+                var newEvent = new NewMessageEvent
+                {
+                    Type = EventType.NewMessage,
+                    ConversationId = conversationId,
+                    Sender = sender,
+                    Content = content,
+                    AESKey = aesKey,
+                    Muted = muted,
+                    SentByMe = targetUser.Id == sender.Id
+                };
+                if (channel != -1)
+                {
+                    await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newEvent), true);
+                }
+
+                if (!muted)
+                {
+                    await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _Serialize(newEvent));
+                }
             }
         }
 
@@ -101,8 +106,8 @@ namespace Kahla.Server.Services
                 RequesterId = requesterId
             };
             if (channel != -1)
-                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
-            await _thirdPartyPushService.PushAsync(reciever.Id, requester.Email, _CammalSer(nevent));
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(nevent), true);
+            await _thirdPartyPushService.PushAsync(reciever.Id, requester.Email, _Serialize(nevent));
         }
 
         public async Task WereDeletedEvent(string recieverId)
@@ -115,8 +120,8 @@ namespace Kahla.Server.Services
                 Type = EventType.WereDeletedEvent
             };
             if (channel != -1)
-                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
-            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(nevent));
         }
 
         public async Task FriendAcceptedEvent(string recieverId)
@@ -129,8 +134,8 @@ namespace Kahla.Server.Services
                 Type = EventType.FriendAcceptedEvent
             };
             if (channel != -1)
-                await _stargatePushService.PushMessageAsync(token, channel, _CammalSer(nevent), true);
-            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _CammalSer(nevent));
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(nevent), true);
+            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(nevent));
         }
     }
 }
