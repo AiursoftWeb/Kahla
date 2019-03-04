@@ -23,12 +23,12 @@ namespace Kahla.Server.Controllers
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
-        private readonly PushKahlaMessageService _pusher;
+        private readonly KahlaPushService _pusher;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            PushKahlaMessageService pushService)
+            KahlaPushService pushService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -40,7 +40,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
-                return this.Protocal(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             //Get Messages
             var allMessages = await _dbContext
                 .Messages
@@ -78,9 +78,9 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
-                return this.Protocal(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             if (model.Content.Trim().Length == 0)
-                return this.Protocal(ErrorType.InvalidInput, "Can not send empty message.");
+                return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             //Create message.
             var message = new Message
             {
@@ -90,14 +90,13 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            //Push the message to reciever
-            if (target.Discriminator == nameof(PrivateConversation))
+            //Push the message to receiver
+            if (target is PrivateConversation privateConversation)
             {
-                var privateConversation = target as PrivateConversation;
                 await _pusher.NewMessageEvent(privateConversation.RequesterId, target.Id, model.Content, user, target.AESKey);
                 await _pusher.NewMessageEvent(privateConversation.TargetId, target.Id, model.Content, user, target.AESKey);
             }
-            else if (target.Discriminator == nameof(GroupConversation))
+            else if (target is GroupConversation)
             {
                 var usersJoined = await _dbContext
                     .UserGroupRelations
@@ -108,16 +107,17 @@ namespace Kahla.Server.Controllers
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
-                    async Task sendNotification()
+                    async Task SendNotification()
                     {
                         await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
-                    };
-                    taskList.Add(sendNotification());
+                    }
+
+                    taskList.Add(SendNotification());
                 }
                 await Task.WhenAll(taskList);
             }
             //Return success message.
-            return this.Protocal(ErrorType.Success, "Your message has been sent.");
+            return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
         public async Task<IActionResult> ConversationDetail([Required]int id)
@@ -127,31 +127,29 @@ namespace Kahla.Server.Controllers
             var target = conversations.SingleOrDefault(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocal(ErrorType.NotFound, "Could not find target conversation in your friends.");
+                return this.Protocol(ErrorType.NotFound, "Could not find target conversation in your friends.");
             }
             target.DisplayName = target.GetDisplayName(user.Id);
             target.DisplayImage = target.GetDisplayImage(user.Id);
-            if (target is PrivateConversation)
+            if (target is PrivateConversation privateTarget)
             {
-                var pTarget = target as PrivateConversation;
-                pTarget.AnotherUserId = pTarget.AnotherUser(user.Id).Id;
-                return this.AiurJson(new AiurValue<PrivateConversation>(pTarget)
+                privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;
+                return this.AiurJson(new AiurValue<PrivateConversation>(privateTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
                 });
             }
-            else if (target is GroupConversation)
+            else if (target is GroupConversation groupTarget)
             {
-                var gtarget = target as GroupConversation;
                 var relations = await _dbContext
                     .UserGroupRelations
                     .AsNoTracking()
                     .Include(t => t.User)
-                    .Where(t => t.GroupId == gtarget.Id)
+                    .Where(t => t.GroupId == groupTarget.Id)
                     .ToListAsync();
-                gtarget.Users = relations;
-                return this.AiurJson(new AiurValue<GroupConversation>(gtarget)
+                groupTarget.Users = relations;
+                return this.AiurJson(new AiurValue<GroupConversation>(groupTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
@@ -159,7 +157,7 @@ namespace Kahla.Server.Controllers
             }
             else
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException("Target is:" + target.Discriminator);
             }
         }
 

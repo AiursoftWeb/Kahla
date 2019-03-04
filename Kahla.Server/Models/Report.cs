@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Kahla.Server.Models
+﻿namespace Kahla.Server.Models
 {
-    public enum ReportStatus : int
+    public enum ReportStatus
     {
         Pending = 0,
         Resolved = 1

@@ -3,21 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
-using Kahla.Server.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kahla.Server.Models
 {
-    public interface IConversation
-    {
-        string GetDisplayName(string userId);
-        int GetDisplayImage(string userId);
-        int GetUnReadAmount(string userId);
-        Message GetLatestMessage();
-    }
-    public abstract class Conversation : IConversation
+    public abstract class Conversation
     {
         [Key]
         public int Id { get; set; }

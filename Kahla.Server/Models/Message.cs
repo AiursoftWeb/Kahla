@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -22,6 +19,6 @@ namespace Kahla.Server.Models
 
         public DateTime SendTime { get; set; } = DateTime.UtcNow;
         public string Content { get; set; }
-        public bool Read { get; set; } = false;
+        public bool Read { get; set; }
     }
 }

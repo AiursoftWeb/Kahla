@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
     public class HandleOptionsMiddleware
     {
-        private RequestDelegate _next;
+        private readonly RequestDelegate _next;
 
         public HandleOptionsMiddleware(RequestDelegate next)
         {

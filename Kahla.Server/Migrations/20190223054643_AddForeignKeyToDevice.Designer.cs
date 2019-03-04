@@ -4,18 +4,20 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190223054643_AddForeignKeyToDevice")]
+    partial class AddForeignKeyToDevice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -41,15 +43,9 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Kahla.Server.Models.Device", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("AddTime");
-
-                    b.Property<string>("IPAddress");
-
-                    b.Property<string>("Name");
 
                     b.Property<string>("PushAuth");
 
@@ -378,6 +374,8 @@ namespace Kahla.Server.Migrations
 
                     b.HasIndex("OwnerId");
 
+                    b.ToTable("GroupConversation");
+
                     b.HasDiscriminator().HasValue("GroupConversation");
                 });
 
@@ -392,6 +390,8 @@ namespace Kahla.Server.Migrations
                     b.HasIndex("RequesterId");
 
                     b.HasIndex("TargetId");
+
+                    b.ToTable("PrivateConversation");
 
                     b.HasDiscriminator().HasValue("PrivateConversation");
                 });

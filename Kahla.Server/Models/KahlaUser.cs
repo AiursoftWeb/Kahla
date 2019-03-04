@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System.Collections.Generic;
 using Aiursoft.Pylon.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
@@ -31,6 +27,9 @@ namespace Kahla.Server.Models
 
         [InverseProperty(nameof(Report.Target))]
         public IEnumerable<Report> ByReported { get; set; }
+
+        [InverseProperty(nameof(Device.KahlaUser))]
+        public IEnumerable<Device> HisDevices { get; set; }
 
         public int CurrentChannel { get; set; } = -1;
         public string ConnectKey { get; set; }

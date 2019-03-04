@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Models.ApiViewModels
 {
-    public class FileDownloadAddressViewModel : AiurProtocal
+    public class FileDownloadAddressViewModel : AiurProtocol
     {
         public string FileName { get; set; }
         public string DownloadPath { get; set; }

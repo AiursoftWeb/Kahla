@@ -3,9 +3,6 @@ using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
@@ -34,7 +31,7 @@ namespace Kahla.Server.Services
             }
             else
             {
-                throw new AiurUnexceptedResponse(new AiurProtocal()
+                throw new AiurUnexceptedResponse(new AiurProtocol()
                 {
                     Code = ErrorType.NotFound,
                     Message = "GitHub Json response is not related with Kahla!"

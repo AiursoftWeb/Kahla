@@ -4,14 +4,16 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190224133228_AddDeviceCreationTime")]
+    partial class AddDeviceCreationTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,8 +48,6 @@ namespace Kahla.Server.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("AddTime");
-
-                    b.Property<string>("IPAddress");
 
                     b.Property<string>("Name");
 
