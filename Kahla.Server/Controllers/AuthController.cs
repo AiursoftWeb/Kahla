@@ -136,7 +136,7 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth(preferController: "", preferAction: "", justTry: false, register: false)]
         public IActionResult OAuth()
         {
-            return RedirectToAction("Index", "Home");
+            return Redirect(_configuration["AppDomain"]);
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
