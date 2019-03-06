@@ -1,12 +1,8 @@
 ﻿using Aiursoft.Pylon.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Events
 {
-    public enum EventType : int
+    public enum EventType
     {
         NewMessage = 0,
         NewFriendRequest = 1,

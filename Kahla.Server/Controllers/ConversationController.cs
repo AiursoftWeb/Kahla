@@ -90,14 +90,13 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            //Push the message to reciever
-            if (target.Discriminator == nameof(PrivateConversation))
+            //Push the message to receiver
+            if (target is PrivateConversation privateConversation)
             {
-                var privateConversation = target as PrivateConversation;
                 await _pusher.NewMessageEvent(privateConversation.RequesterId, target.Id, model.Content, user, target.AESKey);
                 await _pusher.NewMessageEvent(privateConversation.TargetId, target.Id, model.Content, user, target.AESKey);
             }
-            else if (target.Discriminator == nameof(GroupConversation))
+            else if (target is GroupConversation)
             {
                 var usersJoined = await _dbContext
                     .UserGroupRelations
@@ -108,11 +107,12 @@ namespace Kahla.Server.Controllers
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
-                    async Task sendNotification()
+                    async Task SendNotification()
                     {
                         await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
-                    };
-                    taskList.Add(sendNotification());
+                    }
+
+                    taskList.Add(SendNotification());
                 }
                 await Task.WhenAll(taskList);
             }
@@ -131,27 +131,25 @@ namespace Kahla.Server.Controllers
             }
             target.DisplayName = target.GetDisplayName(user.Id);
             target.DisplayImage = target.GetDisplayImage(user.Id);
-            if (target is PrivateConversation)
+            if (target is PrivateConversation privateTarget)
             {
-                var pTarget = target as PrivateConversation;
-                pTarget.AnotherUserId = pTarget.AnotherUser(user.Id).Id;
-                return this.AiurJson(new AiurValue<PrivateConversation>(pTarget)
+                privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;
+                return this.AiurJson(new AiurValue<PrivateConversation>(privateTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
                 });
             }
-            else if (target is GroupConversation)
+            else if (target is GroupConversation groupTarget)
             {
-                var gtarget = target as GroupConversation;
                 var relations = await _dbContext
                     .UserGroupRelations
                     .AsNoTracking()
                     .Include(t => t.User)
-                    .Where(t => t.GroupId == gtarget.Id)
+                    .Where(t => t.GroupId == groupTarget.Id)
                     .ToListAsync();
-                gtarget.Users = relations;
-                return this.AiurJson(new AiurValue<GroupConversation>(gtarget)
+                groupTarget.Users = relations;
+                return this.AiurJson(new AiurValue<GroupConversation>(groupTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
@@ -159,7 +157,7 @@ namespace Kahla.Server.Controllers
             }
             else
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException("Target is:" + target.Discriminator);
             }
         }
 

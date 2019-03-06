@@ -25,7 +25,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
-        private static object _obj = new object();
+        private static readonly object Obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -53,9 +53,9 @@ namespace Kahla.Server.Controllers
                     LatestMessageTime = conversation.GetLatestMessage().SendTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
-                    UserId = conversation is PrivateConversation ? (conversation as PrivateConversation).AnotherUser(user.Id).Id : null,
+                    UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                     AesKey = conversation.AESKey,
-                    Muted = conversation is GroupConversation ? (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted : false
+                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted
                 });
             }
             list = orderByName == true ?
@@ -97,8 +97,8 @@ namespace Kahla.Server.Controllers
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
-            Request request = null;
-            lock (_obj)
+            Request request;
+            lock (Obj)
             {
                 var pending = _dbContext.Requests
                     .Where(t => t.CreatorId == user.Id)
@@ -127,7 +127,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, "We can not find target request.");
             if (request.TargetId != user.Id)
                 return this.Protocol(ErrorType.Unauthorized, "The target user of this request is not you.");
-            if (request.Completed == true)
+            if (request.Completed)
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             request.Completed = true;
             if (model.Accept)
@@ -180,7 +180,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             var cuser = await GetKahlaUser();
-            var myfriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
+            var myFriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
             var calculated = new List<KeyValuePair<int, KahlaUser>>();
             foreach (var user in await _dbContext.Users.ToListAsync())
             {
@@ -188,8 +188,8 @@ namespace Kahla.Server.Controllers
                 {
                     continue;
                 }
-                var hisfriends = await _dbContext.MyPersonalFriendsId(user.Id);
-                var commonFriends = myfriends.Intersect(hisfriends).Count();
+                var hisFriends = await _dbContext.MyPersonalFriendsId(user.Id);
+                var commonFriends = myFriends.Intersect(hisFriends).Count();
                 if (commonFriends > 0)
                 {
                     calculated.Add(new KeyValuePair<int, KahlaUser>(commonFriends, user));
@@ -246,7 +246,7 @@ namespace Kahla.Server.Controllers
             }
             if (cuser.Id == targetUser.Id)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You can not report yourself!");
+                return this.Protocol(ErrorType.HasDoneAlready, "You can not report yourself!");
             }
             var exists = await _dbContext
                 .Reports
@@ -255,7 +255,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "You have already reported the target user!");
             }
-            // All chedk passed. Report him now!
+            // All check passed. Report him now!
             _dbContext.Reports.Add(new Report
             {
                 TargetId = targetUser.Id,

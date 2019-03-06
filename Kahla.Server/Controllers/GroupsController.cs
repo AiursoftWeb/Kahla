@@ -17,7 +17,7 @@ namespace Kahla.Server.Controllers
 {
     [APIExpHandler]
     [APIModelStateChecker]
-    [AiurForceAuth(directlyReject: true)]
+    [AiurForceAuth(true)]
     public class GroupsController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -25,7 +25,6 @@ namespace Kahla.Server.Controllers
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
-            SignInManager<KahlaUser> signInManager,
             KahlaDbContext dbContext)
         {
             _userManager = userManager;
@@ -57,8 +56,8 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
             model.GroupName = model.GroupName.Trim().ToLower();
-            var exsists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
-            if (exsists)
+            var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
+            if (exists)
             {
                 return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
             }
