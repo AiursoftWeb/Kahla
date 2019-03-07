@@ -93,8 +93,10 @@ namespace Kahla.Server.Controllers
             //Push the message to receiver
             if (target is PrivateConversation privateConversation)
             {
-                await _pusher.NewMessageEvent(privateConversation.RequesterId, target.Id, model.Content, user, target.AESKey);
-                await _pusher.NewMessageEvent(privateConversation.TargetId, target.Id, model.Content, user, target.AESKey);
+                var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
+                var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                await _pusher.NewMessageEvent(requester, target, model.Content, user, false);
+                await _pusher.NewMessageEvent(targetUser, target, model.Content, user, false);
             }
             else if (target is GroupConversation)
             {
@@ -103,15 +105,18 @@ namespace Kahla.Server.Controllers
                     .Include(t => t.User)
                     .Where(t => t.GroupId == target.Id)
                     .ToListAsync();
-                var usersInGroup = usersJoined.Select(t => t.User).ToList();
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
                     async Task SendNotification()
                     {
-                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
+                        await _pusher.NewMessageEvent(
+                            reciever: relation.User,
+                            conversation: target,
+                            content: model.Content,
+                            sender: user,
+                            alert: !relation.Muted);
                     }
-
                     taskList.Add(SendNotification());
                 }
                 await Task.WhenAll(taskList);
