@@ -95,11 +95,11 @@ namespace Kahla.Server.Controllers
             {
                 var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
                 var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                await _pusher.NewMessageEvent(requester, target, model.Content, user, false);
+                await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
                 // In cause you are talking to yourself.
                 if (requester.Id != targetUser.Id)
                 {
-                    await _pusher.NewMessageEvent(targetUser, target, model.Content, user, false);
+                    await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
                 }
             }
             else if (target is GroupConversation)
