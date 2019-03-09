@@ -35,7 +35,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> GetMessage([Required]int id, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, [Required]int messsageId = int.MaxValue, int take = 15)
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
@@ -47,6 +47,7 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .Where(t => t.ConversationId == target.Id)
                 .OrderByDescending(t => t.SendTime)
+                .SkipWhile(t => t.Id >= messsageId)
                 .Take(take)
                 .OrderBy(t => t.SendTime)
                 .ToListAsync();
