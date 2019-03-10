@@ -49,9 +49,8 @@ namespace Kahla.Server.Controllers
             if (messsageId != -1)
                 allMessages = allMessages.Where(t => t.Id <= messsageId);
             allMessages = allMessages
-                .OrderByDescending(t => t.SendTime)
-                .Take(take)
-                .OrderBy(t => t.SendTime);
+                .OrderBy(t => t.Id)
+                .TakeLast(take);
             if (target.Discriminator == nameof(PrivateConversation))
             {
                 await _dbContext.Messages
