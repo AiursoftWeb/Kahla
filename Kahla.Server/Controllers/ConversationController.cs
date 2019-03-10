@@ -35,22 +35,23 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> GetMessage([Required]int id, [Required]int messsageId = int.MaxValue, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, int messsageId = -1, int take = 15)
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             //Get Messages
-            var allMessages = await _dbContext
+            IQueryable<Message> allMessages = _dbContext
                 .Messages
                 .AsNoTracking()
-                .Where(t => t.ConversationId == target.Id)
+                .Where(t => t.ConversationId == target.Id);
+            if (messsageId != -1)
+                allMessages = allMessages.Where(t => t.Id <= messsageId);
+            allMessages = allMessages
                 .OrderByDescending(t => t.SendTime)
-                .SkipWhile(t => t.Id >= messsageId)
                 .Take(take)
-                .OrderBy(t => t.SendTime)
-                .ToListAsync();
+                .OrderBy(t => t.SendTime);
             if (target.Discriminator == nameof(PrivateConversation))
             {
                 await _dbContext.Messages
