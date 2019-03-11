@@ -35,7 +35,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> GetMessage([Required]int id, int messsageId = -1, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
@@ -46,11 +46,13 @@ namespace Kahla.Server.Controllers
                 .Messages
                 .AsNoTracking()
                 .Where(t => t.ConversationId == target.Id);
-            if (messsageId != -1)
-                allMessages = allMessages.Where(t => t.Id <= messsageId);
-            allMessages = allMessages
+            if (skipTill != -1)
+                allMessages = allMessages.Where(t => t.Id < skipTill);
+            var allMessagesList = await allMessages
+                .OrderByDescending(t => t.Id)
+                .Take(take)
                 .OrderBy(t => t.Id)
-                .TakeLast(take);
+                .ToListAsync();
             if (target.Discriminator == nameof(PrivateConversation))
             {
                 await _dbContext.Messages
@@ -66,7 +68,7 @@ namespace Kahla.Server.Controllers
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();
-            return this.AiurJson(new AiurCollection<Message>(allMessages)
+            return this.AiurJson(new AiurCollection<Message>(allMessagesList)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
