@@ -48,9 +48,10 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.ConversationId == target.Id);
             if (messsageId != -1)
                 allMessages = allMessages.Where(t => t.Id <= messsageId);
-            allMessages = allMessages
+            var allMessagesList = await allMessages
                 .OrderBy(t => t.Id)
-                .TakeLast(take);
+                .TakeLast(take)
+                .ToListAsync();
             if (target.Discriminator == nameof(PrivateConversation))
             {
                 await _dbContext.Messages
@@ -66,7 +67,7 @@ namespace Kahla.Server.Controllers
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();
-            return this.AiurJson(new AiurCollection<Message>(allMessages)
+            return this.AiurJson(new AiurCollection<Message>(allMessagesList)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
