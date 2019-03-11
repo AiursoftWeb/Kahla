@@ -48,49 +48,31 @@ namespace Kahla.Server.Services
         public async Task<CreateChannelViewModel> Init(string userId)
         {
             var token = await _appsContainer.AccessToken();
-            var channel = await _channelService.CreateChannelAsync(token, $"Kahla User Channel for Id:{userId}");
+            var channel = await _channelService.CreateChannelAsync(token, $"Kahla User Channel for Id: {userId}");
             return channel;
         }
 
-        public async Task NewMessageEvent(string recieverId, int conversationId, string content, KahlaUser sender, string aesKey, bool muted = false, List<KahlaUser> usersTable = null)
+        public async Task NewMessageEvent(KahlaUser reciever, Conversation conversation, string content, KahlaUser sender, bool alert)
         {
             var token = await _appsContainer.AccessToken();
-            KahlaUser targetUser;
-            if (usersTable == null)
+            var channel = reciever.CurrentChannel;
+            var newEvent = new NewMessageEvent
             {
-                targetUser = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == recieverId);
+                Type = EventType.NewMessage,
+                ConversationId = conversation.Id,
+                Sender = sender,
+                Content = content,
+                AESKey = conversation.AESKey,
+                Muted = !alert,
+                SentByMe = reciever.Id == sender.Id
+            };
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newEvent), true);
             }
-            else
+            if (alert)
             {
-                targetUser = usersTable.SingleOrDefault(t => t.Id == recieverId);
-            }
-
-            if (targetUser == null)
-            {
-                throw new AiurAPIModelException(ErrorType.NotFound, "Can not find target user with ID: " + recieverId);
-            }
-            else
-            {
-                var channel = targetUser.CurrentChannel;
-                var newEvent = new NewMessageEvent
-                {
-                    Type = EventType.NewMessage,
-                    ConversationId = conversationId,
-                    Sender = sender,
-                    Content = content,
-                    AESKey = aesKey,
-                    Muted = muted,
-                    SentByMe = targetUser.Id == sender.Id
-                };
-                if (channel != -1)
-                {
-                    await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newEvent), true);
-                }
-
-                if (!muted)
-                {
-                    await _thirdPartyPushService.PushAsync(targetUser.Id, sender.Email, _Serialize(newEvent));
-                }
+                await _thirdPartyPushService.PushAsync(reciever.Id, sender.Email, _Serialize(newEvent));
             }
         }
 

@@ -35,21 +35,22 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> GetMessage([Required]int id, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, int messsageId = -1, int take = 15)
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             //Get Messages
-            var allMessages = await _dbContext
+            IQueryable<Message> allMessages = _dbContext
                 .Messages
                 .AsNoTracking()
-                .Where(t => t.ConversationId == target.Id)
-                .OrderByDescending(t => t.SendTime)
-                .Take(take)
-                .OrderBy(t => t.SendTime)
-                .ToListAsync();
+                .Where(t => t.ConversationId == target.Id);
+            if (messsageId != -1)
+                allMessages = allMessages.Where(t => t.Id <= messsageId);
+            allMessages = allMessages
+                .OrderBy(t => t.Id)
+                .TakeLast(take);
             if (target.Discriminator == nameof(PrivateConversation))
             {
                 await _dbContext.Messages
@@ -93,8 +94,14 @@ namespace Kahla.Server.Controllers
             //Push the message to receiver
             if (target is PrivateConversation privateConversation)
             {
-                await _pusher.NewMessageEvent(privateConversation.RequesterId, target.Id, model.Content, user, target.AESKey);
-                await _pusher.NewMessageEvent(privateConversation.TargetId, target.Id, model.Content, user, target.AESKey);
+                var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
+                var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
+                // In cause you are talking to yourself.
+                if (requester.Id != targetUser.Id)
+                {
+                    await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
+                }
             }
             else if (target is GroupConversation)
             {
@@ -103,15 +110,18 @@ namespace Kahla.Server.Controllers
                     .Include(t => t.User)
                     .Where(t => t.GroupId == target.Id)
                     .ToListAsync();
-                var usersInGroup = usersJoined.Select(t => t.User).ToList();
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
                     async Task SendNotification()
                     {
-                        await _pusher.NewMessageEvent(relation.UserId, target.Id, model.Content, user, target.AESKey, relation.Muted, usersInGroup);
+                        await _pusher.NewMessageEvent(
+                            reciever: relation.User,
+                            conversation: target,
+                            content: model.Content,
+                            sender: user,
+                            alert: !relation.Muted);
                     }
-
                     taskList.Add(SendNotification());
                 }
                 await Task.WhenAll(taskList);
