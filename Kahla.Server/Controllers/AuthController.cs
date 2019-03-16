@@ -260,6 +260,13 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
             }
+            var devicesExists = await _dbContext.Devices.Where(t => t.UserID == user.Id).ToListAsync();
+            if (devicesExists.Count >= 10)
+            {
+                var toDrop = devicesExists.OrderBy(t => t.AddTime).First();
+                _dbContext.Devices.Remove(toDrop);
+                await _dbContext.SaveChangesAsync();
+            }
             var device = new Device
             {
                 Name = model.Name,

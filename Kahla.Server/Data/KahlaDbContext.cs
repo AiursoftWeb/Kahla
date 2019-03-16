@@ -95,8 +95,8 @@ namespace Kahla.Server.Data
         public async Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
             var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
             if (relation != null) return relation;
+            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
             return belation;
         }
 
