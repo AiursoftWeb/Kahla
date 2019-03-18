@@ -66,14 +66,16 @@ namespace Kahla.Server.Services
                 Muted = !alert,
                 SentByMe = reciever.Id == sender.Id
             };
+            var pushTasks = new List<Task>();
             if (channel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newEvent), true);
+                pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, _Serialize(newEvent), true));
             }
             if (alert)
             {
-                await _thirdPartyPushService.PushAsync(reciever.Id, sender.Email, _Serialize(newEvent));
+                pushTasks.Add(_thirdPartyPushService.PushAsync(reciever.Id, sender.Email, _Serialize(newEvent)));
             }
+            await Task.WhenAll(pushTasks);
         }
 
         public async Task NewFriendRequestEvent(string recieverId, string requesterId)
