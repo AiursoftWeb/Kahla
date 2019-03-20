@@ -40,26 +40,34 @@ namespace Kahla.Server.Services
             string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
             // Push to all devices.
+
+            var pushTasks = new List<Task>();
             foreach (var device in devices)
             {
-                try
+                async Task PushToDevice()
                 {
-                    var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-                    var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
-                    _logger.LogInformation($"Trying to call WebPush API to push a new event to {recieverId}, Event content is '{payload}', Device ID is {device.Id}");
-                    await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
+                    try
+                    {
+                        var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                        var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
+                        _logger.LogInformation($"Trying to call WebPush API to push a new event to {recieverId}, Event content is '{payload}', Device ID is {device.Id}");
+                        await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
+                    }
+                    catch (WebPushException e)
+                    {
+                        _dbContext.Devices.Remove(device);
+                        _logger.LogCritical(e, "A WebPush error occoured while calling WebPush API: " + e.Message);
+                        _telemetry.TrackException(e);
+                    }
+                    catch (Exception e)
+                    {
+                        _telemetry.TrackException(e);
+                        _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
+                    }
                 }
-                catch (WebPushException e)
-                {
-                    _logger.LogCritical(e, "A WebPush error occoured while calling WebPush API: " + e.Message);
-                    _telemetry.TrackException(e);
-                }
-                catch (Exception e)
-                {
-                    _telemetry.TrackException(e);
-                    _logger.LogCritical(e, "An error occoured while calling WebPush API: " + e.Message);
-                }
+                pushTasks.Add(PushToDevice());
             }
+            await Task.WhenAll(pushTasks);
         }
     }
 }

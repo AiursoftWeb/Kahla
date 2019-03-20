@@ -184,7 +184,7 @@ namespace Kahla.Server.Controllers
             var calculated = new List<KeyValuePair<int, KahlaUser>>();
             foreach (var user in await _dbContext.Users.ToListAsync())
             {
-                if (await _dbContext.AreFriends(user.Id, cuser.Id) || user.Id == cuser.Id)
+                if (user.Id == cuser.Id || await _dbContext.AreFriends(user.Id, cuser.Id))
                 {
                     continue;
                 }

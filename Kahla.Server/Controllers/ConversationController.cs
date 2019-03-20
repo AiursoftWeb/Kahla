@@ -128,6 +128,7 @@ namespace Kahla.Server.Controllers
                 }
                 await Task.WhenAll(taskList);
             }
+            await _dbContext.SaveChangesAsync();
             //Return success message.
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
