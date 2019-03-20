@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -18,7 +17,7 @@ namespace Kahla.Server.Models
 
         [JsonProperty]
         [NotMapped]
-        public bool HasPassword => !string.IsNullOrEmpty(this.JoinPassword);
+        public bool HasPassword => !string.IsNullOrEmpty(JoinPassword);
 
         public string OwnerId { get; set; }
         [ForeignKey(nameof(OwnerId))]
@@ -28,21 +27,25 @@ namespace Kahla.Server.Models
         public override int GetUnReadAmount(string userId)
         {
             var relation = Users.SingleOrDefault(t => t.UserId == userId);
-            return Messages.Where(t => t.SendTime > relation.ReadTimeStamp).Count();
+            if (relation == null)
+            {
+                return 0;
+            }
+            return Messages.Count(t => t.SendTime > relation.ReadTimeStamp);
         }
 
         public override Message GetLatestMessage()
         {
             try
             {
-                return this.Messages.OrderByDescending(p => p.SendTime).First();
+                return Messages.OrderByDescending(p => p.SendTime).First();
             }
             catch (InvalidOperationException)
             {
                 return new Message
                 {
                     Content = null,//$"You have successfully joined {this.GroupName}!",
-                    SendTime = this.ConversationCreateTime
+                    SendTime = ConversationCreateTime
                 };
             }
         }

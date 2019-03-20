@@ -133,7 +133,7 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(result);
         }
 
-        [AiurForceAuth(preferController: "", preferAction: "", justTry: false, register: false)]
+        [AiurForceAuth("", "", false)]
         public IActionResult OAuth()
         {
             return Redirect(_configuration["AppDomain"]);
@@ -141,7 +141,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            var user = await _authService.AuthApp(model);
+            await _authService.AuthApp(model);
             return Redirect(_configuration["AppDomain"]);
         }
 
@@ -234,7 +234,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var device = await _dbContext
                 .Devices
-                .Where(t => t.UserID == user.Id)
+                .Where(t => t.UserId == user.Id)
                 .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             await _signInManager.SignOutAsync();
             if (device == null)
@@ -260,7 +260,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
             }
-            var devicesExists = await _dbContext.Devices.Where(t => t.UserID == user.Id).ToListAsync();
+            var devicesExists = await _dbContext.Devices.Where(t => t.UserId == user.Id).ToListAsync();
             if (devicesExists.Count >= 10)
             {
                 var toDrop = devicesExists.OrderBy(t => t.AddTime).First();
@@ -270,7 +270,7 @@ namespace Kahla.Server.Controllers
             var device = new Device
             {
                 Name = model.Name,
-                UserID = user.Id,
+                UserId = user.Id,
                 PushAuth = model.PushAuth,
                 PushEndpoint = model.PushEndpoint,
                 PushP256DH = model.PushP256DH,
@@ -293,7 +293,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var device = await _dbContext
                 .Devices
-                .Where(t => t.UserID == user.Id)
+                .Where(t => t.UserId == user.Id)
                 .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             if (device == null)
             {
@@ -319,7 +319,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var devices = await _dbContext
                 .Devices
-                .Where(t => t.UserID == user.Id)
+                .Where(t => t.UserId == user.Id)
                 .OrderByDescending(t => t.AddTime)
                 .ToListAsync();
             return this.AiurJson(new AiurCollection<Device>(devices)

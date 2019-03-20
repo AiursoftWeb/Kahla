@@ -9,9 +9,9 @@ namespace Kahla.Server.Models
         public long Id { get; set; }
         public string Name { get; set; }
         public string IPAddress { get; set; }
-        public string UserID { get; set; }
+        public string UserId { get; set; }
         [JsonIgnore]
-        [ForeignKey(nameof(UserID))]
+        [ForeignKey(nameof(UserId))]
         public KahlaUser KahlaUser { get; set; }
 
         [JsonIgnore]

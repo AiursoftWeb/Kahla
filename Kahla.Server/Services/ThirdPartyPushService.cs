@@ -36,7 +36,7 @@ namespace Kahla.Server.Services
 
         public async Task PushAsync(string recieverId, string triggerEmail, string payload)
         {
-            var devices = await _dbContext.Devices.Where(t => t.UserID == recieverId).ToListAsync();
+            var devices = await _dbContext.Devices.Where(t => t.UserId == recieverId).ToListAsync();
             string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
             // Push to all devices.
