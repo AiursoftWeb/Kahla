@@ -5,7 +5,7 @@ namespace Kahla.Server.Events
     public enum EventType
     {
         NewMessage = 0,
-        NewFriendRequest = 1,
+        NewFriendRequestEvent = 1,
         WereDeletedEvent = 2,
         FriendAcceptedEvent = 3
     }
@@ -22,7 +22,7 @@ namespace Kahla.Server.Events
         public bool Muted { get; set; }
         public bool SentByMe { get; set; }
     }
-    public class NewFriendRequest : KahlaEvent
+    public class NewFriendRequestEvent : KahlaEvent
     {
         public string RequesterId { get; set; }
     }

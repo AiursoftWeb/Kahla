@@ -118,7 +118,7 @@ namespace Kahla.Server.Controllers
                     async Task SendNotification()
                     {
                         await _pusher.NewMessageEvent(
-                            reciever: relation.User,
+                            receiver: relation.User,
                             conversation: target,
                             content: model.Content,
                             sender: user,
