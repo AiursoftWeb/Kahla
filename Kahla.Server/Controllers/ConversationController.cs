@@ -118,7 +118,7 @@ namespace Kahla.Server.Controllers
                     async Task SendNotification()
                     {
                         await _pusher.NewMessageEvent(
-                            receiver: relation.User,
+                            reciever: relation.User,
                             conversation: target,
                             content: model.Content,
                             sender: user,
@@ -128,7 +128,14 @@ namespace Kahla.Server.Controllers
                 }
                 await Task.WhenAll(taskList);
             }
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occoured while sending web push notification.");
+            }
             //Return success message.
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
