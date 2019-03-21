@@ -106,7 +106,6 @@ namespace Kahla.Server.Controllers
                     {
                         await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
                     }
-
                     break;
                 }
                 case GroupConversation groupConversation:
@@ -119,16 +118,13 @@ namespace Kahla.Server.Controllers
                     var taskList = new List<Task>();
                     foreach (var relation in usersJoined)
                     {
-                        async Task SendNotification()
-                        {
-                            await _pusher.NewMessageEvent(
-                                receiver: relation.User,
-                                conversation: target,
-                                content: model.Content,
-                                sender: user,
-                                alert: !relation.Muted);
-                        }
-                        taskList.Add(SendNotification());
+                        var pushTask = _pusher.NewMessageEvent(
+                            receiver: relation.User,
+                            conversation: target,
+                            content: model.Content,
+                            sender: user,
+                            alert: !relation.Muted);
+                        taskList.Add(pushTask);
                     }
                     await Task.WhenAll(taskList);
                     break;
