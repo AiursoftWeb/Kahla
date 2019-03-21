@@ -16,6 +16,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace Kahla.Server.Controllers
 {
+    [APIExpHandler]
+    [APIModelStateChecker]
+    [AiurForceAuth(directlyReject: true)]
     public class DevicesController : Controller
     {
         private readonly KahlaDbContext _dbContext;
@@ -33,7 +36,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -68,7 +70,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UpdateDevice(UpdateDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -94,7 +95,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> MyDevices()
         {
             var user = await GetKahlaUser();
@@ -111,7 +111,6 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> PushTestMessage()
         {
             var user = await GetKahlaUser();
