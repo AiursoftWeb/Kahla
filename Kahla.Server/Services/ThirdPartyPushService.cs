@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Kahla.Server.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

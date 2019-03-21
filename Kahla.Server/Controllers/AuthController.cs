@@ -179,7 +179,7 @@ namespace Kahla.Server.Controllers
 
         [HttpPost]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> ChangePassword(ChangePasswordAddresModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
         {
             var currentUser = await GetKahlaUser();
             await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
