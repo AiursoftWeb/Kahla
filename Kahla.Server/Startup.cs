@@ -15,6 +15,7 @@ using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToOSSServer;
 using Kahla.Server.Middlewares;
 using WebPush;
+using Microsoft.Extensions.Hosting;
 
 namespace Kahla.Server
 {
@@ -44,6 +45,7 @@ namespace Kahla.Server
             services.AddMvc();
             services.AddAiursoftAuth<KahlaUser>();
 
+            services.AddSingleton<IHostedService, TimedCleaner>();
             services.AddScoped<UserService>();
             services.AddScoped<SecretService>();
             services.AddScoped<VersionChecker>();
@@ -57,7 +59,7 @@ namespace Kahla.Server
             services.AddScoped<KahlaPushService>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
