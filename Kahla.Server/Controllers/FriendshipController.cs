@@ -179,12 +179,12 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
-            var cuser = await GetKahlaUser();
-            var myFriends = await _dbContext.MyPersonalFriendsId(cuser.Id);
+            var currentUser = await GetKahlaUser();
+            var myFriends = await _dbContext.MyPersonalFriendsId(currentUser.Id);
             var calculated = new List<KeyValuePair<int, KahlaUser>>();
             foreach (var user in await _dbContext.Users.ToListAsync())
             {
-                if (user.Id == cuser.Id || await _dbContext.AreFriends(user.Id, cuser.Id))
+                if (user.Id == currentUser.Id || await _dbContext.AreFriends(user.Id, currentUser.Id))
                 {
                     continue;
                 }
@@ -238,19 +238,19 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
         {
-            var cuser = await GetKahlaUser();
+            var currentUser = await GetKahlaUser();
             var targetUser = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
             if (targetUser == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
             }
-            if (cuser.Id == targetUser.Id)
+            if (currentUser.Id == targetUser.Id)
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "You can not report yourself!");
             }
             var exists = await _dbContext
                 .Reports
-                .AnyAsync((t) => t.TriggerId == cuser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
+                .AnyAsync((t) => t.TriggerId == currentUser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
             if (exists)
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "You have already reported the target user!");
@@ -259,7 +259,7 @@ namespace Kahla.Server.Controllers
             _dbContext.Reports.Add(new Report
             {
                 TargetId = targetUser.Id,
-                TriggerId = cuser.Id,
+                TriggerId = currentUser.Id,
                 Reason = model.Reason
             });
             await _dbContext.SaveChangesAsync();

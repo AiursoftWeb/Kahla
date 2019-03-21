@@ -167,13 +167,13 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UpdateInfo(UpdateInfoAddressModel model)
         {
-            var cuser = await GetKahlaUser();
-            cuser.HeadImgFileKey = model.HeadImgKey;
-            cuser.NickName = model.NickName;
-            cuser.Bio = model.Bio;
-            cuser.MakeEmailPublic = !model.HideMyEmail;
-            await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
-            await _userManager.UpdateAsync(cuser);
+            var currentUser = await GetKahlaUser();
+            currentUser.HeadImgFileKey = model.HeadImgKey;
+            currentUser.NickName = model.NickName;
+            currentUser.Bio = model.Bio;
+            currentUser.MakeEmailPublic = !model.HideMyEmail;
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, currentUser.Bio);
+            await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
 
@@ -181,8 +181,8 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> ChangePassword(ChangePasswordAddresModel model)
         {
-            var cuser = await GetKahlaUser();
-            await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
+            var currentUser = await GetKahlaUser();
+            await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
             return this.Protocol(ErrorType.Success, "Successfully changed your password!");
         }
 
