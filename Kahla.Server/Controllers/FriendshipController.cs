@@ -179,16 +179,35 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
-            var currentUser = await GetKahlaUser();
-            var myFriends = await _dbContext.MyPersonalFriendsId(currentUser.Id);
-            var calculated = new List<KeyValuePair<int, KahlaUser>>();
-            foreach (var user in await _dbContext.Users.ToListAsync())
+            // Load everything to memory and even functions.
+            var users = await _dbContext.Users.ToListAsync();
+            var conversations = await _dbContext.PrivateConversations.ToListAsync();
+            bool AreFriends(string userId1, string userId2)
             {
-                if (user.Id == currentUser.Id || await _dbContext.AreFriends(user.Id, currentUser.Id))
+                var relation = conversations.Any(t => t.RequesterId == userId1 && t.TargetId == userId2);
+                if (relation) return true;
+                var elation = conversations.Any(t => t.RequesterId == userId2 && t.TargetId == userId1);
+                return elation;
+            }
+            List<string> HisPersonalFriendsId(string userId)
+            {
+                var personalRelations = conversations
+                    .Where(t => t.RequesterId == userId || t.TargetId == userId)
+                    .Select(t => userId == t.RequesterId ? t.TargetId : t.RequesterId)
+                    .ToList();
+                return personalRelations;
+            }
+
+            var currentUser = await GetKahlaUser();
+            var myFriends = HisPersonalFriendsId(currentUser.Id);
+            var calculated = new List<KeyValuePair<int, KahlaUser>>();
+            foreach (var user in users)
+            {
+                if (user.Id == currentUser.Id || AreFriends(user.Id, currentUser.Id))
                 {
                     continue;
                 }
-                var hisFriends = await _dbContext.MyPersonalFriendsId(user.Id);
+                var hisFriends = HisPersonalFriendsId(user.Id);
                 var commonFriends = myFriends.Intersect(hisFriends).Count();
                 if (commonFriends > 0)
                 {
