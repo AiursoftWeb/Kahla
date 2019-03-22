@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -20,9 +18,9 @@ namespace Kahla.Server.Models
         public string AnotherUserId { get; set; }
 
         public KahlaUser AnotherUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
-        public override int GetDisplayImage(string userId) => this.AnotherUser(userId).HeadImgFileKey;
-        public override string GetDisplayName(string userId) => this.AnotherUser(userId).NickName;
-        public override int GetUnReadAmount(string userId) => this.Messages.Count(p => !p.Read && p.SenderId != userId);
+        public override int GetDisplayImage(string userId) => AnotherUser(userId).HeadImgFileKey;
+        public override string GetDisplayName(string userId) => AnotherUser(userId).NickName;
+        public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
         public override Message GetLatestMessage()
         {
             try
@@ -34,7 +32,7 @@ namespace Kahla.Server.Models
                 return new Message
                 {
                     Content = null,//"You are friends. Start chatting now!",
-                    SendTime = this.ConversationCreateTime
+                    SendTime = ConversationCreateTime
                 };
             }
         }

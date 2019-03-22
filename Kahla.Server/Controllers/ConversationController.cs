@@ -93,42 +93,51 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            //Push the message to receiver
-            if (target is PrivateConversation privateConversation)
+            switch (target)
             {
-                var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
-                var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
-                // In cause you are talking to yourself.
-                if (requester.Id != targetUser.Id)
+                //Push the message to receiver
+                case PrivateConversation privateConversation:
                 {
-                    await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
-                }
-            }
-            else if (target is GroupConversation)
-            {
-                var usersJoined = await _dbContext
-                    .UserGroupRelations
-                    .Include(t => t.User)
-                    .Where(t => t.GroupId == target.Id)
-                    .ToListAsync();
-                var taskList = new List<Task>();
-                foreach (var relation in usersJoined)
-                {
-                    async Task SendNotification()
+                    var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
+                    var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                    await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
+                    // In cause you are talking to yourself.
+                    if (requester.Id != targetUser.Id)
                     {
-                        await _pusher.NewMessageEvent(
-                            reciever: relation.User,
+                        await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
+                    }
+                    break;
+                }
+                case GroupConversation groupConversation:
+                {
+                    var usersJoined = await _dbContext
+                        .UserGroupRelations
+                        .Include(t => t.User)
+                        .Where(t => t.GroupId == groupConversation.Id)
+                        .ToListAsync();
+                    var taskList = new List<Task>();
+                    foreach (var relation in usersJoined)
+                    {
+                        var pushTask = _pusher.NewMessageEvent(
+                            receiver: relation.User,
                             conversation: target,
                             content: model.Content,
                             sender: user,
                             alert: !relation.Muted);
+                        taskList.Add(pushTask);
                     }
-                    taskList.Add(SendNotification());
+                    await Task.WhenAll(taskList);
+                    break;
                 }
-                await Task.WhenAll(taskList);
             }
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occured while sending web push notification.");
+            }
             //Return success message.
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
@@ -153,7 +162,7 @@ namespace Kahla.Server.Controllers
                     Message = "Successfully get target conversation."
                 });
             }
-            else if (target is GroupConversation groupTarget)
+            if (target is GroupConversation groupTarget)
             {
                 var relations = await _dbContext
                     .UserGroupRelations
@@ -168,10 +177,7 @@ namespace Kahla.Server.Controllers
                     Message = "Successfully get target conversation."
                 });
             }
-            else
-            {
-                throw new InvalidOperationException("Target is:" + target.Discriminator);
-            }
+            throw new InvalidOperationException("Target is:" + target.Discriminator);
         }
 
         private Task<KahlaUser> GetKahlaUser()

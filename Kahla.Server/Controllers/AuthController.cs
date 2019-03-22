@@ -11,7 +11,6 @@ using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
-using Kahla.Server.Events;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
@@ -21,8 +20,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Kahla.Server.Controllers
 {
@@ -43,7 +40,6 @@ namespace Kahla.Server.Controllers
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
-        private readonly ThirdPartyPushService _thirdPartyPushService;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -58,8 +54,7 @@ namespace Kahla.Server.Controllers
             KahlaPushService pusher,
             ChannelService channelService,
             VersionChecker version,
-            KahlaDbContext dbContext,
-            ThirdPartyPushService thirdPartyPushService)
+            KahlaDbContext dbContext)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -74,7 +69,6 @@ namespace Kahla.Server.Controllers
             _channelService = channelService;
             _version = version;
             _dbContext = dbContext;
-            _thirdPartyPushService = thirdPartyPushService;
         }
 
         public IActionResult Index()
@@ -133,7 +127,7 @@ namespace Kahla.Server.Controllers
             return this.AiurJson(result);
         }
 
-        [AiurForceAuth(preferController: "", preferAction: "", justTry: false, register: false)]
+        [AiurForceAuth("", "", false)]
         public IActionResult OAuth()
         {
             return Redirect(_configuration["AppDomain"]);
@@ -141,7 +135,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            var user = await _authService.AuthApp(model);
+            await _authService.AuthApp(model);
             return Redirect(_configuration["AppDomain"]);
         }
 
@@ -173,22 +167,22 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> UpdateInfo(UpdateInfoAddressModel model)
         {
-            var cuser = await GetKahlaUser();
-            cuser.HeadImgFileKey = model.HeadImgKey;
-            cuser.NickName = model.NickName;
-            cuser.Bio = model.Bio;
-            cuser.MakeEmailPublic = !model.HideMyEmail;
-            await _userService.ChangeProfileAsync(cuser.Id, await _appsContainer.AccessToken(), cuser.NickName, cuser.HeadImgFileKey, cuser.Bio);
-            await _userManager.UpdateAsync(cuser);
+            var currentUser = await GetKahlaUser();
+            currentUser.HeadImgFileKey = model.HeadImgKey;
+            currentUser.NickName = model.NickName;
+            currentUser.Bio = model.Bio;
+            currentUser.MakeEmailPublic = !model.HideMyEmail;
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, currentUser.Bio);
+            await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
 
         [HttpPost]
         [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> ChangePassword(ChangePasswordAddresModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
         {
-            var cuser = await GetKahlaUser();
-            await _userService.ChangePasswordAsync(cuser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
+            var currentUser = await GetKahlaUser();
+            await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.AccessToken(), model.OldPassword, model.NewPassword);
             return this.Protocol(ErrorType.Success, "Successfully changed your password!");
         }
 
@@ -234,7 +228,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var device = await _dbContext
                 .Devices
-                .Where(t => t.UserID == user.Id)
+                .Where(t => t.UserId == user.Id)
                 .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             await _signInManager.SignOutAsync();
             if (device == null)
@@ -249,112 +243,6 @@ namespace Kahla.Server.Controllers
         private Task<KahlaUser> GetKahlaUser()
         {
             return _userManager.GetUserAsync(User);
-        }
-
-        [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
-        {
-            var user = await GetKahlaUser();
-            if (_dbContext.Devices.Any(t => t.PushP256DH == model.PushP256DH))
-            {
-                return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
-            }
-            var devicesExists = await _dbContext.Devices.Where(t => t.UserID == user.Id).ToListAsync();
-            if (devicesExists.Count >= 10)
-            {
-                var toDrop = devicesExists.OrderBy(t => t.AddTime).First();
-                _dbContext.Devices.Remove(toDrop);
-                await _dbContext.SaveChangesAsync();
-            }
-            var device = new Device
-            {
-                Name = model.Name,
-                UserID = user.Id,
-                PushAuth = model.PushAuth,
-                PushEndpoint = model.PushEndpoint,
-                PushP256DH = model.PushP256DH,
-                IPAddress = HttpContext.Connection.RemoteIpAddress.ToString()
-            };
-            _dbContext.Devices.Add(device);
-            await _dbContext.SaveChangesAsync();
-            //ErrorType.Success, 
-            return this.AiurJson(new AiurValue<long>(device.Id)
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully created your new device with id: " + device.Id
-            });
-        }
-
-        [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> UpdateDevice(UpdateDeviceAddressModel model)
-        {
-            var user = await GetKahlaUser();
-            var device = await _dbContext
-                .Devices
-                .Where(t => t.UserID == user.Id)
-                .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
-            if (device == null)
-            {
-                return this.Protocol(ErrorType.NotFound, "Can not find a device with ID: " + model.DeviceId);
-            }
-            device.Name = model.Name;
-            device.PushAuth = model.PushAuth;
-            device.PushEndpoint = model.PushEndpoint;
-            device.PushP256DH = model.PushP256DH;
-            _dbContext.Devices.Update(device);
-            await _dbContext.SaveChangesAsync();
-            //ErrorType.Success, 
-            return this.AiurJson(new AiurValue<Device>(device)
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully updated your new device with id: " + device.Id
-            });
-        }
-
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> MyDevices()
-        {
-            var user = await GetKahlaUser();
-            var devices = await _dbContext
-                .Devices
-                .Where(t => t.UserID == user.Id)
-                .OrderByDescending(t => t.AddTime)
-                .ToListAsync();
-            return this.AiurJson(new AiurCollection<Device>(devices)
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully get all your devices."
-            });
-        }
-
-        [HttpPost]
-        [AiurForceAuth(directlyReject: true)]
-        public async Task<IActionResult> PushTestMessage()
-        {
-            var user = await GetKahlaUser();
-            var messageEvent = new NewMessageEvent
-            {
-                Type = EventType.NewMessage,
-                ConversationId = -1,
-                Sender = new KahlaUser
-                {
-                    HeadImgFileKey = 647,
-                    NickName = "Aiursoft Push System",
-                },
-                // This is a test message sent by Aiursoft.
-                Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
-                AESKey = "37316f609ebc4e79bd7812a5f2ab37b8",
-                Muted = false,
-                SentByMe = false
-            };
-            var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
-            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", payload);
-            return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
     }
 }
