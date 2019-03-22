@@ -178,6 +178,16 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [AiurForceAuth(true)]
+        public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingAddressModel model)
+        {
+            var currentUser = await GetKahlaUser();
+            currentUser.ThemeId = model.ThemeId;
+            await _userManager.UpdateAsync(currentUser);
+            return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
+        }
+
+        [HttpPost]
         [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
         {
