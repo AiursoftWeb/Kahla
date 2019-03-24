@@ -31,22 +31,6 @@ namespace Kahla.Server.Controllers
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> SearchGroup(SearchGroupAddressModel model)
-        {
-            var groups = await _dbContext
-                .GroupConversations
-                .AsNoTracking()
-                .Where(t => t.GroupName.Contains(model.GroupName, StringComparison.CurrentCultureIgnoreCase))
-                .Take(model.Take)
-                .ToListAsync();
-
-            return this.AiurJson(new AiurCollection<GroupConversation>(groups)
-            {
-                Code = ErrorType.Success,
-                Message = "Search result is shown."
-            });
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {

@@ -161,17 +161,26 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        public async Task<IActionResult> SearchFriends(SearchFriendsAddressModel model)
+        public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
             var users = await _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.Contains(model.NickName, StringComparison.CurrentCultureIgnoreCase))
+                .Where(t => t.NickName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase))
                 .Take(model.Take)
                 .ToListAsync();
 
-            return this.AiurJson(new AiurCollection<KahlaUser>(users)
+            var groups = await _dbContext
+                .GroupConversations
+                .AsNoTracking()
+                .Where(t => t.GroupName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase))
+                .Take(model.Take)
+                .ToListAsync();
+
+            return this.AiurJson(new SearchEverythingViewModel
             {
+                Users = users,
+                Groups = groups,
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
             });
