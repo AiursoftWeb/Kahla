@@ -42,6 +42,8 @@ namespace Kahla.Server
                 .AddDefaultTokenProviders();
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
+            services.AddMemoryCache();
+
             services.AddMvc();
             services.AddAiursoftAuth<KahlaUser>();
 

@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Controllers
@@ -40,6 +41,7 @@ namespace Kahla.Server.Controllers
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
+        private readonly IMemoryCache _cache;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -54,7 +56,8 @@ namespace Kahla.Server.Controllers
             KahlaPushService pusher,
             ChannelService channelService,
             VersionChecker version,
-            KahlaDbContext dbContext)
+            KahlaDbContext dbContext,
+            IMemoryCache cache)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -69,6 +72,7 @@ namespace Kahla.Server.Controllers
             _channelService = channelService;
             _version = version;
             _dbContext = dbContext;
+            _cache = cache;
         }
 
         public IActionResult Index()
@@ -85,11 +89,19 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> Version()
         {
-            var latest = await _version.CheckKahla();
+            if(!_cache.TryGetValue(nameof(Version), out string version))
+            {
+                version = await _version.CheckKahla();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(20));
+
+                _cache.Set(nameof(Version), version, cacheEntryOptions);
+            }
             return this.AiurJson(new VersionViewModel
             {
-                LatestVersion = latest,
-                OldestSupportedVersion = latest,
+                LatestVersion = version,
+                OldestSupportedVersion = version,
                 Message = "Successfully get the latest version number for Kahla App.",
                 DownloadAddress = "https://www.kahla.app"
             });
