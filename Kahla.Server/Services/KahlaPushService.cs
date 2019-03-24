@@ -59,15 +59,14 @@ namespace Kahla.Server.Services
                 Sender = sender,
                 Content = content,
                 AESKey = conversation.AESKey,
-                Muted = !alert,
-                SentByMe = receiver.Id == sender.Id
+                Muted = !alert
             };
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, _Serialize(newMessageEvent), true));
             }
-            if (alert)
+            if (alert && receiver.Id != sender.Id)
             {
                 pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, _Serialize(newMessageEvent)));
             }

@@ -20,7 +20,6 @@ namespace Kahla.Server.Events
         public string Content { get; set; }
         public string AESKey { get; set; }
         public bool Muted { get; set; }
-        public bool SentByMe { get; set; }
     }
     public class NewFriendRequestEvent : KahlaEvent
     {
