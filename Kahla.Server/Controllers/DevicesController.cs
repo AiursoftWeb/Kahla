@@ -120,7 +120,7 @@ namespace Kahla.Server.Controllers
                 ConversationId = -1,
                 Sender = new KahlaUser
                 {
-                    HeadImgFileKey = 647,
+                    HeadImgFileKey = 4251,
                     NickName = "Aiursoft Push System",
                 },
                 // This is a test message sent by Aiursoft.
