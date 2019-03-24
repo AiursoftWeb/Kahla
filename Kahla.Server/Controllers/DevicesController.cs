@@ -126,8 +126,7 @@ namespace Kahla.Server.Controllers
                 // This is a test message sent by Aiursoft.
                 Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
                 AESKey = "37316f609ebc4e79bd7812a5f2ab37b8",
-                Muted = false,
-                SentByMe = false
+                Muted = false
             };
             var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
             {
