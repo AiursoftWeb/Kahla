@@ -2,11 +2,11 @@
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
-    public class SearchFriendsAddressModel
+    public class SearchEverythingAddressModel
     {
         [MinLength(1)]
         [Required]
-        public string NickName { get; set; }
+        public string SearchInput { get; set; }
 
         public int Take { get; set; } = 20;
     }
