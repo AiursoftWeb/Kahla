@@ -163,24 +163,22 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
-            var users = await _dbContext
+            var users = _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase))
-                .Take(model.Take)
-                .ToListAsync();
+                .Where(t => t.NickName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase));
 
-            var groups = await _dbContext
+            var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase))
-                .Take(model.Take)
-                .ToListAsync();
+                .Where(t => t.GroupName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase));
 
             return this.AiurJson(new SearchEverythingViewModel
             {
-                Users = users,
-                Groups = groups,
+                UsersCount = await users.CountAsync(),
+                GroupsCount = await groups.CountAsync(),
+                Users = await users.Take(model.Take).ToListAsync(),
+                Groups = await groups.Take(model.Take).ToListAsync(),
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
             });
