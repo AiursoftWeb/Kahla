@@ -187,8 +187,12 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             // Load everything to memory and even functions.
-            var users = await _dbContext.Users.ToListAsync();
-            var conversations = await _dbContext.PrivateConversations.ToListAsync();
+            var users = await _dbContext.Users
+                .AsNoTracking()
+                .ToListAsync();
+            var conversations = await _dbContext.PrivateConversations
+                .AsNoTracking()
+                .ToListAsync();
             bool AreFriends(string userId1, string userId2)
             {
                 var relation = conversations.Any(t => t.RequesterId == userId1 && t.TargetId == userId2);

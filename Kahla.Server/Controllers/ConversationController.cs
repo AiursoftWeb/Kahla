@@ -45,7 +45,10 @@ namespace Kahla.Server.Controllers
             IQueryable<Message> allMessages = _dbContext
                 .Messages
                 .AsNoTracking()
-                .Where(t => t.ConversationId == target.Id);
+                .Include(t => t.Conversation)
+                .Where(t => t.ConversationId == target.Id)
+                // Only messages within the life time.
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             if (skipTill != -1)
                 allMessages = allMessages.Where(t => t.Id < skipTill);
             var allMessagesList = await allMessages
@@ -97,38 +100,38 @@ namespace Kahla.Server.Controllers
             {
                 //Push the message to receiver
                 case PrivateConversation privateConversation:
-                {
-                    var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
-                    var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                    await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
-                    // In cause you are talking to yourself.
-                    if (requester.Id != targetUser.Id)
                     {
-                        await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
+                        var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
+                        var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                        await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
+                        // In cause you are talking to yourself.
+                        if (requester.Id != targetUser.Id)
+                        {
+                            await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
+                        }
+                        break;
                     }
-                    break;
-                }
                 case GroupConversation groupConversation:
-                {
-                    var usersJoined = await _dbContext
-                        .UserGroupRelations
-                        .Include(t => t.User)
-                        .Where(t => t.GroupId == groupConversation.Id)
-                        .ToListAsync();
-                    var taskList = new List<Task>();
-                    foreach (var relation in usersJoined)
                     {
-                        var pushTask = _pusher.NewMessageEvent(
-                            receiver: relation.User,
-                            conversation: target,
-                            content: model.Content,
-                            sender: user,
-                            alert: !relation.Muted);
-                        taskList.Add(pushTask);
+                        var usersJoined = await _dbContext
+                            .UserGroupRelations
+                            .Include(t => t.User)
+                            .Where(t => t.GroupId == groupConversation.Id)
+                            .ToListAsync();
+                        var taskList = new List<Task>();
+                        foreach (var relation in usersJoined)
+                        {
+                            var pushTask = _pusher.NewMessageEvent(
+                                receiver: relation.User,
+                                conversation: target,
+                                content: model.Content,
+                                sender: user,
+                                alert: !relation.Muted);
+                            taskList.Add(pushTask);
+                        }
+                        await Task.WhenAll(taskList);
+                        break;
                     }
-                    await Task.WhenAll(taskList);
-                    break;
-                }
             }
             try
             {
