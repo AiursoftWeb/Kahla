@@ -10,7 +10,7 @@ namespace Kahla.Server.Migrations
                 name: "MaxLiveSeconds",
                 table: "Conversations",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: int.MaxValue);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

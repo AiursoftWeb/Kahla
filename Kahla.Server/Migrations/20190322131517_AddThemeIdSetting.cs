@@ -10,7 +10,7 @@ namespace Kahla.Server.Migrations
                 name: "ThemeId",
                 table: "AspNetUsers",
                 nullable: false,
-                defaultValue: int.MaxValue);
+                defaultValue: 0);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
