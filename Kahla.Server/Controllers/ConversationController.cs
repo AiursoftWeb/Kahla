@@ -183,6 +183,20 @@ namespace Kahla.Server.Controllers
             throw new InvalidOperationException("Target is:" + target.Discriminator);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateMessageLifeTime(UpdateMessageLifeTimeAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var target = await _dbContext.Conversations.FindAsync(model.Id);
+            if (!await _dbContext.VerifyJoined(user.Id, target))
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            target.MaxLiveSeconds = model.NewLifeTime;
+            _dbContext.Update(target);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " + 
+                TimeSpan.FromSeconds(target.MaxLiveSeconds));
+        }
+
         private Task<KahlaUser> GetKahlaUser()
         {
             return _userManager.GetUserAsync(User);
