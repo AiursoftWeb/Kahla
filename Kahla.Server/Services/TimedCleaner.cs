@@ -1,4 +1,5 @@
 ﻿using Kahla.Server.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -38,12 +39,21 @@ namespace Kahla.Server.Services
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                    var hugecs = dbContext
+                    // try delete messages from conversations too large.
+                    var hugeConversationMessages = dbContext
                         .Messages
                         .GroupBy(t => t.ConversationId)
                         .Where(t => t.Count() > 20000)
                         .SelectMany(t => t.OrderBy(p => p.SendTime).Take(1000));
-                    dbContext.Messages.RemoveRange(hugecs);
+                    dbContext.Messages.RemoveRange(hugeConversationMessages);
+                    await dbContext.SaveChangesAsync();
+
+                    // try delete messages too old.
+                    var outdatedMessages = dbContext
+                        .Messages
+                        .Include(t => t.Conversation)
+                        .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+                    dbContext.Messages.RemoveRange(outdatedMessages);
                     await dbContext.SaveChangesAsync();
                 }
             }
