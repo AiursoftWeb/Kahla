@@ -190,8 +190,8 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            // Do update.
             target.MaxLiveSeconds = model.NewLifeTime;
-            _dbContext.Update(target);
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " + 
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
