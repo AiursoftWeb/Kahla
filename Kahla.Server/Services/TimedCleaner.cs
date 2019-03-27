@@ -52,7 +52,7 @@ namespace Kahla.Server.Services
                     var outdatedMessages = dbContext
                         .Messages
                         .Include(t => t.Conversation)
-                        .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+                        .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
                     dbContext.Messages.RemoveRange(outdatedMessages);
                     await dbContext.SaveChangesAsync();
                 }
