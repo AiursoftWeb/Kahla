@@ -167,12 +167,12 @@ namespace Kahla.Server.Controllers
             var users = _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase));
+                .Where(t => t.NickName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
             var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase));
+                .Where(t => t.GroupName.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
             var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
 
