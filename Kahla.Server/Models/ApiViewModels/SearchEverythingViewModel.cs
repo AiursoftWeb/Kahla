@@ -8,6 +8,6 @@ namespace Kahla.Server.Models.ApiViewModels
         public int UsersCount { get; set; }
         public int GroupsCount { get; set; }
         public List<KahlaUser> Users { get; set; }
-        public List<GroupConversation> Groups { get; set; }
+        public List<SearchedGroup> Groups { get; set; }
     }
 }

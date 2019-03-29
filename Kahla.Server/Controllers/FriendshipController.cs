@@ -163,6 +163,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
+            var user = await GetKahlaUser();
             var users = _dbContext
                 .Users
                 .AsNoTracking()
@@ -173,12 +174,14 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .Where(t => t.GroupName.Contains(model.SearchInput, StringComparison.CurrentCultureIgnoreCase));
 
+            var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
+
             return this.AiurJson(new SearchEverythingViewModel
             {
                 UsersCount = await users.CountAsync(),
                 GroupsCount = await groups.CountAsync(),
                 Users = await users.Take(model.Take).ToListAsync(),
-                Groups = await groups.Take(model.Take).ToListAsync(),
+                Groups = searched,
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
             });
