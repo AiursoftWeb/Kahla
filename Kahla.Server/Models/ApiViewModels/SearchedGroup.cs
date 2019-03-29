@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Models.ApiViewModels
 {
@@ -16,7 +15,8 @@ namespace Kahla.Server.Models.ApiViewModels
             }
             return list;
         }
-        public SearchedGroup(GroupConversation conversation, string currentUserId)
+
+        private SearchedGroup(GroupConversation conversation, string currentUserId)
         {
             UsersCount = conversation.Users.Count();
             ImageKey = conversation.GroupImageKey;
