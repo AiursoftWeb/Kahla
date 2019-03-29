@@ -171,6 +171,7 @@ namespace Kahla.Server.Controllers
 
             var groups = _dbContext
                 .GroupConversations
+                .Include(t => t.Users)
                 .AsNoTracking()
                 .Where(t => t.GroupName.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
