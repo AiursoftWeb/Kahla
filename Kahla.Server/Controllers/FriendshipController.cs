@@ -197,6 +197,9 @@ namespace Kahla.Server.Controllers
             var conversations = await _dbContext.PrivateConversations
                 .AsNoTracking()
                 .ToListAsync();
+            var requests = await _dbContext.Requests
+                .AsNoTracking()
+                .ToListAsync();
             bool AreFriends(string userId1, string userId2)
             {
                 var relation = conversations.Any(t => t.RequesterId == userId1 && t.TargetId == userId2);
@@ -212,10 +215,17 @@ namespace Kahla.Server.Controllers
                     .ToList();
                 return personalRelations;
             }
+            bool SentRequest(string userId1, string userId2)
+            {
+                var relation = requests.Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
+                if (relation) return true;
+                var elation = requests.Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
+                return elation;
+            }
 
             var currentUser = await GetKahlaUser();
             var myFriends = HisPersonalFriendsId(currentUser.Id);
-            var calculated = new List<KeyValuePair<int, KahlaUser>>();
+            var calculated = new List<FriendDiscovery>();
             foreach (var user in users)
             {
                 if (user.Id == currentUser.Id || AreFriends(user.Id, currentUser.Id))
@@ -226,15 +236,20 @@ namespace Kahla.Server.Controllers
                 var commonFriends = myFriends.Intersect(hisFriends).Count();
                 if (commonFriends > 0)
                 {
-                    calculated.Add(new KeyValuePair<int, KahlaUser>(commonFriends, user));
+                    calculated.Add(new FriendDiscovery
+                    {
+                        CommonFriends = commonFriends,
+                        TargetUser = user,
+                        SentRequest = SentRequest(currentUser.Id, user.Id)
+                    });
                 }
                 if (calculated.Count >= take)
                 {
                     break;
                 }
             }
-            var ordered = calculated.OrderByDescending(t => t.Key);
-            return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
+            var ordered = calculated.OrderByDescending(t => t.CommonFriends);
+            return this.AiurJson(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your suggested friends."
