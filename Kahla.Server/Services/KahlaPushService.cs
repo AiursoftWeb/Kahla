@@ -116,5 +116,20 @@ namespace Kahla.Server.Services
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
         }
+
+        public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var timerUpdatedEvent = new TimerUpdatedEvent
+            {
+                Type = EventType.TimerUpdatedEvent,
+                NewTimer = newTimer
+            };
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(timerUpdatedEvent), true);
+            }
+        }
     }
 }

@@ -193,7 +193,29 @@ namespace Kahla.Server.Controllers
             // Do update.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " + 
+            if (target is PrivateConversation privateConversation)
+            {
+                var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
+                var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                await _pusher.TimerUpdatedEvent(requester, model.NewLifeTime);
+                await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime);
+            }
+            else if (target is GroupConversation g)
+            {
+                var usersJoined = await _dbContext
+                    .UserGroupRelations
+                    .Include(t => t.User)
+                    .Where(t => t.GroupId == g.Id)
+                    .ToListAsync();
+                var taskList = new List<Task>();
+                foreach (var relation in usersJoined)
+                {
+                    var pushTask = _pusher.TimerUpdatedEvent(relation.User, model.NewLifeTime);
+                    taskList.Add(pushTask);
+                }
+                await Task.WhenAll(taskList);
+            }
+            return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
 
