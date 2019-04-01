@@ -8,7 +8,7 @@ namespace Kahla.Server.Events
         NewFriendRequestEvent = 1,
         WereDeletedEvent = 2,
         FriendAcceptedEvent = 3,
-        TimerUpdatedEvent = 3,
+        TimerUpdatedEvent = 4,
     }
     public abstract class KahlaEvent
     {
@@ -37,6 +37,7 @@ namespace Kahla.Server.Events
 
     public class TimerUpdatedEvent : KahlaEvent
     {
+        public int ConversationId { get; set; }
         public int NewTimer { get; set; }
     }
 }

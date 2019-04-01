@@ -197,8 +197,8 @@ namespace Kahla.Server.Controllers
             {
                 var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
                 var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                await _pusher.TimerUpdatedEvent(requester, model.NewLifeTime);
-                await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime);
+                await _pusher.TimerUpdatedEvent(requester, model.NewLifeTime, target.Id);
+                await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime, target.Id);
             }
             else if (target is GroupConversation g)
             {
@@ -210,7 +210,7 @@ namespace Kahla.Server.Controllers
                 var taskList = new List<Task>();
                 foreach (var relation in usersJoined)
                 {
-                    var pushTask = _pusher.TimerUpdatedEvent(relation.User, model.NewLifeTime);
+                    var pushTask = _pusher.TimerUpdatedEvent(relation.User, model.NewLifeTime, target.Id);
                     taskList.Add(pushTask);
                 }
                 await Task.WhenAll(taskList);

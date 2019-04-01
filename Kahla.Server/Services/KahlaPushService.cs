@@ -117,14 +117,15 @@ namespace Kahla.Server.Services
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
         }
 
-        public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer)
+        public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
             var timerUpdatedEvent = new TimerUpdatedEvent
             {
                 Type = EventType.TimerUpdatedEvent,
-                NewTimer = newTimer
+                NewTimer = newTimer,
+                ConversationId = conversationId
             };
             if (channel != -1)
             {
