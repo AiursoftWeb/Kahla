@@ -196,9 +196,12 @@ namespace Kahla.Server.Controllers
             if (target is PrivateConversation privateConversation)
             {
                 var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
-                var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
                 await _pusher.TimerUpdatedEvent(requester, model.NewLifeTime, target.Id);
-                await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime, target.Id);
+                if (privateConversation.RequesterId != privateConversation.TargetId)
+                {
+                    var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
+                    await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime, target.Id);
+                }
             }
             else if (target is GroupConversation g)
             {
