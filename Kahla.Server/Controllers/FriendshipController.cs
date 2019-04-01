@@ -217,9 +217,9 @@ namespace Kahla.Server.Controllers
             }
             bool SentRequest(string userId1, string userId2)
             {
-                var relation = requests.Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
+                var relation = requests.Where(t => t.Completed == false).Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
                 if (relation) return true;
-                var elation = requests.Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
+                var elation = requests.Where(t => t.Completed == false).Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
                 return elation;
             }
 
