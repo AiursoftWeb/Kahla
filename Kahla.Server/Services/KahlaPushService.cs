@@ -54,7 +54,6 @@ namespace Kahla.Server.Services
             var channel = receiver.CurrentChannel;
             var newMessageEvent = new NewMessageEvent
             {
-                Type = EventType.NewMessage,
                 ConversationId = conversation.Id,
                 Sender = sender,
                 Content = content,
@@ -81,7 +80,6 @@ namespace Kahla.Server.Services
             var channel = receiver.CurrentChannel;
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
-                Type = EventType.NewFriendRequestEvent,
                 RequesterId = requesterId
             };
             if (channel != -1)
@@ -94,10 +92,7 @@ namespace Kahla.Server.Services
             var token = await _appsContainer.AccessToken();
             var user = await _dbContext.Users.FindAsync(receiverId);
             var channel = user.CurrentChannel;
-            var wereDeletedEvent = new WereDeletedEvent
-            {
-                Type = EventType.WereDeletedEvent
-            };
+            var wereDeletedEvent = new WereDeletedEvent();
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(wereDeletedEvent), true);
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(wereDeletedEvent));
@@ -108,10 +103,7 @@ namespace Kahla.Server.Services
             var token = await _appsContainer.AccessToken();
             var user = await _dbContext.Users.FindAsync(receiverId);
             var channel = user.CurrentChannel;
-            var friendAcceptedEvent = new FriendAcceptedEvent
-            {
-                Type = EventType.FriendAcceptedEvent
-            };
+            var friendAcceptedEvent = new FriendAcceptedEvent();
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
@@ -123,7 +115,6 @@ namespace Kahla.Server.Services
             var channel = receiver.CurrentChannel;
             var timerUpdatedEvent = new TimerUpdatedEvent
             {
-                Type = EventType.TimerUpdatedEvent,
                 NewTimer = newTimer,
                 ConversationId = conversationId
             };

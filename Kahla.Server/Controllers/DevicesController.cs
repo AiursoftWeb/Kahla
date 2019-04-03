@@ -116,7 +116,6 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var messageEvent = new NewMessageEvent
             {
-                Type = EventType.NewMessage,
                 ConversationId = -1,
                 Sender = new KahlaUser
                 {

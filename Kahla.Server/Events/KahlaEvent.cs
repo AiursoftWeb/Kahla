@@ -12,10 +12,14 @@ namespace Kahla.Server.Events
     }
     public abstract class KahlaEvent
     {
-        public EventType Type { get; set; }
+        protected EventType Type { get; set; }
     }
     public class NewMessageEvent : KahlaEvent
     {
+        public NewMessageEvent()
+        {
+            Type = EventType.NewMessage;
+        }
         public int ConversationId { get; set; }
         public AiurUserBase Sender { get; set; }
         public string Content { get; set; }
@@ -24,19 +28,33 @@ namespace Kahla.Server.Events
     }
     public class NewFriendRequestEvent : KahlaEvent
     {
+        public NewFriendRequestEvent()
+        {
+            Type = EventType.NewFriendRequestEvent;
+        }
         public string RequesterId { get; set; }
     }
     public class WereDeletedEvent : KahlaEvent
     {
-
+        public WereDeletedEvent()
+        {
+            Type = EventType.WereDeletedEvent;
+        }
     }
     public class FriendAcceptedEvent : KahlaEvent
     {
-
+        public FriendAcceptedEvent()
+        {
+            Type = EventType.FriendAcceptedEvent;
+        }
     }
 
     public class TimerUpdatedEvent : KahlaEvent
     {
+        public TimerUpdatedEvent()
+        {
+            Type = EventType.TimerUpdatedEvent;
+        }
         public int ConversationId { get; set; }
         public int NewTimer { get; set; }
     }
