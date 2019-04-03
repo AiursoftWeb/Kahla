@@ -12,8 +12,8 @@ namespace Kahla.Server.Events
     }
     public abstract class KahlaEvent
     {
-        protected EventType Type { get; set; }
-        protected string TypeDescription => Type.ToString();
+        public EventType Type { get; protected set; }
+        public string TypeDescription => Type.ToString();
     }
     public class NewMessageEvent : KahlaEvent
     {
