@@ -40,7 +40,9 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
+            {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            }
             //Get Messages
             IQueryable<Message> allMessages = _dbContext
                 .Messages
@@ -50,7 +52,10 @@ namespace Kahla.Server.Controllers
                 // Only messages within the life time.
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             if (skipTill != -1)
+            {
                 allMessages = allMessages.Where(t => t.Id < skipTill);
+            }
+
             var allMessagesList = await allMessages
                 .OrderByDescending(t => t.Id)
                 .Take(take)
@@ -84,9 +89,14 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
+            {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            }
+
             if (model.Content.Trim().Length == 0)
+            {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
+            }
             //Create message.
             var message = new Message
             {
@@ -189,7 +199,9 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
+            {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            }
             // Do update.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();

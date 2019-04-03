@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Aiursoft.Pylon;
+﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
@@ -21,6 +17,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
@@ -89,7 +89,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> Version()
         {
-            if(!_cache.TryGetValue(nameof(Version), out string version))
+            if (!_cache.TryGetValue(nameof(Version), out string version))
             {
                 version = await _version.CheckKahla();
 

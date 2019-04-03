@@ -74,9 +74,15 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find target user.");
+            }
+
             if (!await _dbContext.AreFriends(user.Id, target.Id))
+            {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
+            }
+
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
             await _pusher.WereDeletedEvent(target.Id);
@@ -88,15 +94,27 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             if (!user.EmailConfirmed)
+            {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to create friend requests without confirming your email!");
+            }
+
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find your target user!");
+            }
+
             if (target.Id == user.Id)
+            {
                 return this.Protocol(ErrorType.RequireAttention, "You can't request yourself!");
+            }
+
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
+            {
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
+            }
+
             Request request;
             lock (Obj)
             {
@@ -105,7 +123,10 @@ namespace Kahla.Server.Controllers
                     .Where(t => t.TargetId == id)
                     .Any(t => !t.Completed);
                 if (pending)
+                {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
+                }
+
                 request = new Request { CreatorId = user.Id, TargetId = id };
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
@@ -124,11 +145,20 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var request = await _dbContext.Requests.FindAsync(model.Id);
             if (request == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find target request.");
+            }
+
             if (request.TargetId != user.Id)
+            {
                 return this.Protocol(ErrorType.Unauthorized, "The target user of this request is not you.");
+            }
+
             if (request.Completed)
+            {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
+            }
+
             request.Completed = true;
             if (model.Accept)
             {
@@ -203,7 +233,11 @@ namespace Kahla.Server.Controllers
             bool AreFriends(string userId1, string userId2)
             {
                 var relation = conversations.Any(t => t.RequesterId == userId1 && t.TargetId == userId2);
-                if (relation) return true;
+                if (relation)
+                {
+                    return true;
+                }
+
                 var elation = conversations.Any(t => t.RequesterId == userId2 && t.TargetId == userId1);
                 return elation;
             }
@@ -218,7 +252,11 @@ namespace Kahla.Server.Controllers
             bool SentRequest(string userId1, string userId2)
             {
                 var relation = requests.Where(t => t.Completed == false).Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
-                if (relation) return true;
+                if (relation)
+                {
+                    return true;
+                }
+
                 var elation = requests.Where(t => t.Completed == false).Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
                 return elation;
             }
