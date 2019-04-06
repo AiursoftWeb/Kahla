@@ -10,10 +10,9 @@ namespace Kahla.Server.Models
     {
         [Key]
         public int Id { get; set; }
-
         public string Discriminator { get; set; }
-
         public string AESKey { get; set; }
+        public int MaxLiveSeconds { get; set; } = int.MaxValue;
         [JsonIgnore]
         [InverseProperty(nameof(Message.Conversation))]
         public IEnumerable<Message> Messages { get; set; }

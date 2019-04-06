@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Aiursoft.Pylon;
+﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Kahla.Server.Data;
@@ -13,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
@@ -116,18 +116,16 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var messageEvent = new NewMessageEvent
             {
-                Type = EventType.NewMessage,
                 ConversationId = -1,
                 Sender = new KahlaUser
                 {
-                    HeadImgFileKey = 647,
+                    HeadImgFileKey = 4251,
                     NickName = "Aiursoft Push System",
                 },
                 // This is a test message sent by Aiursoft.
                 Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
                 AESKey = "37316f609ebc4e79bd7812a5f2ab37b8",
-                Muted = false,
-                SentByMe = false
+                Muted = false
             };
             var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
             {

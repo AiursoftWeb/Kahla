@@ -54,20 +54,18 @@ namespace Kahla.Server.Services
             var channel = receiver.CurrentChannel;
             var newMessageEvent = new NewMessageEvent
             {
-                Type = EventType.NewMessage,
                 ConversationId = conversation.Id,
                 Sender = sender,
                 Content = content,
                 AESKey = conversation.AESKey,
-                Muted = !alert,
-                SentByMe = receiver.Id == sender.Id
+                Muted = !alert
             };
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, _Serialize(newMessageEvent), true));
             }
-            if (alert)
+            if (alert && receiver.Id != sender.Id)
             {
                 pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, _Serialize(newMessageEvent)));
             }
@@ -82,7 +80,6 @@ namespace Kahla.Server.Services
             var channel = receiver.CurrentChannel;
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
-                Type = EventType.NewFriendRequestEvent,
                 RequesterId = requesterId
             };
             if (channel != -1)
@@ -95,10 +92,7 @@ namespace Kahla.Server.Services
             var token = await _appsContainer.AccessToken();
             var user = await _dbContext.Users.FindAsync(receiverId);
             var channel = user.CurrentChannel;
-            var wereDeletedEvent = new WereDeletedEvent
-            {
-                Type = EventType.WereDeletedEvent
-            };
+            var wereDeletedEvent = new WereDeletedEvent();
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(wereDeletedEvent), true);
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(wereDeletedEvent));
@@ -109,13 +103,25 @@ namespace Kahla.Server.Services
             var token = await _appsContainer.AccessToken();
             var user = await _dbContext.Users.FindAsync(receiverId);
             var channel = user.CurrentChannel;
-            var friendAcceptedEvent = new FriendAcceptedEvent
-            {
-                Type = EventType.FriendAcceptedEvent
-            };
+            var friendAcceptedEvent = new FriendAcceptedEvent();
             if (channel != -1)
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
+        }
+
+        public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var timerUpdatedEvent = new TimerUpdatedEvent
+            {
+                NewTimer = newTimer,
+                ConversationId = conversationId
+            };
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(timerUpdatedEvent), true);
+            }
         }
     }
 }

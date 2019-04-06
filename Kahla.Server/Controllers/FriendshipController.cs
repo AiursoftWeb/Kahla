@@ -74,9 +74,15 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find target user.");
+            }
+
             if (!await _dbContext.AreFriends(user.Id, target.Id))
+            {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
+            }
+
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
             await _pusher.WereDeletedEvent(target.Id);
@@ -88,15 +94,27 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             if (!user.EmailConfirmed)
+            {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to create friend requests without confirming your email!");
+            }
+
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find your target user!");
+            }
+
             if (target.Id == user.Id)
+            {
                 return this.Protocol(ErrorType.RequireAttention, "You can't request yourself!");
+            }
+
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
+            {
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
+            }
+
             Request request;
             lock (Obj)
             {
@@ -105,7 +123,10 @@ namespace Kahla.Server.Controllers
                     .Where(t => t.TargetId == id)
                     .Any(t => !t.Completed);
                 if (pending)
+                {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
+                }
+
                 request = new Request { CreatorId = user.Id, TargetId = id };
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
@@ -124,11 +145,20 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var request = await _dbContext.Requests.FindAsync(model.Id);
             if (request == null)
+            {
                 return this.Protocol(ErrorType.NotFound, "We can not find target request.");
+            }
+
             if (request.TargetId != user.Id)
+            {
                 return this.Protocol(ErrorType.Unauthorized, "The target user of this request is not you.");
+            }
+
             if (request.Completed)
+            {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
+            }
+
             request.Completed = true;
             if (model.Accept)
             {
@@ -161,17 +191,28 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        public async Task<IActionResult> SearchFriends(SearchFriendsAddressModel model)
+        public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
-            var users = await _dbContext
+            var user = await GetKahlaUser();
+            var users = _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => t.NickName.Contains(model.NickName, StringComparison.CurrentCultureIgnoreCase))
-                .Take(model.Take)
-                .ToListAsync();
+                .Where(t => t.NickName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
-            return this.AiurJson(new AiurCollection<KahlaUser>(users)
+            var groups = _dbContext
+                .GroupConversations
+                .Include(t => t.Users)
+                .AsNoTracking()
+                .Where(t => t.GroupName.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+
+            var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
+
+            return this.AiurJson(new SearchEverythingViewModel
             {
+                UsersCount = await users.CountAsync(),
+                GroupsCount = await groups.CountAsync(),
+                Users = await users.Take(model.Take).ToListAsync(),
+                Groups = searched,
                 Code = ErrorType.Success,
                 Message = "Search result is shown."
             });
@@ -180,12 +221,23 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             // Load everything to memory and even functions.
-            var users = await _dbContext.Users.ToListAsync();
-            var conversations = await _dbContext.PrivateConversations.ToListAsync();
+            var users = await _dbContext.Users
+                .AsNoTracking()
+                .ToListAsync();
+            var conversations = await _dbContext.PrivateConversations
+                .AsNoTracking()
+                .ToListAsync();
+            var requests = await _dbContext.Requests
+                .AsNoTracking()
+                .ToListAsync();
             bool AreFriends(string userId1, string userId2)
             {
                 var relation = conversations.Any(t => t.RequesterId == userId1 && t.TargetId == userId2);
-                if (relation) return true;
+                if (relation)
+                {
+                    return true;
+                }
+
                 var elation = conversations.Any(t => t.RequesterId == userId2 && t.TargetId == userId1);
                 return elation;
             }
@@ -197,10 +249,21 @@ namespace Kahla.Server.Controllers
                     .ToList();
                 return personalRelations;
             }
+            bool SentRequest(string userId1, string userId2)
+            {
+                var relation = requests.Where(t => t.Completed == false).Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
+                if (relation)
+                {
+                    return true;
+                }
+
+                var elation = requests.Where(t => t.Completed == false).Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
+                return elation;
+            }
 
             var currentUser = await GetKahlaUser();
             var myFriends = HisPersonalFriendsId(currentUser.Id);
-            var calculated = new List<KeyValuePair<int, KahlaUser>>();
+            var calculated = new List<FriendDiscovery>();
             foreach (var user in users)
             {
                 if (user.Id == currentUser.Id || AreFriends(user.Id, currentUser.Id))
@@ -211,15 +274,20 @@ namespace Kahla.Server.Controllers
                 var commonFriends = myFriends.Intersect(hisFriends).Count();
                 if (commonFriends > 0)
                 {
-                    calculated.Add(new KeyValuePair<int, KahlaUser>(commonFriends, user));
+                    calculated.Add(new FriendDiscovery
+                    {
+                        CommonFriends = commonFriends,
+                        TargetUser = user,
+                        SentRequest = SentRequest(currentUser.Id, user.Id)
+                    });
                 }
                 if (calculated.Count >= take)
                 {
                     break;
                 }
             }
-            var ordered = calculated.OrderByDescending(t => t.Key);
-            return this.AiurJson(new AiurCollection<KeyValuePair<int, KahlaUser>>(ordered)
+            var ordered = calculated.OrderByDescending(t => t.CommonFriends);
+            return this.AiurJson(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your suggested friends."
@@ -249,6 +317,7 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
+            model.SentRequest = _dbContext.Requests.Any(t => t.TargetId == target.Id && t.CreatorId == user.Id);
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return this.AiurJson(model);

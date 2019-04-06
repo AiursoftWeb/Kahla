@@ -38,7 +38,10 @@ namespace Kahla.Server.Models
         {
             try
             {
-                return Messages.OrderByDescending(p => p.SendTime).First();
+                return Messages
+                    .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                    .OrderByDescending(p => p.SendTime)
+                    .First();
             }
             catch (InvalidOperationException)
             {

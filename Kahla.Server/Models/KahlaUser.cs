@@ -37,6 +37,11 @@ namespace Kahla.Server.Models
         public bool MakeEmailPublic { get; set; } = true;
         [NotMapped]
         public bool IsMe { get; set; }
+
+        [JsonProperty]
+        public int ThemeId { get; set; }
+        public bool ShouldSerializeThemeId() => IsMe;
+
         public override string Email { get; set; }
         public bool ShouldSerializeEmail() => MakeEmailPublic || IsMe;
     }

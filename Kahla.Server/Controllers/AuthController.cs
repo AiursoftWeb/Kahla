@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Aiursoft.Pylon;
+﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
@@ -19,7 +15,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
@@ -40,6 +41,7 @@ namespace Kahla.Server.Controllers
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
+        private readonly IMemoryCache _cache;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -54,7 +56,8 @@ namespace Kahla.Server.Controllers
             KahlaPushService pusher,
             ChannelService channelService,
             VersionChecker version,
-            KahlaDbContext dbContext)
+            KahlaDbContext dbContext,
+            IMemoryCache cache)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -69,6 +72,7 @@ namespace Kahla.Server.Controllers
             _channelService = channelService;
             _version = version;
             _dbContext = dbContext;
+            _cache = cache;
         }
 
         public IActionResult Index()
@@ -85,11 +89,19 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> Version()
         {
-            var latest = await _version.CheckKahla();
+            if (!_cache.TryGetValue(nameof(Version), out string version))
+            {
+                version = await _version.CheckKahla();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(20));
+
+                _cache.Set(nameof(Version), version, cacheEntryOptions);
+            }
             return this.AiurJson(new VersionViewModel
             {
-                LatestVersion = latest,
-                OldestSupportedVersion = latest,
+                LatestVersion = version,
+                OldestSupportedVersion = version,
                 Message = "Successfully get the latest version number for Kahla App.",
                 DownloadAddress = "https://www.kahla.app"
             });
@@ -175,6 +187,16 @@ namespace Kahla.Server.Controllers
             await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
+        }
+
+        [HttpPost]
+        [AiurForceAuth(true)]
+        public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingAddressModel model)
+        {
+            var currentUser = await GetKahlaUser();
+            currentUser.ThemeId = model.ThemeId;
+            await _userManager.UpdateAsync(currentUser);
+            return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
         }
 
         [HttpPost]

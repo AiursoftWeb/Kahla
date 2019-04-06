@@ -7,7 +7,7 @@ namespace Kahla.Server.Models.ApiAddressModels
         [Required]
         public int Id { get; set; }
         [Required]
-        [MaxLength(1000)]
+        [MaxLength(2500)]
         public string Content { get; set; }
     }
 }
