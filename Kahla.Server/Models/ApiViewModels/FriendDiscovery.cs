@@ -1,8 +1,8 @@
-using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
+using Aiursoft.Pylon.Models;
 
 namespace Kahla.Server.Models.ApiViewModels
 {
-    public class FriendDiscovery : CreateChannelViewModel
+    public class FriendDiscovery : AiurProtocol
     {
         public int CommonFriends { get; set; }
         public int CommonGroups { get; set; }
