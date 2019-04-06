@@ -230,6 +230,7 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .ToListAsync();
             var groups = await _dbContext.GroupConversations
+                .Include(t => t.Users)
                 .AsNoTracking()
                 .ToListAsync();
             var requests = await _dbContext.Requests
@@ -242,7 +243,6 @@ namespace Kahla.Server.Controllers
                 {
                     return true;
                 }
-
                 var elation = conversations.Any(t => t.RequesterId == userId2 && t.TargetId == userId1);
                 return elation;
             }
@@ -268,11 +268,9 @@ namespace Kahla.Server.Controllers
                 {
                     return true;
                 }
-
                 var elation = requests.Where(t => t.Completed == false).Any(t => t.TargetId == userId1 && t.CreatorId == userId1);
                 return elation;
             }
-
             var currentUser = await GetKahlaUser();
             var myFriends = HisPersonalFriendsId(currentUser.Id);
             var myGroups = HisGroups(currentUser.Id);
