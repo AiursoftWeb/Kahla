@@ -197,7 +197,7 @@ namespace Kahla.Server.Controllers
             var users = _dbContext
                 .Users
                 .AsNoTracking()
-                .Where(t => 
+                .Where(t =>
                     t.MakeEmailPublic && t.Email.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase) ||
                     t.NickName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
@@ -229,6 +229,9 @@ namespace Kahla.Server.Controllers
             var conversations = await _dbContext.PrivateConversations
                 .AsNoTracking()
                 .ToListAsync();
+            var groups = await _dbContext.GroupConversations
+                .AsNoTracking()
+                .ToListAsync();
             var requests = await _dbContext.Requests
                 .AsNoTracking()
                 .ToListAsync();
@@ -251,6 +254,13 @@ namespace Kahla.Server.Controllers
                     .ToList();
                 return personalRelations;
             }
+            List<int> HisGroups(string userId)
+            {
+                return groups
+                    .Where(t => t.Users.Any(p => p.UserId == userId))
+                    .Select(t => t.Id)
+                    .ToList();
+            }
             bool SentRequest(string userId1, string userId2)
             {
                 var relation = requests.Where(t => t.Completed == false).Any(t => t.CreatorId == userId1 && t.TargetId == userId2);
@@ -265,6 +275,7 @@ namespace Kahla.Server.Controllers
 
             var currentUser = await GetKahlaUser();
             var myFriends = HisPersonalFriendsId(currentUser.Id);
+            var myGroups = HisGroups(currentUser.Id);
             var calculated = new List<FriendDiscovery>();
             foreach (var user in users)
             {
@@ -273,12 +284,15 @@ namespace Kahla.Server.Controllers
                     continue;
                 }
                 var hisFriends = HisPersonalFriendsId(user.Id);
+                var hisGroups = HisGroups(user.Id);
                 var commonFriends = myFriends.Intersect(hisFriends).Count();
-                if (commonFriends > 0)
+                var commonGroups = myGroups.Intersect(hisGroups).Count();
+                if (commonFriends > 0 || commonGroups > 0)
                 {
                     calculated.Add(new FriendDiscovery
                     {
                         CommonFriends = commonFriends,
+                        CommonGroups = commonGroups,
                         TargetUser = user,
                         SentRequest = SentRequest(currentUser.Id, user.Id)
                     });
