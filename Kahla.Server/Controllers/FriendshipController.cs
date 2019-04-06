@@ -85,7 +85,7 @@ namespace Kahla.Server.Controllers
 
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
-            await _pusher.WereDeletedEvent(target.Id);
+            await _pusher.WereDeletedEvent(target, user);
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 
@@ -97,24 +97,20 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to create friend requests without confirming your email!");
             }
-
             var target = await _dbContext.Users.FindAsync(id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find your target user!");
             }
-
             if (target.Id == user.Id)
             {
                 return this.Protocol(ErrorType.RequireAttention, "You can't request yourself!");
             }
-
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
-
             Request request;
             lock (Obj)
             {
@@ -126,12 +122,11 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
                 }
-
                 request = new Request { CreatorId = user.Id, TargetId = id };
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.Id, user.Id);
+            await _pusher.NewFriendRequestEvent(target, user);
             return this.AiurJson(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -143,22 +138,22 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CompleteRequest(CompleteRequestAddressModel model)
         {
             var user = await GetKahlaUser();
-            var request = await _dbContext.Requests.FindAsync(model.Id);
+            var request = await _dbContext
+                .Requests
+                .Include(t => t.Creator)
+                .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (request == null)
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find target request.");
             }
-
             if (request.TargetId != user.Id)
             {
                 return this.Protocol(ErrorType.Unauthorized, "The target user of this request is not you.");
             }
-
             if (request.Completed)
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
-
             request.Completed = true;
             if (model.Accept)
             {
@@ -168,7 +163,7 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
                 _dbContext.AddFriend(request.CreatorId, request.TargetId);
-                await _pusher.FriendAcceptedEvent(request.CreatorId);
+                await _pusher.FriendAcceptedEvent(request.Creator, user);
             }
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
