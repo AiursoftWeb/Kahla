@@ -317,7 +317,10 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
-            model.SentRequest = _dbContext.Requests.Any(t => t.TargetId == target.Id && t.CreatorId == user.Id);
+            model.SentRequest = _dbContext.Requests
+                .Where(t => t.CreatorId == user.Id)
+                .Where(t => t.TargetId == id)
+                .Any(t => !t.Completed);
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return this.AiurJson(model);
