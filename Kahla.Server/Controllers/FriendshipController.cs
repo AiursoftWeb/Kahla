@@ -295,7 +295,9 @@ namespace Kahla.Server.Controllers
                     break;
                 }
             }
-            var ordered = calculated.OrderByDescending(t => t.CommonFriends);
+            var ordered = calculated
+                .OrderByDescending(t => t.CommonFriends)
+                .ThenBy(t => t.CommonGroups);
             return this.AiurJson(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
