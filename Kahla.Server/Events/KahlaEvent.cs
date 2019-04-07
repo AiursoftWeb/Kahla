@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Models;
+using Kahla.Server.Models;
 
 namespace Kahla.Server.Events
 {
@@ -22,7 +23,7 @@ namespace Kahla.Server.Events
             Type = EventType.NewMessage;
         }
         public int ConversationId { get; set; }
-        public AiurUserBase Sender { get; set; }
+        public KahlaUser Sender { get; set; }
         public string Content { get; set; }
         public string AESKey { get; set; }
         public bool Muted { get; set; }
@@ -34,6 +35,7 @@ namespace Kahla.Server.Events
             Type = EventType.NewFriendRequestEvent;
         }
         public string RequesterId { get; set; }
+        public KahlaUser Requester { get; set; }
     }
     public class WereDeletedEvent : KahlaEvent
     {
@@ -41,6 +43,7 @@ namespace Kahla.Server.Events
         {
             Type = EventType.WereDeletedEvent;
         }
+        public KahlaUser Trigger { get; set; }
     }
     public class FriendAcceptedEvent : KahlaEvent
     {
@@ -48,6 +51,7 @@ namespace Kahla.Server.Events
         {
             Type = EventType.FriendAcceptedEvent;
         }
+        public KahlaUser Target { get; set; }
     }
 
     public class TimerUpdatedEvent : KahlaEvent

@@ -72,41 +72,50 @@ namespace Kahla.Server.Services
             await Task.WhenAll(pushTasks);
         }
 
-        public async Task NewFriendRequestEvent(string receiverId, string requesterId)
+        public async Task NewFriendRequestEvent(KahlaUser receiver, KahlaUser requester)
         {
             var token = await _appsContainer.AccessToken();
-            var receiver = await _dbContext.Users.FindAsync(receiverId);
-            var requester = await _dbContext.Users.FindAsync(requesterId);
             var channel = receiver.CurrentChannel;
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
-                RequesterId = requesterId
+                RequesterId = requester.Id,
+                Requester = requester
             };
             if (channel != -1)
+            {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newFriendRequestEvent), true);
+            }
             await _thirdPartyPushService.PushAsync(receiver.Id, requester.Email, _Serialize(newFriendRequestEvent));
         }
 
-        public async Task WereDeletedEvent(string receiverId)
+        public async Task WereDeletedEvent(KahlaUser receiver, KahlaUser trigger)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(receiverId);
-            var channel = user.CurrentChannel;
-            var wereDeletedEvent = new WereDeletedEvent();
+            var channel = receiver.CurrentChannel;
+            var wereDeletedEvent = new WereDeletedEvent
+            {
+                Trigger = trigger
+            };
             if (channel != -1)
+            {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(wereDeletedEvent), true);
-            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(wereDeletedEvent));
+            }
+            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", _Serialize(wereDeletedEvent));
         }
 
-        public async Task FriendAcceptedEvent(string receiverId)
+        public async Task FriendAcceptedEvent(KahlaUser receiver, KahlaUser accepter)
         {
             var token = await _appsContainer.AccessToken();
-            var user = await _dbContext.Users.FindAsync(receiverId);
-            var channel = user.CurrentChannel;
-            var friendAcceptedEvent = new FriendAcceptedEvent();
+            var channel = receiver.CurrentChannel;
+            var friendAcceptedEvent = new FriendAcceptedEvent
+            {
+                Target = accepter
+            };
             if (channel != -1)
+            {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
-            await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
+            }
+            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
