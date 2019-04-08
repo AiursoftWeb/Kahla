@@ -205,6 +205,14 @@ namespace Kahla.Server.Controllers
             // Do update.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
+            // Delete outdated for current.
+            var outdatedMessages = _dbContext
+                .Messages
+                .Include(t => t.Conversation)
+                .Where(t => t.ConversationId == target.Id)
+                .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+            _dbContext.Messages.RemoveRange(outdatedMessages);
+            // Push event.
             if (target is PrivateConversation privateConversation)
             {
                 var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
