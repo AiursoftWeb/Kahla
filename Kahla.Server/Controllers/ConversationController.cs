@@ -212,6 +212,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             _dbContext.Messages.RemoveRange(outdatedMessages);
+            await _dbContext.SaveChangesAsync();
             // Push event.
             if (target is PrivateConversation privateConversation)
             {
