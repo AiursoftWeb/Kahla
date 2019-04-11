@@ -18,22 +18,19 @@ namespace Kahla.Server.Services
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
         private readonly ThirdPartyPushService _thirdPartyPushService;
-        private readonly AiurEmailSender _emailSender;
 
         public KahlaPushService(
             KahlaDbContext dbContext,
             PushMessageService stargatePushService,
             AppsContainer appsContainer,
             ChannelService channelService,
-            ThirdPartyPushService thirdPartyPushService,
-            AiurEmailSender emailSender)
+            ThirdPartyPushService thirdPartyPushService)
         {
             _dbContext = dbContext;
             _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
             _channelService = channelService;
             _thirdPartyPushService = thirdPartyPushService;
-            _emailSender = emailSender;
         }
 
         private static string _Serialize(object obj)
@@ -55,7 +52,6 @@ namespace Kahla.Server.Services
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
-            var message = "";
             var newMessageEvent = new NewMessageEvent
             {
                 ConversationId = conversation.Id,
@@ -64,28 +60,6 @@ namespace Kahla.Server.Services
                 AESKey = conversation.AESKey,
                 Muted = !alert
             };
-
-            message = content;
-
-            if (content.StartsWith("[img]"))
-            {
-                message = $"Click the link to open the picture: ${content}";
-            }
-            else if (content.StartsWith("[video]"))
-            {
-                message = $"Click the link to open the video: ${content}";
-            }
-            else if (content.StartsWith("[file]"))
-            {
-                message = $"Click the link to download the file: ${content}";
-            }
-            else if (content.StartsWith("[audio]"))
-            {
-                message = $"Click the link to open the audio: ${content}";
-            }
-
-            await _emailSender.SendEmail(receiver.Email, "There is a new message", $"Your friend {sender.NickName} sent you a new message {message}");
-
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
@@ -107,9 +81,6 @@ namespace Kahla.Server.Services
                 RequesterId = requester.Id,
                 Requester = requester
             };
-
-            await _emailSender.SendEmail(receiver.Email, "Add As a Friend", $"{requester.NickName} wants to be your friend");
-
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newFriendRequestEvent), true);
@@ -125,9 +96,6 @@ namespace Kahla.Server.Services
             {
                 Trigger = trigger
             };
-
-            await _emailSender.SendEmail(receiver.Email, "Deleted you", $"Your friend {trigger.NickName} deleted you");
-
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(wereDeletedEvent), true);
@@ -143,9 +111,6 @@ namespace Kahla.Server.Services
             {
                 Target = accepter
             };
-
-            await _emailSender.SendEmail(receiver.Email, "Accpet with you", $"Your friend {accepter.NickName} agrees to your friend request");
-
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
@@ -162,7 +127,6 @@ namespace Kahla.Server.Services
                 NewTimer = newTimer,
                 ConversationId = conversationId
             };
-
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, _Serialize(timerUpdatedEvent), true);
