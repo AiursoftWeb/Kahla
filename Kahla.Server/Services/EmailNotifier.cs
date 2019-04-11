@@ -84,9 +84,9 @@ namespace Kahla.Server.Services
                         if (inConversatons > 0 || pendingRequests > 0)
                         {
                             string message =
-                                (inConversatons > 0 ? $"<h4>You have {totalUnread} messages in {inConversatons} from your Kahla friends!<h4>\r\n" : "")
+                                (inConversatons > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversatons} conversation(s) from your Kahla friends!<h4>\r\n" : "")
                                 +
-                                (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend requests in Kahla.<h4>\r\n" : "")
+                                (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>\r\n" : "")
                                 +
                                 $"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.";
                             await emailSender.SendEmail(user.Email, "New notifications in Kahla", message);
