@@ -58,11 +58,11 @@ namespace Kahla.Server.Services
                         foreach (var conversation in conversations)
                         {
                             // Ignore conversations muted.
-                            if (conversation is GroupConversation g)
+                            if (conversation is GroupConversation currentGroup)
                             {
-                                var relation = g
+                                var relation = currentGroup
                                     .Users
-                                    .FirstOrDefault(t => t.UserId == user.Id && t.GroupId == g.Id);
+                                    .FirstOrDefault(t => t.UserId == user.Id);
                                 if (relation.Muted)
                                 {
                                     continue;
