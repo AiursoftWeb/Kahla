@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -51,6 +54,21 @@ namespace Kahla.Server.Models
                     SendTime = ConversationCreateTime
                 };
             }
+        }
+
+        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
+        {
+            var usersJoined = await userManager.Users
+                .Include(t => t.GroupsJoined)
+                .Where(t => t.GroupsJoined.Any(p => p.GroupId == Id))
+                .ToListAsync();
+            var taskList = new List<Task>();
+            foreach (var user in usersJoined)
+            {
+                var task = function(user, user.GroupsJoined.FirstOrDefault(p => p.GroupId == Id));
+                taskList.Add(task);
+            }
+            await Task.WhenAll(taskList);
         }
     }
 }
