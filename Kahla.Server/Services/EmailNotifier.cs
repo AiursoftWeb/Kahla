@@ -52,7 +52,7 @@ namespace Kahla.Server.Services
                                     .ToListAsync();
                     foreach (var user in users.Where(t => t.EmailConfirmed))
                     {
-                        int totalUnread = 0, inConversatons = 0, pendingRequests = 0;
+                        int totalUnread = 0, inConversations = 0, pendingRequests = 0;
                         var list = new List<ContactInfo>();
                         var conversations = await dbContext.MyConversations(user.Id);
                         foreach (var conversation in conversations)
@@ -72,7 +72,7 @@ namespace Kahla.Server.Services
                             if (currentUnread > 0)
                             {
                                 totalUnread += currentUnread;
-                                inConversatons++;
+                                inConversations++;
                             }
                         }
                         pendingRequests = await dbContext
@@ -81,10 +81,10 @@ namespace Kahla.Server.Services
                             .Where(t => t.TargetId == user.Id)
                             .CountAsync(t => t.Completed == false);
 
-                        if (inConversatons > 0 || pendingRequests > 0)
+                        if (inConversations > 0 || pendingRequests > 0)
                         {
                             string message =
-                                (inConversatons > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversatons} conversation(s) from your Kahla friends!<h4>\r\n" : "")
+                                (inConversations > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n" : "")
                                 +
                                 (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>\r\n" : "")
                                 +
