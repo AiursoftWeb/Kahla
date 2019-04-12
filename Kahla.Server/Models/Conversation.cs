@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -28,6 +30,7 @@ namespace Kahla.Server.Models
         public abstract string GetDisplayName(string userId);
         public abstract int GetDisplayImage(string userId);
         public abstract int GetUnReadAmount(string userId);
+        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
         public abstract Message GetLatestMessage();
     }
 

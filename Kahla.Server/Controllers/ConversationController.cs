@@ -106,43 +106,15 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            switch (target)
+            await target.ForEachUserAsync(async (eachUser, relation) =>
             {
-                //Push the message to receiver
-                case PrivateConversation privateConversation:
-                    {
-                        var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
-                        var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                        await _pusher.NewMessageEvent(requester, target, model.Content, user, true);
-                        // In cause you are talking to yourself.
-                        if (requester.Id != targetUser.Id)
-                        {
-                            await _pusher.NewMessageEvent(targetUser, target, model.Content, user, true);
-                        }
-                        break;
-                    }
-                case GroupConversation groupConversation:
-                    {
-                        var usersJoined = await _dbContext
-                            .UserGroupRelations
-                            .Include(t => t.User)
-                            .Where(t => t.GroupId == groupConversation.Id)
-                            .ToListAsync();
-                        var taskList = new List<Task>();
-                        foreach (var relation in usersJoined)
-                        {
-                            var pushTask = _pusher.NewMessageEvent(
-                                receiver: relation.User,
+                await _pusher.NewMessageEvent(
+                                receiver: eachUser,
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                alert: !relation.Muted);
-                            taskList.Add(pushTask);
-                        }
-                        await Task.WhenAll(taskList);
-                        break;
-                    }
-            }
+                                alert: relation?.Muted ?? true);
+            }, _userManager);
             try
             {
                 await _dbContext.SaveChangesAsync();
@@ -213,32 +185,10 @@ namespace Kahla.Server.Controllers
                 .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             _dbContext.Messages.RemoveRange(outdatedMessages);
             await _dbContext.SaveChangesAsync();
-            // Push event.
-            if (target is PrivateConversation privateConversation)
+            await target.ForEachUserAsync(async (eachUser, relation) =>
             {
-                var requester = await _userManager.FindByIdAsync(privateConversation.RequesterId);
-                await _pusher.TimerUpdatedEvent(requester, model.NewLifeTime, target.Id);
-                if (privateConversation.RequesterId != privateConversation.TargetId)
-                {
-                    var targetUser = await _userManager.FindByIdAsync(privateConversation.TargetId);
-                    await _pusher.TimerUpdatedEvent(targetUser, model.NewLifeTime, target.Id);
-                }
-            }
-            else if (target is GroupConversation g)
-            {
-                var usersJoined = await _dbContext
-                    .UserGroupRelations
-                    .Include(t => t.User)
-                    .Where(t => t.GroupId == g.Id)
-                    .ToListAsync();
-                var taskList = new List<Task>();
-                foreach (var relation in usersJoined)
-                {
-                    var pushTask = _pusher.TimerUpdatedEvent(relation.User, model.NewLifeTime, target.Id);
-                    taskList.Add(pushTask);
-                }
-                await Task.WhenAll(taskList);
-            }
+                await _pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id);
+            }, _userManager);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
