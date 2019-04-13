@@ -49,7 +49,7 @@ namespace Kahla.Server.Models
             if (RequesterId != TargetId)
             {
                 var targetUser = await userManager.FindByIdAsync(TargetId);
-                await function(requester, null);
+                await function(targetUser, null);
             }
         }
     }

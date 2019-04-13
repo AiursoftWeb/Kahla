@@ -2,6 +2,7 @@
 using Aiursoft.Pylon.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
+using System;
 
 namespace Kahla.Server.Models
 {
@@ -44,5 +45,8 @@ namespace Kahla.Server.Models
 
         public override string Email { get; set; }
         public bool ShouldSerializeEmail() => MakeEmailPublic || IsMe;
+
+        public bool EnableEmailNotification { get; set; }
+        public DateTime LastEmailHimTime { get; set; } = DateTime.MinValue;
     }
 }

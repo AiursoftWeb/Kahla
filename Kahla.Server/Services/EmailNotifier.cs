@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,73 +33,85 @@ namespace Kahla.Server.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Email notifier service is starting...");
-            _timer = new Timer(DoWork, null, TimeSpan.FromMinutes(30), TimeSpan.FromHours(23));
+            _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(10));
             return Task.CompletedTask;
         }
 
         private async void DoWork(object state)
         {
-            try
+            _logger.LogInformation("Cleaner task started!");
+            using (var scope = _scopeFactory.CreateScope())
             {
-                _logger.LogInformation("Cleaner task started!");
-                using (var scope = _scopeFactory.CreateScope())
+                var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
+                var users = await dbContext
+                                .Users
+                                .Where(t => t.EmailConfirmed)
+                                .Where(t => t.EnableEmailNotification)
+                                // Only for users who did not send email for a long time.
+                                .Where(t => t.LastEmailHimTime + TimeSpan.FromHours(23) < DateTime.UtcNow)
+                                .ToListAsync();
+                foreach (var user in users)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                    var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
-                    var users = await dbContext
-                                    .Users
-                                    .AsNoTracking()
-                                    .ToListAsync();
-                    foreach (var user in users.Where(t => t.EmailConfirmed))
+                    var emailMessage = await BuildEmail(user, dbContext, configuration);
+                    try
                     {
-                        int totalUnread = 0, inConversations = 0, pendingRequests = 0;
-                        var list = new List<ContactInfo>();
-                        var conversations = await dbContext.MyConversations(user.Id);
-                        foreach (var conversation in conversations)
-                        {
-                            // Ignore conversations muted.
-                            if (conversation is GroupConversation currentGroup)
-                            {
-                                var relation = currentGroup
-                                    .Users
-                                    .FirstOrDefault(t => t.UserId == user.Id);
-                                if (relation.Muted)
-                                {
-                                    continue;
-                                }
-                            }
-                            var currentUnread = conversation.GetUnReadAmount(user.Id);
-                            if (currentUnread > 0)
-                            {
-                                totalUnread += currentUnread;
-                                inConversations++;
-                            }
-                        }
-                        pendingRequests = await dbContext
-                            .Requests
-                            .AsNoTracking()
-                            .Where(t => t.TargetId == user.Id)
-                            .CountAsync(t => t.Completed == false);
-
-                        if (inConversations > 0 || pendingRequests > 0)
-                        {
-                            string message =
-                                (inConversations > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n" : "")
-                                +
-                                (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>\r\n" : "")
-                                +
-                                $"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.";
-                            await emailSender.SendEmail(user.Email, "New notifications in Kahla", message);
-                        }
+                        await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
+                    }
+                    catch (SmtpException) { }
+                    finally
+                    {
+                        user.LastEmailHimTime = DateTime.UtcNow;
+                        dbContext.Update(user);
                     }
                 }
+                await dbContext.SaveChangesAsync();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred.");
-            }
+        }
 
+        public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, IConfiguration configuration)
+        {
+            int totalUnread = 0, inConversations = 0, pendingRequests = 0;
+            var list = new List<ContactInfo>();
+            var conversations = await dbContext.MyConversations(user.Id);
+            foreach (var conversation in conversations)
+            {
+                // Ignore conversations muted.
+                if (conversation is GroupConversation currentGroup)
+                {
+                    var relation = currentGroup
+                        .Users
+                        .FirstOrDefault(t => t.UserId == user.Id);
+                    if (relation.Muted)
+                    {
+                        continue;
+                    }
+                }
+                var currentUnread = conversation.GetUnReadAmount(user.Id);
+                if (currentUnread > 0)
+                {
+                    totalUnread += currentUnread;
+                    inConversations++;
+                }
+            }
+            pendingRequests = await dbContext
+                .Requests
+                .AsNoTracking()
+                .Where(t => t.TargetId == user.Id)
+                .CountAsync(t => t.Completed == false);
+
+            if (inConversations > 0 || pendingRequests > 0)
+            {
+                string message =
+                    (inConversations > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n" : "")
+                    +
+                    (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>\r\n" : "")
+                    +
+                    $"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.";
+                return message;
+            }
+            return string.Empty;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
