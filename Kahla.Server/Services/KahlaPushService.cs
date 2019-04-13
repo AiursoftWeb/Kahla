@@ -48,7 +48,7 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, string content, KahlaUser sender, bool alert)
+        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, string content, KahlaUser sender, bool muted)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
@@ -58,14 +58,14 @@ namespace Kahla.Server.Services
                 Sender = sender,
                 Content = content,
                 AESKey = conversation.AESKey,
-                Muted = !alert
+                Muted = muted
             };
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, _Serialize(newMessageEvent), true));
             }
-            if (alert && receiver.Id != sender.Id)
+            if (!muted && receiver.Id != sender.Id)
             {
                 pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, _Serialize(newMessageEvent)));
             }

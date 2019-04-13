@@ -113,7 +113,7 @@ namespace Kahla.Server.Controllers
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                alert: relation?.Muted ?? true);
+                                muted: relation?.Muted ?? false);
             }, _userManager);
             try
             {
