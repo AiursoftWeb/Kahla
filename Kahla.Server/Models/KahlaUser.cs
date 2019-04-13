@@ -46,6 +46,7 @@ namespace Kahla.Server.Models
         public override string Email { get; set; }
         public bool ShouldSerializeEmail() => MakeEmailPublic || IsMe;
 
+        public bool EnableEmailNotification { get; set; }
         public DateTime LastEmailHimTime { get; set; } = DateTime.MinValue;
     }
 }

@@ -48,6 +48,7 @@ namespace Kahla.Server.Services
                 var users = await dbContext
                                 .Users
                                 .Where(t => t.EmailConfirmed)
+                                .Where(t => t.EnableEmailNotification)
                                 // Only for users who did not send email for a long time.
                                 .Where(t => t.LastEmailHimTime + TimeSpan.FromHours(23) < DateTime.UtcNow)
                                 .ToListAsync();
