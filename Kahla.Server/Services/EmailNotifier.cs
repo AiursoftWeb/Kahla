@@ -55,16 +55,17 @@ namespace Kahla.Server.Services
                 foreach (var user in users)
                 {
                     var emailMessage = await BuildEmail(user, dbContext, configuration);
+                    if (string.IsNullOrWhiteSpace(emailMessage))
+                    {
+                        continue;
+                    }
                     try
                     {
                         await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
-                    }
-                    catch (SmtpException) { }
-                    finally
-                    {
                         user.LastEmailHimTime = DateTime.UtcNow;
                         dbContext.Update(user);
                     }
+                    catch (SmtpException) { }
                 }
                 await dbContext.SaveChangesAsync();
             }
