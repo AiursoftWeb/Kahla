@@ -103,7 +103,7 @@ namespace Kahla.Server.Services
                         "<li>Some conversations haven't been displayed because there are too many items.</li>");
                     continue;
                 }
-                msg.AppendLine($"<li>{currentUnread} unread message(s) in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.DisplayName}</a>.</li>");
+                msg.AppendLine($"<li>{currentUnread} unread message(s) in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
             }
             var pendingRequests = await dbContext
                 .Requests
