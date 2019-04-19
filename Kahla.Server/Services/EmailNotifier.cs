@@ -1,16 +1,15 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
-using Kahla.Server.Models.ApiViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -73,9 +72,9 @@ namespace Kahla.Server.Services
 
         public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, IConfiguration configuration)
         {
-            int totalUnread = 0, inConversations = 0, pendingRequests = 0;
-            var list = new List<ContactInfo>();
+            int totalUnread = 0, inConversations = 0;
             var conversations = await dbContext.MyConversations(user.Id);
+            var msg = new StringBuilder();
             foreach (var conversation in conversations)
             {
                 // Ignore conversations muted.
@@ -90,13 +89,23 @@ namespace Kahla.Server.Services
                     }
                 }
                 var currentUnread = conversation.GetUnReadAmount(user.Id);
-                if (currentUnread > 0)
-                {
-                    totalUnread += currentUnread;
-                    inConversations++;
+
+                if (currentUnread <= 0) continue;
+                totalUnread += currentUnread;
+                inConversations++;
+                if (inConversations > 50) {
+                    continue;
                 }
+
+                if (inConversations == 50)
+                {
+                    msg.AppendLine(
+                        "<li>Some conversations haven't been displayed because there are too many items.</li>");
+                    continue;
+                }
+                msg.AppendLine($"<li>{currentUnread} unread message(s) in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.DisplayName}</a>.</li>");
             }
-            pendingRequests = await dbContext
+            var pendingRequests = await dbContext
                 .Requests
                 .AsNoTracking()
                 .Where(t => t.TargetId == user.Id)
@@ -104,13 +113,18 @@ namespace Kahla.Server.Services
 
             if (inConversations > 0 || pendingRequests > 0)
             {
-                string message =
-                    (inConversations > 0 ? $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n" : "")
-                    +
-                    (pendingRequests > 0 ? $"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>\r\n" : "")
-                    +
-                    $"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.";
-                return message;
+                if (inConversations > 0) {
+                    msg.Insert(0,
+                        $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n<ul>\r\n");
+                    msg.AppendLine("</ul>");
+                }
+
+                if (pendingRequests > 0) {
+                    msg.AppendLine($"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>");
+                }
+
+                msg.AppendLine($"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.");
+                return msg.ToString();
             }
             return string.Empty;
         }
