@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
@@ -40,5 +42,15 @@ namespace Kahla.Server.Models
             }
         }
 
+        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
+        {
+            var requester = await userManager.FindByIdAsync(RequesterId);
+            await function(requester, null);
+            if (RequesterId != TargetId)
+            {
+                var targetUser = await userManager.FindByIdAsync(TargetId);
+                await function(targetUser, null);
+            }
+        }
     }
 }
