@@ -62,7 +62,7 @@ namespace Kahla.Server.Controllers
             _dbContext.Devices.Add(device);
             await _dbContext.SaveChangesAsync();
             //ErrorType.Success, 
-            return this.AiurJson(new AiurValue<long>(device.Id)
+            return Json(new AiurValue<long>(device.Id)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully created your new device with id: " + device.Id
@@ -88,7 +88,7 @@ namespace Kahla.Server.Controllers
             _dbContext.Devices.Update(device);
             await _dbContext.SaveChangesAsync();
             //ErrorType.Success, 
-            return this.AiurJson(new AiurValue<Device>(device)
+            return Json(new AiurValue<Device>(device)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully updated your new device with id: " + device.Id
@@ -103,7 +103,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.UserId == user.Id)
                 .OrderByDescending(t => t.AddTime)
                 .ToListAsync();
-            return this.AiurJson(new AiurCollection<Device>(devices)
+            return Json(new AiurCollection<Device>(devices)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your devices."

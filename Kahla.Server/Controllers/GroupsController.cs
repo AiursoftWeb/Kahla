@@ -64,7 +64,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.UserGroupRelations.Add(newRelationship);
             await _dbContext.SaveChangesAsync();
-            return this.AiurJson(new AiurValue<int>(createdGroup.Id)
+            return Json(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
                 Message = "You have successfully created a new group and joined it!"
