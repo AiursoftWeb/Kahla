@@ -89,19 +89,14 @@ namespace Kahla.Server.Services
                     }
                 }
                 var currentUnread = conversation.GetUnReadAmount(user.Id);
-
                 if (currentUnread <= 0) continue;
+
                 totalUnread += currentUnread;
                 inConversations++;
-                if (inConversations > 50) {
-                    continue;
-                }
-
-                if (inConversations == 50)
+                if (inConversations >= 50)
                 {
-                    msg.AppendLine(
-                        "<li>Some conversations haven't been displayed because there are too many items.</li>");
-                    continue;
+                    msg.AppendLine("<li>Some conversations haven't been displayed because there are too many items.</li>");
+                    break;
                 }
                 msg.AppendLine($"<li>{currentUnread} unread message(s) in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
             }
@@ -113,13 +108,15 @@ namespace Kahla.Server.Services
 
             if (inConversations > 0 || pendingRequests > 0)
             {
-                if (inConversations > 0) {
+                if (inConversations > 0)
+                {
                     msg.Insert(0,
                         $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n<ul>\r\n");
                     msg.AppendLine("</ul>");
                 }
 
-                if (pendingRequests > 0) {
+                if (pendingRequests > 0)
+                {
                     msg.AppendLine($"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>");
                 }
 
