@@ -70,6 +70,11 @@ namespace Kahla.Server.Services
             }
         }
 
+        public string AppendS(int count)
+        {
+            return count >= 2 ? "s" : string.Empty;
+        }
+
         public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, IConfiguration configuration)
         {
             int totalUnread = 0, inConversations = 0;
@@ -93,12 +98,18 @@ namespace Kahla.Server.Services
 
                 totalUnread += currentUnread;
                 inConversations++;
-                if (inConversations >= 50)
+                if (inConversations == 20)
                 {
                     msg.AppendLine("<li>Some conversations haven't been displayed because there are too many items.</li>");
-                    break;
                 }
-                msg.AppendLine($"<li>{currentUnread} unread message(s) in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
+                else if(inConversations > 20)
+                {
+                    // append nothing to avoid email too large.
+                }
+                else
+                {
+                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
+                }
             }
             var pendingRequests = await dbContext
                 .Requests
@@ -111,13 +122,13 @@ namespace Kahla.Server.Services
                 if (inConversations > 0)
                 {
                     msg.Insert(0,
-                        $"<h4>You have {totalUnread} unread message(s) in {inConversations} conversation(s) from your Kahla friends!<h4>\r\n<ul>\r\n");
+                        $"<h4>You have {totalUnread} unread message{AppendS(totalUnread)} in {inConversations} conversation{AppendS(inConversations)} from your Kahla friends!<h4>\r\n<ul>\r\n");
                     msg.AppendLine("</ul>");
                 }
 
                 if (pendingRequests > 0)
                 {
-                    msg.AppendLine($"<h4>You have {pendingRequests} pending friend request(s) in Kahla.<h4>");
+                    msg.AppendLine($"<h4>You have {pendingRequests} pending friend request{AppendS(pendingRequests)} in Kahla.<h4>");
                 }
 
                 msg.AppendLine($"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.");
