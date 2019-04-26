@@ -154,9 +154,42 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
         }
 
-        private Task<KahlaUser> GetKahlaUser()
+        [HttpPost]
+        public async Task<IActionResult> UpdateGroupInfo(UpdateGroupAddressModel model)
         {
-            return _userManager.GetUserAsync(User);
+            var user = await GetKahlaUser();
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {model.GroupName}!");
+            }
+
+            if (group.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.RequireAttention, "You haven't the permission to execute this command.");
+            }
+
+            var shouldSave = false;
+
+            if (model.AvatarKey != null)
+            {
+                group.GroupImageKey = model.AvatarKey.Value;
+                shouldSave = true;
+            }
+
+            if (model.NewJoinPassword != null) {
+                group.JoinPassword = model.NewJoinPassword;
+                shouldSave = true;
+            }
+
+            if (shouldSave)
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return this.Protocol(ErrorType.Success, $"Successfully update the info of the group '{model.GroupName}'.");
         }
+
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }
