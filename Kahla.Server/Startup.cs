@@ -52,7 +52,11 @@ namespace Kahla.Server
 
             services.AddMemoryCache();
 
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(opt =>
+            {
+                opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            }); ;
             services.AddAiursoftAuth<KahlaUser>();
 
             services.AddSingleton<IHostedService, TimedCleaner>();

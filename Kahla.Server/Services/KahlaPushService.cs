@@ -33,14 +33,6 @@ namespace Kahla.Server.Services
             _thirdPartyPushService = thirdPartyPushService;
         }
 
-        private static string _Serialize(object obj)
-        {
-            return JsonConvert.SerializeObject(obj, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
-        }
-
         public async Task<CreateChannelViewModel> Init(string userId)
         {
             var token = await _appsContainer.AccessToken();
@@ -63,11 +55,11 @@ namespace Kahla.Server.Services
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
-                pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, _Serialize(newMessageEvent), true));
+                pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newMessageEvent), true));
             }
             if (!muted && receiver.Id != sender.Id)
             {
-                pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, _Serialize(newMessageEvent)));
+                pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, JsonConvert.SerializeObject(newMessageEvent)));
             }
             await Task.WhenAll(pushTasks);
         }
@@ -83,9 +75,9 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(newFriendRequestEvent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newFriendRequestEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(receiver.Id, requester.Email, _Serialize(newFriendRequestEvent));
+            await _thirdPartyPushService.PushAsync(receiver.Id, requester.Email, JsonConvert.SerializeObject(newFriendRequestEvent));
         }
 
         public async Task WereDeletedEvent(KahlaUser receiver, KahlaUser trigger)
@@ -98,9 +90,9 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(wereDeletedEvent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(wereDeletedEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", _Serialize(wereDeletedEvent));
+            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", JsonConvert.SerializeObject(wereDeletedEvent));
         }
 
         public async Task FriendAcceptedEvent(KahlaUser receiver, KahlaUser accepter)
@@ -113,9 +105,9 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(friendAcceptedEvent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(friendAcceptedEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", _Serialize(friendAcceptedEvent));
+            await _thirdPartyPushService.PushAsync(receiver.Id, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
@@ -129,7 +121,7 @@ namespace Kahla.Server.Services
             };
             if (channel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, channel, _Serialize(timerUpdatedEvent), true);
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(timerUpdatedEvent), true);
             }
         }
     }
