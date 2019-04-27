@@ -166,7 +166,7 @@ namespace Kahla.Server.Controllers
 
             if (group.OwnerId != user.Id)
             {
-                return this.Protocol(ErrorType.RequireAttention, "You haven't the permission to execute this command.");
+                return this.Protocol(ErrorType.Unauthorized, "You haven't the permission to execute this command.");
             }
 
             var shouldSave = false;
