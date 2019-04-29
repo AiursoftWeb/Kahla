@@ -86,6 +86,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
+            model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
@@ -113,7 +114,7 @@ namespace Kahla.Server.Controllers
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                muted: relation?.Muted ?? false);
+                                muted: model.At.Contains(user.Id) ? true : relation?.Muted ?? false);
             }, _userManager);
             try
             {
