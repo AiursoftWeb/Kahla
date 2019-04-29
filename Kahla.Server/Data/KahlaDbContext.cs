@@ -52,6 +52,7 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
+                .Include(t => t.User)
                 .ToListAsync();
             var myConversations = new List<Conversation>();
             myConversations.AddRange(personalRelations);
@@ -74,20 +75,20 @@ namespace Kahla.Server.Data
             switch (target.Discriminator)
             {
                 case nameof(GroupConversation):
-                {
-                    var relation = await UserGroupRelations
-                        .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
-                    if (relation == null)
-                        return false;
-                    break;
-                }
+                    {
+                        var relation = await UserGroupRelations
+                            .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
+                        if (relation == null)
+                            return false;
+                        break;
+                    }
                 case nameof(PrivateConversation):
-                {
-                    var privateConversation = target as PrivateConversation;
-                    if (privateConversation?.RequesterId != userId && privateConversation?.TargetId != userId)
-                        return false;
-                    break;
-                }
+                    {
+                        var privateConversation = target as PrivateConversation;
+                        if (privateConversation?.RequesterId != userId && privateConversation?.TargetId != userId)
+                            return false;
+                        break;
+                    }
             }
             return true;
         }

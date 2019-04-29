@@ -55,7 +55,8 @@ namespace Kahla.Server.Controllers
                     Discriminator = conversation.Discriminator,
                     UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                     AesKey = conversation.AESKey,
-                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted
+                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted,
+                    SomeoneAtMe = conversation.IWasAted(user.Id)
                 });
             }
             list = orderByName == true ?

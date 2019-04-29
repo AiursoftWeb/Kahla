@@ -52,5 +52,10 @@ namespace Kahla.Server.Models
                 await function(targetUser, null);
             }
         }
+
+        public override bool IWasAted(string myNickName)
+        {
+            return false;
+        }
     }
 }
