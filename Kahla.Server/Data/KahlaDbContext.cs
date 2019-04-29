@@ -48,6 +48,7 @@ namespace Kahla.Server.Data
                 .Include(t => t.RequestUser)
                 .Include(t => t.TargetUser)
                 .Include(t => t.Messages)
+                .ThenInclude(t => t.Ats)
                 .ToListAsync();
             var groups = await UserGroupRelations
                 .AsNoTracking()
