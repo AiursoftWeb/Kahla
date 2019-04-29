@@ -26,7 +26,6 @@ namespace Kahla.Server.Models
         [NotMapped]
         public int DisplayImage { get; set; }
 
-
         public abstract string GetDisplayName(string userId);
         public abstract int GetDisplayImage(string userId);
         public abstract int GetUnReadAmount(string userId);
