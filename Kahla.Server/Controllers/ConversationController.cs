@@ -108,7 +108,7 @@ namespace Kahla.Server.Controllers
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
             // Create at info for this message.
-            foreach(var atTargetId in model.At)
+            foreach (var atTargetId in model.At)
             {
                 if (await _dbContext.VerifyJoined(atTargetId, target))
                 {

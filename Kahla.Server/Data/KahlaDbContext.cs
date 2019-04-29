@@ -53,6 +53,7 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
+                .ThenInclude(t => t.Ats)
                 .Include(t => t.User)
                 .ToListAsync();
             var myConversations = new List<Conversation>();
