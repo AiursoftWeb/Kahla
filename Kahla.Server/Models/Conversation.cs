@@ -30,6 +30,7 @@ namespace Kahla.Server.Models
         public abstract string GetDisplayName(string userId);
         public abstract int GetDisplayImage(string userId);
         public abstract int GetUnReadAmount(string userId);
+        public abstract bool IWasAted(string myNickName);
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
         public abstract Message GetLatestMessage();
     }
