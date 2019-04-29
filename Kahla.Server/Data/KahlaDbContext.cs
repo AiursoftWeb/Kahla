@@ -28,6 +28,7 @@ namespace Kahla.Server.Data
         public DbSet<FileRecord> FileRecords { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
+        public DbSet<At> Ats { get; set; }
 
         public async Task<List<string>> MyPersonalFriendsId(string userId)
         {
@@ -52,6 +53,7 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => t.UserId == userId)
                 .Include(t => t.Group.Messages)
+                .ThenInclude(t => t.Ats)
                 .Include(t => t.User)
                 .ToListAsync();
             var myConversations = new List<Conversation>();

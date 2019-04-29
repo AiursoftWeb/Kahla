@@ -53,9 +53,12 @@ namespace Kahla.Server.Models
             }
         }
 
-        public override bool IWasAted(string myNickName)
+        public override bool IWasAted(string userId)
         {
-            return false;
+            return Messages
+            .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+            .Where(t => !t.Read)
+            .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
     }
 }

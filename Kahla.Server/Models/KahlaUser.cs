@@ -18,7 +18,7 @@ namespace Kahla.Server.Models
         public IEnumerable<UserGroupRelation> GroupsJoined { get; set; }
 
         [InverseProperty(nameof(GroupConversation.Owner))]
-        public IEnumerable<GroupConversation> GroupsCreated { get; set; }
+        public IEnumerable<GroupConversation> GroupsOwned { get; set; }
 
         [InverseProperty(nameof(Message.Sender))]
         public IEnumerable<Message> MessagesSent { get; set; }
@@ -31,6 +31,9 @@ namespace Kahla.Server.Models
 
         [InverseProperty(nameof(Device.KahlaUser))]
         public IEnumerable<Device> HisDevices { get; set; }
+
+        [InverseProperty(nameof(At.TargetUser))]
+        public IEnumerable<At> ByAts { get; set; }
 
         public int CurrentChannel { get; set; } = -1;
         public string ConnectKey { get; set; }

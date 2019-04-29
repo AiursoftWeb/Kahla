@@ -82,7 +82,8 @@ namespace Kahla.Server.Models
             return Messages
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .Where(t => t.SendTime > relation.ReadTimeStamp)
-                .Any(t => t.Content.Contains("@" + relation.User.NickName));
+                .Where(t => t.Ats != null)
+                .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
     }
 }

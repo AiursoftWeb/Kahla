@@ -98,7 +98,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             }
-            //Create message.
+            // Create message.
             var message = new Message
             {
                 Content = model.Content,
@@ -106,6 +106,26 @@ namespace Kahla.Server.Controllers
                 ConversationId = target.Id
             };
             _dbContext.Messages.Add(message);
+            await _dbContext.SaveChangesAsync();
+            // Create at info for this message.
+            foreach (var atTargetId in model.At)
+            {
+                if (await _dbContext.VerifyJoined(atTargetId, target))
+                {
+                    var at = new At
+                    {
+                        MessageId = message.Id,
+                        TargetUserId = atTargetId
+                    };
+                    _dbContext.Ats.Add(at);
+                }
+                else
+                {
+                    _dbContext.Messages.Remove(message);
+                    await _dbContext.SaveChangesAsync();
+                    return this.Protocol(ErrorType.InvalidInput, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
+                }
+            }
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync(async (eachUser, relation) =>
             {
