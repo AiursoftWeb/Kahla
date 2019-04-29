@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <Version>0.9.1</Version>
+    <Version>0.12.2</Version>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>Kahla.Server</AssemblyName>
     <PackageId>Kahla.Server</PackageId>
