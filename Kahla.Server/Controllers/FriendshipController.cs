@@ -60,8 +60,11 @@ namespace Kahla.Server.Controllers
                 });
             }
             list = orderByName == true ?
-                list.OrderBy(t => t.DisplayName).ToList() :
-                list.OrderByDescending(t => t.LatestMessageTime).ToList();
+                list.OrderBy(t => t.DisplayName)
+                    .ToList() :
+                list.OrderByDescending(t => t.SomeoneAtMe)
+                    .ThenByDescending(t => t.LatestMessageTime)
+                    .ToList();
             return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
