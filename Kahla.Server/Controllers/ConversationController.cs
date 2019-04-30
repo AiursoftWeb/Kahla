@@ -48,6 +48,7 @@ namespace Kahla.Server.Controllers
                 .Messages
                 .AsNoTracking()
                 .Include(t => t.Conversation)
+                .Include(t => t.Ats)
                 .Where(t => t.ConversationId == target.Id)
                 // Only messages within the life time.
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
