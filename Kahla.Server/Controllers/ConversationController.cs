@@ -49,14 +49,13 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .Include(t => t.Conversation)
                 .Include(t => t.Ats)
+                .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
-                // Only messages within the life time.
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             if (skipTill != -1)
             {
                 allMessages = allMessages.Where(t => t.Id < skipTill);
             }
-
             var allMessagesList = await allMessages
                 .OrderByDescending(t => t.Id)
                 .Take(take)
