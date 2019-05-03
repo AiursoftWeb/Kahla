@@ -134,7 +134,7 @@ namespace Kahla.Server.Controllers
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                muted: model.At.Contains(user.Id) ? true : relation?.Muted ?? false);
+                                muted: model.At.Contains(user.Id) ? false : relation?.Muted ?? false);
             }, _userManager);
             try
             {
