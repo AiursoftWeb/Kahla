@@ -22,13 +22,16 @@ namespace Kahla.Server.Controllers
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
+        private readonly KahlaPushService _pusher;
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
-            KahlaDbContext dbContext)
+            KahlaDbContext dbContext,
+            KahlaPushService pusher)
         {
             _userManager = userManager;
             _dbContext = dbContext;
+            _pusher = pusher;
         }
 
         [HttpPost]
@@ -79,12 +82,16 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
+            var group = await _dbContext
+                .GroupConversations
+                .Include(t => t.Users)
+                .ThenInclude(t => t.User)
+                .SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
-            var joined = _dbContext.UserGroupRelations.Any(t => t.UserId == user.Id && t.GroupId == group.Id);
+            var joined = group.Users.Any(t => t.UserId == user.Id);
             if (joined)
             {
                 return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
@@ -102,6 +109,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.UserGroupRelations.Add(newRelationship);
             await _dbContext.SaveChangesAsync();
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user), _userManager);
             return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
         }
 
@@ -122,6 +130,7 @@ namespace Kahla.Server.Controllers
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
             // Remove the group if no users in it.
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user), _userManager);
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
             {
