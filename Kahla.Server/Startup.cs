@@ -56,7 +56,7 @@ namespace Kahla.Server
             {
                 opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            }); ;
+            });
             services.AddAiursoftAuth<KahlaUser>();
 
             services.AddSingleton<IHostedService, TimedCleaner>();
