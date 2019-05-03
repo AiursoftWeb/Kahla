@@ -40,7 +40,7 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, string content, KahlaUser sender, bool muted)
+        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, string content, KahlaUser sender, bool muted, bool mentioned)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
@@ -50,7 +50,8 @@ namespace Kahla.Server.Services
                 Sender = sender,
                 Content = content,
                 AESKey = conversation.AESKey,
-                Muted = muted
+                Muted = muted,
+                Mentioned = mentioned
             };
             var pushTasks = new List<Task>();
             if (channel != -1)

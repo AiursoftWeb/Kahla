@@ -129,12 +129,15 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync(async (eachUser, relation) =>
             {
+                var mentioned = model.At.Contains(user.Id);
                 await _pusher.NewMessageEvent(
                                 receiver: eachUser,
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                muted: model.At.Contains(user.Id) ? false : relation?.Muted ?? false);
+                                muted: !mentioned && (relation?.Muted ?? false),
+                                mentioned: mentioned
+                                );
             }, _userManager);
             try
             {
