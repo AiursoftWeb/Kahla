@@ -72,7 +72,7 @@ namespace Kahla.Server.Events
         {
             Type = EventType.NewMemberEvent;
         }
-
+        public int ConversationId { get; set; }
         public KahlaUser NewMember { get; set; }
     }
 
@@ -82,6 +82,7 @@ namespace Kahla.Server.Events
         {
             Type = EventType.SomeoneLeftLevent;
         }
+        public int ConversationId { get; set; }
         public KahlaUser LeftUser { get; set; }
     }
 }

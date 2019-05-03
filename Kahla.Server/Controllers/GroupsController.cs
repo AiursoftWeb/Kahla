@@ -109,7 +109,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.UserGroupRelations.Add(newRelationship);
             await _dbContext.SaveChangesAsync();
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id), _userManager);
             return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
         }
 
@@ -130,7 +130,7 @@ namespace Kahla.Server.Controllers
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
             // Remove the group if no users in it.
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id), _userManager);
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
             {
