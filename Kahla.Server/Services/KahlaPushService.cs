@@ -124,5 +124,35 @@ namespace Kahla.Server.Services
                 await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(timerUpdatedEvent), true);
             }
         }
+
+        public async Task NewMemberEvent(KahlaUser receiver, KahlaUser newMember, int conversationId)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var newMemberEvent = new NewMemberEvent
+            {
+                NewMember = newMember,
+                ConversationId = conversationId
+            };
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newMemberEvent), true);
+            }
+        }
+
+        public async Task SomeoneLeftEvent(KahlaUser receiver, KahlaUser leftMember, int conversationId)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var someoneLeftEvent = new SomeoneLeftEvent
+            {
+                LeftUser = leftMember,
+                ConversationId = conversationId
+            };
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(someoneLeftEvent), true);
+            }
+        }
     }
 }

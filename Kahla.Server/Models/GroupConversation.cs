@@ -12,7 +12,7 @@ namespace Kahla.Server.Models
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
-        public List<UserGroupRelation> Users { get; set; }
+        public IEnumerable<UserGroupRelation> Users { get; set; }
         public int GroupImageKey { get; set; }
         public string GroupName { get; set; }
         [JsonIgnore]
