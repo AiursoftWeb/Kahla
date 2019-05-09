@@ -77,7 +77,7 @@ namespace Kahla.Server.Controllers
 
         public IActionResult Index()
         {
-            return this.AiurJson(new
+            return Json(new
             {
                 Code = ErrorType.Success,
                 Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
@@ -98,7 +98,7 @@ namespace Kahla.Server.Controllers
 
                 _cache.Set(nameof(Version), version, cacheEntryOptions);
             }
-            return this.AiurJson(new VersionViewModel
+            return Json(new VersionViewModel
             {
                 LatestVersion = version,
                 OldestSupportedVersion = version,
@@ -125,7 +125,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.AddFriend(user.Id, user.Id);
                 await _dbContext.SaveChangesAsync();
             }
-            return this.AiurJson(new AiurProtocol()
+            return Json(new AiurProtocol()
             {
                 Code = ErrorType.Success,
                 Message = "Auth success."
@@ -136,7 +136,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
         {
             var result = await _oauthService.AppRegisterAsync(model.Email, model.Password, model.ConfirmPassword);
-            return this.AiurJson(result);
+            return Json(result);
         }
 
         [AiurForceAuth("", "", false)]
@@ -155,7 +155,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var signedIn = user != null;
-            return this.AiurJson(new AiurValue<bool>(signedIn)
+            return Json(new AiurValue<bool>(signedIn)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your signin status."
@@ -168,7 +168,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             user = await _authService.OnlyUpdate(user);
             user.IsMe = true;
-            return this.AiurJson(new AiurValue<KahlaUser>(user)
+            return Json(new AiurValue<KahlaUser>(user)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your information."
@@ -248,7 +248,7 @@ namespace Kahla.Server.Controllers
                     Key = user.ConnectKey
                 }).ToString()
             };
-            return this.AiurJson(model);
+            return Json(model);
         }
 
         [AiurForceAuth(directlyReject: true)]

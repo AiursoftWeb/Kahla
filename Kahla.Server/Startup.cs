@@ -17,6 +17,8 @@ using Kahla.Server.Middlewares;
 using WebPush;
 using Microsoft.Extensions.Hosting;
 using Aiursoft.Pylon.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Kahla.Server
 {
@@ -33,6 +35,11 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            };
             services.ConfigureLargeFileUpload();
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<KahlaDbContext>(options =>
@@ -45,7 +52,11 @@ namespace Kahla.Server
 
             services.AddMemoryCache();
 
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(opt =>
+            {
+                opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
             services.AddAiursoftAuth<KahlaUser>();
 
             services.AddSingleton<IHostedService, TimedCleaner>();

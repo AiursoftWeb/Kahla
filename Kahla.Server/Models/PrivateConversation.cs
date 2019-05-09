@@ -52,5 +52,13 @@ namespace Kahla.Server.Models
                 await function(targetUser, null);
             }
         }
+
+        public override bool IWasAted(string userId)
+        {
+            return Messages
+            .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+            .Where(t => !t.Read)
+            .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
+        }
     }
 }

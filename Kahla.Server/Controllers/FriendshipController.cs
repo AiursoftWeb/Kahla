@@ -55,13 +55,17 @@ namespace Kahla.Server.Controllers
                     Discriminator = conversation.Discriminator,
                     UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                     AesKey = conversation.AESKey,
-                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted
+                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted,
+                    SomeoneAtMe = conversation.IWasAted(user.Id)
                 });
             }
             list = orderByName == true ?
-                list.OrderBy(t => t.DisplayName).ToList() :
-                list.OrderByDescending(t => t.LatestMessageTime).ToList();
-            return this.AiurJson(new AiurCollection<ContactInfo>(list)
+                list.OrderBy(t => t.DisplayName)
+                    .ToList() :
+                list.OrderByDescending(t => t.SomeoneAtMe)
+                    .ThenByDescending(t => t.LatestMessageTime)
+                    .ToList();
+            return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your friends."
@@ -127,7 +131,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.SaveChanges();
             }
             await _pusher.NewFriendRequestEvent(target, user);
-            return this.AiurJson(new AiurValue<int>(request.Id)
+            return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully created your request!"
@@ -179,7 +183,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.TargetId == user.Id)
                 .OrderByDescending(t => t.CreateTime)
                 .ToListAsync();
-            return this.AiurJson(new AiurCollection<Request>(requests)
+            return Json(new AiurCollection<Request>(requests)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your requests list."
@@ -204,7 +208,7 @@ namespace Kahla.Server.Controllers
 
             var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
 
-            return this.AiurJson(new SearchEverythingViewModel
+            return Json(new SearchEverythingViewModel
             {
                 UsersCount = await users.CountAsync(),
                 GroupsCount = await groups.CountAsync(),
@@ -298,7 +302,7 @@ namespace Kahla.Server.Controllers
             var ordered = calculated
                 .OrderByDescending(t => t.CommonFriends)
                 .ThenBy(t => t.CommonGroups);
-            return this.AiurJson(new AiurCollection<FriendDiscovery>(ordered)
+            return Json(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your suggested friends."
@@ -314,7 +318,7 @@ namespace Kahla.Server.Controllers
             {
                 model.Message = "We can not find target user.";
                 model.Code = ErrorType.NotFound;
-                return this.AiurJson(model);
+                return Json(model);
             }
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
             if (conversation != null)
@@ -334,7 +338,7 @@ namespace Kahla.Server.Controllers
                 .Any(t => !t.Completed);
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
-            return this.AiurJson(model);
+            return Json(model);
         }
 
         [HttpPost]

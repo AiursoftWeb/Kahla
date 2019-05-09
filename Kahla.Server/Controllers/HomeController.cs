@@ -2,6 +2,7 @@
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace Kahla.Server.Controllers
 {
@@ -16,7 +17,11 @@ namespace Kahla.Server.Controllers
 
         public IActionResult Index()
         {
-            return this.Protocol(ErrorType.Success, "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki);
+            return Json(new AiurValue<DateTime>(DateTime.UtcNow)
+            {
+                Code = ErrorType.Success,
+                Message = "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki
+            });
         }
 
         public IActionResult Error()

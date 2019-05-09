@@ -61,7 +61,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaUserIconsBucketId"]), 1000);
-            return this.AiurJson(new UploadImageViewModel
+            return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
@@ -85,7 +85,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 400);
-            return this.AiurJson(new UploadImageViewModel
+            return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your media file!",
@@ -120,7 +120,7 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.FileRecords.Add(fileRecord);
             await _dbContext.SaveChangesAsync();
-            return this.AiurJson(new UploadFileViewModel
+            return Json(new UploadFileViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your file!",
@@ -147,7 +147,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
             }
             var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken(), 1);
-            return this.AiurJson(new FileDownloadAddressViewModel
+            return Json(new FileDownloadAddressViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully generated your file download address!",

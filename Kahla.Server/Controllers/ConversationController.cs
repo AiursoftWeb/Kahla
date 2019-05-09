@@ -48,14 +48,14 @@ namespace Kahla.Server.Controllers
                 .Messages
                 .AsNoTracking()
                 .Include(t => t.Conversation)
+                .Include(t => t.Ats)
+                .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
-                // Only messages within the life time.
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
             if (skipTill != -1)
             {
                 allMessages = allMessages.Where(t => t.Id < skipTill);
             }
-
             var allMessagesList = await allMessages
                 .OrderByDescending(t => t.Id)
                 .Take(take)
@@ -76,7 +76,7 @@ namespace Kahla.Server.Controllers
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();
-            return this.AiurJson(new AiurCollection<Message>(allMessagesList)
+            return Json(new AiurCollection<Message>(allMessagesList)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
@@ -86,6 +86,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
+            model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
@@ -97,7 +98,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             }
-            //Create message.
+            // Create message.
             var message = new Message
             {
                 Content = model.Content,
@@ -106,14 +107,37 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
+            // Create at info for this message.
+            foreach (var atTargetId in model.At)
+            {
+                if (await _dbContext.VerifyJoined(atTargetId, target))
+                {
+                    var at = new At
+                    {
+                        MessageId = message.Id,
+                        TargetUserId = atTargetId
+                    };
+                    _dbContext.Ats.Add(at);
+                }
+                else
+                {
+                    _dbContext.Messages.Remove(message);
+                    await _dbContext.SaveChangesAsync();
+                    return this.Protocol(ErrorType.InvalidInput, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
+                }
+            }
+            await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync(async (eachUser, relation) =>
             {
+                var mentioned = model.At.Contains(eachUser.Id);
                 await _pusher.NewMessageEvent(
                                 receiver: eachUser,
                                 conversation: target,
                                 content: model.Content,
                                 sender: user,
-                                muted: relation?.Muted ?? false);
+                                muted: !mentioned && (relation?.Muted ?? false),
+                                mentioned: mentioned
+                                );
             }, _userManager);
             try
             {
@@ -141,7 +165,7 @@ namespace Kahla.Server.Controllers
             if (target is PrivateConversation privateTarget)
             {
                 privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;
-                return this.AiurJson(new AiurValue<PrivateConversation>(privateTarget)
+                return Json(new AiurValue<PrivateConversation>(privateTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."
@@ -156,7 +180,7 @@ namespace Kahla.Server.Controllers
                     .Where(t => t.GroupId == groupTarget.Id)
                     .ToListAsync();
                 groupTarget.Users = relations;
-                return this.AiurJson(new AiurValue<GroupConversation>(groupTarget)
+                return Json(new AiurValue<GroupConversation>(groupTarget)
                 {
                     Code = ErrorType.Success,
                     Message = "Successfully get target conversation."

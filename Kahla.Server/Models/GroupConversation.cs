@@ -12,7 +12,7 @@ namespace Kahla.Server.Models
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
-        public List<UserGroupRelation> Users { get; set; }
+        public IEnumerable<UserGroupRelation> Users { get; set; }
         public int GroupImageKey { get; set; }
         public string GroupName { get; set; }
         [JsonIgnore]
@@ -69,6 +69,21 @@ namespace Kahla.Server.Models
                 taskList.Add(task);
             }
             await Task.WhenAll(taskList);
+        }
+
+        public override bool IWasAted(string userId)
+        {
+            var relation = Users
+                .SingleOrDefault(t => t.UserId == userId);
+            if (relation == null || relation.User == null)
+            {
+                return false;
+            }
+            return Messages
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .Where(t => t.SendTime > relation.ReadTimeStamp)
+                .Where(t => t.Ats != null)
+                .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
     }
 }
