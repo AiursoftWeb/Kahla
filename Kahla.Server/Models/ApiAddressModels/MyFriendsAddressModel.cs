@@ -11,10 +11,10 @@ namespace Kahla.Server.Models.ApiAddressModels
         [Required]
         public bool OrderByName { get; set; } = false;
 
-        [Range(1, 100)]
+        [Range(1, int.MaxValue)]
         public int Take { get; set; } = 15;
 
-        [Range(1, int.MaxValue)]
+        [Range(0, int.MaxValue)]
         public int Skip { get; set; } = 0;
     }
 }
