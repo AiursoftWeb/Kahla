@@ -25,7 +25,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
-        private static readonly object Obj = new object();
+        private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -37,7 +37,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> MyFriends([Required]bool? orderByName)
+        public async Task<IActionResult> MyFriends(MyFriendsAddressModel model)
         {
             var user = await GetKahlaUser();
             var list = new List<ContactInfo>();
@@ -59,11 +59,15 @@ namespace Kahla.Server.Controllers
                     SomeoneAtMe = conversation.IWasAted(user.Id)
                 });
             }
-            list = orderByName == true ?
+            list = model.OrderByName ?
                 list.OrderBy(t => t.DisplayName)
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .ToList() :
                 list.OrderByDescending(t => t.SomeoneAtMe)
                     .ThenByDescending(t => t.LatestMessageTime)
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .ToList();
             return Json(new AiurCollection<ContactInfo>(list)
             {
@@ -116,7 +120,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
             Request request;
-            lock (Obj)
+            lock (_obj)
             {
                 var pending = _dbContext.Requests
                     .Where(t => t.CreatorId == user.Id)
