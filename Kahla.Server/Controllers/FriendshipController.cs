@@ -85,12 +85,10 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find target user.");
             }
-
             if (!await _dbContext.AreFriends(user.Id, target.Id))
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
             }
-
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
             await _pusher.WereDeletedEvent(target, user);
