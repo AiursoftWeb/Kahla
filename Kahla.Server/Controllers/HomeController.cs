@@ -20,7 +20,7 @@ namespace Kahla.Server.Controllers
             return Json(new AiurValue<DateTime>(DateTime.UtcNow)
             {
                 Code = ErrorType.Success,
-                Message = "Welcome to kahla server! View our wiki at: " + _serviceLocation.Wiki
+                Message = "Welcome to Aiursoft Kahla server! View our wiki at: " + _serviceLocation.Wiki
             });
         }
 
