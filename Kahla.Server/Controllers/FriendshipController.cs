@@ -44,13 +44,14 @@ namespace Kahla.Server.Controllers
             var conversations = await _dbContext.MyConversations(user.Id);
             foreach (var conversation in conversations)
             {
+                var latestMsg = conversation.GetLatestMessage();
                 list.Add(new ContactInfo
                 {
                     ConversationId = conversation.Id,
                     DisplayName = conversation.GetDisplayName(user.Id),
                     DisplayImageKey = conversation.GetDisplayImage(user.Id),
-                    LatestMessage = conversation.GetLatestMessage().Content,
-                    LatestMessageTime = conversation.GetLatestMessage().SendTime,
+                    LatestMessage = latestMsg.Content,
+                    LatestMessageTime = latestMsg.SendTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
                     UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
