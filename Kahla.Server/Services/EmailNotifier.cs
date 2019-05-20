@@ -32,7 +32,7 @@ namespace Kahla.Server.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Email notifier service is starting...");
-            _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(10));
+            _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(100), TimeSpan.FromMinutes(25));
             return Task.CompletedTask;
         }
 
