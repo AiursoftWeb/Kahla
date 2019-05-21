@@ -297,14 +297,11 @@ namespace Kahla.Server.Controllers
                         SentRequest = SentRequest(currentUser.Id, user.Id)
                     });
                 }
-                if (calculated.Count >= take)
-                {
-                    break;
-                }
             }
             var ordered = calculated
                 .OrderByDescending(t => t.CommonFriends)
-                .ThenBy(t => t.CommonGroups);
+                .ThenBy(t => t.CommonGroups)
+                .Take(take);
             return Json(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
