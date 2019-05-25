@@ -334,6 +334,7 @@ namespace Kahla.Server.Controllers
             }
             model.User = target;
             model.PendingRequest = await _dbContext.Requests
+                .Include(t => t.Creator)
                 .Where(t =>
                     t.CreatorId == user.Id && t.TargetId == target.Id ||
                     t.CreatorId == target.Id && t.TargetId == user.Id)
