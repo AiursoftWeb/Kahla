@@ -333,14 +333,12 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
-            model.PendingRequestId = await _dbContext.Requests
+            model.PendingRequest = await _dbContext.Requests
                 .Where(t =>
                     t.CreatorId == user.Id && t.TargetId == target.Id ||
                     t.CreatorId == target.Id && t.TargetId == user.Id)
-                .Where(t => !t.Completed)
-                .Select(t => t.Id)
-                .FirstOrDefaultAsync();
-            model.SentRequest = model.PendingRequestId != null;
+                .FirstOrDefaultAsync(t => !t.Completed);
+            model.SentRequest = model.PendingRequest != null;
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return Json(model);
