@@ -122,8 +122,9 @@ namespace Kahla.Server.Controllers
             lock (_obj)
             {
                 var pending = _dbContext.Requests
-                    .Where(t => t.CreatorId == user.Id)
-                    .Where(t => t.TargetId == id)
+                    .Where(t =>
+                        t.CreatorId == user.Id && t.TargetId == target.Id ||
+                        t.CreatorId == target.Id && t.TargetId == user.Id)
                     .Any(t => !t.Completed);
                 if (pending)
                 {
@@ -332,10 +333,13 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
-            model.SentRequest = _dbContext.Requests
-                .Where(t => t.CreatorId == user.Id)
-                .Where(t => t.TargetId == id)
-                .Any(t => !t.Completed);
+            model.PendingRequest = await _dbContext.Requests
+                .Include(t => t.Creator)
+                .Where(t =>
+                    t.CreatorId == user.Id && t.TargetId == target.Id ||
+                    t.CreatorId == target.Id && t.TargetId == user.Id)
+                .FirstOrDefaultAsync(t => !t.Completed);
+            model.SentRequest = model.PendingRequest != null;
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return Json(model);
