@@ -89,7 +89,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> Version()
         {
-            if (!_cache.TryGetValue(nameof(Version), out string version))
+            if (!_cache.TryGetValue(nameof(Version), out (string appVersion, string cliVersion) version))
             {
                 version = await _version.CheckKahla();
 
@@ -100,9 +100,9 @@ namespace Kahla.Server.Controllers
             }
             return Json(new VersionViewModel
             {
-                LatestVersion = version,
-                OldestSupportedVersion = version,
-                Message = "Successfully get the latest version number for Kahla App.",
+                LatestVersion = version.appVersion,
+                LatestCLIVersion = version.cliVersion,
+                Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
                 DownloadAddress = "https://www.kahla.app"
             });
         }
