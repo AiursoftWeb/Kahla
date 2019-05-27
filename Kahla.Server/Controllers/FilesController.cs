@@ -66,7 +66,7 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
                 FileKey = uploadedFile.FileKey,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
+                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromKey/{uploadedFile.FileKey}"
             });
         }
 
@@ -90,7 +90,7 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your media file!",
                 FileKey = uploadedFile.FileKey,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromKey/{uploadedFile.FileKey}"
+                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromKey/{uploadedFile.FileKey}"
             });
         }
 
@@ -152,7 +152,7 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully generated your file download address!",
                 FileName = record.SourceName,
-                DownloadPath = $"{_serviceLocation.OSS}/Download/FromSecret?Sec={secret.Value}&sd=true&name={record.SourceName}"
+                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromSecret?Sec={secret.Value}&sd=true&name={record.SourceName}"
             });
         }
 

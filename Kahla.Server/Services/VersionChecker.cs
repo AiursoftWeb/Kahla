@@ -20,14 +20,19 @@ namespace Kahla.Server.Services
             _configuration = configuration;
         }
 
-        public async Task<string> CheckKahla()
+        public async Task<(string appVersion, string cliVersion)> CheckKahla()
         {
             var url = new AiurUrl(_configuration["KahlaMasterPackageJson"], new { });
             var response = await _http.Get(url, false);
             var result = JsonConvert.DeserializeObject<NodePackageJson>(response);
+
+            var urlcli = new AiurUrl(_configuration["CLIMasterPackageJson"], new { });
+            var responsecli = await _http.Get(urlcli, false);
+            var resultcli = JsonConvert.DeserializeObject<NodePackageJson>(responsecli);
+
             if (result.Name.ToLower() == "kahla")
             {
-                return result.Version;
+                return (result.Version, resultcli.Version);
             }
             else
             {

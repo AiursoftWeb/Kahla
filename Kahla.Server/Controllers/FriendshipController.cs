@@ -25,7 +25,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
-        private static readonly object Obj = new object();
+        private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -37,20 +37,21 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> MyFriends([Required]bool? orderByName)
+        public async Task<IActionResult> MyFriends(MyFriendsAddressModel model)
         {
             var user = await GetKahlaUser();
             var list = new List<ContactInfo>();
             var conversations = await _dbContext.MyConversations(user.Id);
             foreach (var conversation in conversations)
             {
+                var latestMsg = conversation.GetLatestMessage();
                 list.Add(new ContactInfo
                 {
                     ConversationId = conversation.Id,
                     DisplayName = conversation.GetDisplayName(user.Id),
                     DisplayImageKey = conversation.GetDisplayImage(user.Id),
-                    LatestMessage = conversation.GetLatestMessage().Content,
-                    LatestMessageTime = conversation.GetLatestMessage().SendTime,
+                    LatestMessage = latestMsg.Content,
+                    LatestMessageTime = latestMsg.SendTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
                     UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
@@ -59,11 +60,15 @@ namespace Kahla.Server.Controllers
                     SomeoneAtMe = conversation.IWasAted(user.Id)
                 });
             }
-            list = orderByName == true ?
+            list = model.OrderByName ?
                 list.OrderBy(t => t.DisplayName)
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .ToList() :
                 list.OrderByDescending(t => t.SomeoneAtMe)
                     .ThenByDescending(t => t.LatestMessageTime)
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .ToList();
             return Json(new AiurCollection<ContactInfo>(list)
             {
@@ -81,12 +86,10 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find target user.");
             }
-
             if (!await _dbContext.AreFriends(user.Id, target.Id))
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
             }
-
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
             await _pusher.WereDeletedEvent(target, user);
@@ -116,11 +119,12 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
             Request request;
-            lock (Obj)
+            lock (_obj)
             {
                 var pending = _dbContext.Requests
-                    .Where(t => t.CreatorId == user.Id)
-                    .Where(t => t.TargetId == id)
+                    .Where(t =>
+                        t.CreatorId == user.Id && t.TargetId == target.Id ||
+                        t.CreatorId == target.Id && t.TargetId == user.Id)
                     .Any(t => !t.Completed);
                 if (pending)
                 {
@@ -294,14 +298,11 @@ namespace Kahla.Server.Controllers
                         SentRequest = SentRequest(currentUser.Id, user.Id)
                     });
                 }
-                if (calculated.Count >= take)
-                {
-                    break;
-                }
             }
             var ordered = calculated
                 .OrderByDescending(t => t.CommonFriends)
-                .ThenBy(t => t.CommonGroups);
+                .ThenBy(t => t.CommonGroups)
+                .Take(take);
             return Json(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
@@ -332,10 +333,13 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
-            model.SentRequest = _dbContext.Requests
-                .Where(t => t.CreatorId == user.Id)
-                .Where(t => t.TargetId == id)
-                .Any(t => !t.Completed);
+            model.PendingRequest = await _dbContext.Requests
+                .Include(t => t.Creator)
+                .Where(t =>
+                    t.CreatorId == user.Id && t.TargetId == target.Id ||
+                    t.CreatorId == target.Id && t.TargetId == user.Id)
+                .FirstOrDefaultAsync(t => !t.Completed);
+            model.SentRequest = model.PendingRequest != null;
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
             return Json(model);
