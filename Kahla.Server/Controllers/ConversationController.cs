@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
+using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,41 @@ namespace Kahla.Server.Controllers
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
+        }
+
+        public async Task<IActionResult> All(AllAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var list = new List<ContactInfo>();
+            var conversations = await _dbContext.MyConversations(user.Id);
+            foreach (var conversation in conversations)
+            {
+                var latestMsg = conversation.GetLatestMessage();
+                list.Add(new ContactInfo
+                {
+                    ConversationId = conversation.Id,
+                    DisplayName = conversation.GetDisplayName(user.Id),
+                    DisplayImageKey = conversation.GetDisplayImage(user.Id),
+                    LatestMessage = latestMsg.Content,
+                    LatestMessageTime = latestMsg.SendTime,
+                    UnReadAmount = conversation.GetUnReadAmount(user.Id),
+                    Discriminator = conversation.Discriminator,
+                    UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
+                    AesKey = conversation.AESKey,
+                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted,
+                    SomeoneAtMe = conversation.IWasAted(user.Id)
+                });
+            }
+            list = list.OrderByDescending(t => t.SomeoneAtMe)
+                    .ThenByDescending(t => t.LatestMessageTime)
+                    .Skip(model.Skip)
+                    .Take(model.Take)
+                    .ToList();
+            return Json(new AiurCollection<ContactInfo>(list)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get all your friends."
+            });
         }
 
         public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
