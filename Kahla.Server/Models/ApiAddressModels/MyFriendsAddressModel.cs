@@ -8,9 +8,6 @@ namespace Kahla.Server.Models.ApiAddressModels
 {
     public class MyFriendsAddressModel
     {
-        [Required]
-        public bool OrderByName { get; set; } = false;
-
         [Range(1, int.MaxValue)]
         public int Take { get; set; } = 15;
 

@@ -60,12 +60,7 @@ namespace Kahla.Server.Controllers
                     SomeoneAtMe = conversation.IWasAted(user.Id)
                 });
             }
-            list = model.OrderByName ?
-                list.OrderBy(t => t.DisplayName)
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .ToList() :
-                list.OrderByDescending(t => t.SomeoneAtMe)
+            list = list.OrderByDescending(t => t.SomeoneAtMe)
                     .ThenByDescending(t => t.LatestMessageTime)
                     .Skip(model.Skip)
                     .Take(model.Take)
