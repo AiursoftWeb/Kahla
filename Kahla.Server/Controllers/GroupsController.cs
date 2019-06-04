@@ -120,7 +120,34 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> TransferGroupOwner([Required]string groupName, [Required]string targetUserId)
         {
-            throw new NotImplementedException();
+            var user = await GetKahlaUser();
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
+            }
+            var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
+            if (joined == null)
+            {
+                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: '{groupName}' at all!");
+            }
+            if (group.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
+            }
+            // current user is the owner of the group.
+            var targetRelationship = await _dbContext.GetRelationFromGroup(targetUserId, group.Id);
+            if (targetRelationship == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
+            }
+            if (group.OwnerId == targetUserId)
+            {
+                return this.Protocol(ErrorType.RequireAttention, $"Caution! You are already the owner of the group '{groupName}'.");
+            }
+            group.OwnerId = targetUserId;
+                await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, $"Successfully transfered your group '{groupName}' ownership to user with id: '{targetUserId}'!");
         }
 
         [HttpPost]
