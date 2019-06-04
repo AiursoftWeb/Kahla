@@ -23,6 +23,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
+        private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
@@ -91,24 +92,27 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
             }
-            var joined = group.Users.Any(t => t.UserId == user.Id);
-            if (joined)
-            {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
-            }
             if (group.HasPassword && group.JoinPassword != joinPassword?.Trim())
             {
                 return this.Protocol(ErrorType.WrongKey, "The group requires password and your password was not correct!");
             }
-            // All checked and able to join him.
-            // Warning: Currently we do not have invitation system for invitation control is too complicated.
-            var newRelationship = new UserGroupRelation
+            lock (_obj)
             {
-                UserId = user.Id,
-                GroupId = group.Id
-            };
-            _dbContext.UserGroupRelations.Add(newRelationship);
-            await _dbContext.SaveChangesAsync();
+                var joined = group.Users.Any(t => t.UserId == user.Id);
+                if (joined)
+                {
+                    return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
+                }
+                // All checked and able to join him.
+                // Warning: Currently we do not have invitation system for invitation control is too complicated.
+                var newRelationship = new UserGroupRelation
+                {
+                    UserId = user.Id,
+                    GroupId = group.Id
+                };
+                _dbContext.UserGroupRelations.Add(newRelationship);
+                _dbContext.SaveChanges();
+            }
             await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id), _userManager);
             return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
         }
