@@ -146,7 +146,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.RequireAttention, $"Caution! You are already the owner of the group '{groupName}'.");
             }
             group.OwnerId = targetUserId;
-                await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully transfered your group '{groupName}' ownership to user with id: '{targetUserId}'!");
         }
 
