@@ -49,12 +49,13 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .Where(t => t.Users.Any(p => p.UserId == user.Id))
                 .ToListAsync();
+            var searched = SearchedGroup.Map(groups, user.Id);
             return Json(new MineViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your groups and friends.",
                 Users = personalRelations,
-                Groups = groups,
+                Groups = searched,
             });
         }
 
