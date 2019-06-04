@@ -118,18 +118,28 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> TransferGroupOwner([Required]string groupName, [Required]string targetUserId)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPost]
         public async Task<IActionResult> LeaveGroup([Required]string groupName)
         {
             var user = await GetKahlaUser();
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
             }
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: {groupName} at all!");
+                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: '{groupName}' at all!");
+            }
+            if (group.OwnerId == user.Id)
+            {
+                return this.Protocol(ErrorType.NotEnoughResources, $"You are the owner of this group: '{groupName}' and you can't leave it!");
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
