@@ -23,6 +23,7 @@ namespace Kahla.Server.Models
         public bool HasPassword => !string.IsNullOrEmpty(JoinPassword);
 
         public string OwnerId { get; set; }
+        [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }
         public override int GetDisplayImage(string userId) => GroupImageKey;
