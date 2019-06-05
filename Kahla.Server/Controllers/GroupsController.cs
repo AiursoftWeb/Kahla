@@ -147,7 +147,7 @@ namespace Kahla.Server.Controllers
             }
             group.OwnerId = targetUserId;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully transfered your group '{groupName}' ownership to user with id: '{targetUserId}'!");
+            return this.Protocol(ErrorType.Success, $"Successfully transfered your group '{groupName}' ownership!");
         }
 
         [HttpPost]
@@ -211,32 +211,21 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {model.GroupName}!");
+                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: {model.GroupName}!");
             }
-
             if (group.OwnerId != user.Id)
             {
-                return this.Protocol(ErrorType.Unauthorized, "You haven't the permission to execute this command.");
+                return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
             }
-
-            var shouldSave = false;
-
             if (model.AvatarKey != null)
             {
                 group.GroupImageKey = model.AvatarKey.Value;
-                shouldSave = true;
             }
-
-            if (model.NewJoinPassword != null) {
-                group.JoinPassword = model.NewJoinPassword;
-                shouldSave = true;
-            }
-
-            if (shouldSave)
+            if (model.NewJoinPassword != null)
             {
-                await _dbContext.SaveChangesAsync();
+                group.JoinPassword = model.NewJoinPassword;
             }
-
+            await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully update the info of the group '{model.GroupName}'.");
         }
 

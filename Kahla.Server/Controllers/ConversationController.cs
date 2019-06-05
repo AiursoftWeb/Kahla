@@ -234,16 +234,22 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            // Do update.
-            target.MaxLiveSeconds = model.NewLifeTime;
-            await _dbContext.SaveChangesAsync();
+            if (target is GroupConversation g && g.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
+            }
             // Delete outdated for current.
             var outdatedMessages = _dbContext
                 .Messages
                 .Include(t => t.Conversation)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+                .Where(t =>
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime));
             _dbContext.Messages.RemoveRange(outdatedMessages);
+            await _dbContext.SaveChangesAsync();
+            // Update current.
+            target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync(async (eachUser, relation) =>
             {
