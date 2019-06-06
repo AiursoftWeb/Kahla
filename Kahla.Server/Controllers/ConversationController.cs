@@ -214,6 +214,8 @@ namespace Kahla.Server.Controllers
                     .AsNoTracking()
                     .Include(t => t.User)
                     .Where(t => t.GroupId == groupTarget.Id)
+                    .OrderBy(t => t.UserId == t.Group.OwnerId)
+                    .ThenBy(t => t.JoinTime)
                     .ToListAsync();
                 groupTarget.Users = relations;
                 return Json(new AiurValue<GroupConversation>(groupTarget)
