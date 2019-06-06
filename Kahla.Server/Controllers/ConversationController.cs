@@ -214,7 +214,7 @@ namespace Kahla.Server.Controllers
                     .AsNoTracking()
                     .Include(t => t.User)
                     .Where(t => t.GroupId == groupTarget.Id)
-                    .OrderBy(t => t.UserId == t.Group.OwnerId)
+                    .OrderByDescending(t => t.UserId == t.Group.OwnerId)
                     .ThenBy(t => t.JoinTime)
                     .ToListAsync();
                 groupTarget.Users = relations;
