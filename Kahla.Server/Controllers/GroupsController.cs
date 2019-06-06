@@ -151,6 +151,34 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> KickMemeber([Required]string groupName, [Required]string targetUserId)
+        {
+            var user = await GetKahlaUser();
+
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
+            }
+            if (group.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't kick out members.!");
+            }
+            var targetuser = await _dbContext
+                .UserGroupRelations
+                .SingleOrDefaultAsync(t => t.GroupId == group.Id && t.UserId == targetUserId);
+            if (targetuser == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
+            }
+            _dbContext.UserGroupRelations.Remove(targetuser);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id), _userManager);
+            await _pusher.KickedEvent(targetuser.User, group.Id);
+            return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
+        }
+
+
+        [HttpPost]
         public async Task<IActionResult> LeaveGroup([Required]string groupName)
         {
             var user = await GetKahlaUser();
