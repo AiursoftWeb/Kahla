@@ -160,11 +160,6 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
             }
-            var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
-            if (joined == null)
-            {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: '{groupName}' at all!");
-            }
             if (group.OwnerId != user.Id)
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
