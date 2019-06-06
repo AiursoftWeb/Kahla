@@ -162,7 +162,7 @@ namespace Kahla.Server.Controllers
             }
             if (group.OwnerId != user.Id)
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
+                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't kick out members.!");
             }
             var targetuser = await _dbContext
                 .UserGroupRelations
