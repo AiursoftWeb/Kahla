@@ -240,7 +240,22 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
             }
-            group.GroupImageKey = model.AvatarKey;
+
+            if (!string.IsNullOrEmpty(model.NewName))
+            {
+                model.NewName = model.NewName.Trim().ToLower();
+                var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.NewName);
+                if (exists)
+                {
+                    return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.NewName} was already exists!");
+                }
+                group.GroupName = model.NewName;
+            }
+
+            if (model.AvatarKey != null) {
+                group.GroupImageKey = model.AvatarKey.Value;
+            }
+
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully update the info of the group '{model.GroupName}'.");
         }
