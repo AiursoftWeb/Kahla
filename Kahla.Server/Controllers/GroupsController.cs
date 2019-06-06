@@ -172,7 +172,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetuser);
-            return this.Protocol(ErrorType.Success, $"Successfully Kich Memeber for your group '{groupName}'.");
+            return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
         }
 
 
