@@ -244,12 +244,15 @@ namespace Kahla.Server.Controllers
             if (!string.IsNullOrEmpty(model.NewName))
             {
                 model.NewName = model.NewName.Trim().ToLower();
-                var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.NewName);
-                if (exists)
-                {
-                    return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.NewName} was already exists!");
+                if (model.NewName != group.GroupName) {
+                    var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.NewName);
+                    if (exists) {
+                        return this.Protocol(ErrorType.NotEnoughResources,
+                            $"A group with name: {model.NewName} was already exists!");
+                    }
+
+                    group.GroupName = model.NewName;
                 }
-                group.GroupName = model.NewName;
             }
 
             if (model.AvatarKey != null) {
