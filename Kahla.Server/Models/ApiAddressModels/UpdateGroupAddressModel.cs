@@ -7,8 +7,6 @@ namespace Kahla.Server.Models.ApiAddressModels
         [Required]
         public string GroupName { get; set; }
 
-        public int? AvatarKey { get; set; }
-
-        public string NewJoinPassword { get; set; }
+        public int AvatarKey { get; set; }
     }
 }

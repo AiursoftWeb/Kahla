@@ -126,11 +126,6 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
             }
-            var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
-            if (joined == null)
-            {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: '{groupName}' at all!");
-            }
             if (group.OwnerId != user.Id)
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
@@ -245,16 +240,27 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
             }
-            if (model.AvatarKey != null)
-            {
-                group.GroupImageKey = model.AvatarKey.Value;
-            }
-            if (model.NewJoinPassword != null)
-            {
-                group.JoinPassword = model.NewJoinPassword;
-            }
+            group.GroupImageKey = model.AvatarKey;
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully update the info of the group '{model.GroupName}'.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateGroupPassword(UpdateGroupPasswordAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: {model.GroupName}!");
+            }
+            if (group.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
+            }
+            group.JoinPassword = model.NewJoinPassword;
+            await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, $"Successfully update the join password of the group '{model.GroupName}'.");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
