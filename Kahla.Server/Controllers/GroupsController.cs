@@ -243,6 +243,7 @@ namespace Kahla.Server.Controllers
 
             if (!string.IsNullOrEmpty(model.NewName))
             {
+                model.NewName = model.NewName.Trim().ToLower();
                 var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.NewName);
                 if (exists)
                 {
