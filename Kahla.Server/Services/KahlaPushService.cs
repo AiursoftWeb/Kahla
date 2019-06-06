@@ -170,5 +170,20 @@ namespace Kahla.Server.Services
                 await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(kickedevent), true);
             }
         }
+
+        public async Task DissolvedEvent(KahlaUser receiver, int conversationId)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var dissolvedevent = new DissolvedEvent
+            {
+                ConversationId = conversationId
+            };
+
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(dissolvedevent), true);
+            }
+        }
     }
 }
