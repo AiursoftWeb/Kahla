@@ -173,7 +173,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DismissGroup([Required]string groupName)
+        public async Task<IActionResult> DisbandmentGroup([Required]string groupName)
         {
             var user = await GetKahlaUser();
 
