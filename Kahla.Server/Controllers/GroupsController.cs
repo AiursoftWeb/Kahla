@@ -167,9 +167,8 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetuser);
-            await _dbContext.SaveChangesAsync();
             await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id), _userManager);
-            await _pusher.KickedEvent(targetuser.User, group.Id);
+            await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
         }
 

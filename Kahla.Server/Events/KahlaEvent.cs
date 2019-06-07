@@ -87,14 +87,4 @@ namespace Kahla.Server.Events
         public int ConversationId { get; set; }
         public KahlaUser LeftUser { get; set; }
     }
-
-    public class KickedEvent : KahlaEvent
-    {
-        public KickedEvent()
-        {
-            Type = EventType.KickedEvent;
-        }
-
-        public int ConversationId { get; set; }
-    }
 }
