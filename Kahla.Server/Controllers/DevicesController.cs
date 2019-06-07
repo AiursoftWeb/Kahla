@@ -135,9 +135,6 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }
