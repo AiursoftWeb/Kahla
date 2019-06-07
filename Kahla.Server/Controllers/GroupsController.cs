@@ -244,23 +244,23 @@ namespace Kahla.Server.Controllers
             if (!string.IsNullOrEmpty(model.NewName))
             {
                 model.NewName = model.NewName.Trim().ToLower();
-                if (model.NewName != group.GroupName) {
-                    var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.NewName);
-                    if (exists) {
-                        return this.Protocol(ErrorType.NotEnoughResources,
-                            $"A group with name: {model.NewName} was already exists!");
+                if (model.NewName != group.GroupName)
+                {
+                    if (_dbContext.GroupConversations.Any(t => t.GroupName == model.NewName))
+                    {
+                        return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: '{model.NewName}' already exists!");
                     }
-
                     group.GroupName = model.NewName;
                 }
             }
 
-            if (model.AvatarKey != null) {
+            if (model.AvatarKey != null)
+            {
                 group.GroupImageKey = model.AvatarKey.Value;
             }
 
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully update the info of the group '{model.GroupName}'.");
+            return this.Protocol(ErrorType.Success, $"Successfully updated the name of the group '{model.GroupName}'.");
         }
 
         [HttpPost]
@@ -270,7 +270,7 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: {model.GroupName}!");
+                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: '{model.GroupName}'!");
             }
             if (group.OwnerId != user.Id)
             {
