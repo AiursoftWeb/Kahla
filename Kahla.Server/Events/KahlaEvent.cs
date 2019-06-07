@@ -12,7 +12,7 @@ namespace Kahla.Server.Events
         TimerUpdatedEvent = 4,
         NewMemberEvent = 5,
         SomeoneLeftLevent = 6,
-        KickedEvent = 7,
+        DissolveEvent = 7,
     }
     public abstract class KahlaEvent
     {
@@ -86,5 +86,15 @@ namespace Kahla.Server.Events
         }
         public int ConversationId { get; set; }
         public KahlaUser LeftUser { get; set; }
+    }
+
+    public class DissolveEvent : KahlaEvent
+    {
+        public DissolveEvent()
+        {
+            Type = EventType.DissolveEvent;
+        }
+
+        public int ConversationId { get; set; }
     }
 }
