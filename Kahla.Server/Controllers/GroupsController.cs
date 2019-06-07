@@ -146,7 +146,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> KickMemeber([Required]string groupName, [Required]string targetUserId)
+        public async Task<IActionResult> KickMember([Required]string groupName, [Required]string targetUserId)
         {
             var user = await GetKahlaUser();
 
@@ -170,6 +170,27 @@ namespace Kahla.Server.Controllers
             await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id), _userManager);
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DissolveGroup([Required]string groupName)
+        {
+            var user = await GetKahlaUser();
+
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
+            }
+            if (group.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't dissolve group.!");
+            }
+
+            _dbContext.GroupConversations.Remove(group);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id), _userManager);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, $"Successfully dissolve the group '{groupName}'.");
         }
 
 
