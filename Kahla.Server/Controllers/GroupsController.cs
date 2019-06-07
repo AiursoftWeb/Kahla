@@ -188,6 +188,7 @@ namespace Kahla.Server.Controllers
             }
 
             _dbContext.GroupConversations.Remove(group);
+            await _dbContext.SaveChangesAsync();
             await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolvedEvent(eachUser, group.Id), _userManager);
             return this.Protocol(ErrorType.Success, $"Successfully disbanded the group chat: {groupName}");
         }
