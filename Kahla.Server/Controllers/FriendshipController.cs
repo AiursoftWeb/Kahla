@@ -357,9 +357,6 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Successfully reported target user!");
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }

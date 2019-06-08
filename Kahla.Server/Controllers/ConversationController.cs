@@ -261,9 +261,6 @@ namespace Kahla.Server.Controllers
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }
