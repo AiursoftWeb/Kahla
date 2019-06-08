@@ -2,7 +2,7 @@ using Aiursoft.Pylon.Models;
 
 namespace Kahla.Server.Models.ApiViewModels
 {
-    public class FriendDiscovery : AiurProtocol
+    public class FriendDiscovery
     {
         public int CommonFriends { get; set; }
         public int CommonGroups { get; set; }
