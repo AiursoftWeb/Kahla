@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -67,6 +68,33 @@ namespace Kahla.Server.Controllers
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
                 FileKey = uploadedFile.FileKey,
                 DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromKey/{uploadedFile.FileKey}"
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFileHistory([Required] int ConversationId)
+        {
+            var user = await GetKahlaUser();
+
+            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == ConversationId);
+
+            if (!await _dbContext.VerifyJoined(user.Id, conversation))
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to get file history to conversation: {conversation.Id}!");
+            }
+
+            var files = await _dbContext
+                .FileRecords
+                .Where(t => t.ConversationId == conversation.Id)
+                .OrderByDescending(t => t.UploadTime)
+                .AsNoTracking()
+                .ToListAsync();
+            
+
+            return Json(new AiurCollection<FileRecord>(files)
+            {
+                Code = ErrorType.Success,
+                Message = $"Successfully get all your file history for {conversation.DisplayName}."
             });
         }
 
