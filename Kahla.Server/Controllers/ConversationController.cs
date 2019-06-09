@@ -39,31 +39,26 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> All(AllAddressModel model)
         {
             var user = await GetKahlaUser();
-            var list = new List<ContactInfo>();
             var conversations = await _dbContext.MyConversations(user.Id);
-            foreach (var conversation in conversations)
+            var list = conversations.Select(conversation => new ContactInfo
             {
-                var latestMsg = conversation.GetLatestMessage();
-                list.Add(new ContactInfo
-                {
-                    ConversationId = conversation.Id,
-                    DisplayName = conversation.GetDisplayName(user.Id),
-                    DisplayImageKey = conversation.GetDisplayImage(user.Id),
-                    LatestMessage = latestMsg.Content,
-                    LatestMessageTime = latestMsg.SendTime,
-                    UnReadAmount = conversation.GetUnReadAmount(user.Id),
-                    Discriminator = conversation.Discriminator,
-                    UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
-                    AesKey = conversation.AESKey,
-                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted,
-                    SomeoneAtMe = conversation.IWasAted(user.Id)
-                });
-            }
-            list = list.OrderByDescending(t => t.SomeoneAtMe)
-                    .ThenByDescending(t => t.LatestMessageTime)
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .ToList();
+                ConversationId = conversation.Id,
+                DisplayName = conversation.GetDisplayName(user.Id),
+                DisplayImageKey = conversation.GetDisplayImage(user.Id),
+                LatestMessage = conversation.GetLatestMessage().Content,
+                LatestMessageTime = conversation.GetLatestMessage().SendTime,
+                UnReadAmount = conversation.GetUnReadAmount(user.Id),
+                Discriminator = conversation.Discriminator,
+                UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
+                AesKey = conversation.AESKey,
+                Muted = (conversation as GroupConversation)?.Users.FirstOrDefault(t => t.UserId == user.Id).Muted ?? false,
+                SomeoneAtMe = conversation.IWasAted(user.Id)
+            })
+            .OrderByDescending(t => t.SomeoneAtMe)
+            .ThenByDescending(t => t.LatestMessageTime)
+            .Skip(model.Skip)
+            .Take(model.Take)
+            .ToList();
             return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
