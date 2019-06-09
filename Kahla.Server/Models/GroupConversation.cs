@@ -23,6 +23,7 @@ namespace Kahla.Server.Models
         public bool HasPassword => !string.IsNullOrEmpty(JoinPassword);
 
         public string OwnerId { get; set; }
+        [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }
         public override int GetDisplayImage(string userId) => GroupImageKey;
@@ -82,7 +83,6 @@ namespace Kahla.Server.Models
             return Messages
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .Where(t => t.SendTime > relation.ReadTimeStamp)
-                .Where(t => t.Ats != null)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
     }

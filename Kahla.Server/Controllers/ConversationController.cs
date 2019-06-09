@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
+using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,35 @@ namespace Kahla.Server.Controllers
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
+        }
+
+        public async Task<IActionResult> All(AllAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var conversations = await _dbContext.MyConversations(user.Id);
+            var list = conversations.Select(conversation => new ContactInfo
+            {
+                ConversationId = conversation.Id,
+                DisplayName = conversation.GetDisplayName(user.Id),
+                DisplayImageKey = conversation.GetDisplayImage(user.Id),
+                LatestMessage = conversation.GetLatestMessage().Content,
+                LatestMessageTime = conversation.GetLatestMessage().SendTime,
+                UnReadAmount = conversation.GetUnReadAmount(user.Id),
+                Discriminator = conversation.Discriminator,
+                UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
+                AesKey = conversation.AESKey,
+                Muted = (conversation as GroupConversation)?.Users.FirstOrDefault(t => t.UserId == user.Id).Muted ?? false,
+                SomeoneAtMe = conversation.IWasAted(user.Id)
+            })
+            .OrderByDescending(t => t.SomeoneAtMe)
+            .ThenByDescending(t => t.LatestMessageTime)
+            .Skip(model.Skip)
+            .Take(model.Take);
+            return Json(new AiurCollection<ContactInfo>(list)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get all your friends."
+            });
         }
 
         public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
@@ -178,6 +208,8 @@ namespace Kahla.Server.Controllers
                     .AsNoTracking()
                     .Include(t => t.User)
                     .Where(t => t.GroupId == groupTarget.Id)
+                    .OrderByDescending(t => t.UserId == t.Group.OwnerId)
+                    .ThenBy(t => t.JoinTime)
                     .ToListAsync();
                 groupTarget.Users = relations;
                 return Json(new AiurValue<GroupConversation>(groupTarget)
@@ -198,16 +230,22 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            // Do update.
-            target.MaxLiveSeconds = model.NewLifeTime;
-            await _dbContext.SaveChangesAsync();
+            if (target is GroupConversation g && g.OwnerId != user.Id)
+            {
+                return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
+            }
             // Delete outdated for current.
             var outdatedMessages = _dbContext
                 .Messages
                 .Include(t => t.Conversation)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+                .Where(t =>
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime));
             _dbContext.Messages.RemoveRange(outdatedMessages);
+            await _dbContext.SaveChangesAsync();
+            // Update current.
+            target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync(async (eachUser, relation) =>
             {
@@ -217,9 +255,6 @@ namespace Kahla.Server.Controllers
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }

@@ -37,43 +37,25 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> MyFriends(MyFriendsAddressModel model)
+        public async Task<IActionResult> Mine()
         {
             var user = await GetKahlaUser();
-            var list = new List<ContactInfo>();
-            var conversations = await _dbContext.MyConversations(user.Id);
-            foreach (var conversation in conversations)
-            {
-                var latestMsg = conversation.GetLatestMessage();
-                list.Add(new ContactInfo
-                {
-                    ConversationId = conversation.Id,
-                    DisplayName = conversation.GetDisplayName(user.Id),
-                    DisplayImageKey = conversation.GetDisplayImage(user.Id),
-                    LatestMessage = latestMsg.Content,
-                    LatestMessageTime = latestMsg.SendTime,
-                    UnReadAmount = conversation.GetUnReadAmount(user.Id),
-                    Discriminator = conversation.Discriminator,
-                    UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
-                    AesKey = conversation.AESKey,
-                    Muted = conversation is GroupConversation && (await _dbContext.GetRelationFromGroup(user.Id, conversation.Id)).Muted,
-                    SomeoneAtMe = conversation.IWasAted(user.Id)
-                });
-            }
-            list = model.OrderByName ?
-                list.OrderBy(t => t.DisplayName)
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .ToList() :
-                list.OrderByDescending(t => t.SomeoneAtMe)
-                    .ThenByDescending(t => t.LatestMessageTime)
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .ToList();
-            return Json(new AiurCollection<ContactInfo>(list)
+            var personalRelations = await _dbContext.PrivateConversations
+               .AsNoTracking()
+               .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
+               .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
+               .ToListAsync();
+            var groups = await _dbContext.GroupConversations
+                .AsNoTracking()
+                .Where(t => t.Users.Any(p => p.UserId == user.Id))
+                .ToListAsync();
+            var searched = SearchedGroup.Map(groups, user.Id);
+            return Json(new MineViewModel
             {
                 Code = ErrorType.Success,
-                Message = "Successfully get all your friends."
+                Message = "Successfully get all your groups and friends.",
+                Users = personalRelations,
+                Groups = searched,
             });
         }
 
@@ -206,7 +188,6 @@ namespace Kahla.Server.Controllers
 
             var groups = _dbContext
                 .GroupConversations
-                .Include(t => t.Users)
                 .AsNoTracking()
                 .Where(t => t.GroupName.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
@@ -376,9 +357,6 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Successfully reported target user!");
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }

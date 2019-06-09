@@ -82,7 +82,7 @@ namespace Kahla.Server.Controllers
             var file = Request.Form.Files.First();
             if (!file.FileName.IsImageMedia() && !file.FileName.IsVideo())
             {
-                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
+                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
             }
             var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 400);
             return Json(new UploadImageViewModel
@@ -156,9 +156,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        private Task<KahlaUser> GetKahlaUser()
-        {
-            return _userManager.GetUserAsync(User);
-        }
+        private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     }
 }

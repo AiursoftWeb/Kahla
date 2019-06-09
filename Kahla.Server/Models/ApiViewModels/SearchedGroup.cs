@@ -18,7 +18,6 @@ namespace Kahla.Server.Models.ApiViewModels
 
         private SearchedGroup(GroupConversation conversation, string currentUserId)
         {
-            UsersCount = conversation.Users.Count();
             ImageKey = conversation.GroupImageKey;
             Name = conversation.GroupName;
             HasPassword = !string.IsNullOrEmpty(conversation.JoinPassword);
@@ -26,9 +25,7 @@ namespace Kahla.Server.Models.ApiViewModels
             Id = conversation.Id;
             HasTimer = conversation.MaxLiveSeconds < int.MaxValue;
             ConversationCreateTime = conversation.ConversationCreateTime;
-            Joined = conversation.Users.Any(t => t.UserId == currentUserId);
         }
-        public int UsersCount { get; set; }
         public int ImageKey { get; set; }
         public string Name { get; set; }
         public bool HasPassword { get; set; }
@@ -36,6 +33,5 @@ namespace Kahla.Server.Models.ApiViewModels
         public int Id { get; set; }
         public bool HasTimer { get; set; }
         public DateTime ConversationCreateTime { get; set; }
-        public bool Joined { get; set; }
     }
 }
