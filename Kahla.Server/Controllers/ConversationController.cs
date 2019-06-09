@@ -57,8 +57,7 @@ namespace Kahla.Server.Controllers
             .OrderByDescending(t => t.SomeoneAtMe)
             .ThenByDescending(t => t.LatestMessageTime)
             .Skip(model.Skip)
-            .Take(model.Take)
-            .ToList();
+            .Take(model.Take);
             return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
