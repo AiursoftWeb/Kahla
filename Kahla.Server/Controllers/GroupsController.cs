@@ -184,13 +184,13 @@ namespace Kahla.Server.Controllers
             }
             if (group.OwnerId != user.Id)
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't dissolve group.!");
+                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of the group: '{groupName}' and you can't dissolve it.!");
             }
 
-            _dbContext.GroupConversations.Remove(group);
             await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id), _userManager);
+            _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully dissolve the group '{groupName}'.");
+            return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
         }
 
 
