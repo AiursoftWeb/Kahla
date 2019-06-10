@@ -36,7 +36,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
-        public async Task<IActionResult> All(AllAddressModel model)
+        public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
             var conversations = await _dbContext.MyConversations(user.Id);
@@ -55,9 +55,7 @@ namespace Kahla.Server.Controllers
                 SomeoneAtMe = conversation.IWasAted(user.Id)
             })
             .OrderByDescending(t => t.SomeoneAtMe)
-            .ThenByDescending(t => t.LatestMessageTime)
-            .Skip(model.Skip)
-            .Take(model.Take);
+            .ThenByDescending(t => t.LatestMessageTime);
             return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
