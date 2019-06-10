@@ -13,7 +13,7 @@ namespace Kahla.Server.Models.ApiViewModels
         public string Discriminator { get; set; }
         public string UserId { get; set; }
         public string AesKey { get; set; }
-        public bool? Muted { get; set; }
+        public bool Muted { get; set; }
         public bool SomeoneAtMe { get; set; }
     }
 }
