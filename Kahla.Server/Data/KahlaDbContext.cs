@@ -50,16 +50,17 @@ namespace Kahla.Server.Data
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
                 .ToListAsync();
-            var groups = await UserGroupRelations
+            var groups = await GroupConversations
                 .AsNoTracking()
-                .Where(t => t.UserId == userId)
-                .Include(t => t.Group.Messages)
+                .Where(t => t.Users.Any(p => p.UserId == userId))
+                .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
-                .Include(t => t.User)
+                .Include(t => t.Users)
+                .ThenInclude(t => t.User)
                 .ToListAsync();
             var myConversations = new List<Conversation>();
             myConversations.AddRange(personalRelations);
-            myConversations.AddRange(groups.Select(t => t.Group));
+            myConversations.AddRange(groups);
             return myConversations;
         }
 

@@ -40,21 +40,10 @@ namespace Kahla.Server.Models
 
         public override Message GetLatestMessage()
         {
-            try
-            {
-                return Messages
-                    .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                    .OrderByDescending(p => p.SendTime)
-                    .First();
-            }
-            catch (InvalidOperationException)
-            {
-                return new Message
-                {
-                    Content = null,//$"You have successfully joined {this.GroupName}!",
-                    SendTime = ConversationCreateTime
-                };
-            }
+            return Messages
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .OrderByDescending(p => p.SendTime)
+                .FirstOrDefault();
         }
 
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)

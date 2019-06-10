@@ -25,21 +25,10 @@ namespace Kahla.Server.Models
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
         public override Message GetLatestMessage()
         {
-            try
-            {
-                return Messages
-                    .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                    .OrderByDescending(p => p.SendTime)
-                    .First();
-            }
-            catch (InvalidOperationException)
-            {
-                return new Message
-                {
-                    Content = null,//"You are friends. Start chatting now!",
-                    SendTime = ConversationCreateTime
-                };
-            }
+            return Messages
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .OrderByDescending(p => p.SendTime)
+                .FirstOrDefault();
         }
 
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
