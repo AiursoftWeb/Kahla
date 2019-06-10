@@ -44,10 +44,12 @@ namespace Kahla.Server.Controllers
                .AsNoTracking()
                .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
                .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
+               .OrderBy(t => t.NickName)
                .ToListAsync();
             var groups = await _dbContext.GroupConversations
                 .AsNoTracking()
                 .Where(t => t.Users.Any(p => p.UserId == user.Id))
+                .OrderBy(t => t.GroupName)
                 .ToListAsync();
             var searched = SearchedGroup.Map(groups, user.Id);
             return Json(new MineViewModel
