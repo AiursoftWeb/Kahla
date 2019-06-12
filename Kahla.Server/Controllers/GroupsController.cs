@@ -83,13 +83,14 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
+            GroupConversation group = null;
             lock (_obj)
             {
-                var group = _dbContext
-                .GroupConversations
-                .Include(t => t.Users)
-                .ThenInclude(t => t.User)
-                .SingleOrDefault(t => t.GroupName == groupName);
+                 group = _dbContext
+                    .GroupConversations
+                    .Include(t => t.Users)
+                    .ThenInclude(t => t.User)
+                    .SingleOrDefault(t => t.GroupName == groupName);
                 if (group == null)
                 {
                     return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
