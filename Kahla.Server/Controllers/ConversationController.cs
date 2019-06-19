@@ -104,6 +104,7 @@ namespace Kahla.Server.Controllers
             {
                 var relation = await _dbContext.UserGroupRelations
                     .SingleOrDefaultAsync(t => t.UserId == user.Id && t.GroupId == target.Id);
+                allMessagesList.ForEach(t => t.Read = t.SendTime < relation.ReadTimeStamp);
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();

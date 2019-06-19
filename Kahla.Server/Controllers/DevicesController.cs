@@ -1,6 +1,8 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Events;
 using Kahla.Server.Models;
@@ -24,15 +26,21 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly ThirdPartyPushService _thirdPartyPushService;
         private readonly UserManager<KahlaUser> _userManager;
+        private readonly PushMessageService _stargatePushService;
+        private readonly AppsContainer _appsContainer;
 
         public DevicesController(
             KahlaDbContext dbContext,
             ThirdPartyPushService thirdPartyPushService,
-            UserManager<KahlaUser> userManager)
+            UserManager<KahlaUser> userManager,
+            PushMessageService stargatePushService,
+            AppsContainer appsContainer)
         {
             _dbContext = dbContext;
             _thirdPartyPushService = thirdPartyPushService;
             _userManager = userManager;
+            _stargatePushService = stargatePushService;
+            _appsContainer = appsContainer;
         }
 
         [HttpPost]
@@ -131,7 +139,9 @@ namespace Kahla.Server.Controllers
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
+            var token = await _appsContainer.AccessToken();
             await _thirdPartyPushService.PushAsync(user.Id, "postermaster@aiursoft.com", payload);
+            await _stargatePushService.PushMessageAsync(token, user.CurrentChannel, payload);
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
 
