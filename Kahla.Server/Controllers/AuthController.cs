@@ -32,7 +32,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly AuthService<KahlaUser> _authService;
-        private readonly OAuthService _oauthService;
+        private readonly AccountService _accountService;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
         private readonly UserService _userService;
@@ -48,7 +48,7 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             IHostingEnvironment env,
             AuthService<KahlaUser> authService,
-            OAuthService oauthService,
+            AccountService accountService,
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
             UserService userService,
@@ -63,7 +63,7 @@ namespace Kahla.Server.Controllers
             _configuration = configuration;
             _env = env;
             _authService = authService;
-            _oauthService = oauthService;
+            _accountService = accountService;
             _userManager = userManager;
             _signInManager = signInManager;
             _userService = userService;
@@ -110,15 +110,15 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> AuthByPassword(AuthByPasswordAddressModel model)
         {
-            var pack = await _oauthService.PasswordAuthAsync(Extends.CurrentAppId, model.Email, model.Password);
+            var pack = await _accountService.PasswordAuthAsync(await _appsContainer.AccessToken(), model.Email, model.Password);
             if (pack.Code != ErrorType.Success)
             {
                 return this.Protocol(ErrorType.Unauthorized, pack.Message);
             }
             var user = await _authService.AuthApp(new AuthResultAddressModel
             {
-                code = pack.Value,
-                state = string.Empty
+                Code = pack.Value,
+                State = string.Empty
             }, isPersistent: true);
             if (!await _dbContext.AreFriends(user.Id, user.Id))
             {
@@ -135,7 +135,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
         {
-            var result = await _oauthService.AppRegisterAsync(model.Email, model.Password, model.ConfirmPassword);
+            var result = await _accountService.AppRegisterAsync(await _appsContainer.AccessToken(), model.Email, model.Password, model.ConfirmPassword);
             return Json(result);
         }
 
