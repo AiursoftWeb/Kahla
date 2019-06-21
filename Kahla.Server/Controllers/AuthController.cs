@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
     public class AuthController : Controller

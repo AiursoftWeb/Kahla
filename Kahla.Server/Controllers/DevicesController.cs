@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
