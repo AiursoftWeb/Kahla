@@ -242,13 +242,10 @@ namespace Kahla.Server.Controllers
             await _dbContext
                 .Messages
                 .Include(t => t.Conversation)
-                .Where(t => t.ConversationId == target.Id &&
-                    (
-                        DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) 
-                        ||
-                        DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime)
-                    )
-                )
+                .Where(t => t.ConversationId == target.Id)
+                .Where(t =>
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime))
                 .BatchDeleteAsync();
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
