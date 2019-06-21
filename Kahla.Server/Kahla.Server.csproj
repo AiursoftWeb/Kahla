@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.BulkExtensions" Version="2.4.7" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Aiursoft.Pylon" Version="0.13.0" />
     <PackageReference Include="WebPush" Version="1.0.11" />
