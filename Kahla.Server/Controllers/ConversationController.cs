@@ -238,22 +238,26 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
             }
             // Delete outdated for current.
-            var outdatedMessages = _dbContext
+            var outdatedMessages = await _dbContext
                 .Messages
                 .Include(t => t.Conversation)
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t =>
                     DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
-                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime));
+                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime))
+                .ToListAsync();
             _dbContext.Messages.RemoveRange(outdatedMessages);
             await _dbContext.SaveChangesAsync();
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
-            await target.ForEachUserAsync(async (eachUser, relation) =>
+            var taskList = new List<Task>();
+            await target.ForEachUserAsync((eachUser, relation) =>
             {
-                await _pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id);
+                taskList.Add(_pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
+                return Task.CompletedTask;
             }, _userManager);
+            await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
