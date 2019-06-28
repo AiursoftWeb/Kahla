@@ -64,6 +64,7 @@ namespace Kahla.Server
             services.AddScoped<UserService>();
             services.AddScoped<SecretService>();
             services.AddScoped<VersionChecker>();
+            services.AddScoped<OwnerChecker>();
             // Web Push Service
             services.AddScoped<WebPushClient>();
             services.AddScoped<ThirdPartyPushService>();
