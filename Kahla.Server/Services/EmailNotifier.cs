@@ -132,6 +132,7 @@ namespace Kahla.Server.Services
                 }
 
                 msg.AppendLine($"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.");
+                msg.AppendLine($"<br><p>Click <a href='{configuration["AppDomain"]}/advanced-setting'>here</a> to unsubscribe all notifications.</p>");
                 return msg.ToString();
             }
             return string.Empty;
