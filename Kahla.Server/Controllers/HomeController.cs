@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon;
+using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using System;
 
 namespace Kahla.Server.Controllers
 {
+    [LimitPerMin(40)]
     public class HomeController : Controller
     {
         private readonly ServiceLocation _serviceLocation;

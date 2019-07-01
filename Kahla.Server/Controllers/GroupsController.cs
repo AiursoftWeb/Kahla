@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
+    [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(true)]
@@ -23,16 +24,19 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
+        private readonly OwnerChecker _ownerChecker;
         private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pusher)
+            KahlaPushService pusher,
+            OwnerChecker ownerChecker)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
+            _ownerChecker = ownerChecker;
         }
 
         [HttpPost]
@@ -123,15 +127,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> TransferGroupOwner([Required]string groupName, [Required]string targetUserId)
         {
             var user = await GetKahlaUser();
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
-            if (group == null)
-            {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
-            }
-            if (group.OwnerId != user.Id)
-            {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
-            }
+            var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
             // current user is the owner of the group.
             var targetRelationship = await _dbContext.GetRelationFromGroup(targetUserId, group.Id);
             if (targetRelationship == null)
@@ -151,16 +147,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> KickMember([Required]string groupName, [Required]string targetUserId)
         {
             var user = await GetKahlaUser();
-
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
-            if (group == null)
-            {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
-            }
-            if (group.OwnerId != user.Id)
-            {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't kick out members.!");
-            }
+            var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
             var targetuser = await _dbContext
                 .UserGroupRelations
                 .SingleOrDefaultAsync(t => t.GroupId == group.Id && t.UserId == targetUserId);
@@ -178,17 +165,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DissolveGroup([Required]string groupName)
         {
             var user = await GetKahlaUser();
-
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
-            if (group == null)
-            {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
-            }
-            if (group.OwnerId != user.Id)
-            {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not the owner of the group: '{groupName}' and you can't dissolve it.!");
-            }
-
+            var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
             await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id), _userManager);
             _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
@@ -254,16 +231,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateGroupInfo(UpdateGroupAddressModel model)
         {
             var user = await GetKahlaUser();
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
-            if (group == null)
-            {
-                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: {model.GroupName}!");
-            }
-            if (group.OwnerId != user.Id)
-            {
-                return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
-            }
-
+            var group = await _ownerChecker.FindMyOwnedGroupAsync(model.GroupName, user.Id);
             if (!string.IsNullOrEmpty(model.NewName))
             {
                 model.NewName = model.NewName.Trim().ToLower();
@@ -276,12 +244,10 @@ namespace Kahla.Server.Controllers
                     group.GroupName = model.NewName;
                 }
             }
-
             if (model.AvatarKey != null)
             {
                 group.GroupImageKey = model.AvatarKey.Value;
             }
-
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully updated the name of the group '{model.GroupName}'.");
         }
@@ -290,15 +256,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateGroupPassword(UpdateGroupPasswordAddressModel model)
         {
             var user = await GetKahlaUser();
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == model.GroupName);
-            if (group == null)
-            {
-                return this.Protocol(ErrorType.NotFound, $"Can not find a group with name: '{model.GroupName}'!");
-            }
-            if (group.OwnerId != user.Id)
-            {
-                return this.Protocol(ErrorType.Unauthorized, "You can't change settings for this group for you are not the owner of it.");
-            }
+            var group = await _ownerChecker.FindMyOwnedGroupAsync(model.GroupName, user.Id);
             group.JoinPassword = model.NewJoinPassword;
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully update the join password of the group '{model.GroupName}'.");

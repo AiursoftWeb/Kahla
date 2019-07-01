@@ -1,8 +1,0 @@
-language: csharp
-mono: none
-dotnet: 2.1.403
-dist: trusty
-install:
-  - dotnet restore
-script:
-  - dotnet publish -c Release
