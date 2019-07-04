@@ -187,7 +187,8 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
-        [APIProduces(typeof(AiurValue<Conversation>))]
+        [APIProduces(typeof(AiurValue<PrivateConversation>))]
+        [APIProduces(typeof(AiurValue<GroupConversation>))]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
