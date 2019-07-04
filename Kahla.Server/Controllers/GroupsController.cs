@@ -40,6 +40,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -171,7 +172,6 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
         }
-
 
         [HttpPost]
         public async Task<IActionResult> LeaveGroup([Required]string groupName)

@@ -37,6 +37,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
+        [APIProduces(typeof(AiurCollection<ContactInfo>))]
         public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
@@ -59,7 +60,8 @@ namespace Kahla.Server.Controllers
                     SomeoneAtMe = conversation.IWasAted(user.Id)
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
-                .ThenByDescending(t => t.LatestMessageTime);
+                .ThenByDescending(t => t.LatestMessageTime)
+                .ToList();
             return Json(new AiurCollection<ContactInfo>(list)
             {
                 Code = ErrorType.Success,
@@ -67,6 +69,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(AiurCollection<Message>))]
         public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
         {
             var user = await GetKahlaUser();
@@ -184,6 +187,7 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
+        [APIProduces(typeof(AiurValue<Conversation>))]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();

@@ -45,6 +45,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -79,6 +80,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<Device>))]
         public async Task<IActionResult> UpdateDevice(UpdateDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -104,6 +106,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(AiurCollection<Device>))]
         public async Task<IActionResult> MyDevices()
         {
             var user = await GetKahlaUser();

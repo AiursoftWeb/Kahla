@@ -17,6 +17,7 @@ namespace Kahla.Server.Controllers
             _serviceLocation = serviceLocation;
         }
 
+        [APIProduces(typeof(AiurValue<DateTime>))]
         public IActionResult Index()
         {
             return Json(new AiurValue<DateTime>(DateTime.UtcNow)

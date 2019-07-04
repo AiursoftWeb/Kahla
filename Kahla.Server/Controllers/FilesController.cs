@@ -54,6 +54,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker(MaxSize = 5 * 1024 * 1024)]
         [APIModelStateChecker]
+        [APIProduces(typeof(UploadImageViewModel))]
         public async Task<IActionResult> UploadIcon()
         {
             var file = Request.Form.Files.First();
@@ -78,6 +79,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
+        [APIProduces(typeof(UploadImageViewModel))]
         public async Task<IActionResult> UploadMedia()
         {
             var file = Request.Form.Files.First();
@@ -98,6 +100,7 @@ namespace Kahla.Server.Controllers
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
+        [APIProduces(typeof(UploadFileViewModel))]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
             var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
@@ -132,6 +135,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(FileDownloadAddressViewModel))]
         public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
         {
             var record = await _dbContext
