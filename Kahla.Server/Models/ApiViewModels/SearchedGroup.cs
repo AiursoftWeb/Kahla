@@ -16,6 +16,12 @@ namespace Kahla.Server.Models.ApiViewModels
             return list;
         }
 
+        [Obsolete(error: true, message: "This method is only for doc generator.")]
+        public SearchedGroup()
+        {
+
+        }
+
         private SearchedGroup(GroupConversation conversation, string currentUserId)
         {
             ImageKey = conversation.GroupImageKey;

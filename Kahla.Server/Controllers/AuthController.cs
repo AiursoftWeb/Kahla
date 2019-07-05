@@ -76,9 +76,10 @@ namespace Kahla.Server.Controllers
             _cache = cache;
         }
 
+        [APIProduces(typeof(IndexViewModel))]
         public IActionResult Index()
         {
-            return Json(new
+            return Json(new IndexViewModel
             {
                 Code = ErrorType.Success,
                 Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
@@ -88,6 +89,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(VersionViewModel))]
         public async Task<IActionResult> Version()
         {
             if (!_cache.TryGetValue(nameof(Version), out (string appVersion, string cliVersion) version))
@@ -152,6 +154,7 @@ namespace Kahla.Server.Controllers
             return Redirect(_configuration["AppDomain"]);
         }
 
+        [APIProduces(typeof(AiurValue<bool>))]
         public async Task<IActionResult> SignInStatus()
         {
             var user = await GetKahlaUser();
@@ -164,6 +167,7 @@ namespace Kahla.Server.Controllers
         }
 
         [AiurForceAuth(directlyReject: true)]
+        [APIProduces(typeof(AiurValue<KahlaUser>))]
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
@@ -227,6 +231,7 @@ namespace Kahla.Server.Controllers
         }
 
         [AiurForceAuth(directlyReject: true)]
+        [APIProduces(typeof(InitPusherViewModel))]
         public async Task<IActionResult> InitPusher()
         {
             var user = await GetKahlaUser();

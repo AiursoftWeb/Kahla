@@ -38,6 +38,7 @@ namespace Kahla.Server.Controllers
             _pusher = pushService;
         }
 
+        [APIProduces(typeof(MineViewModel))]
         public async Task<IActionResult> Mine()
         {
             var user = await GetKahlaUser();
@@ -82,6 +83,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CreateRequest([Required]string id)
         {
             var user = await GetKahlaUser();
@@ -162,6 +164,7 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }
 
+        [APIProduces(typeof(AiurCollection<Request>))]
         public async Task<IActionResult> MyRequests()
         {
             var user = await GetKahlaUser();
@@ -179,6 +182,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(SearchEverythingViewModel))]
         public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -207,6 +211,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(AiurCollection<FriendDiscovery>))]
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             // Load everything to memory and even functions.
@@ -286,7 +291,8 @@ namespace Kahla.Server.Controllers
             var ordered = calculated
                 .OrderByDescending(t => t.CommonFriends)
                 .ThenBy(t => t.CommonGroups)
-                .Take(take);
+                .Take(take)
+                .ToList();
             return Json(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
@@ -294,6 +300,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(UserDetailViewModel))]
         public async Task<IActionResult> UserDetail([Required]string id)
         {
             var user = await GetKahlaUser();
