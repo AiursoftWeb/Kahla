@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.IO;
 
 namespace Kahla.Server.Controllers
 {
@@ -15,6 +16,11 @@ namespace Kahla.Server.Controllers
         public HomeController(ServiceLocation serviceLocation)
         {
             _serviceLocation = serviceLocation;
+        }
+
+        public IActionResult Links()
+        {
+            return PhysicalFile(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar +  "assetlink.json", "application/json");
         }
 
         [APIProduces(typeof(AiurValue<DateTime>))]
