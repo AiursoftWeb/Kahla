@@ -18,6 +18,7 @@ namespace Kahla.Server.Controllers
             _serviceLocation = serviceLocation;
         }
 
+        [AiurNoCache]
         public IActionResult Links()
         {
             return PhysicalFile(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar +  "assetlink.json", "application/json");
