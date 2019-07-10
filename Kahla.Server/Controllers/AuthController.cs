@@ -199,7 +199,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingAddressModel model)
         {
             var currentUser = await GetKahlaUser();
-            if(model.ThemeId != null)
+            if (model.ThemeId != null)
             {
                 currentUser.ThemeId = model.ThemeId ?? 0;
             }
@@ -257,21 +257,27 @@ namespace Kahla.Server.Controllers
             return Json(model);
         }
 
-        [AiurForceAuth(directlyReject: true)]
         public async Task<IActionResult> LogOff(LogOffAddressModel model)
         {
-            var user = await GetKahlaUser();
-            var device = await _dbContext
-                .Devices
-                .Where(t => t.UserId == user.Id)
-                .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
-            await _signInManager.SignOutAsync();
-            if (device == null)
+            if (User.Identity.IsAuthenticated)
             {
-                return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+                var user = await GetKahlaUser();
+                var device = await _dbContext
+                    .Devices
+                    .Where(t => t.UserId == user.Id)
+                    .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
+                await _signInManager.SignOutAsync();
+                if (device == null)
+                {
+                    return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+                }
+                _dbContext.Devices.Remove(device);
+                await _dbContext.SaveChangesAsync();
             }
-            _dbContext.Devices.Remove(device);
-            await _dbContext.SaveChangesAsync();
+            else
+            {
+                await _signInManager.SignOutAsync();
+            }
             return this.Protocol(ErrorType.Success, "Success.");
         }
 
