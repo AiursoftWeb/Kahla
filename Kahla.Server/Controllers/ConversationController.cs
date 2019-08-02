@@ -242,15 +242,12 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
             }
+            var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
-            var outdatedMessages = await _dbContext
+            var outdatedMessages = _dbContext
                 .Messages
-                .Include(t => t.Conversation)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t =>
-                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
-                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime))
-                .ToListAsync();
+                .Where(t => t.SendTime < oldestAliveTime);
             _dbContext.Messages.RemoveRange(outdatedMessages);
             await _dbContext.SaveChangesAsync();
             // Update current.
