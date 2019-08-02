@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using EFCore.BulkExtensions;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
@@ -242,16 +243,13 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
             }
+            var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
             var outdatedMessages = await _dbContext
                 .Messages
-                .Include(t => t.Conversation)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t =>
-                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds) ||
-                    DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(model.NewLifeTime))
-                .ToListAsync();
-            _dbContext.Messages.RemoveRange(outdatedMessages);
+                .Where(t => t.SendTime < oldestAliveTime)
+                .BatchDeleteAsync();
             await _dbContext.SaveChangesAsync();
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
