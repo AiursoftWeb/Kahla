@@ -150,7 +150,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            await _authService.AuthApp(model);
+            await _authService.AuthApp(model, true);
             return Redirect(_configuration["AppDomain"]);
         }
 
