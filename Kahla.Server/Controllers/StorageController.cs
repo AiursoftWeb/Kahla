@@ -21,7 +21,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class FilesController : Controller
+    public class StorageController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
@@ -30,7 +30,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly FoldersService _folderService;
 
-        public FilesController(
+        public StorageController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             IConfiguration configuration,
@@ -62,7 +62,7 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FileName}"
+                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}"
             });
         }
 
@@ -101,7 +101,7 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your media file!",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FileName}",
+                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}",
                 FileSize = file.Length
             });
         }
