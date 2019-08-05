@@ -95,7 +95,7 @@ namespace Kahla.Server.Controllers
             catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready) { }
 
             var file = Request.Form.Files.First();
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], conversation.Id.ToString());
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], conversation.Id.ToString(), SaveFileOptions.SourceName);
 
             return Json(new UploadFileViewModel
             {
