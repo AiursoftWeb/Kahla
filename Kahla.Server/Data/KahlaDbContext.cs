@@ -25,7 +25,6 @@ namespace Kahla.Server.Data
         public DbSet<GroupConversation> GroupConversations { get; set; }
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<FileRecord> FileRecords { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<At> Ats { get; set; }

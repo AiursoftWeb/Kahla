@@ -1,19 +1,17 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
+using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToOSSServer;
+using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
-using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,27 +26,24 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly ServiceLocation _serviceLocation;
         private readonly StorageService _storageService;
         private readonly AppsContainer _appsContainer;
-        private readonly SecretService _secretService;
+        private readonly FoldersService _folderService;
 
         public FilesController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             IConfiguration configuration,
-            ServiceLocation serviceLocation,
             StorageService storageService,
             AppsContainer appsContainer,
-            SecretService secretService)
+            FoldersService folderService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _configuration = configuration;
-            _serviceLocation = serviceLocation;
             _storageService = storageService;
             _appsContainer = appsContainer;
-            _secretService = secretService;
+            _folderService = folderService;
         }
 
         [HttpPost]
@@ -62,41 +57,20 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaUserIconsBucketId"]), 1000);
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], string.Empty);
             return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
-                FileKey = uploadedFile.FileKey,
-                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromKey/{uploadedFile.FileKey}"
+                FilePath = $"{savedFile.SiteName}/{savedFile.FileName}"
             });
         }
 
         /// <summary>
-        /// Used to upload images and videos.
+        /// Used to upload images, videos and files.
         /// </summary>
+        /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
-        [FileChecker]
-        [APIModelStateChecker]
-        [APIProduces(typeof(UploadImageViewModel))]
-        public async Task<IActionResult> UploadMedia()
-        {
-            var file = Request.Form.Files.First();
-            if (!file.FileName.IsImageMedia() && !file.FileName.IsVideo())
-            {
-                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable image nor an acceptable video. Please send a file ends with `jpg`,`png`, `bmp`, `mp4`, `ogg` or `webm`.");
-            }
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaPublicBucketId"]), 400);
-            return Json(new UploadImageViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully uploaded your media file!",
-                FileKey = uploadedFile.FileKey,
-                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromKey/{uploadedFile.FileKey}"
-            });
-        }
-
         [HttpPost]
         [FileChecker]
         [APIModelStateChecker]
@@ -113,51 +87,22 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
-            var file = Request.Form.Files.First();
-            var uploadedFile = await _storageService.SaveToOSS(file, Convert.ToInt32(_configuration["KahlaSecretBucketId"]), 200);
-            var fileRecord = new FileRecord
+            try
             {
-                FileKey = uploadedFile.FileKey,
-                SourceName = Path.GetFileName(file.FileName.Replace(" ", "")),
-                UploaderId = user.Id,
-                ConversationId = conversation.Id
-            };
-            _dbContext.FileRecords.Add(fileRecord);
-            await _dbContext.SaveChangesAsync();
+                var accessToken = await _appsContainer.AccessToken();
+                await _folderService.CreateNewFolderAsync(accessToken, _configuration["UserFilesSiteName"], string.Empty, conversation.Id.ToString());
+            }
+            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready) { }
+
+            var file = Request.Form.Files.First();
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], conversation.Id.ToString());
+
             return Json(new UploadFileViewModel
             {
                 Code = ErrorType.Success,
-                Message = "Successfully uploaded your file!",
-                FileKey = uploadedFile.FileKey,
-                SavedFileName = fileRecord.SourceName,
+                Message = "Successfully uploaded your media file!",
+                FilePath = $"{savedFile.SiteName}/{savedFile.FileName}",
                 FileSize = file.Length
-            });
-        }
-
-        [HttpPost]
-        [APIProduces(typeof(FileDownloadAddressViewModel))]
-        public async Task<IActionResult> FileDownloadAddress(FileDownloadAddressAddressModel model)
-        {
-            var record = await _dbContext
-                .FileRecords
-                .Include(t => t.Conversation)
-                .SingleOrDefaultAsync(t => t.FileKey == model.FileKey);
-            if (record?.Conversation == null)
-            {
-                return this.Protocol(ErrorType.NotFound, "Could not find your file! It might be time out!");
-            }
-            var user = await GetKahlaUser();
-            if (!await _dbContext.VerifyJoined(user.Id, record.Conversation))
-            {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to download file from conversation: {record.Conversation.Id}!");
-            }
-            var secret = await _secretService.GenerateAsync(record.FileKey, await _appsContainer.AccessToken(), 100);
-            return Json(new FileDownloadAddressViewModel
-            {
-                Code = ErrorType.Success,
-                Message = "Successfully generated your file download address!",
-                FileName = record.SourceName,
-                DownloadPath = $"{_serviceLocation.OSSEndpoint}/Download/FromSecret?Sec={secret.Value}&sd=true&name={record.SourceName}"
             });
         }
 
