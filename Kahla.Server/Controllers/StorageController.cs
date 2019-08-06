@@ -100,7 +100,7 @@ namespace Kahla.Server.Controllers
             return Json(new UploadFileViewModel
             {
                 Code = ErrorType.Success,
-                Message = "Successfully uploaded your media file!",
+                Message = "Successfully uploaded your file!",
                 FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}",
                 FileSize = file.Length
             });
