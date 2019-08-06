@@ -246,10 +246,10 @@ namespace Kahla.Server.Controllers
             }
             if (!string.IsNullOrEmpty(model.AvatarPath))
             {
-                group.DisplayImagePath = model.AvatarPath;
+                group.GroupImagePath = model.AvatarPath;
             }
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully updated the name of the group '{model.GroupName}'.");
+            return this.Protocol(ErrorType.Success, $"Successfully updated the group '{model.GroupName}'.");
         }
 
         [HttpPost]

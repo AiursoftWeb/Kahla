@@ -14,6 +14,6 @@ namespace Kahla.Server.Models.ApiAddressModels
         [NoSpace]
         public string NewName { get; set; }
 
-        public string AvatarPath{ get; set; }
+        public string AvatarPath { get; set; }
     }
 }
