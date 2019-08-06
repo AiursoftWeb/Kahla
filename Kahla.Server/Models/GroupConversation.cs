@@ -13,8 +13,6 @@ namespace Kahla.Server.Models
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
         public IEnumerable<UserGroupRelation> Users { get; set; }
-        [Obsolete]
-        public int GroupImageKey { get; set; }
         public string GroupImagePath { get; set; }
         public string GroupName { get; set; }
         [JsonIgnore]

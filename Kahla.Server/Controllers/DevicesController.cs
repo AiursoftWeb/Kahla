@@ -131,7 +131,7 @@ namespace Kahla.Server.Controllers
                 ConversationId = -1,
                 Sender = new KahlaUser
                 {
-                    HeadImgFileKey = 4251,
+                    IconFilePath = "kahla-user-icon/logo.png",
                     NickName = "Aiursoft Push System",
                 },
                 // This is a test message sent by Aiursoft.

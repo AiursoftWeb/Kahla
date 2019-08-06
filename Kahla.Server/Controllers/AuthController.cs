@@ -189,7 +189,7 @@ namespace Kahla.Server.Controllers
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
             currentUser.MakeEmailPublic = !model.HideMyEmail;
-            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, model.HeadIconPath ,currentUser.Bio);
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }

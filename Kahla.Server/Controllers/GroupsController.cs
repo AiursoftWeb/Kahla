@@ -244,9 +244,9 @@ namespace Kahla.Server.Controllers
                     group.GroupName = model.NewName;
                 }
             }
-            if (model.AvatarKey != null)
+            if (!string.IsNullOrEmpty(model.AvatarPath))
             {
-                group.GroupImageKey = model.AvatarKey.Value;
+                group.DisplayImagePath = model.AvatarPath;
             }
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully updated the name of the group '{model.GroupName}'.");
