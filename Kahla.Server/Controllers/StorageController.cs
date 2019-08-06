@@ -58,7 +58,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], string.Empty);
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}");
             return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
@@ -89,7 +89,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var file = Request.Form.Files.First();
-            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow.Year}-{DateTime.UtcNow.Month}-{DateTime.UtcNow.Day}";
+            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow.ToString("yyyy-MM-dd")}";
             var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], path, SaveFileOptions.SourceName);
 
             return Json(new UploadFileViewModel
