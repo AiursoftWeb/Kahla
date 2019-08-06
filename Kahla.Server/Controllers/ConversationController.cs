@@ -46,14 +46,13 @@ namespace Kahla.Server.Controllers
             var conversations = await _dbContext
                 .MyConversations(user.Id);
             var list = conversations
-                .Where(t => t.GetLatestMessage() != null)
                 .Select(conversation => new ContactInfo
                 {
                     ConversationId = conversation.Id,
                     DisplayName = conversation.GetDisplayName(user.Id),
                     DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
-                    LatestMessage = conversation.GetLatestMessage().Content,
-                    LatestMessageTime = conversation.GetLatestMessage().SendTime,
+                    LatestMessage = conversation.GetLatestMessage()?.Content ?? string.Empty,
+                    LatestMessageTime = conversation.GetLatestMessage()?.SendTime ?? conversation.ConversationCreateTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
                     UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
