@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -87,15 +88,9 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
-            try
-            {
-                var accessToken = await _appsContainer.AccessToken();
-                await _folderService.CreateNewFolderAsync(accessToken, _configuration["UserFilesSiteName"], string.Empty, conversation.Id.ToString());
-            }
-            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready) { }
-
             var file = Request.Form.Files.First();
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], conversation.Id.ToString(), SaveFileOptions.SourceName);
+            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow.Year}-{DateTime.UtcNow.Month}-{DateTime.UtcNow.Day}/";
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], path, SaveFileOptions.SourceName);
 
             return Json(new UploadFileViewModel
             {
