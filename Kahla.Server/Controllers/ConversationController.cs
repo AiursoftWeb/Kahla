@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -164,25 +165,25 @@ namespace Kahla.Server.Controllers
                 }
             }
             await _dbContext.SaveChangesAsync();
-            await target.ForEachUserAsync(async (eachUser, relation) =>
-            {
-                var mentioned = model.At.Contains(eachUser.Id);
-                await _pusher.NewMessageEvent(
-                                receiver: eachUser,
-                                conversation: target,
-                                content: model.Content,
-                                sender: user,
-                                muted: !mentioned && (relation?.Muted ?? false),
-                                mentioned: mentioned
-                                );
-            }, _userManager);
+
             try
             {
-                await _dbContext.SaveChangesAsync();
+                await target.ForEachUserAsync(async (eachUser, relation) =>
+                {
+                    var mentioned = model.At.Contains(eachUser.Id);
+                    await _pusher.NewMessageEvent(
+                                    receiver: eachUser,
+                                    conversation: target,
+                                    content: model.Content,
+                                    sender: user,
+                                    muted: !mentioned && (relation?.Muted ?? false),
+                                    mentioned: mentioned
+                                    );
+                }, _userManager);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (WebException e)
             {
-                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occured while sending web push notification.");
+                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occured while sending web push notification. " + e.Message);
             }
             //Return success message.
             return this.Protocol(ErrorType.Success, "Your message has been sent.");

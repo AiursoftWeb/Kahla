@@ -28,23 +28,17 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly StorageService _storageService;
-        private readonly AppsContainer _appsContainer;
-        private readonly FoldersService _folderService;
 
         public StorageController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             IConfiguration configuration,
-            StorageService storageService,
-            AppsContainer appsContainer,
-            FoldersService folderService)
+            StorageService storageService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _configuration = configuration;
             _storageService = storageService;
-            _appsContainer = appsContainer;
-            _folderService = folderService;
         }
 
         [HttpPost]
