@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -171,7 +172,11 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
-            user = await _authService.OnlyUpdate(user);
+            try
+            {
+                user = await _authService.OnlyUpdate(user);
+            }
+            catch (WebException) { }
             user.IsMe = true;
             return Json(new AiurValue<KahlaUser>(user)
             {
