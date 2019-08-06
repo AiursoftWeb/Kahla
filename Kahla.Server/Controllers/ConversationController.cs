@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
                 {
                     ConversationId = conversation.Id,
                     DisplayName = conversation.GetDisplayName(user.Id),
-                    DisplayImageKey = conversation.GetDisplayImage(user.Id),
+                    DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
                     LatestMessage = conversation.GetLatestMessage().Content,
                     LatestMessageTime = conversation.GetLatestMessage().SendTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
@@ -200,7 +200,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, "Could not find target conversation in your friends.");
             }
             target.DisplayName = target.GetDisplayName(user.Id);
-            target.DisplayImage = target.GetDisplayImage(user.Id);
+            target.DisplayImagePath = target.GetDisplayImagePath(user.Id);
             if (target is PrivateConversation privateTarget)
             {
                 privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;

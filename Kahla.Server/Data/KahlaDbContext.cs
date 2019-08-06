@@ -123,7 +123,7 @@ namespace Kahla.Server.Data
             var newGroup = new GroupConversation
             {
                 GroupName = groupName,
-                GroupImageKey = Convert.ToInt32(_configuration["GroupImageKey"]),
+                GroupImagePath = _configuration["GroupImagePath"],
                 AESKey = Guid.NewGuid().ToString("N"),
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty

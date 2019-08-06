@@ -24,10 +24,10 @@ namespace Kahla.Server.Models
         [NotMapped]
         public string DisplayName { get; set; }
         [NotMapped]
-        public int DisplayImage { get; set; }
+        public string DisplayImagePath { get; set; }
 
         public abstract string GetDisplayName(string userId);
-        public abstract int GetDisplayImage(string userId);
+        public abstract string GetDisplayImagePath(string userId);
         public abstract int GetUnReadAmount(string userId);
         public abstract bool IWasAted(string userId);
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
