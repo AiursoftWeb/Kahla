@@ -11,7 +11,6 @@ namespace Kahla.Server.Models.ApiAddressModels
         [Display(Name = "new group name")]
         [MinLength(3)]
         [MaxLength(25)]
-        [NoSpace]
         public string NewName { get; set; }
 
         public string AvatarPath { get; set; }
