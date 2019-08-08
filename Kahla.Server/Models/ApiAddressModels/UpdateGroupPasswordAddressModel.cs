@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Aiursoft.Pylon.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace Kahla.Server.Models.ApiAddressModels
     {
         [Required]
         public string GroupName { get; set; }
+        [NoSpace]
+        [DataType(DataType.Password)]
         public string NewJoinPassword { get; set; }
     }
 }

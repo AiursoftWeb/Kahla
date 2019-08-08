@@ -193,7 +193,7 @@ namespace Kahla.Server.Controllers
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
-            // Remove the group if no users in it.
+            // Remove the group if no user in it.
             await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id), _userManager);
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
@@ -234,10 +234,10 @@ namespace Kahla.Server.Controllers
             var group = await _ownerChecker.FindMyOwnedGroupAsync(model.GroupName, user.Id);
             if (!string.IsNullOrEmpty(model.NewName))
             {
-                model.NewName = model.NewName.Trim().ToLower();
+                model.NewName = model.NewName.Trim();
                 if (model.NewName != group.GroupName)
                 {
-                    if (_dbContext.GroupConversations.Any(t => t.GroupName == model.NewName))
+                    if (_dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.NewName.ToLower()))
                     {
                         return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: '{model.NewName}' already exists!");
                     }
