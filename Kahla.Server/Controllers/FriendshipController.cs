@@ -196,7 +196,7 @@ namespace Kahla.Server.Controllers
             var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+                .Where(t => t.GroupName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
             var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
 

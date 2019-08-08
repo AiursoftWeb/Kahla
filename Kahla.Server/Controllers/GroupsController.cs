@@ -48,8 +48,8 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
-            model.GroupName = model.GroupName.Trim().ToLower();
-            var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
+            model.GroupName = model.GroupName.Trim();
+            var exists = _dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.GroupName.ToLower());
             if (exists)
             {
                 return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
