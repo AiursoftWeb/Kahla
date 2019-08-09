@@ -24,7 +24,7 @@ namespace Kahla.Server.Models.ApiViewModels
 
         private SearchedGroup(GroupConversation conversation, string currentUserId)
         {
-            ImageKey = conversation.GroupImageKey;
+            ImagePath = conversation.GroupImagePath;
             Name = conversation.GroupName;
             HasPassword = !string.IsNullOrEmpty(conversation.JoinPassword);
             OwnerId = conversation.OwnerId;
@@ -32,7 +32,7 @@ namespace Kahla.Server.Models.ApiViewModels
             HasTimer = conversation.MaxLiveSeconds < int.MaxValue;
             ConversationCreateTime = conversation.ConversationCreateTime;
         }
-        public int ImageKey { get; set; }
+        public string ImagePath { get; set; }
         public string Name { get; set; }
         public bool HasPassword { get; set; }
         public string OwnerId { get; set; }

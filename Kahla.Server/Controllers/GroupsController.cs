@@ -48,8 +48,8 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
-            model.GroupName = model.GroupName.Trim().ToLower();
-            var exists = _dbContext.GroupConversations.Any(t => t.GroupName == model.GroupName);
+            model.GroupName = model.GroupName.Trim();
+            var exists = _dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.GroupName.ToLower());
             if (exists)
             {
                 return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
@@ -193,7 +193,7 @@ namespace Kahla.Server.Controllers
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
-            // Remove the group if no users in it.
+            // Remove the group if no user in it.
             await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id), _userManager);
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
@@ -234,22 +234,22 @@ namespace Kahla.Server.Controllers
             var group = await _ownerChecker.FindMyOwnedGroupAsync(model.GroupName, user.Id);
             if (!string.IsNullOrEmpty(model.NewName))
             {
-                model.NewName = model.NewName.Trim().ToLower();
+                model.NewName = model.NewName.Trim();
                 if (model.NewName != group.GroupName)
                 {
-                    if (_dbContext.GroupConversations.Any(t => t.GroupName == model.NewName))
+                    if (_dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.NewName.ToLower()))
                     {
                         return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: '{model.NewName}' already exists!");
                     }
                     group.GroupName = model.NewName;
                 }
             }
-            if (model.AvatarKey != null)
+            if (!string.IsNullOrEmpty(model.AvatarPath))
             {
-                group.GroupImageKey = model.AvatarKey.Value;
+                group.GroupImagePath = model.AvatarPath;
             }
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully updated the name of the group '{model.GroupName}'.");
+            return this.Protocol(ErrorType.Success, $"Successfully updated the group '{model.GroupName}'.");
         }
 
         [HttpPost]

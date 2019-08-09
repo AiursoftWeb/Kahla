@@ -5,7 +5,7 @@ namespace Kahla.Server.Models.ApiViewModels
     public class ContactInfo
     {
         public string DisplayName { get; set; }
-        public int DisplayImageKey { get; set; }
+        public string DisplayImagePath { get; set; }
         public string LatestMessage { get; set; }
         public DateTime LatestMessageTime { get; set; }
         public int UnReadAmount { get; set; }

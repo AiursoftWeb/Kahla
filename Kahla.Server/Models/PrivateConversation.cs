@@ -20,7 +20,7 @@ namespace Kahla.Server.Models
         public string AnotherUserId { get; set; }
 
         public KahlaUser AnotherUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
-        public override int GetDisplayImage(string userId) => AnotherUser(userId).HeadImgFileKey;
+        public override string GetDisplayImagePath(string userId) => AnotherUser(userId).IconFilePath;
         public override string GetDisplayName(string userId) => AnotherUser(userId).NickName;
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
         public override Message GetLatestMessage()

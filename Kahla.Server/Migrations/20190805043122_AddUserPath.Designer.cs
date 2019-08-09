@@ -4,14 +4,16 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190805043122_AddUserPath")]
+    partial class AddUserPath
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,6 +87,31 @@ namespace Kahla.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("Kahla.Server.Models.FileRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ConversationId");
+
+                    b.Property<int>("FileKey");
+
+                    b.Property<string>("SourceName");
+
+                    b.Property<DateTime>("UploadTime");
+
+                    b.Property<string>("UploaderId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("UploaderId");
+
+                    b.ToTable("FileRecords");
                 });
 
             modelBuilder.Entity("Kahla.Server.Models.KahlaUser", b =>
@@ -372,7 +399,7 @@ namespace Kahla.Server.Migrations
                 {
                     b.HasBaseType("Kahla.Server.Models.Conversation");
 
-                    b.Property<string>("GroupImagePath");
+                    b.Property<int>("GroupImageKey");
 
                     b.Property<string>("GroupName");
 
@@ -417,6 +444,18 @@ namespace Kahla.Server.Migrations
                     b.HasOne("Kahla.Server.Models.KahlaUser", "KahlaUser")
                         .WithMany("HisDevices")
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Kahla.Server.Models.FileRecord", b =>
+                {
+                    b.HasOne("Kahla.Server.Models.Conversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Kahla.Server.Models.KahlaUser", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("UploaderId");
                 });
 
             modelBuilder.Entity("Kahla.Server.Models.Message", b =>

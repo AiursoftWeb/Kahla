@@ -10,7 +10,7 @@ namespace Kahla.Server.Models.ApiAddressModels
         [MaxLength(80)]
         public virtual string Bio { get; set; }
         [Required]
-        public virtual int HeadImgKey { get; set; }
+        public virtual string HeadIconPath { get; set; }
         [Required]
         public bool HideMyEmail { get; set; } = false;
     }

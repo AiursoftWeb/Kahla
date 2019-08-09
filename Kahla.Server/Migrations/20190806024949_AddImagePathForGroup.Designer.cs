@@ -4,14 +4,16 @@ using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    partial class KahlaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190806024949_AddImagePathForGroup")]
+    partial class AddImagePathForGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -371,6 +373,8 @@ namespace Kahla.Server.Migrations
             modelBuilder.Entity("Kahla.Server.Models.GroupConversation", b =>
                 {
                     b.HasBaseType("Kahla.Server.Models.Conversation");
+
+                    b.Property<int>("GroupImageKey");
 
                     b.Property<string>("GroupImagePath");
 

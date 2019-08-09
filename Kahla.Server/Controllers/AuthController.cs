@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -150,7 +151,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            await _authService.AuthApp(model);
+            await _authService.AuthApp(model, isPersistent: true);
             return Redirect(_configuration["AppDomain"]);
         }
 
@@ -171,7 +172,11 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
-            user = await _authService.OnlyUpdate(user);
+            try
+            {
+                user = await _authService.OnlyUpdate(user);
+            }
+            catch (WebException) { }
             user.IsMe = true;
             return Json(new AiurValue<KahlaUser>(user)
             {
@@ -185,11 +190,11 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateInfo(UpdateInfoAddressModel model)
         {
             var currentUser = await GetKahlaUser();
-            currentUser.HeadImgFileKey = model.HeadImgKey;
+            currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
             currentUser.MakeEmailPublic = !model.HideMyEmail;
-            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, currentUser.Bio);
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
