@@ -53,7 +53,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.Users.Any(p => p.UserId == user.Id))
                 .OrderBy(t => t.GroupName)
                 .ToListAsync();
-            var searched = SearchedGroup.Map(groups, user.Id);
+            var searched = SearchedGroup.Map(groups);
             return Json(new MineViewModel
             {
                 Code = ErrorType.Success,
