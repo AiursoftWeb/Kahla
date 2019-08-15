@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Kahla.Server.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -73,6 +74,18 @@ namespace Kahla.Server.Models
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .Where(t => t.SendTime > relation.ReadTimeStamp)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
+        }
+
+        public override DateTime SetReadAndGetLastReadTime(string userId)
+        {
+            try
+            {
+                return Users.SingleOrDefault(t => t.UserId == userId).ReadTimeStamp;
+            }
+            finally
+            {
+                Users.SingleOrDefault(t => t.UserId == userId).ReadTimeStamp = DateTime.UtcNow;
+            }
         }
     }
 }

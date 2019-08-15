@@ -97,22 +97,9 @@ namespace Kahla.Server.Controllers
                 .Take(take)
                 .OrderBy(t => t.Id)
                 .ToListAsync();
-            if (target.Discriminator == nameof(PrivateConversation))
-            {
-                await _dbContext.Messages
-                    .Where(t => t.ConversationId == target.Id)
-                    .Where(t => t.SenderId != user.Id)
-                    .Where(t => t.Read == false)
-                    .ForEachAsync(t => t.Read = true);
-            }
-            else if (target.Discriminator == nameof(GroupConversation))
-            {
-                var relation = await _dbContext.UserGroupRelations
-                    .SingleOrDefaultAsync(t => t.UserId == user.Id && t.GroupId == target.Id);
-                allMessagesList.ForEach(t => t.Read = t.SendTime < relation.ReadTimeStamp);
-                relation.ReadTimeStamp = DateTime.UtcNow;
-            }
+            var time = target.SetReadAndGetLastReadTime(user.Id);
             await _dbContext.SaveChangesAsync();
+            allMessagesList.ForEach(t => t.Read = t.SendTime <= time);
             return Json(new AiurCollection<Message>(allMessagesList)
             {
                 Code = ErrorType.Success,

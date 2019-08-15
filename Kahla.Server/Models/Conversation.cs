@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Kahla.Server.Data;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace Kahla.Server.Models
         public abstract bool IWasAted(string userId);
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
         public abstract Message GetLatestMessage();
+        public abstract DateTime SetReadAndGetLastReadTime(string userId);
     }
 
     public class UserGroupRelation

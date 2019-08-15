@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Kahla.Server.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -23,6 +25,8 @@ namespace Kahla.Server.Models
         public override string GetDisplayImagePath(string userId) => AnotherUser(userId).IconFilePath;
         public override string GetDisplayName(string userId) => AnotherUser(userId).NickName;
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
+
+
         public override Message GetLatestMessage()
         {
             return Messages
@@ -30,7 +34,6 @@ namespace Kahla.Server.Models
                 .OrderByDescending(p => p.SendTime)
                 .FirstOrDefault();
         }
-
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
         {
             var requester = await userManager.FindByIdAsync(RequesterId);
@@ -41,10 +44,22 @@ namespace Kahla.Server.Models
                 await function(targetUser, null);
             }
         }
-
         public override bool IWasAted(string userId)
         {
             return false;
+        }
+
+        public async override DateTime SetReadAndGetLastReadTime(string userId)
+        {
+            var time = Messages
+                .Where(t => t.SenderId != userId)
+                .Where(t => t.Read == true)
+                .Max(t => t.SendTime);
+            foreach (var message in Messages.Where(t => t.SenderId != userId))
+            {
+                message.Read = true;
+            }
+            return time;
         }
     }
 }
