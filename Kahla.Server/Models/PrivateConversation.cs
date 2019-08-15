@@ -49,7 +49,7 @@ namespace Kahla.Server.Models
             return false;
         }
 
-        public async override DateTime SetReadAndGetLastReadTime(string userId)
+        public override DateTime SetReadAndGetLastReadTime(string userId)
         {
             var time = Messages
                 .Where(t => t.SenderId != userId)
