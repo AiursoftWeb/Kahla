@@ -60,6 +60,10 @@ namespace Kahla.Server.Models
                     .Where(t => t.Read == true)
                     .MaxAsync(t => t.SendTime);
             }
+            catch (InvalidOperationException)
+            {
+                return DateTime.MinValue;
+            }
             finally
             {
                 await query
