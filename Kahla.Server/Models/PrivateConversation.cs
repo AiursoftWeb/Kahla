@@ -49,17 +49,23 @@ namespace Kahla.Server.Models
             return false;
         }
 
-        public override DateTime SetReadAndGetLastReadTime(string userId)
+        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
-            var time = Messages
-                .Where(t => t.SenderId != userId)
-                .Where(t => t.Read == true)
-                .Max(t => t.SendTime);
-            foreach (var message in Messages.Where(t => t.SenderId != userId))
+            var query = dbContext.Messages
+                .Where(t => t.ConversationId == this.Id)
+                .Where(t => t.SenderId != userId);
+            try
             {
-                message.Read = true;
+                return await query
+                    .Where(t => t.Read == true)
+                    .MaxAsync(t => t.SendTime);
             }
-            return time;
+            finally
+            {
+                await query
+                    .Where(t => t.Read == false)
+                    .ForEachAsync(t => t.Read = true);
+            }
         }
     }
 }

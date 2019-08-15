@@ -76,7 +76,6 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.Users))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
             {
@@ -97,7 +96,7 @@ namespace Kahla.Server.Controllers
                 .OrderBy(t => t.Id)
                 .ToListAsync();
             target.Messages = allMessages;
-            var lastReadTime = target.SetReadAndGetLastReadTime(user.Id);
+            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
             allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
             return Json(new AiurCollection<Message>(allMessages)

@@ -76,15 +76,17 @@ namespace Kahla.Server.Models
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
-        public override DateTime SetReadAndGetLastReadTime(string userId)
+        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
+            var relation = await dbContext.UserGroupRelations
+                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == Id);
             try
             {
-                return Users.SingleOrDefault(t => t.UserId == userId).ReadTimeStamp;
+                return relation.ReadTimeStamp;
             }
             finally
             {
-                Users.SingleOrDefault(t => t.UserId == userId).ReadTimeStamp = DateTime.UtcNow;
+                relation.ReadTimeStamp = DateTime.UtcNow;
             }
         }
     }
