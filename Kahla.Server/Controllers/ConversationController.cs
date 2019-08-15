@@ -74,33 +74,33 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
         {
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(id);
+            var target = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == id);
             if (!await _dbContext.VerifyJoined(user.Id, target))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             //Get Messages
-            IQueryable<Message> allMessages = _dbContext
+            var allMessages = await _dbContext
                 .Messages
                 .AsNoTracking()
                 .Include(t => t.Conversation)
                 .Include(t => t.Ats)
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
-            if (skipTill != -1)
-            {
-                allMessages = allMessages.Where(t => t.Id < skipTill);
-            }
-            var allMessagesList = await allMessages
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .Where(t => skipTill == -1 || t.Id < skipTill)
                 .OrderByDescending(t => t.Id)
                 .Take(take)
                 .OrderBy(t => t.Id)
                 .ToListAsync();
-            var time = target.SetReadAndGetLastReadTime(user.Id);
+            target.Messages = allMessages;
+            var lastReadTime = target.SetReadAndGetLastReadTime(user.Id);
             await _dbContext.SaveChangesAsync();
-            allMessagesList.ForEach(t => t.Read = t.SendTime <= time);
-            return Json(new AiurCollection<Message>(allMessagesList)
+            allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
+            return Json(new AiurCollection<Message>(allMessages)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
