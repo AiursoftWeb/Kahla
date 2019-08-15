@@ -95,7 +95,6 @@ namespace Kahla.Server.Controllers
                 .Take(take)
                 .OrderBy(t => t.Id)
                 .ToListAsync();
-            target.Messages = allMessages;
             var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
             allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
