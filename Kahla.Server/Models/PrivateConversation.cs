@@ -76,5 +76,19 @@ namespace Kahla.Server.Models
                     .ForEachAsync(t => t.Read = true);
             }
         }
+
+        public override Conversation Build(string userId)
+        {
+            DisplayName = GetDisplayName(userId);
+            DisplayImagePath = GetDisplayImagePath(userId);
+            AnotherUserId = AnotherUser(userId).Id;
+            return this;
+        }
+#pragma warning disable CS1998
+        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+        {
+            return RequesterId == userId || TargetId == userId;
+        }
+#pragma warning restore CS1998
     }
 }
