@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -128,16 +129,21 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var messageEvent = new NewMessageEvent
             {
-                ConversationId = -1,
-                Sender = new KahlaUser
+                Message = new Message
                 {
-                    IconFilePath = "kahla-user-icon/logo.png",
-                    NickName = "Aiursoft Push System",
+                    ConversationId = -1,
+                    Sender = new KahlaUser
+                    {
+                        IconFilePath = "kahla-user-icon/logo.png",
+                        NickName = "Aiursoft Push System",
+                    },
+                    SenderId = "<Example user>",
+                    Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
+                    SendTime = DateTime.UtcNow,
                 },
-                // This is a test message sent by Aiursoft.
-                Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
                 AESKey = "37316f609ebc4e79bd7812a5f2ab37b8",
-                Muted = false
+                Muted = false,
+                Mentioned = false
             };
             var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
             {

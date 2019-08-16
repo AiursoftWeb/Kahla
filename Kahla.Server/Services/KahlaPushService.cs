@@ -8,6 +8,7 @@ using Kahla.Server.Events;
 using Newtonsoft.Json;
 using Kahla.Server.Models;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Kahla.Server.Services
 {
@@ -40,27 +41,25 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, string content, KahlaUser sender, bool muted, bool mentioned)
+        public async Task NewMessageEvent(KahlaUser receiver, Conversation conversation, Message message, bool muted, bool mentioned)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
             var newMessageEvent = new NewMessageEvent
             {
-                ConversationId = conversation.Id,
-                Sender = sender,
-                Content = content,
                 AESKey = conversation.AESKey,
                 Muted = muted,
-                Mentioned = mentioned
+                Mentioned = mentioned,
+                Message = message
             };
             var pushTasks = new List<Task>();
             if (channel != -1)
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newMessageEvent), true));
             }
-            if (!muted && receiver.Id != sender.Id)
+            if (!muted && receiver.Id != message.Sender.Id)
             {
-                pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, sender.Email, JsonConvert.SerializeObject(newMessageEvent)));
+                pushTasks.Add(_thirdPartyPushService.PushAsync(receiver.Id, message.Sender.Email, JsonConvert.SerializeObject(newMessageEvent)));
             }
             await Task.WhenAll(pushTasks);
         }

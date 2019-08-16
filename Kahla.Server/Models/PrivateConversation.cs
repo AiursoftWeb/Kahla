@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,16 +35,20 @@ namespace Kahla.Server.Models
                 .OrderByDescending(p => p.SendTime)
                 .FirstOrDefault();
         }
+
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
         {
+            var taskList = new List<Task>();
             var requester = await userManager.FindByIdAsync(RequesterId);
-            await function(requester, null);
+            taskList.Add(function(requester, null));
             if (RequesterId != TargetId)
             {
                 var targetUser = await userManager.FindByIdAsync(TargetId);
-                await function(targetUser, null);
+                taskList.Add(function(targetUser, null));
             }
+            await Task.WhenAll(taskList);
         }
+
         public override bool IWasAted(string userId)
         {
             return false;

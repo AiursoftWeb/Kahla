@@ -125,6 +125,7 @@ namespace Kahla.Server.Controllers
             {
                 Content = model.Content,
                 SenderId = user.Id,
+                Sender = user,
                 ConversationId = target.Id
             };
             _dbContext.Messages.Add(message);
@@ -152,14 +153,13 @@ namespace Kahla.Server.Controllers
 
             try
             {
-                await target.ForEachUserAsync(async (eachUser, relation) =>
+                await target.ForEachUserAsync((eachUser, relation) =>
                 {
                     var mentioned = model.At.Contains(eachUser.Id);
-                    await _pusher.NewMessageEvent(
+                    return _pusher.NewMessageEvent(
                                     receiver: eachUser,
                                     conversation: target,
-                                    content: model.Content,
-                                    sender: user,
+                                    message: message,
                                     muted: !mentioned && (relation?.Muted ?? false),
                                     mentioned: mentioned
                                     );
