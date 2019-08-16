@@ -180,6 +180,8 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
+                .Include(nameof(PrivateConversation.RequestUser))
+                .Include(nameof(PrivateConversation.TargetUser))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (!await target.Joined(_dbContext, user.Id))
