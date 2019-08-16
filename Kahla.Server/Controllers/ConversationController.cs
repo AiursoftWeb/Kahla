@@ -173,46 +173,23 @@ namespace Kahla.Server.Controllers
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
-        [APIProduces(typeof(AiurValue<PrivateConversation>))]
-        [APIProduces(typeof(AiurValue<GroupConversation>))]
+        [APIProduces(typeof(AiurValue<Conversation>))]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
-            var conversations = await _dbContext.MyConversations(user.Id);
-            var target = conversations.SingleOrDefault(t => t.Id == id);
-            if (target == null)
+            var target = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (!await _dbContext.VerifyJoined(user.Id, target))
             {
-                return this.Protocol(ErrorType.NotFound, "Could not find target conversation in your friends.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            target.DisplayName = target.GetDisplayName(user.Id);
-            target.DisplayImagePath = target.GetDisplayImagePath(user.Id);
-            if (target is PrivateConversation privateTarget)
+            return Json(new AiurValue<Conversation>(target.Build(user.Id))
             {
-                privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;
-                return Json(new AiurValue<PrivateConversation>(privateTarget)
-                {
-                    Code = ErrorType.Success,
-                    Message = "Successfully get target conversation."
-                });
-            }
-            if (target is GroupConversation groupTarget)
-            {
-                var relations = await _dbContext
-                    .UserGroupRelations
-                    .AsNoTracking()
-                    .Include(t => t.User)
-                    .Where(t => t.GroupId == groupTarget.Id)
-                    .OrderByDescending(t => t.UserId == t.Group.OwnerId)
-                    .ThenBy(t => t.JoinTime)
-                    .ToListAsync();
-                groupTarget.Users = relations;
-                return Json(new AiurValue<GroupConversation>(groupTarget)
-                {
-                    Code = ErrorType.Success,
-                    Message = "Successfully get target conversation."
-                });
-            }
-            throw new InvalidOperationException("Target is:" + target.Discriminator);
+                Code = ErrorType.Success,
+                Message = "Successfully get target conversation."
+            });
         }
 
         [HttpPost]

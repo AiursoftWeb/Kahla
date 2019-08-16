@@ -89,5 +89,13 @@ namespace Kahla.Server.Models
                 relation.ReadTimeStamp = DateTime.UtcNow;
             }
         }
+
+        public override Conversation Build(string userId)
+        {
+            DisplayName = GetDisplayName(userId);
+            DisplayImagePath = GetDisplayImagePath(userId);
+            Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
+            return this;
+        }
     }
 }

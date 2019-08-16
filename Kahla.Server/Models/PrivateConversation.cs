@@ -76,5 +76,13 @@ namespace Kahla.Server.Models
                     .ForEachAsync(t => t.Read = true);
             }
         }
+
+        public override Conversation Build(string userId)
+        {
+            DisplayName = GetDisplayName(userId);
+            DisplayImagePath = GetDisplayImagePath(userId);
+            AnotherUserId = AnotherUser(userId).Id;
+            return this;
+        }
     }
 }

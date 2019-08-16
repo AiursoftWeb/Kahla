@@ -27,6 +27,7 @@ namespace Kahla.Server.Models
         [NotMapped]
         public string DisplayImagePath { get; set; }
 
+        public abstract Conversation Build(string userId);
         public abstract string GetDisplayName(string userId);
         public abstract string GetDisplayImagePath(string userId);
         public abstract int GetUnReadAmount(string userId);
