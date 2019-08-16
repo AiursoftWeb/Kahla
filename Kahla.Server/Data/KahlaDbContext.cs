@@ -96,12 +96,11 @@ namespace Kahla.Server.Data
             return true;
         }
 
-        public async Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
+        public Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
-            var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            if (relation != null) return relation;
-            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            return belation;
+            return PrivateConversations.Where(t =>
+                    (t.RequesterId == userId1 && t.TargetId == userId2) ||
+                    (t.RequesterId == userId2 && t.TargetId == userId1)).FirstOrDefaultAsync();
         }
 
         public async Task<bool> AreFriends(string userId1, string userId2)
