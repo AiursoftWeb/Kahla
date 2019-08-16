@@ -106,8 +106,7 @@ namespace Kahla.Server.Data
 
         public async Task<bool> AreFriends(string userId1, string userId2)
         {
-            var conversation = await FindConversationAsync(userId1, userId2);
-            return conversation != null;
+            return await FindConversationAsync(userId1, userId2) != null;
         }
 
         public async Task RemoveFriend(string userId1, string userId2)
