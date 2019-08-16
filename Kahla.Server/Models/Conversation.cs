@@ -27,13 +27,13 @@ namespace Kahla.Server.Models
         [NotMapped]
         public string DisplayImagePath { get; set; }
 
-        public abstract Conversation Build(string userId);
         public abstract string GetDisplayName(string userId);
         public abstract string GetDisplayImagePath(string userId);
         public abstract int GetUnReadAmount(string userId);
         public abstract bool IWasAted(string userId);
-        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
+        public abstract Conversation Build(string userId);
         public abstract Message GetLatestMessage();
+        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
         public abstract Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId);
         public abstract Task<bool> Joined(KahlaDbContext dbContext, string userId);
     }
