@@ -69,22 +69,6 @@ namespace Kahla.Server.Data
                 .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
 
-        public async Task<bool> VerifyJoined(string userId, Conversation target)
-        {
-            if (target == null)
-            {
-                return false;
-            }
-            switch (target)
-            {
-                case GroupConversation g:
-                    return await UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == target.Id);
-                case PrivateConversation p:
-                    return p.RequesterId == userId || p.TargetId == userId;
-            }
-            return true;
-        }
-
         public Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
             return PrivateConversations.Where(t =>

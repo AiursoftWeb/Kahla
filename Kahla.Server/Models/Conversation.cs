@@ -35,6 +35,7 @@ namespace Kahla.Server.Models
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
         public abstract Message GetLatestMessage();
         public abstract Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId);
+        public abstract Task<bool> Joined(KahlaDbContext dbContext, string userId);
     }
 
     public class UserGroupRelation

@@ -77,7 +77,7 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext
                 .Conversations
                 .SingleOrDefaultAsync(t => t.Id == id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -111,7 +111,7 @@ namespace Kahla.Server.Controllers
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -133,7 +133,7 @@ namespace Kahla.Server.Controllers
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
-                if (await _dbContext.VerifyJoined(atTargetId, target))
+                if (await target.Joined(_dbContext, atTargetId))
                 {
                     var at = new At
                     {
@@ -182,7 +182,7 @@ namespace Kahla.Server.Controllers
                 .Conversations
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -198,7 +198,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }

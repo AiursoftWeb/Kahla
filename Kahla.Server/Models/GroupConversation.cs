@@ -97,5 +97,10 @@ namespace Kahla.Server.Models
             Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
             return this;
         }
+
+        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+        {
+            return await dbContext.UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == Id);
+        }
     }
 }
