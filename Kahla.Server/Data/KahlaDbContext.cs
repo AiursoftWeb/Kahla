@@ -75,23 +75,12 @@ namespace Kahla.Server.Data
             {
                 return false;
             }
-            switch (target.Discriminator)
+            switch (target)
             {
-                case nameof(GroupConversation):
-                    {
-                        var relation = await UserGroupRelations
-                            .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
-                        if (relation == null)
-                            return false;
-                        break;
-                    }
-                case nameof(PrivateConversation):
-                    {
-                        var privateConversation = target as PrivateConversation;
-                        if (privateConversation?.RequesterId != userId && privateConversation?.TargetId != userId)
-                            return false;
-                        break;
-                    }
+                case GroupConversation g:
+                    return await UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == target.Id);
+                case PrivateConversation p:
+                    return p.RequesterId == userId || p.TargetId == userId;
             }
             return true;
         }
