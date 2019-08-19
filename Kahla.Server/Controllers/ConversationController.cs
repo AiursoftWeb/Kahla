@@ -140,6 +140,7 @@ namespace Kahla.Server.Controllers
                         MessageId = message.Id,
                         TargetUserId = atTargetId
                     };
+                    message.Ats.Add(at);
                     _dbContext.Ats.Add(at);
                 }
                 else
