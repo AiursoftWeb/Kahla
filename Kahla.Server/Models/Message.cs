@@ -12,7 +12,7 @@ namespace Kahla.Server.Models
         public int ConversationId { get; set; }
 
         [InverseProperty(nameof(At.Message))]
-        public IEnumerable<At> Ats { get; set; }
+        public List<At> Ats { get; set; } = new List<At>();
 
         [JsonIgnore]
         [ForeignKey(nameof(ConversationId))]

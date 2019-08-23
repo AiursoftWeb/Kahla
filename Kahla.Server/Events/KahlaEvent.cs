@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Pylon.Models;
 using Kahla.Server.Models;
+using System;
 
 namespace Kahla.Server.Events
 {
@@ -25,12 +26,10 @@ namespace Kahla.Server.Events
         {
             Type = EventType.NewMessage;
         }
-        public int ConversationId { get; set; }
-        public KahlaUser Sender { get; set; }
-        public string Content { get; set; }
         public string AESKey { get; set; }
         public bool Muted { get; set; }
         public bool Mentioned { get; set; }
+        public Message Message { get; set; }
     }
     public class NewFriendRequestEvent : KahlaEvent
     {

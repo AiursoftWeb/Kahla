@@ -78,7 +78,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
             }
             var user = await GetKahlaUser();
-            if (!await _dbContext.VerifyJoined(user.Id, conversation))
+            if (!await conversation.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }

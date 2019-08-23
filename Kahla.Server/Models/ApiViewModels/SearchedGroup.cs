@@ -6,12 +6,12 @@ namespace Kahla.Server.Models.ApiViewModels
 {
     public class SearchedGroup
     {
-        public static List<SearchedGroup> Map(List<GroupConversation> conversations, string userId)
+        public static List<SearchedGroup> Map(List<GroupConversation> conversations)
         {
             var list = new List<SearchedGroup>();
             foreach (var conversation in conversations)
             {
-                list.Add(new SearchedGroup(conversation, userId));
+                list.Add(new SearchedGroup(conversation));
             }
             return list;
         }
@@ -22,7 +22,7 @@ namespace Kahla.Server.Models.ApiViewModels
 
         }
 
-        private SearchedGroup(GroupConversation conversation, string currentUserId)
+        public SearchedGroup(GroupConversation conversation)
         {
             ImagePath = conversation.GroupImagePath;
             Name = conversation.GroupName;
@@ -32,6 +32,7 @@ namespace Kahla.Server.Models.ApiViewModels
             HasTimer = conversation.MaxLiveSeconds < int.MaxValue;
             ConversationCreateTime = conversation.ConversationCreateTime;
         }
+
         public string ImagePath { get; set; }
         public string Name { get; set; }
         public bool HasPassword { get; set; }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Kahla.Server.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -73,6 +74,33 @@ namespace Kahla.Server.Models
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .Where(t => t.SendTime > relation.ReadTimeStamp)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
+        }
+
+        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
+        {
+            var relation = await dbContext.UserGroupRelations
+                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == Id);
+            try
+            {
+                return relation.ReadTimeStamp;
+            }
+            finally
+            {
+                relation.ReadTimeStamp = DateTime.UtcNow;
+            }
+        }
+
+        public override Conversation Build(string userId)
+        {
+            DisplayName = GetDisplayName(userId);
+            DisplayImagePath = GetDisplayImagePath(userId);
+            Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
+            return this;
+        }
+
+        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+        {
+            return await dbContext.UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == Id);
         }
     }
 }

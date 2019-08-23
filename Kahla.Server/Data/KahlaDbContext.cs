@@ -69,45 +69,16 @@ namespace Kahla.Server.Data
                 .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
 
-        public async Task<bool> VerifyJoined(string userId, Conversation target)
+        public Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
         {
-            if (target == null)
-            {
-                return false;
-            }
-            switch (target.Discriminator)
-            {
-                case nameof(GroupConversation):
-                    {
-                        var relation = await UserGroupRelations
-                            .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == target.Id);
-                        if (relation == null)
-                            return false;
-                        break;
-                    }
-                case nameof(PrivateConversation):
-                    {
-                        var privateConversation = target as PrivateConversation;
-                        if (privateConversation?.RequesterId != userId && privateConversation?.TargetId != userId)
-                            return false;
-                        break;
-                    }
-            }
-            return true;
-        }
-
-        public async Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
-        {
-            var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
-            if (relation != null) return relation;
-            var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            return belation;
+            return PrivateConversations.Where(t =>
+                    (t.RequesterId == userId1 && t.TargetId == userId2) ||
+                    (t.RequesterId == userId2 && t.TargetId == userId1)).FirstOrDefaultAsync();
         }
 
         public async Task<bool> AreFriends(string userId1, string userId2)
         {
-            var conversation = await FindConversationAsync(userId1, userId2);
-            return conversation != null;
+            return await FindConversationAsync(userId1, userId2) != null;
         }
 
         public async Task RemoveFriend(string userId1, string userId2)

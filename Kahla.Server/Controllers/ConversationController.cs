@@ -74,46 +74,31 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
         {
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            var target = await _dbContext
+                .Conversations
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             //Get Messages
-            IQueryable<Message> allMessages = _dbContext
+            var allMessages = await _dbContext
                 .Messages
                 .AsNoTracking()
                 .Include(t => t.Conversation)
                 .Include(t => t.Ats)
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
-            if (skipTill != -1)
-            {
-                allMessages = allMessages.Where(t => t.Id < skipTill);
-            }
-            var allMessagesList = await allMessages
+                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .Where(t => skipTill == -1 || t.Id < skipTill)
                 .OrderByDescending(t => t.Id)
                 .Take(take)
                 .OrderBy(t => t.Id)
                 .ToListAsync();
-            if (target.Discriminator == nameof(PrivateConversation))
-            {
-                await _dbContext.Messages
-                    .Where(t => t.ConversationId == target.Id)
-                    .Where(t => t.SenderId != user.Id)
-                    .Where(t => t.Read == false)
-                    .ForEachAsync(t => t.Read = true);
-            }
-            else if (target.Discriminator == nameof(GroupConversation))
-            {
-                var relation = await _dbContext.UserGroupRelations
-                    .SingleOrDefaultAsync(t => t.UserId == user.Id && t.GroupId == target.Id);
-                allMessagesList.ForEach(t => t.Read = t.SendTime < relation.ReadTimeStamp);
-                relation.ReadTimeStamp = DateTime.UtcNow;
-            }
+            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
-            return Json(new AiurCollection<Message>(allMessagesList)
+            allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
+            return Json(new AiurCollection<Message>(allMessages)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
@@ -126,7 +111,7 @@ namespace Kahla.Server.Controllers
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -140,6 +125,7 @@ namespace Kahla.Server.Controllers
             {
                 Content = model.Content,
                 SenderId = user.Id,
+                Sender = user,
                 ConversationId = target.Id
             };
             _dbContext.Messages.Add(message);
@@ -147,13 +133,14 @@ namespace Kahla.Server.Controllers
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
-                if (await _dbContext.VerifyJoined(atTargetId, target))
+                if (await target.Joined(_dbContext, atTargetId))
                 {
                     var at = new At
                     {
                         MessageId = message.Id,
                         TargetUserId = atTargetId
                     };
+                    message.Ats.Add(at);
                     _dbContext.Ats.Add(at);
                 }
                 else
@@ -167,14 +154,13 @@ namespace Kahla.Server.Controllers
 
             try
             {
-                await target.ForEachUserAsync(async (eachUser, relation) =>
+                await target.ForEachUserAsync((eachUser, relation) =>
                 {
                     var mentioned = model.At.Contains(eachUser.Id);
-                    await _pusher.NewMessageEvent(
+                    return _pusher.NewMessageEvent(
                                     receiver: eachUser,
                                     conversation: target,
-                                    content: model.Content,
-                                    sender: user,
+                                    message: message,
                                     muted: !mentioned && (relation?.Muted ?? false),
                                     mentioned: mentioned
                                     );
@@ -193,41 +179,21 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
-            var conversations = await _dbContext.MyConversations(user.Id);
-            var target = conversations.SingleOrDefault(t => t.Id == id);
-            if (target == null)
+            var target = await _dbContext
+                .Conversations
+                .Include(nameof(PrivateConversation.RequestUser))
+                .Include(nameof(PrivateConversation.TargetUser))
+                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (!await target.Joined(_dbContext, user.Id))
             {
-                return this.Protocol(ErrorType.NotFound, "Could not find target conversation in your friends.");
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            target.DisplayName = target.GetDisplayName(user.Id);
-            target.DisplayImagePath = target.GetDisplayImagePath(user.Id);
-            if (target is PrivateConversation privateTarget)
+            return Json(new AiurValue<Conversation>(target.Build(user.Id))
             {
-                privateTarget.AnotherUserId = privateTarget.AnotherUser(user.Id).Id;
-                return Json(new AiurValue<PrivateConversation>(privateTarget)
-                {
-                    Code = ErrorType.Success,
-                    Message = "Successfully get target conversation."
-                });
-            }
-            if (target is GroupConversation groupTarget)
-            {
-                var relations = await _dbContext
-                    .UserGroupRelations
-                    .AsNoTracking()
-                    .Include(t => t.User)
-                    .Where(t => t.GroupId == groupTarget.Id)
-                    .OrderByDescending(t => t.UserId == t.Group.OwnerId)
-                    .ThenBy(t => t.JoinTime)
-                    .ToListAsync();
-                groupTarget.Users = relations;
-                return Json(new AiurValue<GroupConversation>(groupTarget)
-                {
-                    Code = ErrorType.Success,
-                    Message = "Successfully get target conversation."
-                });
-            }
-            throw new InvalidOperationException("Target is:" + target.Discriminator);
+                Code = ErrorType.Success,
+                Message = "Successfully get target conversation."
+            });
         }
 
         [HttpPost]
@@ -235,7 +201,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await _dbContext.VerifyJoined(user.Id, target))
+            if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }

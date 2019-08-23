@@ -53,7 +53,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.Users.Any(p => p.UserId == user.Id))
                 .OrderBy(t => t.GroupName)
                 .ToListAsync();
-            var searched = SearchedGroup.Map(groups, user.Id);
+            var searched = SearchedGroup.Map(groups);
             return Json(new MineViewModel
             {
                 Code = ErrorType.Success,
@@ -185,7 +185,6 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(SearchEverythingViewModel))]
         public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
-            var user = await GetKahlaUser();
             var users = _dbContext
                 .Users
                 .AsNoTracking()
@@ -198,7 +197,7 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .Where(t => t.GroupName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
-            var searched = SearchedGroup.Map(await groups.ToListAsync(), user.Id);
+            var searched = SearchedGroup.Map(await groups.ToListAsync());
 
             return Json(new SearchEverythingViewModel
             {

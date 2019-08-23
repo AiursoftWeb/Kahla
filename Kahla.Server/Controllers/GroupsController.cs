@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
+using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -80,6 +81,22 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [APIProduces(typeof(AiurValue<SearchedGroup>))]
+        public async Task<IActionResult> GroupSummary([Required]int id)
+        {
+            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.Id == id);
+            if (group == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"We can not find a group with id: {id}!");
+            }
+            var view = new SearchedGroup(group);
+            return Json(new AiurValue<SearchedGroup>(view)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get your group result."
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> JoinGroup([Required]string groupName, string joinPassword)
         {
@@ -91,11 +108,11 @@ namespace Kahla.Server.Controllers
             GroupConversation group = null;
             lock (_obj)
             {
-                 group = _dbContext
-                    .GroupConversations
-                    .Include(t => t.Users)
-                    .ThenInclude(t => t.User)
-                    .SingleOrDefault(t => t.GroupName == groupName);
+                group = _dbContext
+                   .GroupConversations
+                   .Include(t => t.Users)
+                   .ThenInclude(t => t.User)
+                   .SingleOrDefault(t => t.GroupName == groupName);
                 if (group == null)
                 {
                     return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
