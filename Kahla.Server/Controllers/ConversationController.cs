@@ -77,6 +77,10 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext
                 .Conversations
                 .SingleOrDefaultAsync(t => t.Id == id);
+            if (target == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+            }
             if (!await target.Joined(_dbContext, user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
