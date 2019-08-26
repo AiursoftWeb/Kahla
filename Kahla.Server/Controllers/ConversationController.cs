@@ -159,26 +159,17 @@ namespace Kahla.Server.Controllers
                 }
             }
             await _dbContext.SaveChangesAsync();
-
-            try
+            await target.ForEachUserAsync((eachUser, relation) =>
             {
-                await target.ForEachUserAsync((eachUser, relation) =>
-                {
-                    var mentioned = model.At.Contains(eachUser.Id);
-                    return _pusher.NewMessageEvent(
-                                    receiver: eachUser,
-                                    conversation: target,
-                                    message: message,
-                                    muted: !mentioned && (relation?.Muted ?? false),
-                                    mentioned: mentioned
-                                    );
-                }, _userManager);
-            }
-            catch (WebException e)
-            {
-                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occured while sending web push notification. " + e.Message);
-            }
-            //Return success message.
+                var mentioned = model.At.Contains(eachUser.Id);
+                return _pusher.NewMessageEvent(
+                                receiver: eachUser,
+                                conversation: target,
+                                message: message,
+                                muted: !mentioned && (relation?.Muted ?? false),
+                                mentioned: mentioned
+                                );
+            }, _userManager);
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
