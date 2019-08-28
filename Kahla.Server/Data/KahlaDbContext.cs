@@ -60,14 +60,14 @@ namespace Kahla.Server.Data
         {
             var conversations = await Conversations
                 .AsNoTracking()
-                .WhereCondition<Conversation, PrivateConversation>(t => t.RequesterId == userId || t.TargetId == userId)
-                .WhereCondition<Conversation, GroupConversation>(t => t.Users.Any(p => p.UserId == userId))
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
                 .Include(nameof(GroupConversation.Users))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
+                .WhereCondition<Conversation, PrivateConversation>(t => t.RequesterId == userId || t.TargetId == userId)
+                .WhereCondition<Conversation, GroupConversation>(t => t.Users.Any(p => p.UserId == userId))
+                .Include(t => t.Messages)
+                .ThenInclude(t => t.Ats)
                 .ToListAsync();
             return conversations;
         }
