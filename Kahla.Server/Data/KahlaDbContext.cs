@@ -10,15 +10,6 @@ using System.Linq.Expressions;
 
 namespace Kahla.Server.Data
 {
-    public static class EFExtends
-    {
-        public static IQueryable<baseClass> WhereCondition<baseClass, subClass>(this IQueryable<baseClass> input, Func<subClass, bool> predicate)
-            where baseClass : class
-            where subClass : class
-        {
-            return input.Where(t => (t as subClass != null) ? predicate(t as subClass) : true);
-        }
-    }
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
         private readonly IConfiguration _configuration;
@@ -49,20 +40,18 @@ namespace Kahla.Server.Data
             return personalRelations;
         }
 
-        public async Task<List<Conversation>> MyConversations(string userId)
+        public IQueryable<Conversation> MyConversations(string userId)
         {
-            var conversations = await Conversations
+            return Conversations
                 .AsNoTracking()
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
                 .Include(nameof(GroupConversation.Users))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
-                .WhereCondition<Conversation, PrivateConversation>(t => t.RequesterId == userId || t.TargetId == userId)
-                .WhereCondition<Conversation, GroupConversation>(t => t.Users.Any(p => p.UserId == userId))
+                .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
+                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any())
                 .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
-                .ToListAsync();
-            return conversations;
+                .ThenInclude(t => t.Ats);
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
