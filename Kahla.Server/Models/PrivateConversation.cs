@@ -61,13 +61,11 @@ namespace Kahla.Server.Models
                 .Where(t => t.SenderId != userId);
             try
             {
-                return await query
+                return (await query
                     .Where(t => t.Read == true)
-                    .MaxAsync(t => t.SendTime);
-            }
-            catch (InvalidOperationException)
-            {
-                return DateTime.MinValue;
+                    .OrderByDescending(t => t.SendTime)
+                    .FirstOrDefaultAsync())
+                    ?.SendTime ?? DateTime.MinValue;
             }
             finally
             {
