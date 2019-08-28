@@ -16,7 +16,7 @@ namespace Kahla.Server.Data
             where baseClass : class
             where subClass : class
         {
-            return input.Where(t => (t as subClass != null) ? predicate(t as subClass) : false);
+            return input.Where(t => (t as subClass != null) ? predicate(t as subClass) : true);
         }
     }
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
