@@ -41,26 +41,18 @@ namespace Kahla.Server.Data
 
         public async Task<List<Conversation>> MyConversations(string userId)
         {
-            var personalRelations = await PrivateConversations
+            var conversations = await Conversations
                 .AsNoTracking()
-                .Where(t => t.RequesterId == userId || t.TargetId == userId)
-                .Include(t => t.RequestUser)
-                .Include(t => t.TargetUser)
+                .Where(t => t as PrivateConversation != null ? (t as PrivateConversation).RequesterId == userId || (t as PrivateConversation).TargetId == userId : true)
+                .Where(t => t as GroupConversation != null ? (t as GroupConversation).Users.Any(p => p.UserId == userId) : true)
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
+                .Include(nameof(PrivateConversation.RequestUser))
+                .Include(nameof(PrivateConversation.TargetUser))
+                .Include(nameof(GroupConversation.Users))
+                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .ToListAsync();
-            var groups = await GroupConversations
-                .AsNoTracking()
-                .Where(t => t.Users.Any(p => p.UserId == userId))
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
-                .Include(t => t.Users)
-                .ThenInclude(t => t.User)
-                .ToListAsync();
-            var myConversations = new List<Conversation>();
-            myConversations.AddRange(personalRelations);
-            myConversations.AddRange(groups);
-            return myConversations;
+            return conversations;
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
