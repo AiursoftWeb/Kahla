@@ -6,9 +6,26 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Kahla.Server.Models;
 using Microsoft.Extensions.Configuration;
+using System.Linq.Expressions;
 
 namespace Kahla.Server.Data
 {
+    public static class EFExtends
+    {
+        public static IQueryable<baseClass> WhereCondition<baseClass, subClass>(this IQueryable<baseClass> input, Func<subClass, bool> predicate)
+            where baseClass : class
+            where subClass : class
+        {
+            if (typeof(subClass).IsSubclassOf(typeof(baseClass)))
+            {
+                return input.Where(t => predicate(t as subClass));
+            }
+            else
+            {
+                return input;
+            }
+        }
+    }
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
         private readonly IConfiguration _configuration;
@@ -43,8 +60,8 @@ namespace Kahla.Server.Data
         {
             var conversations = await Conversations
                 .AsNoTracking()
-                .Where(t => t as PrivateConversation != null ? (t as PrivateConversation).RequesterId == userId || (t as PrivateConversation).TargetId == userId : true)
-                .Where(t => t as GroupConversation != null ? (t as GroupConversation).Users.Any(p => p.UserId == userId) : true)
+                .WhereCondition<Conversation, PrivateConversation>(t => t.RequesterId == userId || t.TargetId == userId)
+                .WhereCondition<Conversation, GroupConversation>(t => t.Users.Any(p => p.UserId == userId))
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
                 .Include(nameof(PrivateConversation.RequestUser))
