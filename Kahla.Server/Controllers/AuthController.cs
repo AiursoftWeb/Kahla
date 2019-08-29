@@ -7,6 +7,7 @@ using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
+using Kahla.Server.Middlewares;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
@@ -17,7 +18,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
@@ -44,6 +47,7 @@ namespace Kahla.Server.Controllers
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
         private readonly IMemoryCache _cache;
+        private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -59,7 +63,8 @@ namespace Kahla.Server.Controllers
             ChannelService channelService,
             VersionChecker version,
             KahlaDbContext dbContext,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IOptions<List<DomainSettings>> optionsAccessor)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -75,6 +80,7 @@ namespace Kahla.Server.Controllers
             _version = version;
             _dbContext = dbContext;
             _cache = cache;
+            _appDomains = optionsAccessor.Value;
         }
 
         [APIProduces(typeof(IndexViewModel))]
@@ -152,7 +158,12 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
             await _authService.AuthApp(model, isPersistent: true);
-            return Redirect(_configuration["AppDomain"]);
+            var domain = _appDomains.FirstOrDefault(t => t.Server.EndsWith(Request.Host.ToString()));
+            if (domain == null)
+            {
+                return NotFound();
+            }
+            return Redirect(domain.Client);
         }
 
         [APIProduces(typeof(AiurValue<bool>))]

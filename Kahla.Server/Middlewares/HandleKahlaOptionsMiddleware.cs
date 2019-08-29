@@ -14,7 +14,7 @@ namespace Kahla.Server.Middlewares
     }
     public class HandleKahlaOptionsMiddleware
     {
-        private List<DomainSettings> AppDomain { get; }
+        private List<DomainSettings> _appDomain { get; }
         private readonly RequestDelegate _next;
 
         public HandleKahlaOptionsMiddleware(
@@ -22,13 +22,13 @@ namespace Kahla.Server.Middlewares
             IConfiguration configuration,
             IOptions<List<DomainSettings>> optionsAccessor)
         {
-            AppDomain = optionsAccessor.Value;
+            _appDomain = optionsAccessor.Value;
             _next = next;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var settingsRecord = AppDomain.FirstOrDefault(t => t.Server.EndsWith(context.Request.Host.ToString()));
+            var settingsRecord = _appDomain.FirstOrDefault(t => t.Server.EndsWith(context.Request.Host.ToString()));
             context.Response.Headers.Add("Cache-Control", "no-cache");
             context.Response.Headers.Add("Expires", "-1");
             if (settingsRecord != null)
