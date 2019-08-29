@@ -49,7 +49,7 @@ namespace Kahla.Server.Data
                 .Include(nameof(GroupConversation.Users))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
-                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any())
+                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats);
         }
