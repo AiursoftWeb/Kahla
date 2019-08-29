@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Aiursoft.Pylon.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Collections.Generic;
 
 namespace Kahla.Server
 {
@@ -48,6 +49,9 @@ namespace Kahla.Server
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
+
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
             services.AddMemoryCache();
