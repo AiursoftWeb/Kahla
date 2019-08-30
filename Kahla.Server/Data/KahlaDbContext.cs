@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Kahla.Server.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Kahla.Server.Models;
-using Microsoft.Extensions.Configuration;
-using System.Linq.Expressions;
 
 namespace Kahla.Server.Data
 {

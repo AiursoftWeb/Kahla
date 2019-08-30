@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore;
+﻿using Aiursoft.Pylon;
 using Kahla.Server.Data;
-using Aiursoft.Pylon;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Kahla.Server
 {

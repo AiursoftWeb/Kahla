@@ -1,5 +1,3 @@
-using Aiursoft.Pylon.Models;
-
 namespace Kahla.Server.Models.ApiViewModels
 {
     public class FriendDiscovery

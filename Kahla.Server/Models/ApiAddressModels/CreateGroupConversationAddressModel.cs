@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Aiursoft.Pylon.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
