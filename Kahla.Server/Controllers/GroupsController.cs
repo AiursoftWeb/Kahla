@@ -105,7 +105,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
-            GroupConversation group = null;
+            GroupConversation group;
             lock (_obj)
             {
                 group = _dbContext

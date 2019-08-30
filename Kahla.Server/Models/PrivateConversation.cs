@@ -62,7 +62,7 @@ namespace Kahla.Server.Models
             try
             {
                 return (await query
-                    .Where(t => t.Read == true)
+                    .Where(t => t.Read)
                     .OrderByDescending(t => t.SendTime)
                     .FirstOrDefaultAsync())
                     ?.SendTime ?? DateTime.MinValue;

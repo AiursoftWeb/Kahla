@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +18,6 @@ namespace Kahla.Server.Middlewares
 
         public HandleKahlaOptionsMiddleware(
             RequestDelegate next,
-            IConfiguration configuration,
             IOptions<List<DomainSettings>> optionsAccessor)
         {
             _appDomain = optionsAccessor.Value;

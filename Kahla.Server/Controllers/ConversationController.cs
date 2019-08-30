@@ -56,7 +56,7 @@ namespace Kahla.Server.Controllers
                 Discriminator = conversation.Discriminator,
                 UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                 AesKey = conversation.AESKey,
-                Muted = (conversation as GroupConversation)?.Users.FirstOrDefault(t => t.UserId == user.Id).Muted ?? false,
+                Muted = (conversation as GroupConversation)?.Users?.FirstOrDefault(t => t.UserId == user.Id)?.Muted ?? false,
                 SomeoneAtMe = conversation.IWasAted(user.Id)
             })
             .OrderByDescending(t => t.SomeoneAtMe)
@@ -217,7 +217,7 @@ namespace Kahla.Server.Controllers
             }
             var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
-            var outdatedMessages = await _dbContext
+            await _dbContext
                 .Messages
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime < oldestAliveTime)

@@ -88,6 +88,10 @@ namespace Kahla.Server.Services
                     var relation = currentGroup
                         .Users
                         .FirstOrDefault(t => t.UserId == user.Id);
+                    if (relation == null)
+                    {
+                        continue;
+                    }
                     if (relation.Muted)
                     {
                         continue;
@@ -102,7 +106,7 @@ namespace Kahla.Server.Services
                 {
                     msg.AppendLine("<li>Some conversations haven't been displayed because there are too many items.</li>");
                 }
-                else if(inConversations > 20)
+                else if (inConversations > 20)
                 {
                     // append nothing to avoid email too large.
                 }
