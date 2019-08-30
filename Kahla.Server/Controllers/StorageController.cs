@@ -70,18 +70,21 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(UploadFileViewModel))]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
-            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
+            var conversation = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
             }
             var user = await GetKahlaUser();
-            if (!await conversation.Joined(_dbContext, user.Id))
+            if (!conversation.Joined(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var file = Request.Form.Files.First();
-            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow.ToString("yyyy-MM-dd")}";
+            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}";
             var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], path, SaveFileOptions.SourceName);
 
             return Json(new UploadFileViewModel

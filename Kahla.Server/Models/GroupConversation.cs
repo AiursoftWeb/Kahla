@@ -62,7 +62,7 @@ namespace Kahla.Server.Models
             await Task.WhenAll(taskList);
         }
 
-        public override bool IWasAted(string userId)
+        public override bool WasAted(string userId)
         {
             var relation = Users
                 .SingleOrDefault(t => t.UserId == userId);
@@ -76,7 +76,7 @@ namespace Kahla.Server.Models
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
-        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
+        public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
             var relation = await dbContext.UserGroupRelations
                     .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == Id);
@@ -98,9 +98,9 @@ namespace Kahla.Server.Models
             return this;
         }
 
-        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+        public override bool Joined(string userId)
         {
-            return await dbContext.UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == Id);
+            return Users.Any(t => t.UserId == userId);
         }
     }
 }

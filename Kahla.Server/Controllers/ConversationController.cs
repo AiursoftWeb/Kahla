@@ -57,7 +57,7 @@ namespace Kahla.Server.Controllers
                 UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                 AesKey = conversation.AESKey,
                 Muted = (conversation as GroupConversation)?.Users?.FirstOrDefault(t => t.UserId == user.Id)?.Muted ?? false,
-                SomeoneAtMe = conversation.IWasAted(user.Id)
+                SomeoneAtMe = conversation.WasAted(user.Id)
             })
             .OrderByDescending(t => t.SomeoneAtMe)
             .ThenByDescending(t => t.LatestMessageTime)
@@ -75,12 +75,13 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
+                .Include(nameof(GroupConversation.Users))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
             }
-            if (!await target.Joined(_dbContext, user.Id))
+            if (!target.Joined(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -113,12 +114,15 @@ namespace Kahla.Server.Controllers
         {
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(model.Id);
+            var target = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
-            if (!await target.Joined(_dbContext, user.Id))
+            if (!target.Joined(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -140,7 +144,7 @@ namespace Kahla.Server.Controllers
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
-                if (await target.Joined(_dbContext, atTargetId))
+                if (target.Joined(atTargetId))
                 {
                     var at = new At
                     {
@@ -181,13 +185,14 @@ namespace Kahla.Server.Controllers
                 .Conversations
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
+                .Include(nameof(GroupConversation.Users))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
             }
-            if (!await target.Joined(_dbContext, user.Id))
+            if (!target.Joined(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -202,12 +207,15 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateMessageLifeTime(UpdateMessageLifeTimeAddressModel model)
         {
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(model.Id);
+            var target = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
-            if (!await target.Joined(_dbContext, user.Id))
+            if (!target.Joined(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }

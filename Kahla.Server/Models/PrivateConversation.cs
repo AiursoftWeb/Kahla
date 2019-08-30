@@ -49,7 +49,7 @@ namespace Kahla.Server.Models
             await Task.WhenAll(taskList);
         }
 
-        public override bool IWasAted(string userId)
+        public override bool WasAted(string userId)
         {
             return false;
         }
@@ -82,11 +82,10 @@ namespace Kahla.Server.Models
             AnotherUserId = AnotherUser(userId).Id;
             return this;
         }
-#pragma warning disable CS1998
-        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+
+        public override bool Joined(string userId)
         {
             return RequesterId == userId || TargetId == userId;
         }
-#pragma warning restore CS1998
     }
 }
