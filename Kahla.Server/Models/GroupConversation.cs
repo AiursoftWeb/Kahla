@@ -76,6 +76,11 @@ namespace Kahla.Server.Models
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
+        public override bool Muted(string userId)
+        {
+            return Users.FirstOrDefault(t => t.UserId == userId)?.Muted ?? false;
+        }
+
         public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
             var relation = await dbContext.UserGroupRelations
@@ -98,7 +103,7 @@ namespace Kahla.Server.Models
             return this;
         }
 
-        public override bool Joined(string userId)
+        public override bool HasUser(string userId)
         {
             return Users.Any(t => t.UserId == userId);
         }

@@ -39,27 +39,19 @@ namespace Kahla.Server.Data
             return personalRelations;
         }
 
-        public IQueryable<Conversation> MyConversations(string userId)
+        [Obsolete]
+        public async Task<IEnumerable<Conversation>> MyConversations(string userId)
         {
-            return Messages
-                .Where(t => t.SenderId == userId)
-                .Select(t => t.Conversation)
-                .Include(nameof(PrivateConversation.RequestUser))
-                .Include(nameof(PrivateConversation.TargetUser))
-                .Include(nameof(GroupConversation.Users))
-                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
+            return (await Conversations
+                .AsNoTracking()
+                .Include(t => (t as PrivateConversation).TargetUser)
+                .Include(t => (t as PrivateConversation).RequestUser)
+                .Include(t => (t as GroupConversation).Users)
+                .ThenInclude(t => t.User)
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
-                .Distinct();
-            //return Conversations
-            //    .AsNoTracking()
-            //    .Include(nameof(PrivateConversation.RequestUser))
-            //    .Include(nameof(PrivateConversation.TargetUser))
-            //    .Include(nameof(GroupConversation.Users))
-            //    .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
-            //    .Include(t => t.Messages)
-            //    .ThenInclude(t => t.Ats)
-            //    .Where(t => t.Joined(userId));
+                .ToListAsync())
+                .Where(t => t.HasUser(userId));
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

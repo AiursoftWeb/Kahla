@@ -43,8 +43,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var conversations = await _dbContext
-                .MyConversations(user.Id)
-                .ToListAsync();
+                .MyConversations(user.Id);
             var contacts = conversations.Select(conversation => new ContactInfo
             {
                 ConversationId = conversation.Id,
@@ -56,7 +55,7 @@ namespace Kahla.Server.Controllers
                 Discriminator = conversation.Discriminator,
                 UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
                 AesKey = conversation.AESKey,
-                Muted = (conversation as GroupConversation)?.Users?.FirstOrDefault(t => t.UserId == user.Id)?.Muted ?? false,
+                Muted = conversation.Muted(user.Id),
                 SomeoneAtMe = conversation.WasAted(user.Id)
             })
             .OrderByDescending(t => t.SomeoneAtMe)
@@ -81,7 +80,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
             }
-            if (!target.Joined(user.Id))
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -122,7 +121,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
-            if (!target.Joined(user.Id))
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -144,7 +143,7 @@ namespace Kahla.Server.Controllers
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
-                if (target.Joined(atTargetId))
+                if (target.HasUser(atTargetId))
                 {
                     var at = new At
                     {
@@ -192,7 +191,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
             }
-            if (!target.Joined(user.Id))
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -209,13 +208,13 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.Users))
+                .Include(t => (t as GroupConversation).Users)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
-            if (!target.Joined(user.Id))
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }

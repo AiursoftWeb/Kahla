@@ -54,6 +54,11 @@ namespace Kahla.Server.Models
             return false;
         }
 
+        public override bool Muted(string userId)
+        {
+            return false;
+        }
+
         public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
             var query = dbContext.Messages
@@ -83,7 +88,7 @@ namespace Kahla.Server.Models
             return this;
         }
 
-        public override bool Joined(string userId)
+        public override bool HasUser(string userId)
         {
             return RequesterId == userId || TargetId == userId;
         }
