@@ -39,7 +39,7 @@ namespace Kahla.Server.Data
             return personalRelations;
         }
 
-        public Task<List<Conversation>> MyConversations(string userId)
+        public IEnumerable<Conversation> MyConversations(string userId)
         {
             return Conversations
                 .AsNoTracking()
@@ -47,13 +47,13 @@ namespace Kahla.Server.Data
                 .Include(t => (t as PrivateConversation).RequestUser)
                 .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
+                .Include(t => (t as GroupConversation).Owner)
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
+                .AsEnumerable()
 #warning https://github.com/aspnet/EntityFrameworkCore/issues/17546
 #warning https://github.com/aspnet/EntityFrameworkCore/issues/17475
-                .Where(t => !(t is PrivateConversation) || t.HasUser(userId))
-                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
-                .ToListAsync();
+                .Where(t => t.HasUser(userId));
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

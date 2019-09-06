@@ -42,25 +42,25 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
-            var conversations = await _dbContext
-                .MyConversations(user.Id);
-            var contacts = conversations.Select(conversation => new ContactInfo
-            {
-                ConversationId = conversation.Id,
-                DisplayName = conversation.GetDisplayName(user.Id),
-                DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
-                LatestMessage = conversation.GetLatestMessage()?.Content ?? string.Empty,
-                LatestMessageTime = conversation.GetLatestMessage()?.SendTime ?? conversation.ConversationCreateTime,
-                UnReadAmount = conversation.GetUnReadAmount(user.Id),
-                Discriminator = conversation.Discriminator,
-                UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
-                AesKey = conversation.AESKey,
-                Muted = conversation.Muted(user.Id),
-                SomeoneAtMe = conversation.WasAted(user.Id)
-            })
-            .OrderByDescending(t => t.SomeoneAtMe)
-            .ThenByDescending(t => t.LatestMessageTime)
-            .ToList();
+            var contacts = _dbContext
+                .MyConversations(user.Id)
+                .Select(conversation => new ContactInfo
+                {
+                    ConversationId = conversation.Id,
+                    DisplayName = conversation.GetDisplayName(user.Id),
+                    DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
+                    LatestMessage = conversation.GetLatestMessage() == null ? string.Empty : conversation.GetLatestMessage().Content,
+                    LatestMessageTime = conversation.GetLatestMessage() == null ? conversation.ConversationCreateTime : conversation.GetLatestMessage().SendTime,
+                    UnReadAmount = conversation.GetUnReadAmount(user.Id),
+                    Discriminator = conversation.Discriminator,
+                    UserId = conversation.SpecialUser(user.Id).Id,
+                    AesKey = conversation.AESKey,
+                    Muted = conversation.Muted(user.Id),
+                    SomeoneAtMe = conversation.WasAted(user.Id)
+                })
+                .OrderByDescending(t => t.SomeoneAtMe)
+                .ThenByDescending(t => t.LatestMessageTime)
+                .ToList();
             return Json(new AiurCollection<ContactInfo>(contacts)
             {
                 Code = ErrorType.Success,

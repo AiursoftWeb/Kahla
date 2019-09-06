@@ -78,7 +78,7 @@ namespace Kahla.Server.Services
         public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, IConfiguration configuration)
         {
             int totalUnread = 0, inConversations = 0;
-            var conversations = await dbContext.MyConversations(user.Id);
+            var conversations = dbContext.MyConversations(user.Id).ToList();
             var msg = new StringBuilder();
             foreach (var conversation in conversations)
             {

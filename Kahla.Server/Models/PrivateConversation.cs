@@ -22,9 +22,9 @@ namespace Kahla.Server.Models
         // Only a property for convenience.
         public string AnotherUserId { get; set; }
 
-        public KahlaUser AnotherUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
-        public override string GetDisplayImagePath(string userId) => AnotherUser(userId).IconFilePath;
-        public override string GetDisplayName(string userId) => AnotherUser(userId).NickName;
+        public override KahlaUser SpecialUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
+        public override string GetDisplayImagePath(string userId) => SpecialUser(userId).IconFilePath;
+        public override string GetDisplayName(string userId) => SpecialUser(userId).NickName;
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
 
 
@@ -84,7 +84,7 @@ namespace Kahla.Server.Models
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
-            AnotherUserId = AnotherUser(userId).Id;
+            AnotherUserId = SpecialUser(userId).Id;
             return this;
         }
 

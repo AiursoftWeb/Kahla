@@ -27,8 +27,9 @@ namespace Kahla.Server.Models
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }
-        public override string GetDisplayImagePath(string userId) => GroupImagePath;
+        public override KahlaUser SpecialUser(string myId) => Owner;
         public override string GetDisplayName(string userId) => GroupName;
+        public override string GetDisplayImagePath(string userId) => GroupImagePath;
         public override int GetUnReadAmount(string userId)
         {
             var relation = Users.SingleOrDefault(t => t.UserId == userId);
@@ -64,21 +65,15 @@ namespace Kahla.Server.Models
 
         public override bool WasAted(string userId)
         {
-            var relation = Users
-                .SingleOrDefault(t => t.UserId == userId);
-            if (relation == null || relation.User == null)
-            {
-                return false;
-            }
             return Messages
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                .Where(t => t.SendTime > relation.ReadTimeStamp)
+                .Where(t => t.SendTime > Users.SingleOrDefault(p => p.UserId == userId).ReadTimeStamp)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
         public override bool Muted(string userId)
         {
-            return Users.FirstOrDefault(t => t.UserId == userId)?.Muted ?? false;
+            return Users.SingleOrDefault(t => t.UserId == userId).Muted;
         }
 
         public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
