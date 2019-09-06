@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}");
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}", SaveFileOptions.RandomName);
             return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,

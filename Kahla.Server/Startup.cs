@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
-using Aiursoft.Pylon.Services.ToOSSServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -66,7 +65,6 @@ namespace Kahla.Server
             services.AddSingleton<IHostedService, TimedCleaner>();
             services.AddSingleton<IHostedService, EmailNotifier>();
             services.AddScoped<UserService>();
-            services.AddScoped<SecretService>();
             services.AddScoped<VersionChecker>();
             services.AddScoped<OwnerChecker>();
             // Web Push Service
