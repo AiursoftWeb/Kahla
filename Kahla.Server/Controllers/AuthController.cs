@@ -152,7 +152,7 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth("", "", false)]
         public IActionResult OAuth()
         {
-            throw new InvalidOperationException("OAuth was redirected back to OAuth action.");
+            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
@@ -288,14 +288,17 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
                 }
-                _dbContext.Devices.Remove(device);
-                await _dbContext.SaveChangesAsync();
+                else
+                {
+                    _dbContext.Devices.Remove(device);
+                    await _dbContext.SaveChangesAsync();
+                    return this.Protocol(ErrorType.Success, "Success.");
+                }
             }
             else
             {
-                await _signInManager.SignOutAsync();
+                return this.Protocol(ErrorType.RequireAttention, "You are not authorized at all. But you can still call this API.");
             }
-            return this.Protocol(ErrorType.Success, "Success.");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
