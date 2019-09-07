@@ -152,12 +152,13 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth("", "", false)]
         public IActionResult OAuth()
         {
-            return Redirect(_configuration["AppDomain"]);
+            throw new InvalidOperationException("OAuth was redirected back to OAuth action.");
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            await _authService.AuthApp(model, isPersistent: true);
+            var user = await _authService.AuthApp(model, isPersistent: true);
+            this.SetClientLang(user.PreferedLanguage);
             var domain = _appDomains.FirstOrDefault(t => t.Server.EndsWith(Request.Host.ToString()));
             if (domain == null)
             {
