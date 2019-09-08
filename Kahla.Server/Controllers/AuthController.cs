@@ -142,6 +142,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
+        [Obsolete]
         [HttpPost]
         public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
         {
@@ -149,8 +150,14 @@ namespace Kahla.Server.Controllers
             return Json(result);
         }
 
-        [AiurForceAuth("", "", false)]
+        [AiurForceAuth("", "", justTry: false, register: false)]
         public IActionResult OAuth()
+        {
+            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+        }
+
+        [AiurForceAuth("", "", justTry: false, register: true)]
+        public IActionResult GoRegister()
         {
             return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
