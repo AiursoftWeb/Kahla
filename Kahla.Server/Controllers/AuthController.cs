@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
@@ -46,7 +45,7 @@ namespace Kahla.Server.Controllers
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
-        private readonly IMemoryCache _cache;
+        private readonly AiurCache _cache;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
@@ -63,8 +62,8 @@ namespace Kahla.Server.Controllers
             ChannelService channelService,
             VersionChecker version,
             KahlaDbContext dbContext,
-            IMemoryCache cache,
-            IOptions<List<DomainSettings>> optionsAccessor)
+            IOptions<List<DomainSettings>> optionsAccessor,
+            AiurCache cache)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -99,19 +98,11 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(VersionViewModel))]
         public async Task<IActionResult> Version()
         {
-            if (!_cache.TryGetValue(nameof(Version), out (string appVersion, string cliVersion) version))
-            {
-                version = await _version.CheckKahla();
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(20));
-
-                _cache.Set(nameof(Version), version, cacheEntryOptions);
-            }
+            var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
             return Json(new VersionViewModel
             {
-                LatestVersion = version.appVersion,
-                LatestCLIVersion = version.cliVersion,
+                LatestVersion = appVersion,
+                LatestCLIVersion = cliVersion,
                 Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
                 DownloadAddress = "https://www.kahla.app"
             });

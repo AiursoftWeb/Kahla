@@ -53,8 +53,6 @@ namespace Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
-            services.AddMemoryCache();
-
             services.AddMvc().AddJsonOptions(opt =>
             {
                 opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
@@ -89,7 +87,7 @@ namespace Kahla.Server
             {
                 app.UseHandleRobots();
                 app.UseEnforceHttps();
-                app.UseExceptionHandler("/Home/Error");
+                app.UseAPIFriendlyErrorPage();
             }
             app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
