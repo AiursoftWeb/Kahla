@@ -108,39 +108,6 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AuthByPassword(AuthByPasswordAddressModel model)
-        {
-            var pack = await _accountService.PasswordAuthAsync(await _appsContainer.AccessToken(), model.Email, model.Password);
-            if (pack.Code != ErrorType.Success)
-            {
-                return this.Protocol(ErrorType.Unauthorized, pack.Message);
-            }
-            var user = await _authService.AuthApp(new AuthResultAddressModel
-            {
-                Code = pack.Value,
-                State = string.Empty
-            }, isPersistent: true);
-            if (!await _dbContext.AreFriends(user.Id, user.Id))
-            {
-                _dbContext.AddFriend(user.Id, user.Id);
-                await _dbContext.SaveChangesAsync();
-            }
-            return Json(new AiurProtocol()
-            {
-                Code = ErrorType.Success,
-                Message = "Auth success."
-            });
-        }
-
-        [Obsolete]
-        [HttpPost]
-        public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
-        {
-            var result = await _accountService.AppRegisterAsync(await _appsContainer.AccessToken(), model.Email, model.Password, model.ConfirmPassword);
-            return Json(result);
-        }
-
         [AiurForceAuth("", "", justTry: false, register: false)]
         public IActionResult OAuth()
         {
