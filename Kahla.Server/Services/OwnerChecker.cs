@@ -20,7 +20,7 @@ namespace Kahla.Server.Services
         {
             var group = await _dbContext
                 .GroupConversations
-                .Include(t => (t as GroupConversation).UserRelations)
+                .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)

@@ -72,7 +72,7 @@ namespace Kahla.Server.Controllers
         {
             var conversation = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.UserRelations))
+                .Include(nameof(GroupConversation.Users))
                 .SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {

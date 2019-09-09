@@ -86,7 +86,7 @@ namespace Kahla.Server.Services
                 if (conversation is GroupConversation currentGroup)
                 {
                     var relation = currentGroup
-                        .UserRelations
+                        .Users
                         .FirstOrDefault(t => t.UserId == user.Id);
                     if (relation == null)
                     {

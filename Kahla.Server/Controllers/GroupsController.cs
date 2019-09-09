@@ -110,7 +110,7 @@ namespace Kahla.Server.Controllers
             {
                 group = _dbContext
                    .GroupConversations
-                   .Include(t => t.UserRelations)
+                   .Include(t => t.Users)
                    .ThenInclude(t => t.User)
                    .SingleOrDefault(t => t.GroupName == groupName);
                 if (group == null)
@@ -122,7 +122,7 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.WrongKey, "The group requires password and your password was not correct!");
                 }
 
-                var joined = group.UserRelations.Any(t => t.UserId == user.Id);
+                var joined = group.Users.Any(t => t.UserId == user.Id);
                 if (joined)
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");

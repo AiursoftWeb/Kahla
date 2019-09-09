@@ -74,7 +74,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.UserRelations))
+                .Include(nameof(GroupConversation.Users))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -115,7 +115,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(t => (t as GroupConversation).UserRelations)
+                .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
@@ -185,8 +185,8 @@ namespace Kahla.Server.Controllers
                 .Conversations
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
-                .Include(nameof(GroupConversation.UserRelations))
-                .Include(nameof(GroupConversation.UserRelations) + "." + nameof(UserGroupRelation.User))
+                .Include(nameof(GroupConversation.Users))
+                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -209,7 +209,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(t => (t as GroupConversation).UserRelations)
+                .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)

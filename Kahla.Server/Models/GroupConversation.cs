@@ -12,7 +12,7 @@ namespace Kahla.Server.Models
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
-        public IEnumerable<UserGroupRelation> UserRelations { get; set; }
+        public IEnumerable<UserGroupRelation> Users { get; set; }
         public string GroupImagePath { get; set; }
         public string GroupName { get; set; }
         [JsonIgnore]
@@ -31,7 +31,7 @@ namespace Kahla.Server.Models
         public override string GetDisplayImagePath(string userId) => GroupImagePath;
         public override int GetUnReadAmount(string userId)
         {
-            var relation = UserRelations.SingleOrDefault(t => t.UserId == userId);
+            var relation = Users.SingleOrDefault(t => t.UserId == userId);
             if (relation == null)
             {
                 return 0;
@@ -50,7 +50,7 @@ namespace Kahla.Server.Models
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
         {
             var taskList = new List<Task>();
-            foreach (var relation in UserRelations)
+            foreach (var relation in Users)
             {
                 var task = function(relation.User, relation);
                 taskList.Add(task);
@@ -62,13 +62,13 @@ namespace Kahla.Server.Models
         {
             return Messages
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                .Where(t => t.SendTime > UserRelations.SingleOrDefault(p => p.UserId == userId).ReadTimeStamp)
+                .Where(t => t.SendTime > Users.SingleOrDefault(p => p.UserId == userId).ReadTimeStamp)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
         public override bool Muted(string userId)
         {
-            return UserRelations.SingleOrDefault(t => t.UserId == userId).Muted;
+            return Users.SingleOrDefault(t => t.UserId == userId).Muted;
         }
 
         public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
@@ -89,13 +89,13 @@ namespace Kahla.Server.Models
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
-            UserRelations = UserRelations.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
+            Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
             return this;
         }
 
         public override bool HasUser(string userId)
         {
-            return UserRelations.Any(t => t.UserId == userId);
+            return Users.Any(t => t.UserId == userId);
         }
     }
 }

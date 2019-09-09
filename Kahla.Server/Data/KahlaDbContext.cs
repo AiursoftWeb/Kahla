@@ -35,7 +35,7 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Include(t => (t as PrivateConversation).TargetUser)
                 .Include(t => (t as PrivateConversation).RequestUser)
-                .Include(t => (t as GroupConversation).UserRelations)
+                .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
                 .Include(t => (t as GroupConversation).Owner)
                 .Include(t => t.Messages)
