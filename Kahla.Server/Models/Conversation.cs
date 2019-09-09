@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace Kahla.Server.Models
         public abstract bool Muted(string userId);
         public abstract Conversation Build(string userId);
         public abstract Message GetLatestMessage();
-        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager);
+        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function);
         public abstract Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId);
         public abstract bool HasUser(string userId);
     }

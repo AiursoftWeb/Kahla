@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -36,15 +35,15 @@ namespace Kahla.Server.Models
                 .FirstOrDefault();
         }
 
-        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
+        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
         {
-            var taskList = new List<Task>();
-            var requester = await userManager.FindByIdAsync(RequesterId);
-            taskList.Add(function(requester, null));
+            var taskList = new List<Task>
+            {
+                function(RequestUser, null)
+            };
             if (RequesterId != TargetId)
             {
-                var targetUser = await userManager.FindByIdAsync(TargetId);
-                taskList.Add(function(targetUser, null));
+                taskList.Add(function(TargetUser, null));
             }
             await Task.WhenAll(taskList);
         }

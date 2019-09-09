@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
                .ToListAsync();
             var groups = await _dbContext.GroupConversations
                 .AsNoTracking()
-                .Where(t => t.Users.Any(p => p.UserId == user.Id))
+                .Where(t => t.UserRelations.Any(p => p.UserId == user.Id))
                 .OrderBy(t => t.GroupName)
                 .ToListAsync();
             var searched = SearchedGroup.Map(groups);
@@ -221,7 +221,7 @@ namespace Kahla.Server.Controllers
                 .AsNoTracking()
                 .ToListAsync();
             var groups = await _dbContext.GroupConversations
-                .Include(t => t.Users)
+                .Include(t => t.UserRelations)
                 .AsNoTracking()
                 .ToListAsync();
             var requests = await _dbContext.Requests
@@ -248,7 +248,7 @@ namespace Kahla.Server.Controllers
             List<int> HisGroups(string userId)
             {
                 return groups
-                    .Where(t => t.Users.Any(p => p.UserId == userId))
+                    .Where(t => t.UserRelations.Any(p => p.UserId == userId))
                     .Select(t => t.Id)
                     .ToList();
             }

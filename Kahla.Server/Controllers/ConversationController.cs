@@ -74,7 +74,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.Users))
+                .Include(nameof(GroupConversation.UserRelations))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -115,7 +115,8 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(nameof(GroupConversation.Users))
+                .Include(t => (t as GroupConversation).UserRelations)
+                .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
@@ -171,7 +172,7 @@ namespace Kahla.Server.Controllers
                                 muted: !mentioned && (relation?.Muted ?? false),
                                 mentioned: mentioned
                                 );
-            }, _userManager);
+            });
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
@@ -184,8 +185,8 @@ namespace Kahla.Server.Controllers
                 .Conversations
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
-                .Include(nameof(GroupConversation.Users))
-                .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
+                .Include(nameof(GroupConversation.UserRelations))
+                .Include(nameof(GroupConversation.UserRelations) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -208,7 +209,8 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
-                .Include(t => (t as GroupConversation).Users)
+                .Include(t => (t as GroupConversation).UserRelations)
+                .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
@@ -238,7 +240,7 @@ namespace Kahla.Server.Controllers
             {
                 taskList.Add(_pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
                 return Task.CompletedTask;
-            }, _userManager);
+            });
             await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));

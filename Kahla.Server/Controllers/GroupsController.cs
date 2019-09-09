@@ -110,7 +110,7 @@ namespace Kahla.Server.Controllers
             {
                 group = _dbContext
                    .GroupConversations
-                   .Include(t => t.Users)
+                   .Include(t => t.UserRelations)
                    .ThenInclude(t => t.User)
                    .SingleOrDefault(t => t.GroupName == groupName);
                 if (group == null)
@@ -122,7 +122,7 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.WrongKey, "The group requires password and your password was not correct!");
                 }
 
-                var joined = group.Users.Any(t => t.UserId == user.Id);
+                var joined = group.UserRelations.Any(t => t.UserId == user.Id);
                 if (joined)
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
@@ -137,7 +137,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.UserGroupRelations.Add(newRelationship);
                 _dbContext.SaveChanges();
             }
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id));
             return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
         }
 
@@ -174,7 +174,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetuser);
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id));
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
         }
@@ -184,7 +184,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id));
             _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
@@ -211,7 +211,7 @@ namespace Kahla.Server.Controllers
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
             // Remove the group if no user in it.
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id), _userManager);
+            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id));
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
             {
