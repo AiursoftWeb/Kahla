@@ -115,6 +115,8 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
+                .Include(t => (t as PrivateConversation).RequestUser)
+                .Include(t => (t as PrivateConversation).TargetUser)
                 .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
