@@ -112,8 +112,6 @@ namespace Kahla.Server.Migrations
 
                     b.Property<bool>("EnableEmailNotification");
 
-                    b.Property<int>("HeadImgFileKey");
-
                     b.Property<string>("IconFilePath");
 
                     b.Property<DateTime>("LastEmailHimTime");

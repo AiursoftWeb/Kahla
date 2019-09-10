@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Aiursoft.Pylon.Models;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Aiursoft.Pylon.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kahla.Server.Models
 {

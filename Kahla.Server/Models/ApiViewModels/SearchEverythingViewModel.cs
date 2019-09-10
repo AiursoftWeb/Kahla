@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Aiursoft.Pylon.Models;
+﻿using Aiursoft.Pylon.Models;
+using System.Collections.Generic;
 
 namespace Kahla.Server.Models.ApiViewModels
 {

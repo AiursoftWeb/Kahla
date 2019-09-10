@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -27,8 +26,9 @@ namespace Kahla.Server.Models
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }
-        public override string GetDisplayImagePath(string userId) => GroupImagePath;
+        public override KahlaUser SpecialUser(string myId) => Owner;
         public override string GetDisplayName(string userId) => GroupName;
+        public override string GetDisplayImagePath(string userId) => GroupImagePath;
         public override int GetUnReadAmount(string userId)
         {
             var relation = Users.SingleOrDefault(t => t.UserId == userId);
@@ -47,36 +47,31 @@ namespace Kahla.Server.Models
                 .FirstOrDefault();
         }
 
-        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
+        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
         {
-            var usersJoined = await userManager.Users
-                .Include(t => t.GroupsJoined)
-                .Where(t => t.GroupsJoined.Any(p => p.GroupId == Id))
-                .ToListAsync();
             var taskList = new List<Task>();
-            foreach (var user in usersJoined)
+            foreach (var relation in Users)
             {
-                var task = function(user, user.GroupsJoined.FirstOrDefault(p => p.GroupId == Id));
+                var task = function(relation.User, relation);
                 taskList.Add(task);
             }
             await Task.WhenAll(taskList);
         }
 
-        public override bool IWasAted(string userId)
+        public override bool WasAted(string userId)
         {
-            var relation = Users
-                .SingleOrDefault(t => t.UserId == userId);
-            if (relation == null || relation.User == null)
-            {
-                return false;
-            }
             return Messages
                 .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                .Where(t => t.SendTime > relation.ReadTimeStamp)
+                .Where(t => t.SendTime > Users.SingleOrDefault(p => p.UserId == userId).ReadTimeStamp)
                 .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
         }
 
-        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
+        public override bool Muted(string userId)
+        {
+            return Users.SingleOrDefault(t => t.UserId == userId).Muted;
+        }
+
+        public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
         {
             var relation = await dbContext.UserGroupRelations
                     .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == Id);
@@ -98,9 +93,9 @@ namespace Kahla.Server.Models
             return this;
         }
 
-        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+        public override bool HasUser(string userId)
         {
-            return await dbContext.UserGroupRelations.AnyAsync(t => t.UserId == userId && t.GroupId == Id);
+            return Users.Any(t => t.UserId == userId);
         }
     }
 }

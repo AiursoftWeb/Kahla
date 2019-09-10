@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Kahla.Server.Models.ApiAddressModels
+﻿namespace Kahla.Server.Models.ApiAddressModels
 {
     public class UpdateClientSettingAddressModel
     {

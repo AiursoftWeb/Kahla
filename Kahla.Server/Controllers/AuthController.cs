@@ -7,6 +7,7 @@ using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToAPIServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
+using Kahla.Server.Middlewares;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
 using Kahla.Server.Models.ApiViewModels;
@@ -15,9 +16,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
@@ -43,7 +45,8 @@ namespace Kahla.Server.Controllers
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
         private readonly KahlaDbContext _dbContext;
-        private readonly IMemoryCache _cache;
+        private readonly AiurCache _cache;
+        private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
             ServiceLocation serviceLocation,
@@ -59,7 +62,8 @@ namespace Kahla.Server.Controllers
             ChannelService channelService,
             VersionChecker version,
             KahlaDbContext dbContext,
-            IMemoryCache cache)
+            IOptions<List<DomainSettings>> optionsAccessor,
+            AiurCache cache)
         {
             _serviceLocation = serviceLocation;
             _configuration = configuration;
@@ -75,6 +79,7 @@ namespace Kahla.Server.Controllers
             _version = version;
             _dbContext = dbContext;
             _cache = cache;
+            _appDomains = optionsAccessor.Value;
         }
 
         [APIProduces(typeof(IndexViewModel))]
@@ -93,66 +98,38 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(VersionViewModel))]
         public async Task<IActionResult> Version()
         {
-            if (!_cache.TryGetValue(nameof(Version), out (string appVersion, string cliVersion) version))
-            {
-                version = await _version.CheckKahla();
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(20));
-
-                _cache.Set(nameof(Version), version, cacheEntryOptions);
-            }
+            var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
             return Json(new VersionViewModel
             {
-                LatestVersion = version.appVersion,
-                LatestCLIVersion = version.cliVersion,
+                LatestVersion = appVersion,
+                LatestCLIVersion = cliVersion,
                 Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
                 DownloadAddress = "https://www.kahla.app"
             });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AuthByPassword(AuthByPasswordAddressModel model)
-        {
-            var pack = await _accountService.PasswordAuthAsync(await _appsContainer.AccessToken(), model.Email, model.Password);
-            if (pack.Code != ErrorType.Success)
-            {
-                return this.Protocol(ErrorType.Unauthorized, pack.Message);
-            }
-            var user = await _authService.AuthApp(new AuthResultAddressModel
-            {
-                Code = pack.Value,
-                State = string.Empty
-            }, isPersistent: true);
-            if (!await _dbContext.AreFriends(user.Id, user.Id))
-            {
-                _dbContext.AddFriend(user.Id, user.Id);
-                await _dbContext.SaveChangesAsync();
-            }
-            return Json(new AiurProtocol()
-            {
-                Code = ErrorType.Success,
-                Message = "Auth success."
-            });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RegisterKahla(RegisterKahlaAddressModel model)
-        {
-            var result = await _accountService.AppRegisterAsync(await _appsContainer.AccessToken(), model.Email, model.Password, model.ConfirmPassword);
-            return Json(result);
-        }
-
-        [AiurForceAuth("", "", false)]
+        [AiurForceAuth("", "", justTry: false, register: false)]
         public IActionResult OAuth()
         {
-            return Redirect(_configuration["AppDomain"]);
+            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+        }
+
+        [AiurForceAuth("", "", justTry: false, register: true)]
+        public IActionResult GoRegister()
+        {
+            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
         {
-            await _authService.AuthApp(model, isPersistent: true);
-            return Redirect(_configuration["AppDomain"]);
+            var user = await _authService.AuthApp(model, isPersistent: true);
+            this.SetClientLang(user.PreferedLanguage);
+            var domain = _appDomains.FirstOrDefault(t => t.Server.EndsWith(Request.Host.ToString()));
+            if (domain == null)
+            {
+                return NotFound();
+            }
+            return Redirect(domain.Client);
         }
 
         [APIProduces(typeof(AiurValue<bool>))]
@@ -194,7 +171,7 @@ namespace Kahla.Server.Controllers
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
             currentUser.MakeEmailPublic = !model.HideMyEmail;
-            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, currentUser.HeadImgFileKey, model.HeadIconPath, currentUser.Bio);
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
@@ -276,14 +253,17 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
                 }
-                _dbContext.Devices.Remove(device);
-                await _dbContext.SaveChangesAsync();
+                else
+                {
+                    _dbContext.Devices.Remove(device);
+                    await _dbContext.SaveChangesAsync();
+                    return this.Protocol(ErrorType.Success, "Success.");
+                }
             }
             else
             {
-                await _signInManager.SignOutAsync();
+                return this.Protocol(ErrorType.RequireAttention, "You are not authorized at all. But you can still call this API.");
             }
-            return this.Protocol(ErrorType.Success, "Success.");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);

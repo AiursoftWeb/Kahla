@@ -8,7 +8,6 @@ package-lock.json
 bin
 obj
 node_modules
-Properties
 npm-debug.log
 yarn.lock
 bundle.js

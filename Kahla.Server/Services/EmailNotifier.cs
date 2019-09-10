@@ -53,7 +53,7 @@ namespace Kahla.Server.Services
                                 .ToListAsync();
                 foreach (var user in users)
                 {
-                    var emailMessage = await BuildEmail(user, dbContext, configuration);
+                    var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
                     if (string.IsNullOrWhiteSpace(emailMessage))
                     {
                         continue;
@@ -75,10 +75,10 @@ namespace Kahla.Server.Services
             return count >= 2 ? "s" : string.Empty;
         }
 
-        public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, IConfiguration configuration)
+        public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, string domain)
         {
             int totalUnread = 0, inConversations = 0;
-            var conversations = await dbContext.MyConversations(user.Id);
+            var conversations = dbContext.MyConversations(user.Id).ToList();
             var msg = new StringBuilder();
             foreach (var conversation in conversations)
             {
@@ -88,6 +88,10 @@ namespace Kahla.Server.Services
                     var relation = currentGroup
                         .Users
                         .FirstOrDefault(t => t.UserId == user.Id);
+                    if (relation == null)
+                    {
+                        continue;
+                    }
                     if (relation.Muted)
                     {
                         continue;
@@ -102,13 +106,13 @@ namespace Kahla.Server.Services
                 {
                     msg.AppendLine("<li>Some conversations haven't been displayed because there are too many items.</li>");
                 }
-                else if(inConversations > 20)
+                else if (inConversations > 20)
                 {
                     // append nothing to avoid email too large.
                 }
                 else
                 {
-                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{configuration["AppDomain"]}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
+                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{domain}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
                 }
             }
             var pendingRequests = await dbContext
@@ -131,8 +135,8 @@ namespace Kahla.Server.Services
                     msg.AppendLine($"<h4>You have {pendingRequests} pending friend request{AppendS(pendingRequests)} in Kahla.<h4>");
                 }
 
-                msg.AppendLine($"Click to <a href='{configuration["AppDomain"]}'>Open Kahla Now</a>.");
-                msg.AppendLine($"<br><p>Click <a href='{configuration["AppDomain"]}/advanced-setting'>here</a> to unsubscribe all notifications.</p>");
+                msg.AppendLine($"Click to <a href='{domain}'>Open Kahla Now</a>.");
+                msg.AppendLine($"<br><p>Click <a href='{domain}/advanced-setting'>here</a> to unsubscribe all notifications.</p>");
                 return msg.ToString();
             }
             return string.Empty;

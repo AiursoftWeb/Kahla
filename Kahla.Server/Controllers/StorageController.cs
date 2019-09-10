@@ -1,9 +1,7 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
@@ -52,7 +50,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
             }
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}");
+            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}", SaveFileOptions.RandomName);
             return Json(new UploadImageViewModel
             {
                 Code = ErrorType.Success,
@@ -72,18 +70,21 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(UploadFileViewModel))]
         public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
         {
-            var conversation = await _dbContext.Conversations.SingleOrDefaultAsync(t => t.Id == model.ConversationId);
+            var conversation = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
             }
             var user = await GetKahlaUser();
-            if (!await conversation.Joined(_dbContext, user.Id))
+            if (!conversation.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var file = Request.Form.Files.First();
-            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow.ToString("yyyy-MM-dd")}";
+            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}";
             var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], path, SaveFileOptions.SourceName);
 
             return Json(new UploadFileViewModel

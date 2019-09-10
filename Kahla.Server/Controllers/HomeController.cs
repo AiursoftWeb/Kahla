@@ -1,5 +1,4 @@
-﻿using Aiursoft.Pylon;
-using Aiursoft.Pylon.Attributes;
+﻿using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
@@ -7,7 +6,6 @@ using Kahla.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -59,11 +57,6 @@ namespace Kahla.Server.Controllers
                 }
             }
             return Json("");
-        }
-
-        public IActionResult Error()
-        {
-            return this.Protocol(ErrorType.UnknownError, "Kahla server was crashed! Please tell us!");
         }
     }
 }

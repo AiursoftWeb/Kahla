@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -43,27 +42,26 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
-            var conversations = await _dbContext
-                .MyConversations(user.Id);
-            var list = conversations
+            var contacts = _dbContext
+                .MyConversations(user.Id)
                 .Select(conversation => new ContactInfo
                 {
                     ConversationId = conversation.Id,
                     DisplayName = conversation.GetDisplayName(user.Id),
                     DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
-                    LatestMessage = conversation.GetLatestMessage()?.Content ?? string.Empty,
-                    LatestMessageTime = conversation.GetLatestMessage()?.SendTime ?? conversation.ConversationCreateTime,
+                    LatestMessage = conversation.GetLatestMessage() == null ? string.Empty : conversation.GetLatestMessage().Content,
+                    LatestMessageTime = conversation.GetLatestMessage() == null ? conversation.ConversationCreateTime : conversation.GetLatestMessage().SendTime,
                     UnReadAmount = conversation.GetUnReadAmount(user.Id),
                     Discriminator = conversation.Discriminator,
-                    UserId = (conversation as PrivateConversation)?.AnotherUser(user.Id).Id,
+                    UserId = conversation.SpecialUser(user.Id).Id,
                     AesKey = conversation.AESKey,
-                    Muted = (conversation as GroupConversation)?.Users.FirstOrDefault(t => t.UserId == user.Id).Muted ?? false,
-                    SomeoneAtMe = conversation.IWasAted(user.Id)
+                    Muted = conversation.Muted(user.Id),
+                    SomeoneAtMe = conversation.WasAted(user.Id)
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessageTime)
                 .ToList();
-            return Json(new AiurCollection<ContactInfo>(list)
+            return Json(new AiurCollection<ContactInfo>(contacts)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your friends."
@@ -76,8 +74,13 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
+                .Include(nameof(GroupConversation.Users))
                 .SingleOrDefaultAsync(t => t.Id == id);
-            if (!await target.Joined(_dbContext, user.Id))
+            if (target == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+            }
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -110,8 +113,16 @@ namespace Kahla.Server.Controllers
         {
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await target.Joined(_dbContext, user.Id))
+            var target = await _dbContext
+                .Conversations
+                .Include(t => (t as GroupConversation).Users)
+                .ThenInclude(t => t.User)
+                .SingleOrDefaultAsync(t => t.Id == model.Id);
+            if (target == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
+            }
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -133,7 +144,7 @@ namespace Kahla.Server.Controllers
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
-                if (await target.Joined(_dbContext, atTargetId))
+                if (target.HasUser(atTargetId))
                 {
                     var at = new At
                     {
@@ -151,26 +162,17 @@ namespace Kahla.Server.Controllers
                 }
             }
             await _dbContext.SaveChangesAsync();
-
-            try
+            await target.ForEachUserAsync((eachUser, relation) =>
             {
-                await target.ForEachUserAsync((eachUser, relation) =>
-                {
-                    var mentioned = model.At.Contains(eachUser.Id);
-                    return _pusher.NewMessageEvent(
-                                    receiver: eachUser,
-                                    conversation: target,
-                                    message: message,
-                                    muted: !mentioned && (relation?.Muted ?? false),
-                                    mentioned: mentioned
-                                    );
-                }, _userManager);
-            }
-            catch (WebException e)
-            {
-                return this.Protocol(ErrorType.RequireAttention, "Your message has been sent. But an error occured while sending web push notification. " + e.Message);
-            }
-            //Return success message.
+                var mentioned = model.At.Contains(eachUser.Id);
+                return _pusher.NewMessageEvent(
+                                receiver: eachUser,
+                                conversation: target,
+                                message: message,
+                                muted: !mentioned && (relation?.Muted ?? false),
+                                mentioned: mentioned
+                                );
+            });
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
@@ -183,9 +185,14 @@ namespace Kahla.Server.Controllers
                 .Conversations
                 .Include(nameof(PrivateConversation.RequestUser))
                 .Include(nameof(PrivateConversation.TargetUser))
+                .Include(nameof(GroupConversation.Users))
                 .Include(nameof(GroupConversation.Users) + "." + nameof(UserGroupRelation.User))
                 .SingleOrDefaultAsync(t => t.Id == id);
-            if (!await target.Joined(_dbContext, user.Id))
+            if (target == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+            }
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -200,8 +207,16 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateMessageLifeTime(UpdateMessageLifeTimeAddressModel model)
         {
             var user = await GetKahlaUser();
-            var target = await _dbContext.Conversations.FindAsync(model.Id);
-            if (!await target.Joined(_dbContext, user.Id))
+            var target = await _dbContext
+                .Conversations
+                .Include(t => (t as GroupConversation).Users)
+                .ThenInclude(t => t.User)
+                .SingleOrDefaultAsync(t => t.Id == model.Id);
+            if (target == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
+            }
+            if (!target.HasUser(user.Id))
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
@@ -211,7 +226,7 @@ namespace Kahla.Server.Controllers
             }
             var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
-            var outdatedMessages = await _dbContext
+            await _dbContext
                 .Messages
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime < oldestAliveTime)
@@ -225,7 +240,7 @@ namespace Kahla.Server.Controllers
             {
                 taskList.Add(_pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
                 return Task.CompletedTask;
-            }, _userManager);
+            });
             await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));

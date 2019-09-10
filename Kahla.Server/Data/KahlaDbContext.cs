@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Kahla.Server.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Kahla.Server.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace Kahla.Server.Data
 {
@@ -29,38 +29,21 @@ namespace Kahla.Server.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<At> Ats { get; set; }
 
-        public async Task<List<string>> MyPersonalFriendsId(string userId)
+        public IEnumerable<Conversation> MyConversations(string userId)
         {
-            var personalRelations = await PrivateConversations
+            return Conversations
                 .AsNoTracking()
-                .Where(t => t.RequesterId == userId || t.TargetId == userId)
-                .Select(t => userId == t.RequesterId ? t.TargetId : t.RequesterId)
-                .ToListAsync();
-            return personalRelations;
-        }
-
-        public async Task<List<Conversation>> MyConversations(string userId)
-        {
-            var personalRelations = await PrivateConversations
-                .AsNoTracking()
-                .Where(t => t.RequesterId == userId || t.TargetId == userId)
-                .Include(t => t.RequestUser)
-                .Include(t => t.TargetUser)
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
-                .ToListAsync();
-            var groups = await GroupConversations
-                .AsNoTracking()
-                .Where(t => t.Users.Any(p => p.UserId == userId))
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
-                .Include(t => t.Users)
+                .Include(t => (t as PrivateConversation).TargetUser)
+                .Include(t => (t as PrivateConversation).RequestUser)
+                .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
-                .ToListAsync();
-            var myConversations = new List<Conversation>();
-            myConversations.AddRange(personalRelations);
-            myConversations.AddRange(groups);
-            return myConversations;
+                .Include(t => (t as GroupConversation).Owner)
+                .Include(t => t.Messages)
+                .ThenInclude(t => t.Ats)
+                .AsEnumerable()
+#warning https://github.com/aspnet/EntityFrameworkCore/issues/17546
+#warning https://github.com/aspnet/EntityFrameworkCore/issues/17475
+                .Where(t => t.HasUser(userId));
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

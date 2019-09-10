@@ -18,7 +18,11 @@ namespace Kahla.Server.Services
 
         public async Task<GroupConversation> FindMyOwnedGroupAsync(string groupName, string userId)
         {
-            var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
+            var group = await _dbContext
+                .GroupConversations
+                .Include(t => (t as GroupConversation).Users)
+                .ThenInclude(t => t.User)
+                .SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
                 throw new AiurAPIModelException(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");

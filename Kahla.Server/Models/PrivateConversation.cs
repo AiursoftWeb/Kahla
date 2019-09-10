@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -22,9 +21,9 @@ namespace Kahla.Server.Models
         // Only a property for convenience.
         public string AnotherUserId { get; set; }
 
-        public KahlaUser AnotherUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
-        public override string GetDisplayImagePath(string userId) => AnotherUser(userId).IconFilePath;
-        public override string GetDisplayName(string userId) => AnotherUser(userId).NickName;
+        public override KahlaUser SpecialUser(string myId) => myId == RequesterId ? TargetUser : RequestUser;
+        public override string GetDisplayImagePath(string userId) => SpecialUser(userId).IconFilePath;
+        public override string GetDisplayName(string userId) => SpecialUser(userId).NickName;
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
 
 
@@ -36,20 +35,25 @@ namespace Kahla.Server.Models
                 .FirstOrDefault();
         }
 
-        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function, UserManager<KahlaUser> userManager)
+        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
         {
-            var taskList = new List<Task>();
-            var requester = await userManager.FindByIdAsync(RequesterId);
-            taskList.Add(function(requester, null));
+            var taskList = new List<Task>
+            {
+                function(RequestUser, null)
+            };
             if (RequesterId != TargetId)
             {
-                var targetUser = await userManager.FindByIdAsync(TargetId);
-                taskList.Add(function(targetUser, null));
+                taskList.Add(function(TargetUser, null));
             }
             await Task.WhenAll(taskList);
         }
 
-        public override bool IWasAted(string userId)
+        public override bool WasAted(string userId)
+        {
+            return false;
+        }
+
+        public override bool Muted(string userId)
         {
             return false;
         }
@@ -61,13 +65,11 @@ namespace Kahla.Server.Models
                 .Where(t => t.SenderId != userId);
             try
             {
-                return await query
-                    .Where(t => t.Read == true)
-                    .MaxAsync(t => t.SendTime);
-            }
-            catch (InvalidOperationException)
-            {
-                return DateTime.MinValue;
+                return (await query
+                    .Where(t => t.Read)
+                    .OrderByDescending(t => t.SendTime)
+                    .FirstOrDefaultAsync())
+                    ?.SendTime ?? DateTime.MinValue;
             }
             finally
             {
@@ -81,14 +83,13 @@ namespace Kahla.Server.Models
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
-            AnotherUserId = AnotherUser(userId).Id;
+            AnotherUserId = SpecialUser(userId).Id;
             return this;
         }
-#pragma warning disable CS1998
-        public async override Task<bool> Joined(KahlaDbContext dbContext, string userId)
+
+        public override bool HasUser(string userId)
         {
             return RequesterId == userId || TargetId == userId;
         }
-#pragma warning restore CS1998
     }
 }

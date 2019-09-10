@@ -1,33 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
-using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
-using Kahla.Server.Data;
 using Kahla.Server.Events;
-using Newtonsoft.Json;
 using Kahla.Server.Models;
-using Newtonsoft.Json.Serialization;
-using System;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
     public class KahlaPushService
     {
-        private readonly KahlaDbContext _dbContext;
         private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
         private readonly ThirdPartyPushService _thirdPartyPushService;
 
         public KahlaPushService(
-            KahlaDbContext dbContext,
             PushMessageService stargatePushService,
             AppsContainer appsContainer,
             ChannelService channelService,
             ThirdPartyPushService thirdPartyPushService)
         {
-            _dbContext = dbContext;
             _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
             _channelService = channelService;

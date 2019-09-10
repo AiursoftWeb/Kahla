@@ -1,24 +1,24 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Aiursoft.Pylon;
+using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToAPIServer;
+using Aiursoft.Pylon.Services.ToStargateServer;
+using Kahla.Server.Data;
+using Kahla.Server.Middlewares;
+using Kahla.Server.Models;
+using Kahla.Server.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using Kahla.Server.Data;
-using Kahla.Server.Models;
-using Kahla.Server.Services;
-using Aiursoft.Pylon;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
-using Aiursoft.Pylon.Services.ToStargateServer;
-using Aiursoft.Pylon.Services.ToAPIServer;
-using Aiursoft.Pylon.Services.ToOSSServer;
-using Kahla.Server.Middlewares;
-using WebPush;
 using Microsoft.Extensions.Hosting;
-using Aiursoft.Pylon.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using WebPush;
 
 namespace Kahla.Server
 {
@@ -48,9 +48,10 @@ namespace Kahla.Server
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
-            services.AddMemoryCache();
+            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
+
+            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
             services.AddMvc().AddJsonOptions(opt =>
             {
@@ -62,7 +63,6 @@ namespace Kahla.Server
             services.AddSingleton<IHostedService, TimedCleaner>();
             services.AddSingleton<IHostedService, EmailNotifier>();
             services.AddScoped<UserService>();
-            services.AddScoped<SecretService>();
             services.AddScoped<VersionChecker>();
             services.AddScoped<OwnerChecker>();
             // Web Push Service
@@ -87,7 +87,7 @@ namespace Kahla.Server
             {
                 app.UseHandleRobots();
                 app.UseEnforceHttps();
-                app.UseExceptionHandler("/Home/Error");
+                app.UseAPIFriendlyErrorPage();
             }
             app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
