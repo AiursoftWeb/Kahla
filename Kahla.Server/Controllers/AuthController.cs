@@ -124,7 +124,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await _authService.AuthApp(model, isPersistent: true);
             this.SetClientLang(user.PreferedLanguage);
-            var domain = _appDomains.FirstOrDefault(t => t.Server.EndsWith(Request.Host.ToString()));
+            var domain = _appDomains.FirstOrDefault(t => t.Server.ToLower().Trim() == Request.Host.ToString().ToLower().Trim());
             if (domain == null)
             {
                 return NotFound();

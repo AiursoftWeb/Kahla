@@ -41,7 +41,6 @@ namespace Kahla.Server
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
             services.ConfigureLargeFileUpload();
-            services.AddApplicationInsightsTelemetry();
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
 
