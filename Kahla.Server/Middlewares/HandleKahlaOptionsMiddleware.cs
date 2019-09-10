@@ -26,7 +26,7 @@ namespace Kahla.Server.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            var settingsRecord = _appDomain.FirstOrDefault(t => t.Server.EndsWith(context.Request.Host.ToString()));
+            var settingsRecord = _appDomain.FirstOrDefault(t => t.Server.ToLower().Trim() == context.Request.Host.ToString().ToLower().Trim());
             context.Response.Headers.Add("Cache-Control", "no-cache");
             context.Response.Headers.Add("Expires", "-1");
             if (settingsRecord != null)
