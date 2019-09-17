@@ -129,6 +129,11 @@ namespace Kahla.Server.Controllers
             {
                 return NotFound();
             }
+            if (!await _dbContext.AreFriends(user.Id, user.Id))
+            {
+                _dbContext.AddFriend(user.Id, user.Id);
+                await _dbContext.SaveChangesAsync();
+            }
             return Redirect(domain.Client);
         }
 
