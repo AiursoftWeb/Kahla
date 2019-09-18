@@ -49,7 +49,6 @@ namespace Kahla.Server.Services
                     {
                         var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
                         var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
-                        _logger.LogInformation($"Trying to call WebPush API to push a new event to {receiverId}, Event content is '{payload}', Device ID is {device.Id}");
                         await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
                     }
                     catch (WebPushException e)
