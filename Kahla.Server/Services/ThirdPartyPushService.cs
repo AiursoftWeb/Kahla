@@ -66,7 +66,9 @@ namespace Kahla.Server.Services
                 }
                 pushTasks.Add(PushToDevice());
             }
-            await Task.WhenAll(pushTasks);
+            await Task.WhenAny(
+                Task.WhenAll(pushTasks),
+                Task.Delay(2000));
         }
     }
 }
