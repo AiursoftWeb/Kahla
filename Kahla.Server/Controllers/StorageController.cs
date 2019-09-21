@@ -2,16 +2,15 @@
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
-using Kahla.Server.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -26,49 +25,54 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly StorageService _storageService;
+        private readonly TokenService _tokenService;
+        private readonly AppsContainer _appsContainer;
+        private readonly ServiceLocation _serviceLocation;
 
         public StorageController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             IConfiguration configuration,
-            StorageService storageService)
+            StorageService storageService,
+            TokenService tokenService,
+            AppsContainer appsContainer,
+            ServiceLocation serviceLocation)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _configuration = configuration;
             _storageService = storageService;
+            _tokenService = tokenService;
+            _appsContainer = appsContainer;
+            _serviceLocation = serviceLocation;
         }
 
-        [HttpPost]
-        [FileChecker(MaxSize = 5 * 1024 * 1024)]
-        [APIModelStateChecker]
-        [APIProduces(typeof(UploadImageViewModel))]
-        public async Task<IActionResult> UploadIcon()
+        [HttpGet]
+        [APIProduces(typeof(AiurValue<string>))]
+        public async Task<IActionResult> InitIconUpload()
         {
-            var file = Request.Form.Files.First();
-            if (!file.FileName.IsStaticImage())
+            var accessToken = await _appsContainer.AccessToken();
+            var siteName = _configuration["UserIconsSiteName"];
+            var path = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            var token = await _tokenService.GetUploadTokenAsync(
+                accessToken,
+                siteName,
+                "Upload",
+                path);
+            var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
             {
-                return this.Protocol(ErrorType.InvalidInput, "The file you uploaded was not an acceptable Image. Please send a file ends with `jpg`,`png`, or `bmp`.");
-            }
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserIconsSiteName"], $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}", SaveFileOptions.RandomName);
-            return Json(new UploadImageViewModel
+                pbtoken = token
+            });
+            return Json(new AiurValue<string>(address.ToString())
             {
                 Code = ErrorType.Success,
-                Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}"
+                Message = $"Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
             });
         }
 
-        /// <summary>
-        /// Used to upload images, videos and files.
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [FileChecker]
-        [APIModelStateChecker]
-        [APIProduces(typeof(UploadFileViewModel))]
-        public async Task<IActionResult> UploadFile(UploadFileAddressModel model)
+        [HttpGet]
+        [APIProduces(typeof(AiurValue<string>))]
+        public async Task<IActionResult> InitFileUpload(InitFileUpload model)
         {
             var conversation = await _dbContext
                 .Conversations
@@ -83,16 +87,22 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
-            var file = Request.Form.Files.First();
+            var accessToken = await _appsContainer.AccessToken();
+            var siteName = _configuration["UserFilesSiteName"];
             var path = $"conversation-{conversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}";
-            var savedFile = await _storageService.SaveToProbe(file, _configuration["UserFilesSiteName"], path, SaveFileOptions.SourceName);
-
-            return Json(new UploadFileViewModel
+            var token = await _tokenService.GetUploadTokenAsync(
+                accessToken,
+                siteName,
+                "Upload",
+                $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}");
+            var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
+            {
+                pbtoken = token
+            });
+            return Json(new AiurValue<string>(address.ToString())
             {
                 Code = ErrorType.Success,
-                Message = "Successfully uploaded your file!",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}",
-                FileSize = file.Length
+                Message = $"Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
             });
         }
 

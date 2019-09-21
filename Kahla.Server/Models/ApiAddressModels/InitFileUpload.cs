@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
-    public class UploadFileAddressModel
+    public class InitFileUpload
     {
         [Required]
         [FromQuery]
