@@ -55,7 +55,7 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 Message = $"Successfully uploaded your user icon, but we did not update your profile. Now you can call `/auth/{nameof(AuthController.UpdateInfo)}` to update your user icon.",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}"
+                FilePath = $"{savedFile.FilePath}"
             });
         }
 
@@ -91,7 +91,7 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 Message = "Successfully uploaded your file!",
-                FilePath = $"{savedFile.SiteName}/{savedFile.FilePath}",
+                FilePath = $"{savedFile.FilePath}",
                 FileSize = file.Length
             });
         }
