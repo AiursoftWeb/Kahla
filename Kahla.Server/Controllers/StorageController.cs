@@ -61,7 +61,8 @@ namespace Kahla.Server.Controllers
                 path);
             var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
             {
-                pbtoken = token
+                pbtoken = token,
+                recursiveCreate = true
             });
             return Json(new AiurValue<string>(address.ToString())
             {
@@ -97,7 +98,8 @@ namespace Kahla.Server.Controllers
                 path);
             var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
             {
-                pbtoken = token
+                pbtoken = token,
+                recursiveCreate = true
             });
             return Json(new AiurValue<string>(address.ToString())
             {
