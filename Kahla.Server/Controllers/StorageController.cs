@@ -94,7 +94,7 @@ namespace Kahla.Server.Controllers
                 accessToken,
                 siteName,
                 "Upload",
-                $"{DateTime.UtcNow.ToString("yyyy-MM-dd")}");
+                path);
             var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
             {
                 pbtoken = token
