@@ -40,7 +40,6 @@ namespace Kahla.Server
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
-            services.ConfigureLargeFileUpload();
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
 
