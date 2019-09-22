@@ -186,13 +186,17 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingAddressModel model)
         {
             var currentUser = await GetKahlaUser();
-            if (model.ThemeId != null)
+            if (model.ThemeId.HasValue)
             {
                 currentUser.ThemeId = model.ThemeId ?? 0;
             }
-            if (model.EnableEmailNotification != null)
+            if (model.EnableEmailNotification.HasValue)
             {
-                currentUser.EnableEmailNotification = model.EnableEmailNotification ?? false;
+                currentUser.EnableEmailNotification = model.EnableEmailNotification == true;
+            }
+            if (model.EnableEnterToSendMessage.HasValue)
+            {
+                currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
             }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
