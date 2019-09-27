@@ -14,8 +14,6 @@
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.Server.git</RepositoryUrl>
-    <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <ApplicationInsightsResourceId>/subscriptions/71480737-25ec-4638-aa39-1c3a9a20f354/resourcegroups/AiursoftHK/providers/microsoft.insights/components/KahlaServer</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/71480737-25ec-4638-aa39-1c3a9a20f354/resourcegroups/AiursoftHK/providers/microsoft.insights/components/KahlaServer</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
