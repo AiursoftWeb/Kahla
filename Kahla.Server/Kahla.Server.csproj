@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <Version>0.13.0</Version>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>Kahla.Server</AssemblyName>
     <PackageId>Kahla.Server</PackageId>
     <Company>Aiursoft</Company>
@@ -21,10 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFCore.BulkExtensions" Version="2.6.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.7.1" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Aiursoft.Pylon" Version="0.16.2" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="3.0.0-rc" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.0" />
+    <PackageReference Include="Aiursoft.Pylon" Version="0.17.0" />
     <PackageReference Include="WebPush" Version="1.0.11" />
   </ItemGroup>
 

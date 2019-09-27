@@ -51,7 +51,7 @@ namespace Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
 
-            services.AddMvc().AddJsonOptions(opt =>
+            services.AddControllers().AddNewtonsoftJson(opt =>
             {
                 opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -74,7 +74,7 @@ namespace Kahla.Server
             services.AddTransient<AiurEmailSender>();
         }
 
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -91,7 +91,7 @@ namespace Kahla.Server
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseAuthentication();
             app.UseLanguageSwitcher();
-            app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
             app.UseDocGenerator();
         }
     }

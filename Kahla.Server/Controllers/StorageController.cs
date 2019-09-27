@@ -24,7 +24,6 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly StorageService _storageService;
         private readonly TokenService _tokenService;
         private readonly AppsContainer _appsContainer;
         private readonly ServiceLocation _serviceLocation;
@@ -33,7 +32,6 @@ namespace Kahla.Server.Controllers
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             IConfiguration configuration,
-            StorageService storageService,
             TokenService tokenService,
             AppsContainer appsContainer,
             ServiceLocation serviceLocation)
@@ -41,7 +39,6 @@ namespace Kahla.Server.Controllers
             _userManager = userManager;
             _dbContext = dbContext;
             _configuration = configuration;
-            _storageService = storageService;
             _tokenService = tokenService;
             _appsContainer = appsContainer;
             _serviceLocation = serviceLocation;
