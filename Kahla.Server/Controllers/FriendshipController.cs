@@ -9,7 +9,6 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -189,13 +188,13 @@ namespace Kahla.Server.Controllers
                 .Users
                 .AsNoTracking()
                 .Where(t =>
-                    t.MakeEmailPublic && t.Email.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase) ||
-                    t.NickName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+                    t.MakeEmailPublic && t.Email.Contains(model.SearchInput) ||
+                    t.NickName.Contains(model.SearchInput));
 
             var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+                .Where(t => t.GroupName.Contains(model.SearchInput));
 
             var searched = SearchedGroup.Map(await groups.ToListAsync());
 
