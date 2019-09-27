@@ -84,6 +84,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
+            var timeLimit = DateTime.UtcNow - TimeSpan.FromSeconds(target.MaxLiveSeconds);
             //Get Messages
             var allMessages = await _dbContext
                 .Messages
@@ -92,7 +93,7 @@ namespace Kahla.Server.Controllers
                 .Include(t => t.Ats)
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
+                .Where(t => t.SendTime > timeLimit)
                 .Where(t => skipTill == -1 || t.Id < skipTill)
                 .OrderByDescending(t => t.Id)
                 .Take(take)

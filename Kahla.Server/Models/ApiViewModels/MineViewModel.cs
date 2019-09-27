@@ -5,7 +5,7 @@ namespace Kahla.Server.Models.ApiViewModels
 {
     public class MineViewModel : AiurProtocol
     {
-        public List<KahlaUser> Users { get; internal set; }
-        public List<SearchedGroup> Groups { get; internal set; }
+        public IEnumerable<KahlaUser> Users { get; internal set; }
+        public IEnumerable<SearchedGroup> Groups { get; internal set; }
     }
 }
