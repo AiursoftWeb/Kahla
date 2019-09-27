@@ -9,17 +9,17 @@
     <Authors>Anduin</Authors>
     <Description>The server side application for Kahla app.</Description>
     <PackageTags>messenging kahla</PackageTags>
-    <PackageIconUrl>https://oss.aiursoft.com/MyPersonalFiles/512x512.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/AiursoftWeb/Kahla.Server</PackageProjectUrl>
+    <PackageIconUrl>https://probe.aiursoft.com/Download/Open/aiursoft/512x512.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/AiursoftWeb/Kahla</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.Server.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.git</RepositoryUrl>
     <ApplicationInsightsResourceId>/subscriptions/71480737-25ec-4638-aa39-1c3a9a20f354/resourcegroups/AiursoftHK/providers/microsoft.insights/components/KahlaServer</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/71480737-25ec-4638-aa39-1c3a9a20f354/resourcegroups/AiursoftHK/providers/microsoft.insights/components/KahlaServer</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFCore.BulkExtensions" Version="3.0.0-rc" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="2.6.3" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.0" />
     <PackageReference Include="Aiursoft.Pylon" Version="0.17.0" />
     <PackageReference Include="WebPush" Version="1.0.11" />
