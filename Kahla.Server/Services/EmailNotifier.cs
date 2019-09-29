@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
+using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,13 +21,16 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
+        private readonly TelemetryClient _telemetryClient;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            TelemetryClient telemetryClient)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _telemetryClient = telemetryClient;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -38,35 +42,43 @@ namespace Kahla.Server.Services
 
         private async void DoWork(object state)
         {
-            _logger.LogInformation("Cleaner task started!");
-            using (var scope = _scopeFactory.CreateScope())
+            try
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
-                var users = await dbContext
-                                .Users
-                                .Where(t => t.EmailConfirmed)
-                                .Where(t => t.EnableEmailNotification)
-                                // Only for users who did not send email for a long time.
-                                .Where(t => t.LastEmailHimTime + TimeSpan.FromHours(23) < DateTime.UtcNow)
-                                .ToListAsync();
-                foreach (var user in users)
+                _logger.LogInformation("Cleaner task started!");
+                using (var scope = _scopeFactory.CreateScope())
                 {
-                    var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
-                    if (string.IsNullOrWhiteSpace(emailMessage))
+                    var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+                    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                    var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
+                    var timeLimit = DateTime.UtcNow - TimeSpan.FromHours(23);
+                    var users = await dbContext
+                                    .Users
+                                    .Where(t => t.EmailConfirmed)
+                                    .Where(t => t.EnableEmailNotification)
+                                    // Only for users who did not send email for a long time.
+                                    .Where(t => t.LastEmailHimTime < timeLimit)
+                                    .ToListAsync();
+                    foreach (var user in users)
                     {
-                        continue;
+                        var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
+                        if (string.IsNullOrWhiteSpace(emailMessage))
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
+                            user.LastEmailHimTime = DateTime.UtcNow;
+                            dbContext.Update(user);
+                        }
+                        catch (SmtpException) { }
                     }
-                    try
-                    {
-                        await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
-                        user.LastEmailHimTime = DateTime.UtcNow;
-                        dbContext.Update(user);
-                    }
-                    catch (SmtpException) { }
+                    await dbContext.SaveChangesAsync();
                 }
-                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _telemetryClient.TrackException(ex);
             }
         }
 
