@@ -40,10 +40,9 @@ namespace Kahla.Server.Data
                 .Include(t => (t as GroupConversation).Owner)
                 .Include(t => t.Messages)
                 .ThenInclude(t => t.Ats)
-                .AsEnumerable()
-#warning https://github.com/aspnet/EntityFrameworkCore/issues/17546
-#warning https://github.com/aspnet/EntityFrameworkCore/issues/17475
-                .Where(t => t.HasUser(userId));
+                .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
+                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
+                .AsEnumerable();
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

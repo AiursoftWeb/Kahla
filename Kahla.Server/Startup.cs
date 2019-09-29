@@ -80,6 +80,7 @@ namespace Kahla.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -92,7 +93,6 @@ namespace Kahla.Server
                 app.UseAPIFriendlyErrorPage();
             }
             app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
-            app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseRouting();
