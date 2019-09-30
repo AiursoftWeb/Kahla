@@ -1,4 +1,5 @@
 ﻿using Kahla.Server.Models;
+using Kahla.Server.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,65 @@ namespace Kahla.Server.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<At> Ats { get; set; }
+
+        public IQueryable<ContactInfo> MyContacts(string userId)
+        {
+            //.Select(conversation => new ContactInfo
+
+            return Conversations
+                .AsNoTracking()
+                .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
+                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
+                .Select(t => new SelectedConversation
+                {
+                    ConversationId = t.Id,
+                    Discriminator = t.Discriminator,
+
+                    GroupConversationName = (t is GroupConversation) ? ((GroupConversation)t).GroupName : string.Empty,
+                    GroupImagePath = (t is GroupConversation) ? ((GroupConversation)t).GroupImagePath : string.Empty,
+                    GroupOwnerId = (t is GroupConversation) ? ((GroupConversation)t).OwnerId : string.Empty,
+                    GroupUnreadAmount = (t is GroupConversation) ?
+                        t.Messages.Count(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp) :
+                        t.Messages.Count(p => !p.Read && p.SenderId != userId),
+
+                    PrivateConversationName = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.NickName : ((PrivateConversation)t).RequestUser.NickName) :
+                        string.Empty,
+                    PrivateImagePath = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.IconFilePath : ((PrivateConversation)t).RequestUser.IconFilePath) :
+                        string.Empty,
+                    PrivateUserId = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetId : ((PrivateConversation)t).RequesterId)
+                        : string.Empty,
+                    PrivateUnreadAmount = t.Messages.Count(p => !p.Read && p.SenderId != userId),
+
+                    LatestMessageContent = t.Messages.OrderByDescending(t => t.SendTime).Select(m => m.Content).FirstOrDefault(),
+                    LatestMessageTime = t.Messages.Max(m => m.SendTime),
+
+                    Muted = (t is GroupConversation) ?
+                        ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,
+                    AesKey = t.AESKey,
+                    SomeoneAtMe = (t is GroupConversation) ? t.Messages
+                        .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
+                        .Any(t => t.Ats.Any(p => p.TargetUserId == userId)) : false
+                })
+                .Select(t => new ContactInfo
+                {
+                    ConversationId = t.ConversationId,
+                    DisplayName = t.Discriminator == nameof(GroupConversation) ? t.GroupConversationName : t.PrivateConversationName,
+                    DisplayImagePath = t.Discriminator == nameof(GroupConversation) ? t.GroupImagePath : t.PrivateImagePath,
+                    LatestMessage = t.LatestMessageContent,
+                    LatestMessageTime = t.LatestMessageTime,
+                    UnReadAmount = t.Discriminator == nameof(GroupConversation) ? t.GroupUnreadAmount : t.PrivateUnreadAmount,
+                    Discriminator = t.Discriminator,
+                    UserId = t.Discriminator == nameof(GroupConversation) ? t.GroupOwnerId : t.PrivateUserId,
+                    AesKey = t.AesKey,
+                    Muted = t.Muted,
+                    SomeoneAtMe = t.SomeoneAtMe
+                })
+                .OrderByDescending(t => t.SomeoneAtMe)
+                .ThenByDescending(t => t.LatestMessageTime);
+        }
 
         public IEnumerable<Conversation> MyConversations(string userId)
         {

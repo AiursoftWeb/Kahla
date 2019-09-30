@@ -8,6 +8,25 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Models
 {
+    public class SelectedConversation
+    {
+        public int ConversationId { get; set; }
+        public string GroupConversationName { get; set; }
+        public string GroupImagePath { get; set; }
+        public string LatestMessageContent { get; internal set; }
+        public int GroupUnreadAmount { get; internal set; }
+        public DateTime LatestMessageTime { get; internal set; }
+        public bool SomeoneAtMe { get; internal set; }
+        public string Discriminator { get; internal set; }
+        public string GroupOwnerId { get; internal set; }
+        public string PrivateUserId { get; internal set; }
+        public string AesKey { get; internal set; }
+        public bool Muted { get; internal set; }
+        public string PrivateConversationName { get; internal set; }
+        public string PrivateImagePath { get; internal set; }
+        public int PrivateUnreadAmount { get; internal set; }
+    }
+
     public abstract class Conversation
     {
         [Key]
