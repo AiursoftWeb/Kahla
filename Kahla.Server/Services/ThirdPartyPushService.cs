@@ -54,7 +54,6 @@ namespace Kahla.Server.Services
                     catch (WebPushException e)
                     {
                         _dbContext.Devices.Remove(device);
-                        await _dbContext.SaveChangesAsync();
                         _logger.LogCritical(e, "A WebPush error occured while calling WebPush API: " + e.Message);
                         _telemetry.TrackException(e);
                     }
