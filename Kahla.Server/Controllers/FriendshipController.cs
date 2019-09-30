@@ -9,7 +9,6 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -42,12 +41,12 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Mine()
         {
             var user = await GetKahlaUser();
-            var personalRelations = await _dbContext.PrivateConversations
+            var personalRelations = (await _dbContext.PrivateConversations
                .AsNoTracking()
                .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
                .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
-               .OrderBy(t => t.NickName)
-               .ToListAsync();
+               .ToListAsync())
+               .OrderBy(t => t.NickName);
             var groups = await _dbContext.GroupConversations
                 .AsNoTracking()
                 .Where(t => t.Users.Any(p => p.UserId == user.Id))
@@ -189,13 +188,13 @@ namespace Kahla.Server.Controllers
                 .Users
                 .AsNoTracking()
                 .Where(t =>
-                    t.MakeEmailPublic && t.Email.Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase) ||
-                    t.NickName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+                    t.MakeEmailPublic && t.Email.Contains(model.SearchInput) ||
+                    t.NickName.Contains(model.SearchInput));
 
             var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
-                .Where(t => t.GroupName.ToLower().Contains(model.SearchInput.ToLower(), StringComparison.CurrentCultureIgnoreCase));
+                .Where(t => t.GroupName.Contains(model.SearchInput));
 
             var searched = SearchedGroup.Map(await groups.ToListAsync());
 
