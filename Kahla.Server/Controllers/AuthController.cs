@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -33,10 +32,8 @@ namespace Kahla.Server.Controllers
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;
-        private readonly IConfiguration _configuration;
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
         private readonly AuthService<KahlaUser> _authService;
-        private readonly AccountService _accountService;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
         private readonly UserService _userService;
@@ -50,10 +47,8 @@ namespace Kahla.Server.Controllers
 
         public AuthController(
             ServiceLocation serviceLocation,
-            IConfiguration configuration,
-            IHostingEnvironment env,
+            IWebHostEnvironment env,
             AuthService<KahlaUser> authService,
-            AccountService accountService,
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
             UserService userService,
@@ -66,10 +61,8 @@ namespace Kahla.Server.Controllers
             AiurCache cache)
         {
             _serviceLocation = serviceLocation;
-            _configuration = configuration;
             _env = env;
             _authService = authService;
-            _accountService = accountService;
             _userManager = userManager;
             _signInManager = signInManager;
             _userService = userService;
