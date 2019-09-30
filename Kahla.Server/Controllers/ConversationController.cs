@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
-using EFCore.BulkExtensions;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Kahla.Server.Models.ApiAddressModels;
@@ -229,11 +228,12 @@ namespace Kahla.Server.Controllers
             }
             var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
-            await _dbContext
+            var toDelete = await _dbContext
                 .Messages
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime < oldestAliveTime)
-                .BatchDeleteAsync();
+                .ToListAsync();
+            _dbContext.Messages.RemoveRange(toDelete);
             await _dbContext.SaveChangesAsync();
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
