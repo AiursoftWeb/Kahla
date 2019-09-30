@@ -175,7 +175,6 @@ namespace Kahla.Server.Controllers
                                 mentioned: mentioned
                                 );
             });
-            await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, "Your message has been sent.");
         }
 
