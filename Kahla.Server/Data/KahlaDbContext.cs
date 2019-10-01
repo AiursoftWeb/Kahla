@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,22 +66,6 @@ namespace Kahla.Server.Data
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessageTime);
-        }
-
-        public IEnumerable<Conversation> MyConversations(string userId)
-        {
-            return Conversations
-                .AsNoTracking()
-                .Include(t => (t as PrivateConversation).TargetUser)
-                .Include(t => (t as PrivateConversation).RequestUser)
-                .Include(t => (t as GroupConversation).Users)
-                .ThenInclude(t => t.User)
-                .Include(t => (t as GroupConversation).Owner)
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
-                .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
-                .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
-                .AsEnumerable();
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

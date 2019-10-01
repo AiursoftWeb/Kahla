@@ -90,26 +90,19 @@ namespace Kahla.Server.Services
         public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, string domain)
         {
             int totalUnread = 0, inConversations = 0;
-            var conversations = dbContext.MyConversations(user.Id).ToList();
+            var conversations = await dbContext.MyContacts(user.Id).ToListAsync();
             var msg = new StringBuilder();
-            foreach (var conversation in conversations)
+            foreach (var contact in conversations)
             {
                 // Ignore conversations muted.
-                if (conversation is GroupConversation currentGroup)
+                if (contact.Discriminator == nameof(GroupConversation))
                 {
-                    var relation = currentGroup
-                        .Users
-                        .FirstOrDefault(t => t.UserId == user.Id);
-                    if (relation == null)
-                    {
-                        continue;
-                    }
-                    if (relation.Muted)
+                    if (contact.Muted)
                     {
                         continue;
                     }
                 }
-                var currentUnread = conversation.GetUnReadAmount(user.Id);
+                var currentUnread = contact.UnReadAmount;
                 if (currentUnread <= 0) continue;
 
                 totalUnread += currentUnread;
@@ -124,7 +117,7 @@ namespace Kahla.Server.Services
                 }
                 else
                 {
-                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{domain}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
+                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(contact.Discriminator == nameof(GroupConversation) ? "group" : "friend")} <a href=\"{domain}/talking/{contact.ConversationId}\">{contact.DisplayName}</a>.</li>");
                 }
             }
             var pendingRequests = await dbContext
