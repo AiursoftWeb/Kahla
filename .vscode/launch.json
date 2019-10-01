@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Kahla.Server/bin/Debug/netcoreapp2.1/Kahla.Server.dll",
+            "program": "${workspaceFolder}/Kahla.Server/bin/Debug/netcoreapp3.0/Kahla.Server.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Kahla.Server",
             "stopAtEntry": false,
