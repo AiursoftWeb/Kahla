@@ -66,7 +66,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DeleteFriend([Required]string id)
         {
             var user = await GetKahlaUser();
-            var target = await _dbContext.Users.FindAsync(id);
+            var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find target user.");
@@ -77,7 +77,7 @@ namespace Kahla.Server.Controllers
             }
             await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
-            await _pusher.WereDeletedEvent(target, user);
+            await _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user);
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 
@@ -90,7 +90,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to create friend requests without confirming your email!");
             }
-            var target = await _dbContext.Users.FindAsync(id);
+            var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
                 return this.Protocol(ErrorType.NotFound, "We can not find your target user!");
@@ -120,7 +120,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target, user);
+            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user);
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -135,6 +135,7 @@ namespace Kahla.Server.Controllers
             var request = await _dbContext
                 .Requests
                 .Include(t => t.Creator)
+                .ThenInclude(t => t.HisDevices)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (request == null)
             {
@@ -157,7 +158,7 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
                 _dbContext.AddFriend(request.CreatorId, request.TargetId);
-                await _pusher.FriendAcceptedEvent(request.Creator, user);
+                await _pusher.FriendAcceptedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, user);
             }
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");

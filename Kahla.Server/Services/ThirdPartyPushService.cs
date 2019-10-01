@@ -1,12 +1,11 @@
 ﻿using Kahla.Server.Data;
+using Kahla.Server.Models;
 using Microsoft.ApplicationInsights;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using WebPush;
 
@@ -34,12 +33,11 @@ namespace Kahla.Server.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task PushAsync(string receiverId, string triggerEmail, string payload)
+        public async Task PushAsync(IEnumerable<Device> devices, string triggerEmail, string payload)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                var devices = await dbContext.Devices.Where(t => t.UserId == receiverId).ToListAsync();
                 string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
                 string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
                 // Push to all devices.
