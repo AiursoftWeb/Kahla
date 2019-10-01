@@ -98,9 +98,12 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext
                 .Conversations
                 .Include(t => (t as PrivateConversation).RequestUser)
+                .ThenInclude(t => t.HisDevices)
                 .Include(t => (t as PrivateConversation).TargetUser)
+                .ThenInclude(t => t.HisDevices)
                 .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
+                .ThenInclude(t => t.HisDevices)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
@@ -150,7 +153,8 @@ namespace Kahla.Server.Controllers
             {
                 var mentioned = model.At.Contains(eachUser.Id);
                 return _pusher.NewMessageEvent(
-                                receiver: eachUser,
+                                stargateChannel: eachUser.CurrentChannel,
+                                devices: eachUser.HisDevices,
                                 conversation: target,
                                 message: message,
                                 muted: !mentioned && (relation?.Muted ?? false),
