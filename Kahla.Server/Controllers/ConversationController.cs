@@ -157,7 +157,7 @@ namespace Kahla.Server.Controllers
                                 devices: eachUser.HisDevices,
                                 conversation: target,
                                 message: message,
-                                muted: !mentioned && (relation?.Muted ?? false),
+                                pushAlert: eachUser.Id != user.Id && (mentioned || !relation.Muted),
                                 mentioned: mentioned
                                 );
             });

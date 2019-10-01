@@ -35,13 +35,13 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task NewMessageEvent(int stargateChannel, IEnumerable<Device> devices, Conversation conversation, Message message, bool muted, bool mentioned)
+        public async Task NewMessageEvent(int stargateChannel, IEnumerable<Device> devices, Conversation conversation, Message message, bool pushAlert, bool mentioned)
         {
             var token = await _appsContainer.AccessToken();
             var newMessageEvent = new NewMessageEvent
             {
                 AESKey = conversation.AESKey,
-                Muted = muted,
+                Muted = !pushAlert,
                 Mentioned = mentioned,
                 Message = message
             };
@@ -50,7 +50,7 @@ namespace Kahla.Server.Services
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(newMessageEvent), true));
             }
-            if (!muted)
+            if (pushAlert)
             {
                 pushTasks.Add(_thirdPartyPushService.PushAsync(devices, message.Sender.Email, JsonConvert.SerializeObject(newMessageEvent)));
             }
