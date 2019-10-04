@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,16 +20,13 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
-        private readonly TelemetryClient _telemetryClient;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory,
-            TelemetryClient telemetryClient)
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _telemetryClient = telemetryClient;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -78,7 +74,7 @@ namespace Kahla.Server.Services
             }
             catch (Exception ex)
             {
-                _telemetryClient.TrackException(ex);
+                _logger.LogCritical(ex, ex.Message);
             }
         }
 
