@@ -35,7 +35,6 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplicationInsightsTelemetry();
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,

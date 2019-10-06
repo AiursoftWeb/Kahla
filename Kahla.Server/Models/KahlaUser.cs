@@ -66,7 +66,7 @@ namespace Kahla.Server.Models
         public bool ShouldSerializeEnableEmailNotification() => IsMe;
 
         [JsonProperty]
-        public bool EnableEnterToSendMessage { get; set; }
+        public bool EnableEnterToSendMessage { get; set; } = true;
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
     }
 }

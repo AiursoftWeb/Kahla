@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,16 +20,13 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
-        private readonly TelemetryClient _telemetryClient;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory,
-            TelemetryClient telemetryClient)
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _telemetryClient = telemetryClient;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -78,7 +74,7 @@ namespace Kahla.Server.Services
             }
             catch (Exception ex)
             {
-                _telemetryClient.TrackException(ex);
+                _logger.LogCritical(ex, ex.Message);
             }
         }
 
@@ -90,26 +86,19 @@ namespace Kahla.Server.Services
         public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, string domain)
         {
             int totalUnread = 0, inConversations = 0;
-            var conversations = dbContext.MyConversations(user.Id).ToList();
+            var conversations = await dbContext.MyContacts(user.Id).ToListAsync();
             var msg = new StringBuilder();
-            foreach (var conversation in conversations)
+            foreach (var contact in conversations)
             {
                 // Ignore conversations muted.
-                if (conversation is GroupConversation currentGroup)
+                if (contact.Discriminator == nameof(GroupConversation))
                 {
-                    var relation = currentGroup
-                        .Users
-                        .FirstOrDefault(t => t.UserId == user.Id);
-                    if (relation == null)
-                    {
-                        continue;
-                    }
-                    if (relation.Muted)
+                    if (contact.Muted)
                     {
                         continue;
                     }
                 }
-                var currentUnread = conversation.GetUnReadAmount(user.Id);
+                var currentUnread = contact.UnReadAmount;
                 if (currentUnread <= 0) continue;
 
                 totalUnread += currentUnread;
@@ -124,7 +113,7 @@ namespace Kahla.Server.Services
                 }
                 else
                 {
-                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(conversation is GroupConversation ? "group" : "friend")} <a href=\"{domain}/talking/{conversation.Id}\">{conversation.GetDisplayName(user.Id)}</a>.</li>");
+                    msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(contact.Discriminator == nameof(GroupConversation) ? "group" : "friend")} <a href=\"{domain}/talking/{contact.ConversationId}\">{contact.DisplayName}</a>.</li>");
                 }
             }
             var pendingRequests = await dbContext

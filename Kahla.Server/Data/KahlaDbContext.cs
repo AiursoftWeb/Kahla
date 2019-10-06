@@ -1,9 +1,9 @@
 ﻿using Kahla.Server.Models;
+using Kahla.Server.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,20 +29,43 @@ namespace Kahla.Server.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<At> Ats { get; set; }
 
-        public IEnumerable<Conversation> MyConversations(string userId)
+        public IQueryable<ContactInfo> MyContacts(string userId)
         {
             return Conversations
                 .AsNoTracking()
-                .Include(t => (t as PrivateConversation).TargetUser)
-                .Include(t => (t as PrivateConversation).RequestUser)
-                .Include(t => (t as GroupConversation).Users)
-                .ThenInclude(t => t.User)
-                .Include(t => (t as GroupConversation).Owner)
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Ats)
                 .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
                 .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
-                .AsEnumerable();
+                .Select(t => new ContactInfo
+                {
+                    ConversationId = t.Id,
+                    Discriminator = t.Discriminator,
+
+                    DisplayName = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.NickName : ((PrivateConversation)t).RequestUser.NickName) :
+                        ((GroupConversation)t).GroupName,
+                    DisplayImagePath = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.IconFilePath : ((PrivateConversation)t).RequestUser.IconFilePath) :
+                        ((GroupConversation)t).GroupImagePath,
+                    UserId = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetId : ((PrivateConversation)t).RequesterId) :
+                        ((GroupConversation)t).OwnerId,
+                    UnReadAmount =
+                        (t is GroupConversation) ?
+                        t.Messages.Count(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp) :
+                        t.Messages.Count(p => !p.Read && p.SenderId != userId),
+
+                    LatestMessage = t.Messages.OrderByDescending(t => t.SendTime).Select(m => m.Content).FirstOrDefault(),
+                    LatestMessageTime = t.Messages.Max(m => m.SendTime),
+
+                    Muted = (t is GroupConversation) ?
+                        ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,
+                    AesKey = t.AESKey,
+                    SomeoneAtMe = (t is GroupConversation) ? t.Messages
+                        .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
+                        .Any(t => t.Ats.Any(p => p.TargetUserId == userId)) : false
+                })
+                .OrderByDescending(t => t.SomeoneAtMe)
+                .ThenByDescending(t => t.LatestMessageTime);
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

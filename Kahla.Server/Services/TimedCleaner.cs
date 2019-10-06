@@ -1,5 +1,4 @@
 ﻿using Kahla.Server.Data;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,16 +15,13 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
-        private readonly TelemetryClient _telemetryClient;
 
         public TimedCleaner(
             ILogger<TimedCleaner> logger,
-            IServiceScopeFactory scopeFactory,
-            TelemetryClient telemetryClient)
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _telemetryClient = telemetryClient;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -64,7 +60,7 @@ namespace Kahla.Server.Services
             }
             catch (Exception e)
             {
-                _telemetryClient.TrackException(e);
+                _logger.LogCritical(e, e.Message);
             }
         }
 

@@ -41,25 +41,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
-            var contacts = _dbContext
-                .MyConversations(user.Id)
-                .Select(conversation => new ContactInfo
-                {
-                    ConversationId = conversation.Id,
-                    DisplayName = conversation.GetDisplayName(user.Id),
-                    DisplayImagePath = conversation.GetDisplayImagePath(user.Id),
-                    LatestMessage = conversation.GetLatestMessage() == null ? string.Empty : conversation.GetLatestMessage().Content,
-                    LatestMessageTime = conversation.GetLatestMessage() == null ? conversation.ConversationCreateTime : conversation.GetLatestMessage().SendTime,
-                    UnReadAmount = conversation.GetUnReadAmount(user.Id),
-                    Discriminator = conversation.Discriminator,
-                    UserId = conversation.SpecialUser(user.Id).Id,
-                    AesKey = conversation.AESKey,
-                    Muted = conversation.Muted(user.Id),
-                    SomeoneAtMe = conversation.WasAted(user.Id)
-                })
-                .OrderByDescending(t => t.SomeoneAtMe)
-                .ThenByDescending(t => t.LatestMessageTime)
-                .ToList();
+            var contacts = await _dbContext.MyContacts(user.Id).ToListAsync();
             return Json(new AiurCollection<ContactInfo>(contacts)
             {
                 Code = ErrorType.Success,
@@ -116,9 +98,12 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext
                 .Conversations
                 .Include(t => (t as PrivateConversation).RequestUser)
+                .ThenInclude(t => t.HisDevices)
                 .Include(t => (t as PrivateConversation).TargetUser)
+                .ThenInclude(t => t.HisDevices)
                 .Include(t => (t as GroupConversation).Users)
                 .ThenInclude(t => t.User)
+                .ThenInclude(t => t.HisDevices)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
@@ -168,10 +153,11 @@ namespace Kahla.Server.Controllers
             {
                 var mentioned = model.At.Contains(eachUser.Id);
                 return _pusher.NewMessageEvent(
-                                receiver: eachUser,
+                                stargateChannel: eachUser.CurrentChannel,
+                                devices: eachUser.HisDevices,
                                 conversation: target,
                                 message: message,
-                                muted: !mentioned && (relation?.Muted ?? false),
+                                pushAlert: eachUser.Id != user.Id && (mentioned || !(relation?.Muted ?? false)),
                                 mentioned: mentioned
                                 );
             });
