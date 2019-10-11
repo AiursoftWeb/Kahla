@@ -1,4 +1,5 @@
-﻿using Aiursoft.Pylon.Services;
+﻿using Aiursoft.Pylon.Interfaces;
+using Aiursoft.Pylon.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class EmailNotifier : IHostedService, IDisposable
+    public class EmailNotifier : IHostedService, IDisposable, ISingletonDependency
     {
         private readonly ILogger _logger;
         private Timer _timer;

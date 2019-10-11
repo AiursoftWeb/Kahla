@@ -25,12 +25,10 @@ namespace Kahla.Server
     public class Startup
     {
         private IConfiguration Configuration { get; }
-        private SameSiteMode Mode { get; }
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -49,32 +47,14 @@ namespace Kahla.Server
 
             services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
 
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
-
             services.AddControllers().AddNewtonsoftJson(opt =>
             {
                 opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
-            services.AddMemoryCache();
-
-            services.AddAiursoftAuth<KahlaUser>();
-
-            services.AddSingleton<IHostedService, TimedCleaner>();
-            services.AddSingleton<IHostedService, EmailNotifier>();
-            services.AddScoped<UserService>();
-            services.AddScoped<VersionChecker>();
-            services.AddScoped<OwnerChecker>();
-            // Web Push Service
+            services.AddAiurDependencies("Kahla");
             services.AddScoped<WebPushClient>();
-            services.AddScoped<ThirdPartyPushService>();
-            // Stargate Push Service
-            services.AddScoped<ChannelService>();
-            services.AddScoped<PushMessageService>();
-            // Final Kahla Push Service
-            services.AddScoped<KahlaPushService>();
-            services.AddTransient<AiurEmailSender>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -91,7 +71,6 @@ namespace Kahla.Server
                 app.UseEnforceHttps();
                 app.UseAPIFriendlyErrorPage();
             }
-            app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
             app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseRouting();
