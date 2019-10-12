@@ -53,7 +53,7 @@ namespace Kahla.Server
                 opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
-            services.AddAiurDependencies("Kahla");
+            services.AddAiurDependencies<KahlaUser>("Kahla");
             services.AddScoped<WebPushClient>();
         }
 
