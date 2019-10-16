@@ -24,11 +24,11 @@ namespace Kahla.Server
 {
     public class Startup
     {
-        private IConfiguration Configuration { get; }
+        private IConfiguration _configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -39,13 +39,15 @@ namespace Kahla.Server
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
             services.AddDbContext<KahlaDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
+                options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
+            services.Configure<List<DomainSettings>>(_configuration.GetSection("AppDomain"));
+
+            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddControllers().AddNewtonsoftJson(opt =>
             {
