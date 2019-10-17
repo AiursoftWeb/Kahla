@@ -11,7 +11,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,7 +45,7 @@ namespace Kahla.Server.Services
         {
             try
             {
-                _logger.LogInformation("Cleaner task started!");
+                _logger.LogInformation("Email notifier task started!");
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
@@ -62,18 +61,17 @@ namespace Kahla.Server.Services
                                     .ToListAsync();
                     foreach (var user in users)
                     {
+                        _logger.LogInformation($"Building email for user: {user.NickName}...");
                         var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
                         if (string.IsNullOrWhiteSpace(emailMessage))
                         {
+                            _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
                             continue;
                         }
-                        try
-                        {
-                            await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
-                            user.LastEmailHimTime = DateTime.UtcNow;
-                            dbContext.Update(user);
-                        }
-                        catch (SmtpException) { }
+                        _logger.LogInformation($"Sending email to user: {user.NickName}.");
+                        await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
+                        user.LastEmailHimTime = DateTime.UtcNow;
+                        dbContext.Update(user);
                     }
                     await dbContext.SaveChangesAsync();
                 }
