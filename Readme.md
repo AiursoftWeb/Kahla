@@ -8,7 +8,7 @@ Kahla is a cross-platform business messaging app. This is the server side code r
 
 Requirements about how to run
 * [Windows Server](http://www.microsoft.com/en-us/cloud-platform/windows-server) or [Ubuntu Server](https://www.ubuntu.com/server)
-* [.NET Core SDK 2.1.403 or later](https://github.com/dotnet/core/tree/master/release-notes)
+* [.NET Core SDK 3.0.0 or later](https://github.com/dotnet/core/tree/master/release-notes)
 * [Git](https://git-scm.com)
 * [SQL Server](https://hub.docker.com/r/microsoft/mssql-server-linux/) (Strongly suggest installing it via docker)
 * [VS Code](https://code.visualstudio.com) (Strongly suggest)
@@ -18,7 +18,8 @@ Requirements about how to run
 1. Modify your `appsettings.json` to set all app settings to correct values.
     * Kahla is using SQL Server as this default database. Install SQL Server and set your connection string in `ConnectionString.DatabaseConnection`
     * Kahla is using Aiursoft integrated Authentication. Create a new app in [Aiursoft Developer Center](https://developer.aiursoft.com) and set your appId and appSecret
-    * Kahla is using Aiursoft OSS to store files. Create a new bucket in [Aiursoft Developer Center](https://developer.aiursoft.com/buckets) and set your bucket id.
+    * Make sure you enabled `OAuth` and `Debug mode` for you app.
+    * Kahla is using Aiursoft Probe to store files. Create a new site in [Aiursoft Developer Center](https://developer.aiursoft.com/) and set your site name.
 2. Execute `dotnet restore` under `./Kahla.Server` to restore all dotnet requirements
 3. Execute `dotnet ef database update` to seed your database
 4. Execute `dotnet run` to run the app
