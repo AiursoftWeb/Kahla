@@ -1,5 +1,7 @@
 ﻿using Aiursoft.Pylon.Interfaces;
+using Aiursoft.Pylon.Models.Status;
 using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToStatusServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +23,16 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
+        private readonly AppsContainer _appsContainer;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            AppsContainer appsContainer)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _appsContainer = appsContainer;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -75,7 +80,17 @@ namespace Kahla.Server.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                try
+                {
+                    _logger.LogCritical(ex, ex.Message);
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
+                        var accessToken = await _appsContainer.AccessToken();
+                        await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception);
+                    }
+                }
+                catch { }
             }
         }
 
