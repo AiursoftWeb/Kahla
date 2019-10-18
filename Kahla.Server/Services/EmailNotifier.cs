@@ -69,7 +69,7 @@ namespace Kahla.Server.Services
                             continue;
                         }
                         _logger.LogInformation($"Sending email to user: {user.NickName}.");
-                        await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
+                        await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
                         user.LastEmailHimTime = DateTime.UtcNow;
                         dbContext.Update(user);
                     }
