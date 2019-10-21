@@ -1,4 +1,5 @@
-﻿using Kahla.Server.Data;
+﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class TimedCleaner : IHostedService, IDisposable
+    public class TimedCleaner : IHostedService, IDisposable, ISingletonDependency
     {
         private readonly ILogger _logger;
         private Timer _timer;

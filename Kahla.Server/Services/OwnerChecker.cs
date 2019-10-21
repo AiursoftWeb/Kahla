@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Exceptions;
+using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class OwnerChecker
+    public class OwnerChecker : IScopedDependency
     {
         private readonly KahlaDbContext _dbContext;
 

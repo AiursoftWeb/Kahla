@@ -1,4 +1,7 @@
-﻿using Aiursoft.Pylon.Services;
+﻿using Aiursoft.Pylon.Interfaces;
+using Aiursoft.Pylon.Models.Status;
+using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToStatusServer;
 using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,25 +11,27 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class EmailNotifier : IHostedService, IDisposable
+    public class EmailNotifier : IHostedService, IDisposable, ISingletonDependency
     {
         private readonly ILogger _logger;
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
+        private readonly AppsContainer _appsContainer;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            AppsContainer appsContainer)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _appsContainer = appsContainer;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -40,7 +45,7 @@ namespace Kahla.Server.Services
         {
             try
             {
-                _logger.LogInformation("Cleaner task started!");
+                _logger.LogInformation("Email notifier task started!");
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
@@ -56,25 +61,34 @@ namespace Kahla.Server.Services
                                     .ToListAsync();
                     foreach (var user in users)
                     {
+                        _logger.LogInformation($"Building email for user: {user.NickName}...");
                         var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
                         if (string.IsNullOrWhiteSpace(emailMessage))
                         {
+                            _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
                             continue;
                         }
-                        try
-                        {
-                            await emailSender.SendEmail(user.Email, "New notifications in Kahla", emailMessage);
-                            user.LastEmailHimTime = DateTime.UtcNow;
-                            dbContext.Update(user);
-                        }
-                        catch (SmtpException) { }
+                        _logger.LogInformation($"Sending email to user: {user.NickName}.");
+                        await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
+                        user.LastEmailHimTime = DateTime.UtcNow;
+                        dbContext.Update(user);
                     }
                     await dbContext.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                try
+                {
+                    _logger.LogCritical(ex, ex.Message);
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
+                        var accessToken = await _appsContainer.AccessToken();
+                        await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception);
+                    }
+                }
+                catch { }
             }
         }
 

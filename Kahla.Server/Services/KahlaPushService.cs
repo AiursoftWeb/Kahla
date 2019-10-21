@@ -1,4 +1,5 @@
-﻿using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
+﻿using Aiursoft.Pylon.Interfaces;
+using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Events;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class KahlaPushService
+    public class KahlaPushService : IScopedDependency
     {
         private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;

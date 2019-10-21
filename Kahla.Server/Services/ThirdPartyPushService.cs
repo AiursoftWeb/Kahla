@@ -1,4 +1,5 @@
-﻿using Kahla.Server.Data;
+﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Server.Data;
 using Kahla.Server.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +11,7 @@ using WebPush;
 
 namespace Kahla.Server.Services
 {
-    public class ThirdPartyPushService
+    public class ThirdPartyPushService : IScopedDependency
     {
         private readonly IConfiguration _configuration;
         private readonly WebPushClient _webPushClient;

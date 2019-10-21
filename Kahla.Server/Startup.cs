@@ -24,13 +24,11 @@ namespace Kahla.Server
 {
     public class Startup
     {
-        private IConfiguration Configuration { get; }
-        private SameSiteMode Mode { get; }
+        private IConfiguration _configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
-            Mode = Convert.ToBoolean(configuration["LaxCookie"]) ? SameSiteMode.Lax : SameSiteMode.None;
+            _configuration = configuration;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -41,15 +39,15 @@ namespace Kahla.Server
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
             services.AddDbContext<KahlaDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DatabaseConnection")));
+                options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
+            services.Configure<List<DomainSettings>>(_configuration.GetSection("AppDomain"));
 
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = Mode);
+            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddControllers().AddNewtonsoftJson(opt =>
             {
@@ -57,24 +55,8 @@ namespace Kahla.Server
                 opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
-            services.AddMemoryCache();
-
-            services.AddAiursoftAuth<KahlaUser>();
-
-            services.AddSingleton<IHostedService, TimedCleaner>();
-            services.AddSingleton<IHostedService, EmailNotifier>();
-            services.AddScoped<UserService>();
-            services.AddScoped<VersionChecker>();
-            services.AddScoped<OwnerChecker>();
-            // Web Push Service
+            services.AddAiurDependencies<KahlaUser>("Kahla");
             services.AddScoped<WebPushClient>();
-            services.AddScoped<ThirdPartyPushService>();
-            // Stargate Push Service
-            services.AddScoped<ChannelService>();
-            services.AddScoped<PushMessageService>();
-            // Final Kahla Push Service
-            services.AddScoped<KahlaPushService>();
-            services.AddTransient<AiurEmailSender>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -91,7 +73,6 @@ namespace Kahla.Server
                 app.UseEnforceHttps();
                 app.UseAPIFriendlyErrorPage();
             }
-            app.UseAiursoftAuthenticationFromConfiguration(Configuration, "Kahla");
             app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseRouting();

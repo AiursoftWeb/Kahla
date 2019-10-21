@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Exceptions;
+using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {
-    public class VersionChecker
+    public class VersionChecker : IScopedDependency
     {
         private readonly HTTPService _http;
         private readonly IConfiguration _configuration;
