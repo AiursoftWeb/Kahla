@@ -4,7 +4,7 @@ using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
 using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToAPIServer;
+using Aiursoft.Pylon.Services.ToGatewayServer;
 using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
