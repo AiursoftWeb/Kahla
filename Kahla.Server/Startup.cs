@@ -68,9 +68,9 @@ namespace Kahla.Server
                 app.UseEnforceHttps();
                 app.UseAPIFriendlyErrorPage();
             }
-            app.UseAuthentication();
             app.UseLanguageSwitcher();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
             app.UseDocGenerator();
         }
