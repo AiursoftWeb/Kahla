@@ -91,6 +91,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
             model.At = model.At ?? new string[0];
@@ -113,7 +114,6 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-
             if (model.Content.Trim().Length == 0)
             {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
@@ -161,7 +161,11 @@ namespace Kahla.Server.Controllers
                                 mentioned: mentioned
                                 );
             });
-            return this.Protocol(ErrorType.Success, "Your message has been sent.");
+            return Json(new AiurValue<int>(message.Id)
+            {
+                Code = ErrorType.Success,
+                Message = "Your message has been sent."
+            });
         }
 
         [APIProduces(typeof(AiurValue<PrivateConversation>))]
