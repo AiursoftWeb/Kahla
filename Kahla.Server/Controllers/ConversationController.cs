@@ -91,7 +91,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
             model.At = model.At ?? new string[0];
@@ -148,9 +148,18 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.InvalidInput, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
                 }
             }
+            // Save the ats.
+            await _dbContext.SaveChangesAsync();
+            // Set last read time.
+            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync((eachUser, relation) =>
             {
+                // Won't notify the sender.
+                if (user.Id == eachUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
                 var mentioned = model.At.Contains(eachUser.Id);
                 return _pusher.NewMessageEvent(
                                 stargateChannel: eachUser.CurrentChannel,
@@ -161,7 +170,7 @@ namespace Kahla.Server.Controllers
                                 mentioned: mentioned
                                 );
             });
-            return Json(new AiurValue<int>(message.Id)
+            return Json(new AiurValue<Message>(message)
             {
                 Code = ErrorType.Success,
                 Message = "Your message has been sent."
