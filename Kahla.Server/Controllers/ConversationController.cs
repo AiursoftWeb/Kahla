@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(AiurCollection<Message>))]
-        public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, int take = 15, string skipFrom = "")
         {
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -66,6 +66,16 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var timeLimit = DateTime.UtcNow - TimeSpan.FromSeconds(target.MaxLiveSeconds);
+            Message skipStart = null;
+            if (!string.IsNullOrWhiteSpace(skipFrom))
+            {
+                var guid = Guid.Parse(skipFrom);
+                skipStart = await _dbContext
+                    .Messages
+                    .AsNoTracking()
+                    .Where(t => t.ConversationId == target.Id)
+                    .SingleOrDefaultAsync(t => t.Id == guid);
+            }
             //Get Messages
             var allMessages = await _dbContext
                 .Messages
@@ -75,7 +85,7 @@ namespace Kahla.Server.Controllers
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime > timeLimit)
-                .Where(t => skipTill == -1 || t.Id < skipTill)
+                .Where(t => skipStart == null || t.SendTime < skipStart.SendTime)
                 .OrderByDescending(t => t.Id)
                 .Take(take)
                 .OrderBy(t => t.Id)
@@ -121,6 +131,7 @@ namespace Kahla.Server.Controllers
             // Create message.
             var message = new Message
             {
+                Id = Guid.Parse(model.MessageId),
                 Content = model.Content,
                 SenderId = user.Id,
                 Sender = user,
@@ -155,11 +166,6 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync((eachUser, relation) =>
             {
-                // Won't notify the sender.
-                if (user.Id == eachUser.Id)
-                {
-                    return Task.CompletedTask;
-                }
                 var mentioned = model.At.Contains(eachUser.Id);
                 return _pusher.NewMessageEvent(
                                 stargateChannel: eachUser.CurrentChannel,

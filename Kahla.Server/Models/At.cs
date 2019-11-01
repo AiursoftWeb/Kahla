@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kahla.Server.Models
@@ -13,7 +14,7 @@ namespace Kahla.Server.Models
         public KahlaUser TargetUser { get; set; }
 
         [JsonIgnore]
-        public int MessageId { get; set; }
+        public Guid MessageId { get; set; }
         [JsonIgnore]
         [ForeignKey(nameof(MessageId))]
         public Message Message { get; set; }

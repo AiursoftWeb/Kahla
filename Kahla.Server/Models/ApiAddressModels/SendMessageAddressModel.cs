@@ -4,6 +4,9 @@ namespace Kahla.Server.Models.ApiAddressModels
 {
     public class SendMessageAddressModel
     {
+        /// <summary>
+        /// Conversation id
+        /// </summary>
         [Required]
         public int Id { get; set; }
         [Required]
@@ -11,5 +14,9 @@ namespace Kahla.Server.Models.ApiAddressModels
         public string Content { get; set; }
 
         public string[] At { get; set; }
+        /// <summary>
+        /// Guid. For example: 8fe1dd34-7430-4650-8b0a-8587d39dd412
+        /// </summary>
+        public string MessageId { get; set; }
     }
 }
