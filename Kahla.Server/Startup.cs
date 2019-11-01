@@ -57,22 +57,8 @@ namespace Kahla.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseHandleRobots();
-                app.UseEnforceHttps();
-                app.UseAPIFriendlyErrorPage();
-            }
-            app.UseLanguageSwitcher();
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
-            app.UseDocGenerator();
+            app.UseAiurAPIHandler(env.IsDevelopment());
+            app.UseAiursoftDefault();
         }
     }
 }

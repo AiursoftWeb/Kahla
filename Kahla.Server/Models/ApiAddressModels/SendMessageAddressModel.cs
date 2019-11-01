@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Aiursoft.Pylon.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.Server.Models.ApiAddressModels
 {
@@ -17,6 +18,7 @@ namespace Kahla.Server.Models.ApiAddressModels
         /// <summary>
         /// Guid. For example: 8fe1dd34-7430-4650-8b0a-8587d39dd412
         /// </summary>
+        [IsGuid]
         public string MessageId { get; set; }
     }
 }

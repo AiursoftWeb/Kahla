@@ -69,7 +69,10 @@ namespace Kahla.Server.Controllers
             Message skipStart = null;
             if (!string.IsNullOrWhiteSpace(skipFrom))
             {
-                var guid = Guid.Parse(skipFrom);
+                if (!Guid.TryParse(skipFrom, out Guid guid))
+                {
+                    return this.Protocol(ErrorType.InvalidInput, $"Your 'skipFrom': '{skipFrom}' is not a valid GUID!");
+                }
                 skipStart = await _dbContext
                     .Messages
                     .AsNoTracking()
