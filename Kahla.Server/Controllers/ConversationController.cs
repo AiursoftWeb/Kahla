@@ -89,9 +89,9 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime > timeLimit)
                 .Where(t => skipStart == null || t.SendTime < skipStart.SendTime)
-                .OrderByDescending(t => t.Id)
+                .OrderByDescending(t => t.SendTime)
                 .Take(take)
-                .OrderBy(t => t.Id)
+                .OrderBy(t => t.SendTime)
                 .ToListAsync();
             var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
