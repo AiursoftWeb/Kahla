@@ -107,6 +107,10 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
+            if (model.RecordTime > DateTime.UtcNow || model.RecordTime + TimeSpan.FromSeconds(100) < DateTime.UtcNow)
+            {
+                model.RecordTime = DateTime.UtcNow;
+            }
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -138,7 +142,8 @@ namespace Kahla.Server.Controllers
                 Content = model.Content,
                 SenderId = user.Id,
                 Sender = user,
-                ConversationId = target.Id
+                ConversationId = target.Id,
+                SendTime = model.RecordTime
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();

@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.Server.Models.ApiAddressModels
@@ -21,5 +22,10 @@ namespace Kahla.Server.Models.ApiAddressModels
         [IsGuid]
         [Required]
         public string MessageId { get; set; }
+        /// <summary>
+        /// The time when the user press the send button.
+        /// </summary>
+        [Required]
+        public DateTime RecordTime { get; set; }
     }
 }
