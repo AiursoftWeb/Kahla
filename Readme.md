@@ -141,17 +141,13 @@ Modify your `appsettings.json` to set all app settings to correct values.
 
 ### Publish and copy over the app
 
-Configure the app for a [framework-dependent deployment](/dotnet/core/deploying/#framework-dependent-deployments-fdd).
-
 Run [dotnet publish](/dotnet/core/tools/dotnet-publish) from the development environment to package an app into a directory (for example, *bin/Release/&lt;target_framework_moniker&gt;/publish*) that can run on the server:
 
 ```dotnetcli
 dotnet publish -c Release
 ```
 
-The app can also be published as a [self-contained deployment](/dotnet/core/deploying/#self-contained-deployments-scd) if you prefer not to maintain the .NET Core runtime on the server.
-
-Copy the ASP.NET Core app to the server using a tool that integrates into the organization's workflow (for example, SCP, SFTP). It's common to locate web apps under the *var* directory (for example, *var/www/helloapp*).
+Copy the ASP.NET Core app to the server using a tool that integrates into the organization's workflow (for example, SCP, SFTP). It's common to locate web apps under the *var* directory (for example, *var/www/kahla*).
 
 > Under a production deployment scenario, a continuous integration workflow does the work of publishing the app and copying the assets to the server.
 
@@ -387,17 +383,7 @@ Configure the app to use a certificate in development for the `dotnet run` comma
 
 * Harden the security by employing some of the practices depicted in the following */etc/nginx/nginx.conf* file. Examples include choosing a stronger cipher and redirecting all traffic over HTTP to HTTPS.
 
-* Adding an `HTTP Strict-Transport-Security` (HSTS) header ensures all subsequent requests made by the client are over HTTPS.
-
-* Don't add the HSTS header or chose an appropriate `max-age` if HTTPS will be disabled in the future.
-
-Add the */etc/nginx/proxy.conf* configuration file:
-
-[!code-nginx[](linux-nginx/proxy.conf)]
-
-Edit the */etc/nginx/nginx.conf* configuration file. The example contains both `http` and `server` sections in one configuration file.
-
-[!code-nginx[](linux-nginx/nginx.conf?highlight=2)]
+Please check official nginx document: https://nginx.org/en/docs/http/configuring_https_servers.html
 
 #### Secure Nginx from clickjacking
 
