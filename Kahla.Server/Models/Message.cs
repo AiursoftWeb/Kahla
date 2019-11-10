@@ -7,7 +7,7 @@ namespace Kahla.Server.Models
 {
     public class Message
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public int ConversationId { get; set; }
 

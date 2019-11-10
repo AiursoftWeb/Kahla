@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(AiurCollection<Message>))]
-        public async Task<IActionResult> GetMessage([Required]int id, int skipTill = -1, int take = 15)
+        public async Task<IActionResult> GetMessage([Required]int id, int take = 15, [IsGuid]string skipFrom = "")
         {
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -66,6 +66,19 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var timeLimit = DateTime.UtcNow - TimeSpan.FromSeconds(target.MaxLiveSeconds);
+            Message skipStart = null;
+            if (!string.IsNullOrWhiteSpace(skipFrom))
+            {
+                if (!Guid.TryParse(skipFrom, out Guid guid))
+                {
+                    return this.Protocol(ErrorType.InvalidInput, $"Your 'skipFrom': '{skipFrom}' is not a valid GUID!");
+                }
+                skipStart = await _dbContext
+                    .Messages
+                    .AsNoTracking()
+                    .Where(t => t.ConversationId == target.Id)
+                    .SingleOrDefaultAsync(t => t.Id == guid);
+            }
             //Get Messages
             var allMessages = await _dbContext
                 .Messages
@@ -75,10 +88,10 @@ namespace Kahla.Server.Controllers
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime > timeLimit)
-                .Where(t => skipTill == -1 || t.Id < skipTill)
-                .OrderByDescending(t => t.Id)
+                .Where(t => skipStart == null || t.SendTime < skipStart.SendTime)
+                .OrderByDescending(t => t.SendTime)
                 .Take(take)
-                .OrderBy(t => t.Id)
+                .OrderBy(t => t.SendTime)
                 .ToListAsync();
             var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
@@ -91,8 +104,13 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
+            if (model.RecordTime > DateTime.UtcNow || model.RecordTime + TimeSpan.FromSeconds(100) < DateTime.UtcNow)
+            {
+                model.RecordTime = DateTime.UtcNow;
+            }
             model.At = model.At ?? new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -113,7 +131,6 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-
             if (model.Content.Trim().Length == 0)
             {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
@@ -121,10 +138,12 @@ namespace Kahla.Server.Controllers
             // Create message.
             var message = new Message
             {
+                Id = Guid.Parse(model.MessageId),
                 Content = model.Content,
                 SenderId = user.Id,
                 Sender = user,
-                ConversationId = target.Id
+                ConversationId = target.Id,
+                SendTime = model.RecordTime
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
@@ -148,6 +167,10 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.InvalidInput, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
                 }
             }
+            // Save the ats.
+            await _dbContext.SaveChangesAsync();
+            // Set last read time.
+            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync((eachUser, relation) =>
             {
@@ -161,7 +184,11 @@ namespace Kahla.Server.Controllers
                                 mentioned: mentioned
                                 );
             });
-            return this.Protocol(ErrorType.Success, "Your message has been sent.");
+            return Json(new AiurValue<Message>(message)
+            {
+                Code = ErrorType.Success,
+                Message = "Your message has been sent."
+            });
         }
 
         [APIProduces(typeof(AiurValue<PrivateConversation>))]

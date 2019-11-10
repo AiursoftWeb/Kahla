@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 namespace Kahla.Server.Migrations
 {
@@ -26,10 +25,7 @@ namespace Kahla.Server.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    AccessFailedCount = table.Column<int>(nullable: false),
-                    LockoutEnabled = table.Column<bool>(nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
-                    TwoFactorEnabled = table.Column<bool>(nullable: false),
+                    Id = table.Column<string>(nullable: false),
                     UserName = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(maxLength: 256, nullable: true),
@@ -37,17 +33,25 @@ namespace Kahla.Server.Migrations
                     SecurityStamp = table.Column<string>(nullable: true),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    AccountCreateTime = table.Column<DateTime>(nullable: false),
-                    EmailConfirmed = table.Column<bool>(nullable: false),
-                    Id = table.Column<string>(nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
+                    LockoutEnabled = table.Column<bool>(nullable: false),
+                    AccessFailedCount = table.Column<int>(nullable: false),
                     Bio = table.Column<string>(nullable: true),
                     NickName = table.Column<string>(nullable: true),
                     Sex = table.Column<string>(nullable: true),
-                    HeadImgUrl = table.Column<string>(nullable: true),
+                    IconFilePath = table.Column<string>(nullable: true),
                     PreferedLanguage = table.Column<string>(nullable: true),
-                    Email = table.Column<string>(maxLength: 256, nullable: true),
+                    AccountCreateTime = table.Column<DateTime>(nullable: false),
+                    EmailConfirmed = table.Column<bool>(nullable: false),
                     CurrentChannel = table.Column<int>(nullable: false),
-                    ConnectKey = table.Column<string>(nullable: true)
+                    ConnectKey = table.Column<string>(nullable: true),
+                    LastEmailHimTime = table.Column<DateTime>(nullable: false),
+                    MakeEmailPublic = table.Column<bool>(nullable: false),
+                    ThemeId = table.Column<int>(nullable: false),
+                    Email = table.Column<string>(maxLength: 256, nullable: true),
+                    EnableEmailNotification = table.Column<bool>(nullable: false),
+                    EnableEnterToSendMessage = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,7 +63,7 @@ namespace Kahla.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -80,7 +84,7 @@ namespace Kahla.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -165,18 +169,27 @@ namespace Kahla.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Discriminator = table.Column<string>(nullable: false),
                     AESKey = table.Column<string>(nullable: true),
+                    MaxLiveSeconds = table.Column<int>(nullable: false),
                     ConversationCreateTime = table.Column<DateTime>(nullable: false),
-                    GroupImage = table.Column<string>(nullable: true),
+                    GroupImagePath = table.Column<string>(nullable: true),
                     GroupName = table.Column<string>(nullable: true),
+                    JoinPassword = table.Column<string>(nullable: true),
+                    OwnerId = table.Column<string>(nullable: true),
                     RequesterId = table.Column<string>(nullable: true),
                     TargetId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Conversations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Conversations_AspNetUsers_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Conversations_AspNetUsers_RequesterId",
                         column: x => x.RequesterId,
@@ -192,20 +205,53 @@ namespace Kahla.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Credentials",
+                name: "Devices",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Value = table.Column<string>(nullable: true),
-                    UserId = table.Column<string>(nullable: true)
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(nullable: true),
+                    IPAddress = table.Column<string>(nullable: true),
+                    UserId = table.Column<string>(nullable: true),
+                    PushEndpoint = table.Column<string>(nullable: true),
+                    PushP256DH = table.Column<string>(nullable: true),
+                    PushAuth = table.Column<string>(nullable: true),
+                    AddTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Credentials", x => x.Id);
+                    table.PrimaryKey("PK_Devices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Credentials_AspNetUsers_UserId",
+                        name: "FK_Devices_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TriggerId = table.Column<string>(nullable: true),
+                    TargetId = table.Column<string>(nullable: true),
+                    Reason = table.Column<string>(nullable: true),
+                    Status = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reports_AspNetUsers_TargetId",
+                        column: x => x.TargetId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reports_AspNetUsers_TriggerId",
+                        column: x => x.TriggerId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -216,7 +262,7 @@ namespace Kahla.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatorId = table.Column<string>(nullable: true),
                     TargetId = table.Column<string>(nullable: true),
                     CreateTime = table.Column<DateTime>(nullable: false),
@@ -243,8 +289,7 @@ namespace Kahla.Server.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<Guid>(nullable: false),
                     ConversationId = table.Column<int>(nullable: false),
                     SenderId = table.Column<string>(nullable: true),
                     SendTime = table.Column<DateTime>(nullable: false),
@@ -273,8 +318,9 @@ namespace Kahla.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     JoinTime = table.Column<DateTime>(nullable: false),
+                    Muted = table.Column<bool>(nullable: false),
                     UserId = table.Column<string>(nullable: true),
                     GroupId = table.Column<int>(nullable: false),
                     ReadTimeStamp = table.Column<DateTime>(nullable: false)
@@ -291,6 +337,32 @@ namespace Kahla.Server.Migrations
                     table.ForeignKey(
                         name: "FK_UserGroupRelations_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ats",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TargetUserId = table.Column<string>(nullable: true),
+                    MessageId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ats", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ats_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Ats_AspNetUsers_TargetUserId",
+                        column: x => x.TargetUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -336,6 +408,21 @@ namespace Kahla.Server.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Ats_MessageId",
+                table: "Ats",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ats_TargetUserId",
+                table: "Ats",
+                column: "TargetUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_OwnerId",
+                table: "Conversations",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Conversations_RequesterId",
                 table: "Conversations",
                 column: "RequesterId");
@@ -346,8 +433,8 @@ namespace Kahla.Server.Migrations
                 column: "TargetId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Credentials_UserId",
-                table: "Credentials",
+                name: "IX_Devices_UserId",
+                table: "Devices",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -359,6 +446,16 @@ namespace Kahla.Server.Migrations
                 name: "IX_Messages_SenderId",
                 table: "Messages",
                 column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reports_TargetId",
+                table: "Reports",
+                column: "TargetId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reports_TriggerId",
+                table: "Reports",
+                column: "TriggerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requests_CreatorId",
@@ -399,10 +496,13 @@ namespace Kahla.Server.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Credentials");
+                name: "Ats");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "Devices");
+
+            migrationBuilder.DropTable(
+                name: "Reports");
 
             migrationBuilder.DropTable(
                 name: "Requests");
@@ -412,6 +512,9 @@ namespace Kahla.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Conversations");
