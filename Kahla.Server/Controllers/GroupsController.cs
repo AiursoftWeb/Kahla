@@ -45,10 +45,6 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
             var user = await GetKahlaUser();
-            if (!user.EmailConfirmed)
-            {
-                return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
-            }
             model.GroupName = model.GroupName.Trim();
             var exists = _dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.GroupName.ToLower());
             if (exists)
