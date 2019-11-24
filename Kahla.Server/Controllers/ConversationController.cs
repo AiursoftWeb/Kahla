@@ -93,7 +93,7 @@ namespace Kahla.Server.Controllers
                 .Take(take)
                 .OrderBy(t => t.SendTime)
                 .ToListAsync();
-            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
+            var lastReadTime = await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
             allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
             return Json(new AiurCollection<Message>(allMessages)
@@ -170,7 +170,7 @@ namespace Kahla.Server.Controllers
             // Save the ats.
             await _dbContext.SaveChangesAsync();
             // Set last read time.
-            var lastReadTime = await target.SetLastRead(_dbContext, user.Id);
+            var lastReadTime = await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync((eachUser, relation) =>
             {

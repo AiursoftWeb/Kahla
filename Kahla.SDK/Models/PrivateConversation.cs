@@ -1,6 +1,4 @@
-﻿using Kahla.SDK.Data;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -56,27 +54,6 @@ namespace Kahla.SDK.Models
         public override bool Muted(string userId)
         {
             return false;
-        }
-
-        public async override Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
-        {
-            var query = dbContext.Messages
-                .Where(t => t.ConversationId == this.Id)
-                .Where(t => t.SenderId != userId);
-            try
-            {
-                return (await query
-                    .Where(t => t.Read)
-                    .OrderByDescending(t => t.SendTime)
-                    .FirstOrDefaultAsync())
-                    ?.SendTime ?? DateTime.MinValue;
-            }
-            finally
-            {
-                await query
-                    .Where(t => t.Read == false)
-                    .ForEachAsync(t => t.Read = true);
-            }
         }
 
         public override Conversation Build(string userId)

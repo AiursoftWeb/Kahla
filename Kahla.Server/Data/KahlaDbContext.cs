@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Kahla.SDK.Data
+namespace Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {

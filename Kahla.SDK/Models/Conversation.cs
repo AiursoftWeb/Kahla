@@ -1,5 +1,4 @@
-﻿using Kahla.SDK.Data;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -35,7 +34,6 @@ namespace Kahla.SDK.Models
         public abstract Conversation Build(string userId);
         public abstract Message GetLatestMessage();
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function);
-        public abstract Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId);
         public abstract bool HasUser(string userId);
     }
 

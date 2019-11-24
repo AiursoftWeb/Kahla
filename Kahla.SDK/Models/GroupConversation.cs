@@ -1,6 +1,4 @@
-﻿using Kahla.SDK.Data;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -69,20 +67,6 @@ namespace Kahla.SDK.Models
         public override bool Muted(string userId)
         {
             return Users.SingleOrDefault(t => t.UserId == userId).Muted;
-        }
-
-        public override async Task<DateTime> SetLastRead(KahlaDbContext dbContext, string userId)
-        {
-            var relation = await dbContext.UserGroupRelations
-                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == Id);
-            try
-            {
-                return relation.ReadTimeStamp;
-            }
-            finally
-            {
-                relation.ReadTimeStamp = DateTime.UtcNow;
-            }
         }
 
         public override Conversation Build(string userId)
