@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
+using Aiursoft.Pylon.Models.ForApps.AddressModels;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
@@ -19,6 +20,16 @@ namespace Kahla.SDK.Services
         public async Task<string> OAuthAsync()
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Auth", "OAuth", new { });
+            var result = await _http.Track(url);
+            return result;
+        }
+
+        public async Task<string> SignIn(int code)
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Auth", "AuthResult", new AuthResultAddressModel
+            {
+                Code = code
+            });
             var result = await _http.Track(url);
             return result;
         }

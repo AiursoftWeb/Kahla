@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.SDK.Services;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Kahla.EchoBot
@@ -32,7 +33,7 @@ namespace Kahla.EchoBot
             }
             await OpenSignIn();
             var code = await AskCode();
-            _botLogger.LogInfo($"Calling sign in API with code: {code}...");
+            await SignIn(code);
         }
 
         private async Task<bool> TestKahlaLive()
@@ -43,9 +44,9 @@ namespace Kahla.EchoBot
                 _botLogger.LogInfo($"Using Kahla Server: {_kahlaLocation}");
                 await Task.Delay(1000);
                 var index = await _homeService.IndexAsync();
-                _botLogger.LogInfo($"Server time: {index.Value}");
-                await Task.Delay(200);
                 _botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!");
+                await Task.Delay(200);
+                _botLogger.LogInfo($"Server time: {index.Value}");
                 return true;
             }
             catch (Exception e)
@@ -81,6 +82,25 @@ namespace Kahla.EchoBot
                 break;
             }
             return code;
+        }
+
+        private async Task SignIn(int code)
+        {
+            while (true)
+            {
+                try
+                {
+                    _botLogger.LogInfo($"Calling sign in API with code: {code}...");
+                    await _authService.SignIn(code);
+                    _botLogger.LogSuccess($"Successfully signed in to your account!");
+                    break;
+                }
+                catch (WebException)
+                {
+                    _botLogger.LogDanger($"Invalid code!");
+                    code = await AskCode();
+                }
+            }
         }
     }
 }
