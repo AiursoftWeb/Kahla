@@ -13,25 +13,25 @@ namespace Kahla.SDK.Services
         private readonly HttpClient _client;
         private readonly Regex _regex;
 
-        public SingletonHTTP(
-            IHttpClientFactory clientFactory)
+        public SingletonHTTP()
         {
             _regex = new Regex("^https://", RegexOptions.Compiled);
-            _client = clientFactory.CreateClient();
+            _client = new HttpClient(new HttpClientHandler()
+            {
+                AllowAutoRedirect = false,
+                CookieContainer = new CookieContainer(),
+                UseCookies = true
+            });
         }
 
         public async Task<string> Track(AiurUrl url)
         {
-            var tempClient = new HttpClient(new HttpClientHandler()
-            {
-                AllowAutoRedirect = false
-            });
             var request = new HttpRequestMessage(HttpMethod.Get, url.ToString())
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>())
             };
             request.Headers.Add("accept", "application/json");
-            var response = await tempClient.SendAsync(request);
+            var response = await _client.SendAsync(request);
             if (response.StatusCode == HttpStatusCode.Redirect)
             {
                 return response.Headers.Location.OriginalString;

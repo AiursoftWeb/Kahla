@@ -1,6 +1,9 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.Pylon.Exceptions;
+using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Models.ForApps.AddressModels;
+using Kahla.SDK.Models;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
@@ -32,6 +35,17 @@ namespace Kahla.SDK.Services
             });
             var result = await _http.Track(url);
             return result;
+        }
+
+        public async Task<AiurValue<KahlaUser>> MeAsync()
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Auth", "Me", new { });
+            var result = await _http.Get(url);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<KahlaUser>>(result);
+
+            if (JResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(JResult);
+            return JResult;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.SDK.Services;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -34,6 +35,8 @@ namespace Kahla.EchoBot
             await OpenSignIn();
             var code = await AskCode();
             await SignIn(code);
+
+            await DisplayMyProfile();
         }
 
         private async Task<bool> TestKahlaLive()
@@ -91,9 +94,12 @@ namespace Kahla.EchoBot
                 try
                 {
                     _botLogger.LogInfo($"Calling sign in API with code: {code}...");
-                    await _authService.SignIn(code);
-                    _botLogger.LogSuccess($"Successfully signed in to your account!");
-                    break;
+                    var response = await _authService.SignIn(code);
+                    if (!string.IsNullOrWhiteSpace(response))
+                    {
+                        _botLogger.LogSuccess($"Successfully signed in to your account!");
+                        break;
+                    }
                 }
                 catch (WebException)
                 {
@@ -101,6 +107,17 @@ namespace Kahla.EchoBot
                     code = await AskCode();
                 }
             }
+        }
+
+        private async Task DisplayMyProfile()
+        {
+            await Task.Delay(200);
+            _botLogger.LogInfo($"Getting account profile...");
+            var profile = await _authService.MeAsync();
+            await Task.Delay(400);
+            var profilestring = JsonConvert.SerializeObject(profile.Value, Formatting.Indented);
+            _botLogger.LogInfo($"{profilestring}");
+
         }
     }
 }
