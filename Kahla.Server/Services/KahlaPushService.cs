@@ -2,8 +2,8 @@
 using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
+using Kahla.SDK.Models;
 using Kahla.Server.Events;
-using Kahla.Server.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;

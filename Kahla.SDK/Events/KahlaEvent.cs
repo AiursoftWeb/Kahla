@@ -1,7 +1,6 @@
-﻿
-using Kahla.SDK.Models;
+﻿using Kahla.SDK.Models;
 
-namespace Kahla.Server.Events
+namespace Kahla.SDK.Events
 {
     public enum EventType
     {

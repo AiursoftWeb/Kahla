@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Server.Data;
+using Kahla.SDK.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

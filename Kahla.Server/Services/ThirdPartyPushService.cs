@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Server.Data;
-using Kahla.Server.Models;
+using Kahla.SDK.Data;
+using Kahla.SDK.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
