@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon;
+using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -13,14 +14,17 @@ namespace Kahla.EchoBot
             Console.ForegroundColor = ConsoleColor.Black;
             var services = new ServiceCollection();
 
-            services.AddAiurDependencies("Kahla");
-            services.AddScoped<HomeService>();
+            services.AddAiurDependencies<KahlaUser>("Kahla");
             services.AddSingleton<KahlaLocation>();
+            services.AddSingleton<SingletonHTTP>();
+            services.AddScoped<HomeService>();
+            services.AddScoped<AuthService>();
 
             var scope = services.BuildServiceProvider()
                  .GetService<IServiceScopeFactory>()
                  .CreateScope();
 
+            Console.Clear();
             var bot = scope.ServiceProvider.GetService<BotCore>();
 
             bot.Run().Wait();
