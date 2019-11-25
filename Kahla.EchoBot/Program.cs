@@ -19,14 +19,15 @@ namespace Kahla.EchoBot
             services.AddSingleton<SingletonHTTP>();
             services.AddScoped<HomeService>();
             services.AddScoped<AuthService>();
+            services.AddTransient<AES>();
 
             var scope = services.BuildServiceProvider()
                  .GetService<IServiceScopeFactory>()
                  .CreateScope();
 
             Console.Clear();
-            var bot = scope.ServiceProvider.GetService<BotCore>();
 
+            var bot = scope.ServiceProvider.GetService<BotCore>();
             bot.Run().Wait();
         }
     }

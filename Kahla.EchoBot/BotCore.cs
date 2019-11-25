@@ -1,9 +1,12 @@
 ﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.SDK.Events;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
+using Websocket.Client;
 
 namespace Kahla.EchoBot
 {
@@ -13,17 +16,20 @@ namespace Kahla.EchoBot
         private readonly BotLogger _botLogger;
         private readonly KahlaLocation _kahlaLocation;
         private readonly AuthService _authService;
+        private readonly AES _aes;
 
         public BotCore(
             HomeService homeService,
             BotLogger botLogger,
             KahlaLocation kahlaLocation,
-            AuthService authService)
+            AuthService authService,
+            AES aes)
         {
             _homeService = homeService;
             _botLogger = botLogger;
             _kahlaLocation = kahlaLocation;
             _authService = authService;
+            _aes = aes;
         }
 
         public async Task Run()
@@ -36,8 +42,9 @@ namespace Kahla.EchoBot
             var code = await AskCode();
             await SignIn(code);
             await DisplayMyProfile();
-            var websocket = await GetWSAddress();
-            _botLogger.LogInfo($"Your account channel: {websocket}");
+            var websocketAddress = await GetWSAddress();
+            _botLogger.LogInfo($"Your account channel: {websocketAddress}");
+            await MonitorEvents(websocketAddress);
         }
 
         private async Task<bool> TestKahlaLive()
@@ -127,6 +134,36 @@ namespace Kahla.EchoBot
             return address.ServerPath;
         }
 
+        private Task MonitorEvents(string websocketAddress)
+        {
+            var exitEvent = new ManualResetEvent(false);
+            var url = new Uri(websocketAddress);
 
+            using (var client = new WebsocketClient(url))
+            {
+                client.ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
+                client.ReconnectionHappened.Subscribe(type => _botLogger.LogWarning($"Reconnection happened, type: {type}"));
+                client.MessageReceived.Subscribe(async msg =>
+                {
+                    var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
+                    if (inevent.Type == EventType.NewMessage)
+                    {
+                        var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                        await OnNewMessageEvent(typedEvent);
+                    }
+                });
+                client.Start();
+                exitEvent.WaitOne();
+            }
+            return Task.CompletedTask;
+        }
+
+        private Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        {
+            string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
+            _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
+            return Task.CompletedTask;
+        }
     }
+
 }

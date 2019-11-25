@@ -13,9 +13,9 @@ namespace Kahla.SDK.Events
         SomeoneLeftEvent = 6,
         DissolveEvent = 7,
     }
-    public abstract class KahlaEvent
+    public class KahlaEvent
     {
-        public EventType Type { get; protected set; }
+        public EventType Type { get; set; }
         public string TypeDescription => Type.ToString();
     }
     public class NewMessageEvent : KahlaEvent
