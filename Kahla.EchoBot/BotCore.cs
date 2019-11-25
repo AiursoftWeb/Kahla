@@ -35,8 +35,9 @@ namespace Kahla.EchoBot
             await OpenSignIn();
             var code = await AskCode();
             await SignIn(code);
-
             await DisplayMyProfile();
+            var websocket = await GetWSAddress();
+            _botLogger.LogInfo($"Your account channel: {websocket}");
         }
 
         private async Task<bool> TestKahlaLive()
@@ -117,7 +118,15 @@ namespace Kahla.EchoBot
             await Task.Delay(400);
             var profilestring = JsonConvert.SerializeObject(profile.Value, Formatting.Indented);
             _botLogger.LogInfo($"{profilestring}");
-
         }
+
+        private async Task<string> GetWSAddress()
+        {
+            var address = await _authService.InitPusherAsync();
+            await Task.Delay(200);
+            return address.ServerPath;
+        }
+
+
     }
 }
