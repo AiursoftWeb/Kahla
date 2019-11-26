@@ -9,6 +9,20 @@ namespace Kahla.SDK.Services
 {
     public class AES : ITransientDependency
     {
+        public string OpenSSLEncrypt(string plainText, string passphrase)
+        {
+            byte[] key, iv;
+            byte[] salt = new byte[8];
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            rng.GetNonZeroBytes(salt);
+            DeriveKeyAndIV(passphrase, salt, out key, out iv);
+            byte[] encryptedBytes = EncryptStringToBytesAes(plainText, key, iv);
+            byte[] encryptedBytesWithSalt = new byte[salt.Length + encryptedBytes.Length + 8];
+            Buffer.BlockCopy(Encoding.ASCII.GetBytes("Salted__"), 0, encryptedBytesWithSalt, 0, 8);
+            Buffer.BlockCopy(salt, 0, encryptedBytesWithSalt, 8, salt.Length);
+            Buffer.BlockCopy(encryptedBytes, 0, encryptedBytesWithSalt, salt.Length + 8, encryptedBytes.Length);
+            return Convert.ToBase64String(encryptedBytesWithSalt);
+        }
         public string OpenSSLDecrypt(string encrypted, string passphrase)
         {
             byte[] encryptedBytesWithSalt = Convert.FromBase64String(encrypted);
@@ -19,6 +33,51 @@ namespace Kahla.SDK.Services
             // get key and iv
             DeriveKeyAndIV(passphrase, salt, out byte[] key, out byte[] iv);
             return DecryptStringFromBytesAes(encryptedBytes, key, iv);
+        }
+
+        private static byte[] EncryptStringToBytesAes(string plainText, byte[] key, byte[] iv)
+        {
+            // Check arguments.
+            if (plainText == null || plainText.Length <= 0)
+                throw new ArgumentNullException("plainText");
+            if (key == null || key.Length <= 0)
+                throw new ArgumentNullException("key");
+            if (iv == null || iv.Length <= 0)
+                throw new ArgumentNullException("iv");
+            // Declare the stream used to encrypt to an in memory
+            // array of bytes.
+            MemoryStream msEncrypt;
+            // Declare the RijndaelManaged object
+            // used to encrypt the data.
+            RijndaelManaged aesAlg = null;
+            try
+            {
+                // Create a RijndaelManaged object
+                // with the specified key and IV.
+                aesAlg = new RijndaelManaged { Mode = CipherMode.CBC, KeySize = 256, BlockSize = 128, Key = key, IV = iv };
+                // Create an encryptor to perform the stream transform.
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+                // Create the streams used for encryption.
+                msEncrypt = new MemoryStream();
+                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                {
+                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                    {
+                        //Write all data to the stream.
+                        swEncrypt.Write(plainText);
+                        swEncrypt.Flush();
+                        swEncrypt.Close();
+                    }
+                }
+            }
+            finally
+            {
+                // Clear the RijndaelManaged object.
+                if (aesAlg != null)
+                    aesAlg.Clear();
+            }
+            // Return the encrypted bytes from the memory stream.
+            return msEncrypt.ToArray();
         }
 
         private void DeriveKeyAndIV(string passphrase, byte[] salt, out byte[] key, out byte[] iv)

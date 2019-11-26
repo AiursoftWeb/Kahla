@@ -2,6 +2,8 @@
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 
 namespace Kahla.EchoBot
@@ -19,7 +21,14 @@ namespace Kahla.EchoBot
             services.AddSingleton<SingletonHTTP>();
             services.AddScoped<HomeService>();
             services.AddScoped<AuthService>();
+            services.AddScoped<ConversationService>();
             services.AddTransient<AES>();
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            };
 
             var scope = services.BuildServiceProvider()
                  .GetService<IServiceScopeFactory>()

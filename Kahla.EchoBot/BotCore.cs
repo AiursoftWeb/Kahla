@@ -16,19 +16,23 @@ namespace Kahla.EchoBot
         private readonly BotLogger _botLogger;
         private readonly KahlaLocation _kahlaLocation;
         private readonly AuthService _authService;
+        private readonly ConversationService _conversationService;
         private readonly AES _aes;
+        private string _myId;
 
         public BotCore(
             HomeService homeService,
             BotLogger botLogger,
             KahlaLocation kahlaLocation,
             AuthService authService,
+            ConversationService conversationService,
             AES aes)
         {
             _homeService = homeService;
             _botLogger = botLogger;
             _kahlaLocation = kahlaLocation;
             _authService = authService;
+            _conversationService = conversationService;
             _aes = aes;
         }
 
@@ -122,6 +126,7 @@ namespace Kahla.EchoBot
             await Task.Delay(200);
             _botLogger.LogInfo($"Getting account profile...");
             var profile = await _authService.MeAsync();
+            _myId = profile.Value.Id;
             await Task.Delay(400);
             var profilestring = JsonConvert.SerializeObject(profile.Value, Formatting.Indented);
             _botLogger.LogInfo($"{profilestring}");
@@ -158,12 +163,23 @@ namespace Kahla.EchoBot
             return Task.CompletedTask;
         }
 
-        private Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        private async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
+            if (typedEvent.Message.SenderId == _myId)
+            {
+                return;
+            }
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            return Task.CompletedTask;
+            string sendBack = await GetSendBack(decrypted);
+            var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
+            await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+        }
+
+        private async Task<string> GetSendBack(string decrypted)
+        {
+            await Task.Delay(0);
+            return $"echo {decrypted}";
         }
     }
-
 }
