@@ -37,7 +37,26 @@ namespace Kahla.EchoBot
             Console.Clear();
 
             var bot = scope.ServiceProvider.GetService<BotCore>();
+
+            bot.GenerateResponse = ResponseUserMessage;
             bot.Run().Wait();
+        }
+
+        private static string ResponseUserMessage(string inputMessage)
+        {
+            var firstReplace = inputMessage
+                .Replace("吗", "")
+                .Replace('？', '！')
+                .Replace('?', '!');
+            if (inputMessage.Contains("?") || inputMessage.Contains("？"))
+            {
+                firstReplace = firstReplace.Replace("是", "又是");
+            }
+            else
+            {
+                firstReplace = firstReplace.Replace("是", "也是");
+            }
+            return firstReplace;
         }
     }
 }

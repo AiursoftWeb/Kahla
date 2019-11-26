@@ -19,6 +19,7 @@ namespace Kahla.EchoBot
         private readonly ConversationService _conversationService;
         private readonly AES _aes;
         private string _myId;
+        public Func<string, string> GenerateResponse;
 
         public BotCore(
             HomeService homeService,
@@ -171,15 +172,12 @@ namespace Kahla.EchoBot
             }
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            string sendBack = await GetSendBack(decrypted);
-            var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
-            await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
-        }
-
-        private async Task<string> GetSendBack(string decrypted)
-        {
-            await Task.Delay(0);
-            return $"echo {decrypted}";
+            if (GenerateResponse != null)
+            {
+                string sendBack = GenerateResponse(decrypted);
+                var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
+                await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+            }
         }
     }
 }
