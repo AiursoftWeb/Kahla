@@ -22,6 +22,7 @@ namespace Kahla.EchoBot
         private readonly AES _aes;
         private string _myId;
         public Func<string, NewMessageEvent, Message, string> GenerateResponse;
+        public Func<NewFriendRequestEvent, bool> GenerateFriendRequestResult;
 
         public BotCore(
             HomeService homeService,
@@ -67,6 +68,7 @@ namespace Kahla.EchoBot
                 _botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!");
                 await Task.Delay(200);
                 _botLogger.LogInfo($"Server time: {index.Value}");
+                _botLogger.LogInfo($"Local time: {DateTime.UtcNow}");
                 return true;
             }
             catch (Exception e)
@@ -81,7 +83,7 @@ namespace Kahla.EchoBot
             _botLogger.LogInfo($"Signing in to Kahla...");
             var address = await _authService.OAuthAsync();
             _botLogger.LogWarning($"Please open your browser to view this address: ");
-            address = address.Replace("https%3A%2F%2Fserver.kahla.app%2FAuth%2FAuthResult", "https%3A%2F%2Flocalhost%3A5000");
+            address = address.Split('&')[0] + "&redirect_uri=https%3A%2F%2Flocalhost%3A5000";
             _botLogger.LogWarning(address);
             //410969371
         }
@@ -194,7 +196,11 @@ namespace Kahla.EchoBot
 
         private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
         {
-            await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, true);
+            if(GenerateFriendRequestResult != null)
+            {
+                var result = GenerateFriendRequestResult(typedEvent);
+                await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
+            }
         }
     }
 }

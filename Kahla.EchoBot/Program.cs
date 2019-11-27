@@ -24,7 +24,8 @@ namespace Kahla.EchoBot
             services.AddScoped<FriendshipService>();
             services.AddScoped<ConversationService>();
             services.AddTransient<AES>();
-            
+            Console.Clear();
+
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
@@ -36,10 +37,11 @@ namespace Kahla.EchoBot
                  .GetService<IServiceScopeFactory>()
                  .CreateScope();
 
-            Console.Clear();
+
             var bot = scope.ServiceProvider.GetService<BotCore>();
 
             bot.GenerateResponse = ResponseUserMessage;
+            bot.GenerateFriendRequestResult = ResponseFriendRequest;
             bot.Run().Wait();
         }
 
@@ -65,6 +67,11 @@ namespace Kahla.EchoBot
             {
                 return string.Empty;
             }
+        }
+
+        private static bool ResponseFriendRequest(NewFriendRequestEvent arg)
+        {
+            return true;
         }
     }
 }
