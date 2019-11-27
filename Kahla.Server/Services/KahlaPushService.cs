@@ -58,13 +58,14 @@ namespace Kahla.Server.Services
             await Task.WhenAll(pushTasks);
         }
 
-        public async Task NewFriendRequestEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser requester)
+        public async Task NewFriendRequestEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser requester, int requestId)
         {
             var token = await _appsContainer.AccessToken();
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
                 RequesterId = requester.Id,
-                Requester = requester
+                Requester = requester,
+                RequestId = requestId
             };
             if (stargateChannel != -1)
             {

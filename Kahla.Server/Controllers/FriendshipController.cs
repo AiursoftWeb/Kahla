@@ -116,7 +116,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user);
+            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request.Id);
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,

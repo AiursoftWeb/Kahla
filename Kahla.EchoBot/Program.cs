@@ -9,22 +9,22 @@ using System;
 
 namespace Kahla.EchoBot
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Kahla example bot...");
-            Console.ForegroundColor = ConsoleColor.Black;
-            var services = new ServiceCollection();
 
+            var services = new ServiceCollection();
             services.AddAiurDependencies<KahlaUser>("Kahla");
             services.AddSingleton<KahlaLocation>();
             services.AddSingleton<SingletonHTTP>();
             services.AddScoped<HomeService>();
             services.AddScoped<AuthService>();
+            services.AddScoped<FriendshipService>();
             services.AddScoped<ConversationService>();
             services.AddTransient<AES>();
-
+            
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
@@ -37,7 +37,6 @@ namespace Kahla.EchoBot
                  .CreateScope();
 
             Console.Clear();
-
             var bot = scope.ServiceProvider.GetService<BotCore>();
 
             bot.GenerateResponse = ResponseUserMessage;

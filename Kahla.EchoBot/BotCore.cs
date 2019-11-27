@@ -18,6 +18,7 @@ namespace Kahla.EchoBot
         private readonly KahlaLocation _kahlaLocation;
         private readonly AuthService _authService;
         private readonly ConversationService _conversationService;
+        private readonly FriendshipService _friendshipService;
         private readonly AES _aes;
         private string _myId;
         public Func<string, NewMessageEvent, Message, string> GenerateResponse;
@@ -28,6 +29,7 @@ namespace Kahla.EchoBot
             KahlaLocation kahlaLocation,
             AuthService authService,
             ConversationService conversationService,
+            FriendshipService friendshipService,
             AES aes)
         {
             _homeService = homeService;
@@ -35,6 +37,7 @@ namespace Kahla.EchoBot
             _kahlaLocation = kahlaLocation;
             _authService = authService;
             _conversationService = conversationService;
+            _friendshipService = friendshipService;
             _aes = aes;
         }
 
@@ -191,7 +194,7 @@ namespace Kahla.EchoBot
 
         private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
         {
-
+            await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, true);
         }
     }
 }

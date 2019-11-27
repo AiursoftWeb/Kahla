@@ -37,6 +37,7 @@ namespace Kahla.SDK.Events
         }
         public string RequesterId { get; set; }
         public KahlaUser Requester { get; set; }
+        public int RequestId { get; set; }
     }
     public class WereDeletedEvent : KahlaEvent
     {
