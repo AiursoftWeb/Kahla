@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.SDK.Events;
+using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
@@ -19,7 +20,7 @@ namespace Kahla.EchoBot
         private readonly ConversationService _conversationService;
         private readonly AES _aes;
         private string _myId;
-        public Func<string, string> GenerateResponse;
+        public Func<string, NewMessageEvent, Message, string> GenerateResponse;
 
         public BotCore(
             HomeService homeService,
@@ -157,6 +158,11 @@ namespace Kahla.EchoBot
                         var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
                         await OnNewMessageEvent(typedEvent);
                     }
+                    else if (inevent.Type == EventType.NewFriendRequestEvent)
+                    {
+                        var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                        await OnNewFriendRequest(typedEvent);
+                    }
                 });
                 client.Start();
                 exitEvent.WaitOne();
@@ -174,10 +180,18 @@ namespace Kahla.EchoBot
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (GenerateResponse != null)
             {
-                string sendBack = GenerateResponse(decrypted);
-                var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
-                await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+                string sendBack = GenerateResponse(decrypted, typedEvent, typedEvent.Message);
+                if (!string.IsNullOrWhiteSpace(sendBack))
+                {
+                    var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
+                    await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+                }
             }
+        }
+
+        private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
+        {
+
         }
     }
 }

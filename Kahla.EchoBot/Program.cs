@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon;
+using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ namespace Kahla.EchoBot
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
 
@@ -42,21 +44,28 @@ namespace Kahla.EchoBot
             bot.Run().Wait();
         }
 
-        private static string ResponseUserMessage(string inputMessage)
+        private static string ResponseUserMessage(string inputMessage, NewMessageEvent eventContext, Message messageContext)
         {
-            var firstReplace = inputMessage
-                .Replace("吗", "")
-                .Replace('？', '！')
-                .Replace('?', '!');
-            if (inputMessage.Contains("?") || inputMessage.Contains("？"))
+            if (!eventContext.Muted)
             {
-                firstReplace = firstReplace.Replace("是", "又是");
+                var firstReplace = inputMessage
+                    .Replace("吗", "")
+                    .Replace('？', '！')
+                    .Replace('?', '!');
+                if (inputMessage.Contains("?") || inputMessage.Contains("？"))
+                {
+                    firstReplace = firstReplace.Replace("是", "又是");
+                }
+                else
+                {
+                    firstReplace = firstReplace.Replace("是", "也是");
+                }
+                return firstReplace;
             }
             else
             {
-                firstReplace = firstReplace.Replace("是", "也是");
+                return string.Empty;
             }
-            return firstReplace;
         }
     }
 }
