@@ -18,12 +18,36 @@ namespace Kahla.EchoBot.Core
             while (true)
             {
                 var command = Console.ReadLine();
-                switch (command.ToLower().Trim())
+                if (command.Length < 1)
                 {
-                    case "exit":
+                    continue;
+                }
+                switch (command.ToLower().Trim()[0])
+                {
+                    case 'q':
                         return;
+                    case 'h':
+                        _botLogger.LogInfo($"Kahla bot commands:");
+
+                        _botLogger.LogInfo($"\r\nConversation");
+                        _botLogger.LogInfo($"\ta\tShow all conversations.");
+                        _botLogger.LogInfo($"\ts\tSay something to someone.");
+                        _botLogger.LogInfo($"\tb\tBroadcast to all conversations.");
+
+                        _botLogger.LogInfo($"\r\nGroup");
+                        _botLogger.LogInfo($"\tm\tMute all groups.");
+                        _botLogger.LogInfo($"\tu\tUnmute all groups.");
+
+                        _botLogger.LogInfo($"\r\nNetwork");
+                        _botLogger.LogInfo($"\tr\tReconnect to Stargate.");
+                        _botLogger.LogInfo($"\tl\tLogout.");
+
+                        _botLogger.LogInfo($"\r\nProgram");
+                        _botLogger.LogInfo($"\th\tShow help.");
+                        _botLogger.LogInfo($"\tq\tQuit bot.");
+                        break;
                     default:
-                        _botLogger.LogDanger($"Unknown command: {command}. Please try 'help'.");
+                        _botLogger.LogDanger($"Unknown command: {command}. Please try command: 'h' for help.");
                         break;
                 }
             }
