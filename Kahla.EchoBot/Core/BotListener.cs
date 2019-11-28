@@ -201,12 +201,12 @@ namespace Kahla.EchoBot.Core
 
         private async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
+            string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (typedEvent.Message.SenderId == _myId)
             {
                 return;
             }
-            string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             if (GenerateResponse != null)
             {
                 string sendBack = await GenerateResponse(decrypted, typedEvent);
