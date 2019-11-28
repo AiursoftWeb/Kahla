@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Threading.Tasks;
 
 namespace Kahla.EchoBot
 {
@@ -39,13 +40,23 @@ namespace Kahla.EchoBot
 
             var bot = scope.ServiceProvider.GetService<BotCore>();
 
+            bot.OnGetProfile = SetProfile;
             bot.GenerateResponse = ResponseUserMessage;
             bot.GenerateFriendRequestResult = ResponseFriendRequest;
 
-            bot.Run().Wait();
+            bot.Start().Wait();
+            Console.WriteLine("Bot started. Waitting for commands.");
+            Console.ReadLine();
         }
 
-        private static string ResponseUserMessage(string inputMessage, NewMessageEvent eventContext, Message messageContext)
+        private static async Task SetProfile(KahlaUser user)
+        {
+            await Task.Delay(400);
+            var profilestring = JsonConvert.SerializeObject(user, Formatting.Indented);
+            Console.WriteLine(profilestring);
+        }
+
+        private static async Task<string> ResponseUserMessage(string inputMessage, NewMessageEvent eventContext, Message messageContext)
         {
             if (!eventContext.Muted)
             {
@@ -69,7 +80,7 @@ namespace Kahla.EchoBot
             }
         }
 
-        private static bool ResponseFriendRequest(NewFriendRequestEvent arg)
+        private static async Task<bool> ResponseFriendRequest(NewFriendRequestEvent arg)
         {
             return true;
         }

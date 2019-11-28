@@ -5,7 +5,6 @@ using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 
@@ -21,8 +20,9 @@ namespace Kahla.EchoBot
         private readonly FriendshipService _friendshipService;
         private readonly AES _aes;
         private string _myId;
-        public Func<string, NewMessageEvent, Message, string> GenerateResponse;
-        public Func<NewFriendRequestEvent, bool> GenerateFriendRequestResult;
+        public Func<string, NewMessageEvent, Message, Task<string>> GenerateResponse;
+        public Func<NewFriendRequestEvent, Task<bool>> GenerateFriendRequestResult;
+        public Func<KahlaUser, Task> OnGetProfile;
 
         public BotCore(
             HomeService homeService,
@@ -42,7 +42,7 @@ namespace Kahla.EchoBot
             _aes = aes;
         }
 
-        public async Task Run()
+        public async Task Start()
         {
             var server = AskServerAddress();
             _kahlaLocation.UseKahlaServer(server);
@@ -56,13 +56,13 @@ namespace Kahla.EchoBot
             await DisplayMyProfile();
             var websocketAddress = await GetWSAddress();
             _botLogger.LogInfo($"Your account channel: {websocketAddress}");
-            await MonitorEvents(websocketAddress);
+            MonitorEvents(websocketAddress);
         }
 
         private string AskServerAddress()
         {
             _botLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
-            _botLogger.LogWarning("1 for production\t2 for staging\tFor other server, enter like: https://server.kahla.app");
+            _botLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
             var result = Console.ReadLine();
             if (result.Trim() == 1.ToString())
             {
@@ -155,9 +155,10 @@ namespace Kahla.EchoBot
             _botLogger.LogInfo($"Getting account profile...");
             var profile = await _authService.MeAsync();
             _myId = profile.Value.Id;
-            await Task.Delay(400);
-            var profilestring = JsonConvert.SerializeObject(profile.Value, Formatting.Indented);
-            _botLogger.LogInfo($"{profilestring}");
+            if (OnGetProfile != null)
+            {
+                await OnGetProfile(profile.Value);
+            }
         }
 
         private async Task<string> GetWSAddress()
@@ -167,33 +168,32 @@ namespace Kahla.EchoBot
             return address.ServerPath;
         }
 
-        private Task MonitorEvents(string websocketAddress)
+        private void MonitorEvents(string websocketAddress)
         {
-            var exitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
-
             using (var client = new WebsocketClient(url))
             {
                 client.ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
                 client.ReconnectionHappened.Subscribe(type => _botLogger.LogWarning($"Reconnection happened, type: {type}"));
-                client.MessageReceived.Subscribe(async msg =>
-                {
-                    var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
-                    if (inevent.Type == EventType.NewMessage)
-                    {
-                        var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                        await OnNewMessageEvent(typedEvent);
-                    }
-                    else if (inevent.Type == EventType.NewFriendRequestEvent)
-                    {
-                        var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                        await OnNewFriendRequest(typedEvent);
-                    }
-                });
+                client.MessageReceived.Subscribe(OnStargateMessage);
                 client.Start();
-                exitEvent.WaitOne();
             }
-            return Task.CompletedTask;
+            return;
+        }
+
+        private async void OnStargateMessage(ResponseMessage msg)
+        {
+            var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
+            if (inevent.Type == EventType.NewMessage)
+            {
+                var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                await OnNewMessageEvent(typedEvent);
+            }
+            else if (inevent.Type == EventType.NewFriendRequestEvent)
+            {
+                var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                await OnNewFriendRequest(typedEvent);
+            }
         }
 
         private async Task OnNewMessageEvent(NewMessageEvent typedEvent)
@@ -206,7 +206,7 @@ namespace Kahla.EchoBot
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (GenerateResponse != null)
             {
-                string sendBack = GenerateResponse(decrypted, typedEvent, typedEvent.Message);
+                string sendBack = await GenerateResponse(decrypted, typedEvent, typedEvent.Message);
                 if (!string.IsNullOrWhiteSpace(sendBack))
                 {
                     var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
@@ -219,7 +219,7 @@ namespace Kahla.EchoBot
         {
             if (GenerateFriendRequestResult != null)
             {
-                var result = GenerateFriendRequestResult(typedEvent);
+                var result = await GenerateFriendRequestResult(typedEvent);
                 await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
             }
         }
