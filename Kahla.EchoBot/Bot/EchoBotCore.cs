@@ -8,8 +8,10 @@ namespace Kahla.EchoBot.Bot
 {
     public class EchoBotCore
     {
+        private KahlaUser _me;
         public async Task SetProfile(KahlaUser user)
         {
+            _me = user;
             await Task.Delay(400);
             var profilestring = JsonConvert.SerializeObject(user, Formatting.Indented);
             Console.WriteLine(profilestring);
@@ -30,11 +32,11 @@ namespace Kahla.EchoBot.Bot
             {
                 firstReplace = firstReplace.Replace("是", "又是");
             }
-            else
+            if (eventContext.Mentioned)
             {
-                firstReplace = firstReplace.Replace("是", "也是");
+                firstReplace = firstReplace + $" @{eventContext.Message.Sender.NickName}";
             }
-            return firstReplace;
+            return firstReplace.Replace($"@{_me.NickName}", "");
         }
 
         public async Task<bool> ResponseFriendRequest(NewFriendRequestEvent arg)
