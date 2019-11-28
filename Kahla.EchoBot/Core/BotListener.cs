@@ -212,8 +212,13 @@ namespace Kahla.EchoBot.Core
                 string sendBack = await GenerateResponse(decrypted, typedEvent);
                 if (!string.IsNullOrWhiteSpace(sendBack))
                 {
-                    var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
-                    await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+                    await Task.Run(async () =>
+                    {
+                        await Task.Delay(700);
+                        var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
+                        await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+                    }).ConfigureAwait(false);
+
                 }
             }
         }
