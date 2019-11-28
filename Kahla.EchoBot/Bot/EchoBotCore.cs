@@ -17,6 +17,7 @@ namespace Kahla.EchoBot.Bot
 
         public async Task<string> ResponseUserMessage(string inputMessage, NewMessageEvent eventContext)
         {
+            await Task.Delay(0);
             if (eventContext.Muted)
             {
                 return string.Empty;
@@ -38,6 +39,7 @@ namespace Kahla.EchoBot.Bot
 
         public async Task<bool> ResponseFriendRequest(NewFriendRequestEvent arg)
         {
+            await Task.Delay(0);
             return true;
         }
     }

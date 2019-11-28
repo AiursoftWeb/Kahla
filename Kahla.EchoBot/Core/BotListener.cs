@@ -88,10 +88,9 @@ namespace Kahla.EchoBot.Core
                 _botLogger.LogInfo("Testing Kahla server connection...");
                 await Task.Delay(1000);
                 var index = await _homeService.IndexAsync();
-                _botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!");
+                _botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
                 await Task.Delay(200);
-                _botLogger.LogInfo($"Server time: {index.Value}");
-                _botLogger.LogInfo($"Local time: {DateTime.UtcNow}");
+                _botLogger.LogInfo($"Server time: {index.Value}\tLocal time: {DateTime.UtcNow}");
                 return true;
             }
             catch (Exception e)
