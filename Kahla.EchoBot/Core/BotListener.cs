@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.EchoBot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
@@ -8,9 +9,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Websocket.Client;
 
-namespace Kahla.EchoBot
+namespace Kahla.EchoBot.Core
 {
-    public class BotCore : IScopedDependency
+    public class BotListener : IScopedDependency
     {
         private readonly HomeService _homeService;
         private readonly BotLogger _botLogger;
@@ -20,11 +21,11 @@ namespace Kahla.EchoBot
         private readonly FriendshipService _friendshipService;
         private readonly AES _aes;
         private string _myId;
-        public Func<string, NewMessageEvent, Message, Task<string>> GenerateResponse;
+        public Func<string, NewMessageEvent, Task<string>> GenerateResponse;
         public Func<NewFriendRequestEvent, Task<bool>> GenerateFriendRequestResult;
         public Func<KahlaUser, Task> OnGetProfile;
 
-        public BotCore(
+        public BotListener(
             HomeService homeService,
             BotLogger botLogger,
             KahlaLocation kahlaLocation,
@@ -82,8 +83,9 @@ namespace Kahla.EchoBot
         {
             try
             {
-                _botLogger.LogInfo("Testing Kahla server connection...");
                 _botLogger.LogInfo($"Using Kahla Server: {_kahlaLocation}");
+                await Task.Delay(200);
+                _botLogger.LogInfo("Testing Kahla server connection...");
                 await Task.Delay(1000);
                 var index = await _homeService.IndexAsync();
                 _botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!");
@@ -206,7 +208,7 @@ namespace Kahla.EchoBot
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (GenerateResponse != null)
             {
-                string sendBack = await GenerateResponse(decrypted, typedEvent, typedEvent.Message);
+                string sendBack = await GenerateResponse(decrypted, typedEvent);
                 if (!string.IsNullOrWhiteSpace(sendBack))
                 {
                     var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
