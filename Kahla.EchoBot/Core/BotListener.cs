@@ -6,6 +6,7 @@ using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 
@@ -43,13 +44,13 @@ namespace Kahla.EchoBot.Core
             _aes = aes;
         }
 
-        public async Task Start()
+        public async Task<Task> Start()
         {
             var server = AskServerAddress();
             _kahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
-                return;
+                return Task.CompletedTask;
             }
             await OpenSignIn();
             var code = await AskCode();
@@ -57,7 +58,7 @@ namespace Kahla.EchoBot.Core
             await DisplayMyProfile();
             var websocketAddress = await GetWSAddress();
             _botLogger.LogInfo($"Your account channel: {websocketAddress}");
-            MonitorEvents(websocketAddress);
+            return MonitorEvents(websocketAddress);
         }
 
         private string AskServerAddress()
@@ -169,17 +170,18 @@ namespace Kahla.EchoBot.Core
             return address.ServerPath;
         }
 
-        private void MonitorEvents(string websocketAddress)
+        private Task MonitorEvents(string websocketAddress)
         {
+            var exitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
-            using (var client = new WebsocketClient(url))
+            var client = new WebsocketClient(url)
             {
-                client.ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
-                client.ReconnectionHappened.Subscribe(type => _botLogger.LogWarning($"Reconnection happened, type: {type}"));
-                client.MessageReceived.Subscribe(OnStargateMessage);
-                client.Start();
-            }
-            return;
+                ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds
+            };
+            client.ReconnectionHappened.Subscribe(type => _botLogger.LogWarning($"Reconnection happened, type: {type}"));
+            client.MessageReceived.Subscribe(OnStargateMessage);
+            client.Start();
+            return Task.Run(exitEvent.WaitOne);
         }
 
         private async void OnStargateMessage(ResponseMessage msg)
@@ -199,12 +201,12 @@ namespace Kahla.EchoBot.Core
 
         private async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
+            _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (typedEvent.Message.SenderId == _myId)
             {
                 return;
             }
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
-            _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (GenerateResponse != null)
             {
                 string sendBack = await GenerateResponse(decrypted, typedEvent);

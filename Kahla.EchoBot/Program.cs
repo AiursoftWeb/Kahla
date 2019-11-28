@@ -2,12 +2,18 @@
 using Kahla.EchoBot.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading.Tasks;
 
 namespace Kahla.EchoBot
 {
     public class Program
     {
         static void Main(string[] args)
+        {
+            MainAsync().Wait();
+        }
+
+        internal static async Task MainAsync()
         {
             Console.WriteLine("Starting Kahla example bot...");
 
@@ -25,10 +31,10 @@ namespace Kahla.EchoBot
             bot.GenerateFriendRequestResult = botLogic.ResponseFriendRequest;
 
             // Start bot.
-            bot.Start().Wait();
+            var waittask = await bot.Start();
 
             Console.WriteLine("Bot started. Waitting for commands.");
-            commander.Command();
+            await Task.WhenAll(waittask, Task.Run(commander.Command));
         }
     }
 }
