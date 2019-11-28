@@ -25,6 +25,7 @@ namespace Kahla.EchoBot.Core
                 switch (command.ToLower().Trim()[0])
                 {
                     case 'q':
+                        Environment.Exit(0);
                         return;
                     case 'h':
                         _botLogger.LogInfo($"Kahla bot commands:");
