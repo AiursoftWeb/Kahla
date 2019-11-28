@@ -37,11 +37,11 @@ namespace Kahla.EchoBot
                  .GetService<IServiceScopeFactory>()
                  .CreateScope();
 
-
             var bot = scope.ServiceProvider.GetService<BotCore>();
 
             bot.GenerateResponse = ResponseUserMessage;
             bot.GenerateFriendRequestResult = ResponseFriendRequest;
+
             bot.Run().Wait();
         }
 

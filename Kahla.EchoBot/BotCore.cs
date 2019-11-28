@@ -44,6 +44,8 @@ namespace Kahla.EchoBot
 
         public async Task Run()
         {
+            var server = AskServerAddress();
+            _kahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
                 return;
@@ -55,6 +57,25 @@ namespace Kahla.EchoBot
             var websocketAddress = await GetWSAddress();
             _botLogger.LogInfo($"Your account channel: {websocketAddress}");
             await MonitorEvents(websocketAddress);
+        }
+
+        private string AskServerAddress()
+        {
+            _botLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
+            _botLogger.LogWarning("1 for production\t2 for staging\tFor other server, enter like: https://server.kahla.app");
+            var result = Console.ReadLine();
+            if (result.Trim() == 1.ToString())
+            {
+                return "https://server.kahla.app";
+            }
+            else if (result.Trim() == 2.ToString())
+            {
+                return "https://staging.server.kahla.app";
+            }
+            else
+            {
+                return result;
+            }
         }
 
         private async Task<bool> TestKahlaLive()
@@ -196,7 +217,7 @@ namespace Kahla.EchoBot
 
         private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
         {
-            if(GenerateFriendRequestResult != null)
+            if (GenerateFriendRequestResult != null)
             {
                 var result = GenerateFriendRequestResult(typedEvent);
                 await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
