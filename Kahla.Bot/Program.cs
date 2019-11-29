@@ -1,22 +1,21 @@
-﻿using Kahla.EchoBot.Bot;
-using Kahla.EchoBot.Core;
+﻿using Kahla.Bot.Bots;
+using Kahla.Bot.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Kahla.EchoBot
+namespace Kahla.Bot
 {
     public class Program
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Starting Kahla example bot...");
             MainAsync().Wait();
         }
 
         internal static async Task MainAsync()
         {
-            Console.WriteLine("Starting Kahla example bot...");
-
             // configure services.
             var scope = StartUp.ConfigureServices();
 
@@ -25,7 +24,7 @@ namespace Kahla.EchoBot
             var commander = scope.ServiceProvider.GetService<BotCommander>();
 
             // Start bot.
-            var bot = new EchoBotCore();
+            var bot = new EchoBot();
             var listenTask = await botListener
                 .WithBot(bot)
                 .Start();

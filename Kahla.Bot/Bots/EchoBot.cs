@@ -1,13 +1,13 @@
-﻿using Kahla.EchoBot.Models;
+﻿using Kahla.Bot.Models;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
 
-namespace Kahla.EchoBot.Bot
+namespace Kahla.Bot.Bots
 {
-    public class EchoBotCore : IBot
+    public class EchoBot : IBot
     {
         private KahlaUser _botProfile;
         public KahlaUser Profile

@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using System;
 
-namespace Kahla.EchoBot.Services
+namespace Kahla.Bot.Services
 {
     public class BotLogger : ISingletonDependency
     {

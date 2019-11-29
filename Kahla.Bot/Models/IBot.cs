@@ -2,7 +2,7 @@
 using Kahla.SDK.Models;
 using System.Threading.Tasks;
 
-namespace Kahla.EchoBot.Models
+namespace Kahla.Bot.Models
 {
     public interface IBot
     {

@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.EchoBot.Models;
-using Kahla.EchoBot.Services;
+using Kahla.Bot.Models;
+using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 
-namespace Kahla.EchoBot.Core
+namespace Kahla.Bot.Core
 {
     public class BotListener : IScopedDependency
     {

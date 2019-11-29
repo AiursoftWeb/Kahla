@@ -1,9 +1,9 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.EchoBot.Services;
+using Kahla.Bot.Services;
 using System;
 using System.Threading.Tasks;
 
-namespace Kahla.EchoBot.Core
+namespace Kahla.Bot.Core
 {
     public class BotCommander : ISingletonDependency
     {

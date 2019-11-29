@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 
-namespace Kahla.EchoBot
+namespace Kahla.Bot
 {
     public static class StartUp
     {
