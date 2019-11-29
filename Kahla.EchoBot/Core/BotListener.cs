@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.EchoBot.Models;
 using Kahla.EchoBot.Services;
 using Kahla.SDK.Events;
-using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
@@ -21,10 +21,7 @@ namespace Kahla.EchoBot.Core
         private readonly ConversationService _conversationService;
         private readonly FriendshipService _friendshipService;
         private readonly AES _aes;
-        private string _myId;
-        public Func<string, NewMessageEvent, Task<string>> GenerateResponse;
-        public Func<NewFriendRequestEvent, Task<bool>> GenerateFriendRequestResult;
-        public Func<KahlaUser, Task> OnGetProfile;
+        private IBot _bot;
 
         public BotListener(
             HomeService homeService,
@@ -44,8 +41,19 @@ namespace Kahla.EchoBot.Core
             _aes = aes;
         }
 
+        public BotListener WithBot(IBot bot)
+        {
+            _bot = bot;
+            return this;
+        }
+
         public async Task<Task> Start()
         {
+            if (_bot == null)
+            {
+                _botLogger.LogDanger("You can't start bot listener without a bot!");
+                return Task.CompletedTask;
+            }
             var server = AskServerAddress();
             _kahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
@@ -156,11 +164,7 @@ namespace Kahla.EchoBot.Core
             await Task.Delay(200);
             _botLogger.LogInfo($"Getting account profile...");
             var profile = await _authService.MeAsync();
-            _myId = profile.Value.Id;
-            if (OnGetProfile != null)
-            {
-                await OnGetProfile(profile.Value);
-            }
+            _bot.Profile = profile.Value;
         }
 
         private async Task<string> GetWSAddress()
@@ -203,33 +207,25 @@ namespace Kahla.EchoBot.Core
         {
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            if (typedEvent.Message.SenderId == _myId)
+            string sendBack = await _bot.OnMessage(decrypted, typedEvent);
+            if (!string.IsNullOrWhiteSpace(sendBack))
             {
-                return;
-            }
-            if (GenerateResponse != null)
-            {
-                string sendBack = await GenerateResponse(decrypted, typedEvent);
-                if (!string.IsNullOrWhiteSpace(sendBack))
+                await Task.Run(async () =>
                 {
-                    await Task.Run(async () =>
-                    {
-                        await Task.Delay(700);
-                        var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
-                        await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
-                    }).ConfigureAwait(false);
-
-                }
+                    await Task.Delay(700);
+                    var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
+                    await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
+                }).ConfigureAwait(false);
             }
         }
 
         private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
         {
-            if (GenerateFriendRequestResult != null)
-            {
-                var result = await GenerateFriendRequestResult(typedEvent);
-                await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
-            }
+            _botLogger.LogWarning($"New friend request from '{typedEvent.Requester.NickName}'!");
+            var result = await _bot.OnFriendRequest(typedEvent);
+            await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
+            var text = result ? "accepted" : "rejrected";
+            _botLogger.LogWarning($"Friend request from '{typedEvent.Requester.NickName}' was {text}.");
         }
     }
 }

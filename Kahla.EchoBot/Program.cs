@@ -21,20 +21,17 @@ namespace Kahla.EchoBot
             var scope = StartUp.ConfigureServices();
 
             // Get the bot.
-            var bot = scope.ServiceProvider.GetService<BotListener>();
+            var botListener = scope.ServiceProvider.GetService<BotListener>();
             var commander = scope.ServiceProvider.GetService<BotCommander>();
 
-            // Give the bot logic.
-            var botLogic = new EchoBotCore();
-            bot.OnGetProfile = botLogic.SetProfile;
-            bot.GenerateResponse = botLogic.ResponseUserMessage;
-            bot.GenerateFriendRequestResult = botLogic.ResponseFriendRequest;
-
             // Start bot.
-            var waittask = await bot.Start();
+            var bot = new EchoBotCore();
+            var listenTask = await botListener
+                .WithBot(bot)
+                .Start();
 
             Console.WriteLine("Bot started. Waitting for commands.");
-            await Task.WhenAll(waittask, Task.Run(commander.Command));
+            await Task.WhenAll(listenTask, commander.Command());
         }
     }
 }

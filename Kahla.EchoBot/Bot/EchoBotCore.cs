@@ -1,4 +1,5 @@
-﻿using Kahla.SDK.Events;
+﻿using Kahla.EchoBot.Models;
+using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
 using System;
@@ -6,21 +7,28 @@ using System.Threading.Tasks;
 
 namespace Kahla.EchoBot.Bot
 {
-    public class EchoBotCore
+    public class EchoBotCore : IBot
     {
-        private KahlaUser _me;
-        public async Task SetProfile(KahlaUser user)
+        private KahlaUser _botProfile;
+        public KahlaUser Profile
         {
-            _me = user;
-            await Task.Delay(400);
-            var profilestring = JsonConvert.SerializeObject(user, Formatting.Indented);
-            Console.WriteLine(profilestring);
+            private get => _botProfile;
+            set
+            {
+                _botProfile = value;
+                var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
+                Console.WriteLine(profilestring);
+            }
         }
 
-        public async Task<string> ResponseUserMessage(string inputMessage, NewMessageEvent eventContext)
+        public async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
             await Task.Delay(0);
             if (eventContext.Muted)
+            {
+                return string.Empty;
+            }
+            if (eventContext.Message.SenderId == Profile.Id)
             {
                 return string.Empty;
             }
@@ -28,18 +36,14 @@ namespace Kahla.EchoBot.Bot
                     .Replace("吗", "")
                     .Replace('？', '！')
                     .Replace('?', '!');
-            if (inputMessage.Contains("?") || inputMessage.Contains("？"))
-            {
-                firstReplace = firstReplace.Replace("是", "又是");
-            }
             if (eventContext.Mentioned)
             {
-                firstReplace = firstReplace + $" @{eventContext.Message.Sender.NickName}";
+                firstReplace = firstReplace + $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
             }
-            return firstReplace.Replace($"@{_me.NickName}", "");
+            return firstReplace.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
         }
 
-        public async Task<bool> ResponseFriendRequest(NewFriendRequestEvent arg)
+        public async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
         {
             await Task.Delay(0);
             return true;

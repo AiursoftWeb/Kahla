@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.EchoBot.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace Kahla.EchoBot.Core
 {
@@ -13,8 +14,9 @@ namespace Kahla.EchoBot.Core
             _botLogger = botLogger;
         }
 
-        public void Command()
+        public async Task Command()
         {
+            await Task.Delay(0);
             while (true)
             {
                 var command = Console.ReadLine();
