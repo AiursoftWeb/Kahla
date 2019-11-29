@@ -154,9 +154,13 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
                 _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                await _dbContext.SaveChangesAsync();
                 await _pusher.FriendAcceptedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, user);
             }
-            await _dbContext.SaveChangesAsync();
+            else
+            {
+                await _dbContext.SaveChangesAsync();
+            }
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }
 
