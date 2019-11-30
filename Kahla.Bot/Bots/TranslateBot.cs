@@ -47,6 +47,7 @@ namespace Kahla.Bot.Bots
             {
                 return string.Empty;
             }
+            inputMessage = inputMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
             return translated;
         }

@@ -1,11 +1,12 @@
-﻿using Kahla.Bot.Services.BingModels;
+﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Bot.Services.BingModels;
 using Newtonsoft.Json;
 using RestSharp;
 using System.Collections.Generic;
 
 namespace Kahla.Bot.Services
 {
-    public class BingTranslator
+    public class BingTranslator : IScopedDependency
     {
         private static string _apiKey;
         private readonly BotLogger _logger;
@@ -43,7 +44,7 @@ namespace Kahla.Bot.Services
             };
             var bingResponse = CallTranslateAPI(JsonConvert.SerializeObject(inputSource), targetLanguage);
             var result = JsonConvert.DeserializeObject<List<BingResponse>>(bingResponse);
-            _logger.LogInfo($"\t\tCalled Bing: {input} - {result[0].Translations[0].Text}");
+            _logger.LogInfo($"Called Bing translate API.");
             return result[0].Translations[0].Text;
         }
     }
