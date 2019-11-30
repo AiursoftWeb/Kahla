@@ -2,6 +2,7 @@
 using Aiursoft.Pylon.Interfaces;
 using Kahla.Bot.Bots;
 using Kahla.Bot.Core;
+using Kahla.Bot.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,16 +17,22 @@ namespace Kahla.Bot
     {
         private readonly BotListener _botListener;
         private readonly BotCommander _botCommander;
+        private readonly BotLogger _botLogger;
         private readonly EchoBot _echoBot;
+        private readonly TranslateBot _translateBot;
 
         public StartUp(
             BotListener botListener,
             BotCommander botCommander,
-            EchoBot bot)
+            BotLogger botLogger,
+            EchoBot bot,
+            TranslateBot translateBot)
         {
             _botListener = botListener;
             _botCommander = botCommander;
+            _botLogger = botLogger;
             _echoBot = bot;
+            _translateBot = translateBot;
         }
 
         public static IServiceScope ConfigureServices()
@@ -56,10 +63,10 @@ namespace Kahla.Bot
         public async Task Start()
         {
             var listenTask = await _botListener
-                .WithBot(_echoBot)
+                .WithBot(_translateBot)
                 .Start();
 
-            Console.WriteLine("Bot started. Waitting for commands.");
+            _botLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
             await Task.WhenAll(listenTask, _botCommander.Command());
         }
     }

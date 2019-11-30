@@ -32,5 +32,11 @@ namespace Kahla.Bot.Services
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        public void LogVerbose(string warning)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(warning);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
     }
 }
