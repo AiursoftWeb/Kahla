@@ -1,8 +1,8 @@
 ﻿using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
+using Kahla.SDK.Models;
 using Kahla.Server.Data;
-using Kahla.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;

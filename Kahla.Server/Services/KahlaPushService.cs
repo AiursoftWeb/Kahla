@@ -2,8 +2,8 @@
 using Aiursoft.Pylon.Models.Stargate.ChannelViewModels;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStargateServer;
-using Kahla.Server.Events;
-using Kahla.Server.Models;
+using Kahla.SDK.Events;
+using Kahla.SDK.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -58,13 +58,14 @@ namespace Kahla.Server.Services
             await Task.WhenAll(pushTasks);
         }
 
-        public async Task NewFriendRequestEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser requester)
+        public async Task NewFriendRequestEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser requester, int requestId)
         {
             var token = await _appsContainer.AccessToken();
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
                 RequesterId = requester.Id,
-                Requester = requester
+                Requester = requester,
+                RequestId = requestId
             };
             if (stargateChannel != -1)
             {

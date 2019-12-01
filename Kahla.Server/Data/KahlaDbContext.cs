@@ -1,5 +1,5 @@
-﻿using Kahla.Server.Models;
-using Kahla.Server.Models.ApiViewModels;
+﻿using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -117,6 +117,47 @@ namespace Kahla.Server.Data
                 TargetId = userId2,
                 AESKey = Guid.NewGuid().ToString("N")
             });
+        }
+
+        public async Task<DateTime> SetLastRead(Conversation conversation, string userId)
+        {
+            if (conversation is PrivateConversation)
+            {
+                var query = Messages
+                    .Where(t => t.ConversationId == conversation.Id)
+                    .Where(t => t.SenderId != userId);
+                try
+                {
+                    return (await query
+                        .Where(t => t.Read)
+                        .OrderByDescending(t => t.SendTime)
+                        .FirstOrDefaultAsync())
+                        ?.SendTime ?? DateTime.MinValue;
+                }
+                finally
+                {
+                    await query
+                        .Where(t => t.Read == false)
+                        .ForEachAsync(t => t.Read = true);
+                }
+            }
+            else if (conversation is GroupConversation)
+            {
+                var relation = await UserGroupRelations
+                        .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
+                try
+                {
+                    return relation.ReadTimeStamp;
+                }
+                finally
+                {
+                    relation.ReadTimeStamp = DateTime.UtcNow;
+                }
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

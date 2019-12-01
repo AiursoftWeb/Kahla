@@ -2,8 +2,8 @@
 using Aiursoft.Pylon.Models.Status;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToStatusServer;
+using Kahla.SDK.Models;
 using Kahla.Server.Data;
-using Kahla.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

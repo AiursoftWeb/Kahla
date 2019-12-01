@@ -19,7 +19,7 @@ namespace Kahla.Server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Kahla.Server.Models.At", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.At", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -41,7 +41,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("Ats");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Conversation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Conversation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -68,7 +68,7 @@ namespace Kahla.Server.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Conversation");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Device", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Device", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,7 +103,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("Devices");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.KahlaUser", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.KahlaUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -204,7 +204,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Message", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Message", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -234,7 +234,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Report", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Report", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -262,7 +262,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("Reports");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Request", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Request", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -290,7 +290,7 @@ namespace Kahla.Server.Migrations
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.UserGroupRelation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.UserGroupRelation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -452,9 +452,9 @@ namespace Kahla.Server.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.GroupConversation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.GroupConversation", b =>
                 {
-                    b.HasBaseType("Kahla.Server.Models.Conversation");
+                    b.HasBaseType("Kahla.SDK.Models.Conversation");
 
                     b.Property<string>("GroupImagePath")
                         .HasColumnType("nvarchar(max)");
@@ -473,9 +473,9 @@ namespace Kahla.Server.Migrations
                     b.HasDiscriminator().HasValue("GroupConversation");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.PrivateConversation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.PrivateConversation", b =>
                 {
-                    b.HasBaseType("Kahla.Server.Models.Conversation");
+                    b.HasBaseType("Kahla.SDK.Models.Conversation");
 
                     b.Property<string>("RequesterId")
                         .HasColumnType("nvarchar(450)");
@@ -490,70 +490,70 @@ namespace Kahla.Server.Migrations
                     b.HasDiscriminator().HasValue("PrivateConversation");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.At", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.At", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.Message", "Message")
+                    b.HasOne("Kahla.SDK.Models.Message", "Message")
                         .WithMany("Ats")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "TargetUser")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "TargetUser")
                         .WithMany("ByAts")
                         .HasForeignKey("TargetUserId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Device", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Device", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "KahlaUser")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "KahlaUser")
                         .WithMany("HisDevices")
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Message", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Message", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.Conversation", "Conversation")
+                    b.HasOne("Kahla.SDK.Models.Conversation", "Conversation")
                         .WithMany("Messages")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Sender")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Sender")
                         .WithMany("MessagesSent")
                         .HasForeignKey("SenderId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Report", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Report", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Target")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Target")
                         .WithMany("ByReported")
                         .HasForeignKey("TargetId");
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Trigger")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Trigger")
                         .WithMany("Reported")
                         .HasForeignKey("TriggerId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.Request", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.Request", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Creator")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatorId");
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Target")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Target")
                         .WithMany()
                         .HasForeignKey("TargetId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.UserGroupRelation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.UserGroupRelation", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.GroupConversation", "Group")
+                    b.HasOne("Kahla.SDK.Models.GroupConversation", "Group")
                         .WithMany("Users")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "User")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "User")
                         .WithMany("GroupsJoined")
                         .HasForeignKey("UserId");
                 });
@@ -569,7 +569,7 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", null)
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -578,7 +578,7 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", null)
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -593,7 +593,7 @@ namespace Kahla.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", null)
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -602,27 +602,27 @@ namespace Kahla.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", null)
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.GroupConversation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.GroupConversation", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "Owner")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "Owner")
                         .WithMany("GroupsOwned")
                         .HasForeignKey("OwnerId");
                 });
 
-            modelBuilder.Entity("Kahla.Server.Models.PrivateConversation", b =>
+            modelBuilder.Entity("Kahla.SDK.Models.PrivateConversation", b =>
                 {
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "RequestUser")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "RequestUser")
                         .WithMany("Friends")
                         .HasForeignKey("RequesterId");
 
-                    b.HasOne("Kahla.Server.Models.KahlaUser", "TargetUser")
+                    b.HasOne("Kahla.SDK.Models.KahlaUser", "TargetUser")
                         .WithMany("OfFriends")
                         .HasForeignKey("TargetId");
                 });

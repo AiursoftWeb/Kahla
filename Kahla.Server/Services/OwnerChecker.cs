@@ -1,8 +1,8 @@
 ﻿using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Models;
 using Kahla.Server.Data;
-using Kahla.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 

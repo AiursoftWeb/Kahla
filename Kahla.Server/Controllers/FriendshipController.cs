@@ -1,10 +1,10 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiAddressModels;
+using Kahla.SDK.Models.ApiViewModels;
 using Kahla.Server.Data;
-using Kahla.Server.Models;
-using Kahla.Server.Models.ApiAddressModels;
-using Kahla.Server.Models.ApiViewModels;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -116,7 +116,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user);
+            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request.Id);
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -154,9 +154,13 @@ namespace Kahla.Server.Controllers
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
                 _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                await _dbContext.SaveChangesAsync();
                 await _pusher.FriendAcceptedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, user);
             }
-            await _dbContext.SaveChangesAsync();
+            else
+            {
+                await _dbContext.SaveChangesAsync();
+            }
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }
 
