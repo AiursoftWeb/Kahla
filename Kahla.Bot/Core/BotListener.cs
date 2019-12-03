@@ -5,6 +5,7 @@ using Kahla.SDK.Events;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,9 @@ namespace Kahla.Bot.Core
             await DisplayMyProfile();
             var websocketAddress = await GetWSAddress();
             _botLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
-            var requests = (await _friendshipService.MyRequestsAsync()).Items;
+            var requests = (await _friendshipService.MyRequestsAsync())
+                .Items
+                .Where(t => !t.Completed);
             foreach (var request in requests)
             {
                 await OnNewFriendRequest(new NewFriendRequestEvent
@@ -234,7 +237,7 @@ namespace Kahla.Bot.Core
             _botLogger.LogWarning($"New friend request from '{typedEvent.Requester.NickName}'!");
             var result = await _bot.OnFriendRequest(typedEvent);
             await _friendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
-            var text = result ? "accepted" : "rejrected";
+            var text = result ? "accepted" : "rejected";
             _botLogger.LogWarning($"Friend request from '{typedEvent.Requester.NickName}' was {text}.");
         }
     }
