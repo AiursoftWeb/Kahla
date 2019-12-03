@@ -65,7 +65,17 @@ namespace Kahla.Bot.Core
             await SignIn(code);
             await DisplayMyProfile();
             var websocketAddress = await GetWSAddress();
-            _botLogger.LogInfo($"Your account channel: {websocketAddress}");
+            _botLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
+            var requests = (await _friendshipService.MyRequestsAsync()).Items;
+            foreach (var request in requests)
+            {
+                await OnNewFriendRequest(new NewFriendRequestEvent
+                {
+                    RequestId = request.Id,
+                    Requester = request.Creator,
+                    RequesterId = request.CreatorId,
+                });
+            }
             return MonitorEvents(websocketAddress);
         }
 

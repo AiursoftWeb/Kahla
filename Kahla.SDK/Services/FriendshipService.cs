@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -25,14 +26,26 @@ namespace Kahla.SDK.Services
             var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "CompleteRequest", new { });
             var form = new AiurUrl(string.Empty, new CompleteRequestAddressModel
             {
-                Id= requestId,
+                Id = requestId,
                 Accept = accept
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+            var jsonResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+            if (jsonResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(jsonResult);
+        }
+
+        public async Task<AiurCollection<Request>> MyRequestsAsync()
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "MyRequests", new { });
+            var result = await _http.Get(url);
+            var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Request>>(result);
+
+            if (jsonResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(jsonResult);
+
+            return jsonResult;
         }
     }
 }
