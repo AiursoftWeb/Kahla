@@ -4,7 +4,6 @@ using Kahla.Bot.Bots;
 using Kahla.Bot.Core;
 using Kahla.Bot.Services;
 using Kahla.SDK.Models;
-using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -46,13 +45,6 @@ namespace Kahla.Bot
 
             var services = new ServiceCollection();
             services.AddAiurDependencies<KahlaUser>("Kahla");
-            services.AddSingleton<KahlaLocation>();
-            services.AddSingleton<SingletonHTTP>();
-            services.AddScoped<HomeService>();
-            services.AddScoped<AuthService>();
-            services.AddScoped<FriendshipService>();
-            services.AddScoped<ConversationService>();
-            services.AddTransient<AES>();
             Console.Clear();
 
             return services.BuildServiceProvider()
