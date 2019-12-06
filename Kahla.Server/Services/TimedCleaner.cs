@@ -13,9 +13,9 @@ namespace Kahla.Server.Services
 {
     public class TimedCleaner : IHostedService, IDisposable, ISingletonDependency
     {
-        private readonly ILogger _logger;
         private Timer _timer;
-        private IServiceScopeFactory _scopeFactory;
+        private readonly ILogger _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public TimedCleaner(
             ILogger<TimedCleaner> logger,

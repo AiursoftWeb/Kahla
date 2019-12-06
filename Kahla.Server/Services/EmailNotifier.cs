@@ -19,9 +19,9 @@ namespace Kahla.Server.Services
 {
     public class EmailNotifier : IHostedService, IDisposable, ISingletonDependency
     {
-        private readonly ILogger _logger;
         private Timer _timer;
-        private IServiceScopeFactory _scopeFactory;
+        private readonly ILogger _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly AppsContainer _appsContainer;
 
         public EmailNotifier(

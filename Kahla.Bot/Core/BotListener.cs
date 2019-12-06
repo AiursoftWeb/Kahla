@@ -134,7 +134,7 @@ namespace Kahla.Bot.Core
 
         private async Task<int> AskCode()
         {
-            int code = -1;
+            int code;
             while (true)
             {
                 await Task.Delay(500);

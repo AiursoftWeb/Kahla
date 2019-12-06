@@ -50,7 +50,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(AiurCollection<Message>))]
-        public async Task<IActionResult> GetMessage([Required]int id, int take = 15, [IsGuid]string skipFrom = "")
+        public async Task<IActionResult> GetMessage([Required]int id, int take = 15, [IsGuidOrEmpty]string skipFrom = "")
         {
             var user = await GetKahlaUser();
             var target = await _dbContext
