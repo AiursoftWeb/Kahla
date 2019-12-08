@@ -1,4 +1,7 @@
-﻿using Kahla.Bot.Models;
+﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Bot.Abstract;
+using Kahla.Bot.Core;
+using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -7,12 +10,21 @@ using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class EchoBot : IBot
+    public class EchoBot : BotBase, ISingletonDependency
     {
-        private KahlaUser _botProfile;
-        public KahlaUser Profile
+        public EchoBot(
+            BotListener botListener,
+            BotCommander botCommander,
+            BotLogger botLogger) : base(botListener, botCommander, botLogger)
         {
-            private get => _botProfile;
+
+        }
+
+        private KahlaUser _botProfile;
+
+        public override KahlaUser Profile
+        {
+            get => _botProfile;
             set
             {
                 _botProfile = value;
@@ -21,7 +33,8 @@ namespace Kahla.Bot.Bots
             }
         }
 
-        public async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
+
+        public override async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
             await Task.Delay(0);
             if (eventContext.Muted)
@@ -43,7 +56,7 @@ namespace Kahla.Bot.Bots
             return firstReplace.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
         }
 
-        public async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
+        public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
         {
             await Task.Delay(0);
             return true;

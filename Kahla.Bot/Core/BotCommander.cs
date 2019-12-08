@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Bot.Abstract;
 using Kahla.Bot.Services;
 using System;
 using System.Threading.Tasks;
@@ -8,14 +9,26 @@ namespace Kahla.Bot.Core
     public class BotCommander : ISingletonDependency
     {
         private readonly BotLogger _botLogger;
+        private BotBase _bot;
 
         public BotCommander(BotLogger botLogger)
         {
             _botLogger = botLogger;
         }
 
+        public BotCommander WithBot(BotBase bot)
+        {
+            _bot = bot;
+            return this;
+        }
+
         public async Task Command()
         {
+            if (_bot == null)
+            {
+                _botLogger.LogDanger("You can't start bot commander without a bot!");
+                return;
+            }
             await Task.Delay(0);
             while (true)
             {

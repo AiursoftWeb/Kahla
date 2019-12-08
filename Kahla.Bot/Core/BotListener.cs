@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Models;
+using Kahla.Bot.Abstract;
 using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Services;
@@ -22,7 +22,7 @@ namespace Kahla.Bot.Core
         private readonly ConversationService _conversationService;
         private readonly FriendshipService _friendshipService;
         private readonly AES _aes;
-        private IBot _bot;
+        private BotBase _bot;
 
         public BotListener(
             HomeService homeService,
@@ -42,7 +42,7 @@ namespace Kahla.Bot.Core
             _aes = aes;
         }
 
-        public BotListener WithBot(IBot bot)
+        public BotListener WithBot(BotBase bot)
         {
             _bot = bot;
             return this;

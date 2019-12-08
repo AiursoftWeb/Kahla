@@ -52,14 +52,9 @@ namespace Kahla.Bot
                  .CreateScope();
         }
 
-        public async Task Start()
+        public Task Start()
         {
-            var listenTask = await _botListener
-                .WithBot(_translateBot)
-                .Start();
-
-            _botLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
-            await Task.WhenAll(listenTask, _botCommander.Command());
+            return _echoBot.Start();
         }
     }
 }
