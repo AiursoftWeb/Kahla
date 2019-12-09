@@ -99,11 +99,15 @@ namespace Kahla.SDK.Abstract
                 var index = await HomeService.IndexAsync();
                 BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
                 await Task.Delay(200);
-                BotLogger.LogInfo($"Server time: \t{index.UTCTime}\tLocal time: \t{DateTime.UtcNow}");
-                BotLogger.LogInfo($"Server version: \t{index.APIVersion}\tLocal version: \t{VersionService.GetSDKVersion()}");
+                BotLogger.LogInfo($"Server time: \t\t{index.UTCTime}\tLocal time: \t\t{DateTime.UtcNow}");
+                BotLogger.LogInfo($"Server version: \t{index.APIVersion}\t\t\tLocal version: \t{VersionService.GetSDKVersion()}");
                 if (index.APIVersion != VersionService.GetSDKVersion())
                 {
                     BotLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");
+                }
+                else
+                {
+                    BotLogger.LogSuccess("API version match!");
                 }
                 return true;
             }

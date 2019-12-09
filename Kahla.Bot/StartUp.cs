@@ -23,6 +23,7 @@ namespace Kahla.Bot
             KahlaLocation kahlaLocation,
             BotLogger botLogger,
             EchoBot echoBot,
+            VersionService versionService,
             AES aes)
         {
             echoBot.BotLogger = botLogger;
@@ -32,6 +33,7 @@ namespace Kahla.Bot
             echoBot.HomeService = homeService;
             echoBot.KahlaLocation = kahlaLocation;
             echoBot.AuthService = authService;
+            echoBot.VersionService = versionService;
             _echoBot = echoBot;
         }
 
