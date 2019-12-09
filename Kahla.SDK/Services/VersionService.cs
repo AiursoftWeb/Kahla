@@ -7,12 +7,12 @@ namespace Kahla.SDK.Services
     {
         public string GetSDKVersion()
         {
-            var version = Assembly
-                .GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyVersionAttribute>()
-                .Version;
+            var assembly = Assembly
+                .GetExecutingAssembly();
 
-            return version;
+            var version = assembly.GetName().Version.ToString().Split('.');
+
+            return $"{version[0]}.{version[1]}.{version[2]}";
         }
     }
 }
