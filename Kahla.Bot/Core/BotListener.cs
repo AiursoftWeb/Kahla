@@ -220,16 +220,7 @@ namespace Kahla.Bot.Core
         {
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            string sendBack = await _bot.OnMessage(decrypted, typedEvent);
-            if (!string.IsNullOrWhiteSpace(sendBack))
-            {
-                await Task.Run(async () =>
-                {
-                    await Task.Delay(700);
-                    var encrypted = _aes.OpenSSLEncrypt(sendBack, typedEvent.AESKey);
-                    await _conversationService.SendMessageAsync(encrypted, typedEvent.Message.ConversationId);
-                }).ConfigureAwait(false);
-            }
+            await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
         private async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)

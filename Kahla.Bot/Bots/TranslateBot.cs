@@ -34,20 +34,19 @@ namespace Kahla.Bot.Bots
             }
         }
 
-        public override async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
+        public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
-            await Task.Delay(0);
             if (eventContext.Muted)
             {
-                return string.Empty;
+                return;
             }
             if (eventContext.Message.SenderId == Profile.Id)
             {
-                return string.Empty;
+                return;
             }
             inputMessage = inputMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
-            return translated;
+            await Send(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
         public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
