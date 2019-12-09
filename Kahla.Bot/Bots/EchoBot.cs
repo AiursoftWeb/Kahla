@@ -10,17 +10,13 @@ namespace Kahla.Bot.Bots
 {
     public class EchoBot : BotBase, ISingletonDependency
     {
-        private KahlaUser _botProfile;
+        public override KahlaUser Profile { get; set; }
 
-        public override KahlaUser Profile
+        public override Task OnInit()
         {
-            get => _botProfile;
-            set
-            {
-                _botProfile = value;
-                var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
-                Console.WriteLine(profilestring);
-            }
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            Console.WriteLine(profilestring);
+            return Task.CompletedTask;
         }
 
         public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
@@ -52,5 +48,7 @@ namespace Kahla.Bot.Bots
             await Task.Delay(0);
             return true;
         }
+
+
     }
 }

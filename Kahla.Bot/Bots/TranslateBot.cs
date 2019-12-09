@@ -11,27 +11,23 @@ namespace Kahla.Bot.Bots
 {
     public class TranslateBot : BotBase, ISingletonDependency
     {
-        private KahlaUser _botProfile;
         private readonly BingTranslator _bingTranslator;
+        public override KahlaUser Profile { get; set; }
 
         public TranslateBot(BingTranslator bingTranslator)
         {
             _bingTranslator = bingTranslator;
         }
 
-        public override KahlaUser Profile
+        public override Task OnInit()
         {
-            get => _botProfile;
-            set
-            {
-                _botProfile = value;
-                var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
-                Console.WriteLine(profilestring);
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            Console.WriteLine(profilestring);
 
-                BotLogger.LogWarning("Please enter your bing API key:");
-                var key = Console.ReadLine();
-                _bingTranslator.Init(key);
-            }
+            BotLogger.LogWarning("Please enter your bing API key:");
+            var key = Console.ReadLine();
+            _bingTranslator.Init(key);
+            return Task.CompletedTask;
         }
 
         public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)

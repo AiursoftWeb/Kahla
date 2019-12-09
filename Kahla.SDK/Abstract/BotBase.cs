@@ -17,6 +17,8 @@ namespace Kahla.SDK.Abstract
 
         public abstract KahlaUser Profile { get; set; }
 
+        public abstract Task OnInit();
+
         public abstract Task<bool> OnFriendRequest(NewFriendRequestEvent arg);
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);

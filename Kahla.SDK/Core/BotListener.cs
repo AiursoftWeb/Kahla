@@ -178,6 +178,7 @@ namespace Kahla.SDK.Core
             _botLogger.LogInfo($"Getting account profile...");
             var profile = await _authService.MeAsync();
             _bot.Profile = profile.Value;
+            await _bot.OnInit();
         }
 
         private async Task<string> GetWSAddress()
