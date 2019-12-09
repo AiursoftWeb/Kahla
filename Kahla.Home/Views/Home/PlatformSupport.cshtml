@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "Kahla Platform support";
+}
+<header>
+    <div class="container-new py-6 px-3 text-center">
+        <a href="/">
+            <img src="@StorageService.GetProbeDownloadAddress(ServiceLocation, "aiursoft/512x512.png")" alt="Kahla Desktop" width="96" height="96">
+        </a>
+        <ul class="nav list-style-none d-flex flex-justify-center f4">
+            <li>
+                <a class="d-inline-block m-2 current" href="@ServiceLocation.WWW">@Localizer["Aiursoft"]</a>
+            </li>
+            <li>
+                <a class="d-inline-block m-2 current" href="https://wiki.aiursoft.com/ReadDoc/Kahla/What%20is%20Kahla.md">@Localizer["About Kahla"]</a>
+            </li>
+            <li>
+                <a class="d-inline-block m-2" href="https://github.com/AiursoftWeb/Kahla.App/releases">@Localizer["Release notes"]</a>
+            </li>
+            <li>
+                <a class="d-inline-block m-2" href="@(new AiurUrl(ServiceLocation.Gateway, "Api", "SetLang", new { Host = $"{Context.Request.Scheme}://{Context.Request.Host}", Path = Context.Request.Path }))">
+                    @Localizer["Language"]
+                </a>
+            </li>
+        </ul>
+    </div>
+</header>
+<div class="container">
+    <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" asp-controller="Home" asp-action="Index">@Localizer["<- Back"]</a>
+    <div class="w-100">
+        <h1 class="text-center mb-4">Platform support status</h1>
+    </div>
+    <table class="table text-white">
+        <thead>
+            <tr>
+                <th>Platform</th>
+                <th>Microsoft Edge (Classic)</th>
+                <th>Microsoft Edge (Chromium)</th>
+                <th>Google Chrome</th>
+                <th>Mozila Firefox</th>
+                <th>Safari</th>
+                <th>Electron</th>
+                <th>UWP (Windows 10 Desktop)</th>
+                <th>TWA (Android)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Gird layout</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>With issue</td>
+            </tr>
+            <tr>
+                <td>Voice message</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>Send images from clipboard</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>Push notification</td>
+                <td>Based on WebPush</td>
+                <td>Based on WebPush</td>
+                <td>Based on WebPush</td>
+                <td>Based on WebPush</td>
+                <td>No</td>
+                <td>Based on WebSocket</td>
+                <td>No</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>Subscribe notification in China mainland</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+            </tr>
+            <tr>
+                <td>Install like native App (PWA)</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Partial (Only mobile)</td>
+                <td>Partial (OAuth not supported)</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>One-click upgrade</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@section scripts{
+    <script>
+        $('td').each(function () {
+            var model = $(this);
+            if (model.html().includes("No")) {
+                model.addClass('text-danger');
+            } else if (model.html().includes("issue") || model.html().includes("Partial")) {
+                model.addClass('text-warning');
+            } else if (model.html().includes("Yes") || model.html().includes("Based")) {
+                model.addClass('text-success');
+            }
+        });
+    </script>
+}

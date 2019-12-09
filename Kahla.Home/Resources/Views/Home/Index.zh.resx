@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Kahla - Connect everyone's thoughts" xml:space="preserve">
+    <value>卡拉 - 连接人的思想</value>
+  </data>
+  <data name="Aiursoft" xml:space="preserve">
+    <value>Aiursoft</value>
+  </data>
+  <data name="About Kahla" xml:space="preserve">
+    <value>关于卡拉</value>
+  </data>
+  <data name="Release notes" xml:space="preserve">
+    <value>发行说明</value>
+  </data>
+  <data name="Help and community" xml:space="preserve">
+    <value>帮助和社区</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="Latest version:" xml:space="preserve">
+    <value>最新版本:</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Open in browser" xml:space="preserve">
+    <value>在浏览器中打开</value>
+  </data>
+  <data name="By downloading, you agree to the" xml:space="preserve">
+    <value>通过下载, 您同意</value>
+  </data>
+  <data name="license agreement" xml:space="preserve">
+    <value>许可协议</value>
+  </data>
+  <data name="Ready to choose Kahla?" xml:space="preserve">
+    <value>准备好选择卡拉了吗？</value>
+  </data>
+  <data name="Business level" xml:space="preserve">
+    <value>商用级别</value>
+  </data>
+  <data name="Kahla is designed for commercial use. the service can be deployed inside your company and access to the full functionality of Kahla without internet." xml:space="preserve">
+    <value>卡拉是为商业用途而设计的。该服务可以部署在您的公司内，并访问卡拉的全部功能，而无需互联网。</value>
+  </data>
+  <data name="Cross-platform" xml:space="preserve">
+    <value>跨平台</value>
+  </data>
+  <data name="Kahla faced almost all mobile and desktop platforms. Use only one app for quick access by any customer. Kahla also supports open in browser without installation." xml:space="preserve">
+    <value>卡拉几乎面对所有的移动和桌面平台。仅使用一个应用即可让任何客户快速访问。卡拉还支持在浏览器中打开而无需安装。</value>
+  </data>
+  <data name="Highly secure" xml:space="preserve">
+    <value>高度安全</value>
+  </data>
+  <data name="Kahla supports end-to-end encrypted message communication and supports the automatic destruction of messages. Even if you don't trust Kahla's server, you can safely deliver secrets." xml:space="preserve">
+    <value>卡拉支持端到端加密消息通信，并支持自动销毁消息。即使您不信任卡拉的服务器，您也可以安全地传递机密。</value>
+  </data>
+  <data name="Download now" xml:space="preserve">
+    <value>立即下载</value>
+  </data>
+  <data name="View on GitHub" xml:space="preserve">
+    <value>在 GitHub 上查看</value>
+  </data>
+  <data name="Open now" xml:space="preserve">
+    <value>现在打开</value>
+  </data>
+  <data name="For Windows" xml:space="preserve">
+    <value>Windows版</value>
+  </data>
+  <data name="Installer (exe)" xml:space="preserve">
+    <value>安装程序 (exe)</value>
+  </data>
+  <data name="Portable (zip)" xml:space="preserve">
+    <value>便携式 (zip)</value>
+  </data>
+  <data name="For Mac OS" xml:space="preserve">
+    <value>Mac OS版</value>
+  </data>
+  <data name="dmg" xml:space="preserve">
+    <value>dmg</value>
+  </data>
+  <data name="For Linux" xml:space="preserve">
+    <value>Linux版</value>
+  </data>
+  <data name="Debian, Ubuntu (deb)" xml:space="preserve">
+    <value>Debian, Ubuntu (deb)</value>
+  </data>
+  <data name="Redhat, Fedora (rpm)" xml:space="preserve">
+    <value>红帽, fedora (rpm)</value>
+  </data>
+  <data name="Others (tar.gz)" xml:space="preserve">
+    <value>其他 (tar. gz)</value>
+  </data>
+  <data name="For Android and iOS" xml:space="preserve">
+    <value>适用于安卓和 iOS</value>
+  </data>
+  <data name="Web" xml:space="preserve">
+    <value>Web</value>
+  </data>
+  <data name="(We are working on native apps...)" xml:space="preserve">
+    <value>(我们正在开发原生应用程序...)</value>
+  </data>
+  <data name="For other platforms" xml:space="preserve">
+    <value>对于其他平台</value>
+  </data>
+  <data name="Chrome OS, PWA" xml:space="preserve">
+    <value>Chrome OS, PWA</value>
+  </data>
+  <data name="Source code" xml:space="preserve">
+    <value>源代码</value>
+  </data>
+  <data name="As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free." xml:space="preserve">
+    <value>卡拉作为跨平台的商用消息应用程序，它允许你在任何地点使用任意设备来加密通讯。 它还是完全开源和免费的。</value>
+  </data>
+  <data name="Always free" xml:space="preserve">
+    <value>永久免费</value>
+  </data>
+  <data name="Kahla is an open source project supported by grants and donations. There is no ad, no affiliate marketer, no creepy tracking. Just for a fast, simple, and secure messaging experience." xml:space="preserve">
+    <value>卡拉是一个捐款支持的开源项目。没有广告，没有合作营销，没有令人毛骨悚然的信息审查。只为简单和安全的沟通体验。</value>
+  </data>
+  <data name="Kahla opens all of its APIs to the public for free. Whether it's building notifier, open account or chatbots, Kahla makes the process extremely easy." xml:space="preserve">
+    <value>卡拉向公众免费开放它的全部API。无论是构建推送器、公众号还是聊天机器人，卡拉都让这个过程变得极其简便。</value>
+  </data>
+  <data name="Kahla's servers provide extremely high free storage space, files can remain on the server for 100 days, and messages can retain up to 20,000 and never lose." xml:space="preserve">
+    <value>卡拉的服务器提供了极高的免费存储空间，文件能够在服务器上存留100天，消息会话最大可存留两万条且永不删除。</value>
+  </data>
+  <data name="Large amount" xml:space="preserve">
+    <value>大容量</value>
+  </data>
+  <data name="Open development" xml:space="preserve">
+    <value>开放开发</value>
+  </data>
+</root>
