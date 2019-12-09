@@ -2,7 +2,6 @@
 using Aiursoft.Pylon.Interfaces;
 using Kahla.Bot.Bots;
 using Kahla.Bot.Services;
-using Kahla.SDK.Core;
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,27 +13,26 @@ namespace Kahla.Bot
 {
     public class StartUp : IScopedDependency
     {
-        private readonly ConversationService _conversationService;
-        private readonly BotListener _botListener;
-        private readonly BotCommander _botCommander;
-        private readonly BotLogger _botLogger;
         private readonly EchoBot _echoBot;
-        private readonly AES _aes;
 
         public StartUp(
             ConversationService conversationService,
-            BotListener botListener,
-            BotCommander botCommander,
+            FriendshipService friendshipService,
+            AuthService authService,
+            HomeService homeService,
+            KahlaLocation kahlaLocation,
             BotLogger botLogger,
             EchoBot echoBot,
             AES aes)
         {
-            _conversationService = conversationService;
-            _botListener = botListener;
-            _botCommander = botCommander;
-            _botLogger = botLogger;
+            echoBot.BotLogger = botLogger;
+            echoBot.AES = aes;
+            echoBot.ConversationService = conversationService;
+            echoBot.FriendshipService = friendshipService;
+            echoBot.HomeService = homeService;
+            echoBot.KahlaLocation = kahlaLocation;
+            echoBot.AuthService = authService;
             _echoBot = echoBot;
-            _aes = aes;
         }
 
         public static IServiceScope ConfigureServices()
@@ -53,14 +51,6 @@ namespace Kahla.Bot
                 .CreateScope();
         }
 
-        public Task Start()
-        {
-            _echoBot.BotCommander = _botCommander.WithBot(_echoBot);
-            _echoBot.BotListener = _botListener.WithBot(_echoBot);
-            _echoBot.BotLogger = _botLogger;
-            _echoBot.AES = _aes;
-            _echoBot.ConversationService = _conversationService;
-            return _echoBot.Start();
-        }
+        public Task Start() => _echoBot.Start();
     }
 }

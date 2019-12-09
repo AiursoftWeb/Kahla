@@ -4,7 +4,7 @@ namespace Kahla.SDK.Services
 {
     public class KahlaLocation : ISingletonDependency
     {
-        private string _kahlaRoot = "https://staging.server.kahla.app";
+        private string _kahlaRoot = "https://server.kahla.app";
 
         public override string ToString()
         {
