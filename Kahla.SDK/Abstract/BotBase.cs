@@ -22,6 +22,7 @@ namespace Kahla.SDK.Abstract
         public AuthService AuthService;
         public HomeService HomeService;
         public KahlaLocation KahlaLocation;
+        public VersionService VersionService;
 
         public abstract KahlaUser Profile { get; set; }
 
@@ -98,7 +99,8 @@ namespace Kahla.SDK.Abstract
                 var index = await HomeService.IndexAsync();
                 BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
                 await Task.Delay(200);
-                BotLogger.LogInfo($"Server time: {index.Value}\tLocal time: {DateTime.UtcNow}");
+                BotLogger.LogInfo($"Server time: \t{index.UTCTime}\tLocal time: \t{DateTime.UtcNow}");
+                BotLogger.LogInfo($"Server version: \t{index.APIVersion}\tLocal version: \t{VersionService.GetSDKVersion()}");
                 return true;
             }
             catch (Exception e)

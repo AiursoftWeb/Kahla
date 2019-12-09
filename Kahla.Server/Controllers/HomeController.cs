@@ -2,7 +2,10 @@
 using Aiursoft.Pylon.Models;
 using Aiursoft.Pylon.Services;
 using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,30 +16,40 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     public class HomeController : Controller
     {
+        private readonly IWebHostEnvironment _env;
         private readonly ServiceLocation _serviceLocation;
         private readonly KahlaDbContext _dbContext;
         private readonly AuthService<KahlaUser> _authService;
         private readonly AppsContainer _appsContainer;
+        private readonly VersionService _sdkVersion;
 
         public HomeController(
+            IWebHostEnvironment env,
             ServiceLocation serviceLocation,
             KahlaDbContext dbContext,
             AuthService<KahlaUser> authService,
-            AppsContainer appsContainer)
+            AppsContainer appsContainer,
+            VersionService sdkVersion)
         {
+            _env = env;
             _serviceLocation = serviceLocation;
             _dbContext = dbContext;
             _authService = authService;
             _appsContainer = appsContainer;
+            _sdkVersion = sdkVersion;
         }
 
-        [APIProduces(typeof(AiurValue<DateTime>))]
+        [APIProduces(typeof(IndexViewModel))]
         public IActionResult Index()
         {
-            return Json(new AiurValue<DateTime>(DateTime.UtcNow)
+            return Json(new IndexViewModel
             {
                 Code = ErrorType.Success,
-                Message = "Welcome to Aiursoft Kahla server! View our wiki at: " + _serviceLocation.Wiki
+                Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
+                WikiPath = _serviceLocation.Wiki,
+                ServerTime = DateTime.Now,
+                UTCTime = DateTime.UtcNow,
+                APIVersion = _sdkVersion.GetSDKVersion()
             });
         }
 

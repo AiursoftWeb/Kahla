@@ -8,5 +8,6 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string WikiPath { get; set; }
         public DateTime ServerTime { get; set; }
         public DateTime UTCTime { get; set; }
+        public string APIVersion { get; set; }
     }
 }
