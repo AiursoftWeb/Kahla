@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Abstract;
 using Kahla.Bot.Services;
+using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 
-namespace Kahla.Bot.Core
+namespace Kahla.SDK.Core
 {
     public class BotListener : IScopedDependency
     {

@@ -1,10 +1,10 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Abstract;
 using Kahla.Bot.Services;
+using Kahla.SDK.Abstract;
 using System;
 using System.Threading.Tasks;
 
-namespace Kahla.Bot.Core
+namespace Kahla.SDK.Core
 {
     public class BotCommander : ISingletonDependency
     {

@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Abstract;
+using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -44,7 +44,7 @@ namespace Kahla.Bot.Bots
             }
             replaced.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             await Task.Delay(700);
-            await Send(replaced, eventContext.Message.ConversationId, eventContext.AESKey);
+            await SendMessage(replaced, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
         public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)

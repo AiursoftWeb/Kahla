@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Abstract;
 using Kahla.Bot.Services;
+using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -46,7 +46,7 @@ namespace Kahla.Bot.Bots
             }
             inputMessage = inputMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
-            await Send(translated, eventContext.Message.ConversationId, eventContext.AESKey);
+            await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
         public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)

@@ -1,11 +1,11 @@
-﻿using Kahla.Bot.Core;
-using Kahla.Bot.Services;
+﻿using Kahla.Bot.Services;
+using Kahla.SDK.Core;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using System.Threading.Tasks;
 
-namespace Kahla.Bot.Abstract
+namespace Kahla.SDK.Abstract
 {
     public abstract class BotBase
     {
@@ -30,7 +30,7 @@ namespace Kahla.Bot.Abstract
             await Task.WhenAll(listenTask, BotCommander.Command());
         }
 
-        public virtual async Task Send(string message, int conversationId, string aesKey)
+        public virtual async Task SendMessage(string message, int conversationId, string aesKey)
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
