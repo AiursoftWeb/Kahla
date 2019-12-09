@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.Bot.Abstract;
-using Kahla.Bot.Core;
 using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -14,17 +13,10 @@ namespace Kahla.Bot.Bots
     {
         private KahlaUser _botProfile;
         private readonly BingTranslator _bingTranslator;
-        private readonly BotLogger _botLogger;
 
-        public TranslateBot(
-            BotListener botListener,
-            BotCommander botCommander,
-            BingTranslator bingTranslator,
-            BotLogger botLogger) : base(botListener, botCommander, botLogger)
+        public TranslateBot(BingTranslator bingTranslator)
         {
             _bingTranslator = bingTranslator;
-            _botLogger = botLogger;
-
         }
 
         public override KahlaUser Profile
@@ -36,7 +28,7 @@ namespace Kahla.Bot.Bots
                 var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
                 Console.WriteLine(profilestring);
 
-                _botLogger.LogWarning("Please enter your bing API key:");
+                BotLogger.LogWarning("Please enter your bing API key:");
                 var key = Console.ReadLine();
                 _bingTranslator.Init(key);
             }

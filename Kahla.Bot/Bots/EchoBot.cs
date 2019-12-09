@@ -1,7 +1,5 @@
 ﻿using Aiursoft.Pylon.Interfaces;
 using Kahla.Bot.Abstract;
-using Kahla.Bot.Core;
-using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -12,14 +10,6 @@ namespace Kahla.Bot.Bots
 {
     public class EchoBot : BotBase, ISingletonDependency
     {
-        public EchoBot(
-            BotListener botListener,
-            BotCommander botCommander,
-            BotLogger botLogger) : base(botListener, botCommander, botLogger)
-        {
-
-        }
-
         private KahlaUser _botProfile;
 
         public override KahlaUser Profile

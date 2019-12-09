@@ -8,19 +8,9 @@ namespace Kahla.Bot.Abstract
 {
     public abstract class BotBase
     {
-        protected readonly BotListener BotListener;
-        protected readonly BotCommander BotCommander;
-        private readonly BotLogger _botLogger;
-
-        public BotBase(
-            BotListener botListener,
-            BotCommander botCommander,
-            BotLogger botLogger)
-        {
-            BotListener = botListener.WithBot(this);
-            BotCommander = botCommander.WithBot(this);
-            _botLogger = botLogger;
-        }
+        public BotListener BotListener;
+        public BotCommander BotCommander;
+        public BotLogger BotLogger;
 
         public abstract KahlaUser Profile { get; set; }
 
@@ -33,7 +23,7 @@ namespace Kahla.Bot.Abstract
             var listenTask = await BotListener
                 .Start();
 
-            _botLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
+            BotLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
             await Task.WhenAll(listenTask, BotCommander.Command());
         }
     }

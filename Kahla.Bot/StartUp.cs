@@ -18,20 +18,17 @@ namespace Kahla.Bot
         private readonly BotCommander _botCommander;
         private readonly BotLogger _botLogger;
         private readonly EchoBot _echoBot;
-        private readonly TranslateBot _translateBot;
 
         public StartUp(
             BotListener botListener,
             BotCommander botCommander,
             BotLogger botLogger,
-            EchoBot bot,
-            TranslateBot translateBot)
+            EchoBot echoBot)
         {
             _botListener = botListener;
             _botCommander = botCommander;
             _botLogger = botLogger;
-            _echoBot = bot;
-            _translateBot = translateBot;
+            _echoBot = echoBot;
         }
 
         public static IServiceScope ConfigureServices()
@@ -54,6 +51,9 @@ namespace Kahla.Bot
 
         public Task Start()
         {
+            _echoBot.BotCommander = _botCommander.WithBot(_echoBot);
+            _echoBot.BotListener = _botListener.WithBot(_echoBot);
+            _echoBot.BotLogger = _botLogger;
             return _echoBot.Start();
         }
     }
