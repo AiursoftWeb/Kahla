@@ -4,7 +4,23 @@
     <Version>3.8.5</Version>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Company>Aiursoft</Company>
+    <Product>AiursoftWeb</Product>
+    <Authors>Anduin</Authors>
+    <Description>The base class, interfaces, services and bot framework for Aiursoft Kahla.</Description>
+    <PackageTags>base-class shared-component aiursoft kahla</PackageTags>
+    <PackageIcon>kahla.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/AiursoftWeb/Kahla</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.git</RepositoryUrl>
   </PropertyGroup>
+  
+  
+  <ItemGroup>
+    <None Include="kahla.png" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Aiursoft.Pylon" Version="0.20.2" />
