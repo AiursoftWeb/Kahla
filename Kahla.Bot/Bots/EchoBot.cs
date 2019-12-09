@@ -1,5 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.SDK.Abstract;
+﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class EchoBot : BotBase, ISingletonDependency
+    public class EchoBot : BotBase
     {
         public override KahlaUser Profile { get; set; }
 
@@ -48,7 +47,5 @@ namespace Kahla.Bot.Bots
             await Task.Delay(0);
             return true;
         }
-
-
     }
 }

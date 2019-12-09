@@ -1,12 +1,11 @@
-﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.SDK.Abstract;
+﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class EmptyBot : BotBase, ISingletonDependency
+    public class EmptyBot : BotBase
     {
         public override KahlaUser Profile { get; set; }
 

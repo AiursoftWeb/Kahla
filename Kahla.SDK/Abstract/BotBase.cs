@@ -1,4 +1,5 @@
-﻿using Kahla.Bot.Services;
+﻿using Aiursoft.Pylon.Interfaces;
+using Kahla.Bot.Services;
 using Kahla.SDK.Core;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public abstract class BotBase
+    public abstract class BotBase : ISingletonDependency
     {
         public AES AES;
         public BotListener BotListener;

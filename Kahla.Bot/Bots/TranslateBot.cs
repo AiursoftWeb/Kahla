@@ -1,5 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
-using Kahla.Bot.Services;
+﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class TranslateBot : BotBase, ISingletonDependency
+    public class TranslateBot : BotBase
     {
         private readonly BingTranslator _bingTranslator;
         public override KahlaUser Profile { get; set; }
