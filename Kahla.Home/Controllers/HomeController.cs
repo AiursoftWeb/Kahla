@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Home.Models.HomeViewModels;
 using Kahla.Home.Services;
+using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -9,15 +10,18 @@ namespace Kahla.Home.Controllers
     public class HomeController : Controller
     {
         private readonly VersionChecker _version;
+        private readonly VersionService _versionService;
         private readonly AiurCache _cache;
         private readonly ServiceLocation _serviceLocation;
 
         public HomeController(
             VersionChecker version,
+            VersionService versionService,
             AiurCache cache,
             ServiceLocation serviceLocation)
         {
             _version = version;
+            _versionService = versionService;
             _cache = cache;
             _serviceLocation = serviceLocation;
         }
@@ -30,6 +34,7 @@ namespace Kahla.Home.Controllers
             {
                 AppLatestVersion = appVersion,
                 CLILatestVersion = cliVersion,
+                SDKLatestVersion = _versionService.GetSDKVersion(),
                 DownloadRoot = $"{downloadSite}/production",
                 CliDownloadRoot = $"{downloadSite}/productioncli",
                 ArchiveRoot = "https://github.com/AiursoftWeb/Kahla.App/archive",
@@ -48,6 +53,7 @@ namespace Kahla.Home.Controllers
             {
                 AppLatestVersion = appVersion,
                 CLILatestVersion = cliVersion,
+                SDKLatestVersion = _versionService.GetSDKVersion(),
                 DownloadRoot = $"{downloadSite}/staging",
                 CliDownloadRoot = $"{downloadSite}/stagingcli",
                 ArchiveRoot = "https://github.com/AiursoftWeb/Kahla.App/archive",
