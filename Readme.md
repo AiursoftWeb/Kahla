@@ -1,6 +1,8 @@
 # Aiursoft Kahla Backend
 
 [![Build status](https://aiursoft.visualstudio.com/Star/_apis/build/status/Kahla%20Server%20Build)](https://aiursoft.visualstudio.com/Star/_build/latest?definitionId=6)
+[![NuGet version (Kahla.SDK)](https://img.shields.io/nuget/v/Kahla.SDK.svg?style=flat-square)](https://www.nuget.org/packages/Kahla.SDK/)
+[![Issues](https://img.shields.io/github/issues/AiursoftWeb/Kahla.svg)](https://github.com/AiursoftWeb/Kahla/issues)
 
 Kahla is a cross-platform business messaging app. This is the server side code repo for Kahla.
 
