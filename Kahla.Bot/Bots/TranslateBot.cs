@@ -1,5 +1,5 @@
-﻿using Kahla.Bot.Models;
-using Kahla.Bot.Services;
+﻿using Kahla.Bot.Services;
+using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -8,51 +8,43 @@ using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class TranslateBot : IBot
+    public class TranslateBot : BotBase
     {
-        private KahlaUser _botProfile;
         private readonly BingTranslator _bingTranslator;
-        private readonly BotLogger _botLogger;
+        public override KahlaUser Profile { get; set; }
 
-        public TranslateBot(
-            BingTranslator bingTranslator,
-            BotLogger botLogger)
+        public TranslateBot(BingTranslator bingTranslator)
         {
             _bingTranslator = bingTranslator;
-            _botLogger = botLogger;
-            _botLogger.LogWarning("Please enter your bing API key:");
+        }
+
+        public override Task OnInit()
+        {
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            Console.WriteLine(profilestring);
+
+            BotLogger.LogWarning("Please enter your bing API key:");
             var key = Console.ReadLine();
             _bingTranslator.Init(key);
+            return Task.CompletedTask;
         }
 
-        public KahlaUser Profile
+        public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
-            private get => _botProfile;
-            set
-            {
-                _botProfile = value;
-                var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
-                Console.WriteLine(profilestring);
-            }
-        }
-
-        public async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
-        {
-            await Task.Delay(0);
             if (eventContext.Muted)
             {
-                return string.Empty;
+                return;
             }
             if (eventContext.Message.SenderId == Profile.Id)
             {
-                return string.Empty;
+                return;
             }
             inputMessage = inputMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
-            return translated;
+            await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
-        public async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
+        public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
         {
             await Task.Delay(0);
             return true;

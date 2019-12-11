@@ -1,0 +1,22 @@
+﻿<!doctype html>
+<html>
+<head>
+    <vc:aiur-header></vc:aiur-header>
+    <title>@ViewBag.Title | @Values.ProjectName</title>
+    <link href="@ServiceLocation.UI/dist/AiurCore.min.css" rel="stylesheet">
+    <link href="@ServiceLocation.UI/dist/AiurProduct.min.css" rel="stylesheet">
+</head>
+<body>
+    @RenderBody()
+    <footer class="py-6 px-3 text-gray text-center">
+        <p class="copyright">
+            © @DateTime.Now.Year
+            <a class="text-gray" href="@ServiceLocation.WWW">@Values.ProjectName</a>
+            @Localizer["- All rights reserved."]
+        </p>
+    </footer>
+    <script src="@ServiceLocation.UI/dist/AiurCore.min.js"></script>
+    <script src="@ServiceLocation.UI/dist/AiurProduct.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

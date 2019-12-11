@@ -11,11 +11,10 @@ namespace Kahla.SDK.Services
     {
         public string OpenSSLEncrypt(string plainText, string passphrase)
         {
-            byte[] key, iv;
             byte[] salt = new byte[8];
             RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
             rng.GetNonZeroBytes(salt);
-            DeriveKeyAndIV(passphrase, salt, out key, out iv);
+            DeriveKeyAndIV(passphrase, salt, out byte[] key, out byte[] iv);
             byte[] encryptedBytes = EncryptStringToBytesAes(plainText, key, iv);
             byte[] encryptedBytesWithSalt = new byte[salt.Length + encryptedBytes.Length + 8];
             Buffer.BlockCopy(Encoding.ASCII.GetBytes("Salted__"), 0, encryptedBytesWithSalt, 0, 8);
@@ -59,16 +58,12 @@ namespace Kahla.SDK.Services
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                 // Create the streams used for encryption.
                 msEncrypt = new MemoryStream();
-                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                {
-                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                    {
-                        //Write all data to the stream.
-                        swEncrypt.Write(plainText);
-                        swEncrypt.Flush();
-                        swEncrypt.Close();
-                    }
-                }
+                using CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+                using StreamWriter swEncrypt = new StreamWriter(csEncrypt);
+                //Write all data to the stream.
+                swEncrypt.Write(plainText);
+                swEncrypt.Flush();
+                swEncrypt.Close();
             }
             finally
             {

@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kahla.SDK", "Kahla.SDK\Kahl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kahla.Bot", "Kahla.Bot\Kahla.Bot.csproj", "{8786A349-6B05-4CFA-AF4E-EAE9839C5AB0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kahla.Home", "Kahla.Home\Kahla.Home.csproj", "{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{8786A349-6B05-4CFA-AF4E-EAE9839C5AB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8786A349-6B05-4CFA-AF4E-EAE9839C5AB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8786A349-6B05-4CFA-AF4E-EAE9839C5AB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

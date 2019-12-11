@@ -1,4 +1,4 @@
-﻿using Kahla.Bot.Models;
+﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
@@ -7,43 +7,42 @@ using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
-    public class EchoBot : IBot
+    public class EchoBot : BotBase
     {
-        private KahlaUser _botProfile;
-        public KahlaUser Profile
+        public override KahlaUser Profile { get; set; }
+
+        public override Task OnInit()
         {
-            private get => _botProfile;
-            set
-            {
-                _botProfile = value;
-                var profilestring = JsonConvert.SerializeObject(value, Formatting.Indented);
-                Console.WriteLine(profilestring);
-            }
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            Console.WriteLine(profilestring);
+            return Task.CompletedTask;
         }
 
-        public async Task<string> OnMessage(string inputMessage, NewMessageEvent eventContext)
+        public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
             await Task.Delay(0);
             if (eventContext.Muted)
             {
-                return string.Empty;
+                return;
             }
             if (eventContext.Message.SenderId == Profile.Id)
             {
-                return string.Empty;
+                return;
             }
-            var firstReplace = inputMessage
+            var replaced = inputMessage
                     .Replace("吗", "")
                     .Replace('？', '！')
                     .Replace('?', '!');
             if (eventContext.Mentioned)
             {
-                firstReplace = firstReplace + $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
+                replaced = replaced + $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
             }
-            return firstReplace.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
+            replaced.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
+            await Task.Delay(700);
+            await SendMessage(replaced, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
-        public async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
+        public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
         {
             await Task.Delay(0);
             return true;

@@ -1,8 +1,8 @@
 ﻿using Aiursoft.Pylon.Exceptions;
 using Aiursoft.Pylon.Interfaces;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
-using System;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
@@ -20,11 +20,11 @@ namespace Kahla.SDK.Services
             _kahlaLocation = kahlaLocation;
         }
 
-        public async Task<AiurValue<DateTime>> IndexAsync()
+        public async Task<IndexViewModel> IndexAsync()
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Home", "Index", new { });
             var result = await _http.Get(url);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<DateTime>>(result);
+            var JResult = JsonConvert.DeserializeObject<IndexViewModel>(result);
 
             if (JResult.Code != ErrorType.Success)
                 throw new AiurUnexceptedResponse(JResult);

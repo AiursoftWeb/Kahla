@@ -9,15 +9,14 @@ using Aiursoft.Pylon.Services.ToStargateServer;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
 using Kahla.Server.Services;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -32,7 +31,6 @@ namespace Kahla.Server.Controllers
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;
-        private readonly IWebHostEnvironment _env;
         private readonly AuthService<KahlaUser> _authService;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
@@ -41,13 +39,13 @@ namespace Kahla.Server.Controllers
         private readonly KahlaPushService _pusher;
         private readonly ChannelService _channelService;
         private readonly VersionChecker _version;
+        private readonly VersionService _sdkVersion;
         private readonly KahlaDbContext _dbContext;
         private readonly AiurCache _cache;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
             ServiceLocation serviceLocation,
-            IWebHostEnvironment env,
             AuthService<KahlaUser> authService,
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
@@ -56,12 +54,12 @@ namespace Kahla.Server.Controllers
             KahlaPushService pusher,
             ChannelService channelService,
             VersionChecker version,
+            VersionService sdkVersion,
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
             AiurCache cache)
         {
             _serviceLocation = serviceLocation;
-            _env = env;
             _authService = authService;
             _userManager = userManager;
             _signInManager = signInManager;
@@ -70,22 +68,10 @@ namespace Kahla.Server.Controllers
             _pusher = pusher;
             _channelService = channelService;
             _version = version;
+            _sdkVersion = sdkVersion;
             _dbContext = dbContext;
             _cache = cache;
             _appDomains = optionsAccessor.Value;
-        }
-
-        [APIProduces(typeof(IndexViewModel))]
-        public IActionResult Index()
-        {
-            return Json(new IndexViewModel
-            {
-                Code = ErrorType.Success,
-                Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
-                WikiPath = _serviceLocation.Wiki,
-                ServerTime = DateTime.Now,
-                UTCTime = DateTime.UtcNow
-            });
         }
 
         [APIProduces(typeof(VersionViewModel))]
@@ -96,6 +82,7 @@ namespace Kahla.Server.Controllers
             {
                 LatestVersion = appVersion,
                 LatestCLIVersion = cliVersion,
+                APIVersion = _sdkVersion.GetSDKVersion(),
                 Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
                 DownloadAddress = "https://www.kahla.app"
             });

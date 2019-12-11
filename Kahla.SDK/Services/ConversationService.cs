@@ -39,5 +39,22 @@ namespace Kahla.SDK.Services
                 throw new AiurUnexceptedResponse(JResult);
             return JResult;
         }
+
+        public async Task<AiurCollection<Message>> GetMessagesAsync(int id, int take, string skipFrom)
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Conversation", "GetMessage", new
+            {
+                Id = id,
+                Take = take,
+                SkipFrom = skipFrom
+            });
+            var result = await _http.Get(url);
+            var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Message>>(result);
+            if (jsonResult.Code != ErrorType.Success)
+            {
+                throw new AiurUnexceptedResponse(jsonResult);
+            }
+            return jsonResult;
+        }
     }
 }
