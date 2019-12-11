@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Shared\Components\KahlaNav\" />
+  </ItemGroup>
+
 </Project>

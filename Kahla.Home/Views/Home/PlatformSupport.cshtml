@@ -1,29 +1,8 @@
 ﻿@{
     ViewBag.Title = "Kahla Platform support";
 }
-<header>
-    <div class="container-new py-6 px-3 text-center">
-        <a href="/">
-            <img src="@StorageService.GetProbeDownloadAddress(ServiceLocation, "aiursoft/512x512.png")" alt="Kahla Desktop" width="96" height="96">
-        </a>
-        <ul class="nav list-style-none d-flex flex-justify-center f4">
-            <li>
-                <a class="d-inline-block m-2 current" href="@ServiceLocation.WWW">@Localizer["Aiursoft"]</a>
-            </li>
-            <li>
-                <a class="d-inline-block m-2 current" href="https://wiki.aiursoft.com/ReadDoc/Kahla/What%20is%20Kahla.md">@Localizer["About Kahla"]</a>
-            </li>
-            <li>
-                <a class="d-inline-block m-2" href="https://github.com/AiursoftWeb/Kahla.App/releases">@Localizer["Release notes"]</a>
-            </li>
-            <li>
-                <a class="d-inline-block m-2" href="@(new AiurUrl(ServiceLocation.Gateway, "Api", "SetLang", new { Host = $"{Context.Request.Scheme}://{Context.Request.Host}", Path = Context.Request.Path }))">
-                    @Localizer["Language"]
-                </a>
-            </li>
-        </ul>
-    </div>
-</header>
+<vc:kahla-nav is-production="true"></vc:kahla-nav>
+
 <div class="container">
     <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" asp-controller="Home" asp-action="Index">@Localizer["<- Back"]</a>
     <div class="w-100">
