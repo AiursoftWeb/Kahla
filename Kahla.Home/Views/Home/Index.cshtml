@@ -16,6 +16,7 @@
     }
     var requestCulture = requestCultureFeature.RequestCulture.UICulture.IetfLanguageTag;
     var isChineseUser = requestCulture.ToLower().Trim() == "zh";
+    var blockChineseUser = Configuration["BlockChineseUser"] == true.ToString();
 }
 
 <vc:kahla-nav is-production="@Model.IsProduction"></vc:kahla-nav>
@@ -47,7 +48,7 @@
             @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
             @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
         </p>
-        @if (!isChineseUser)
+        @if (!isChineseUser || !blockChineseUser)
         {
             <p>
                 <a asp-controller="Home" asp-action="PlatformSupport">View platform support status</a>
@@ -137,7 +138,7 @@
             <i class="fa fa-fw fa-github"></i>
             @Localizer["View on GitHub"]
         </a>
-        @if (!isChineseUser)
+        @if (!isChineseUser || !blockChineseUser)
         {
             <a class="btn btn-outline-white f4 mb-6" href="#" data-toggle="modal" data-target="#downloadModal">
                 <i class="fa fa-fw fa-download"></i>
