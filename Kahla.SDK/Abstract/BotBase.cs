@@ -24,15 +24,15 @@ namespace Kahla.SDK.Abstract
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
 
-        public abstract KahlaUser Profile { get; set; }
+        public KahlaUser Profile { get; set; }
 
-        public abstract Task OnInit();
+        public abstract Task OnBotInit();
 
-        public abstract Task<bool> OnFriendRequest(NewFriendRequestEvent arg);
+        public abstract Task OnFriendRequest(NewFriendRequestEvent arg);
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
 
-        public virtual async Task Start()
+        public async Task Start()
         {
             var listenTask = await Connect();
 
@@ -40,7 +40,7 @@ namespace Kahla.SDK.Abstract
             await Task.WhenAll(listenTask, Command());
         }
 
-        public virtual async Task<Task> Connect()
+        public async Task<Task> Connect()
         {
             var server = AskServerAddress();
             KahlaLocation.UseKahlaServer(server);
@@ -58,7 +58,8 @@ namespace Kahla.SDK.Abstract
             {
                 BotLogger.LogSuccess($"You are already signed in! Welcome!");
             }
-            await SetProfile();
+            await RefreshUserProfile();
+            await OnBotInit();
             var websocketAddress = await GetWSAddress();
             BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             var requests = (await FriendshipService.MyRequestsAsync())
@@ -66,7 +67,7 @@ namespace Kahla.SDK.Abstract
                 .Where(t => !t.Completed);
             foreach (var request in requests)
             {
-                await OnNewFriendRequest(new NewFriendRequestEvent
+                await OnFriendRequest(new NewFriendRequestEvent
                 {
                     RequestId = request.Id,
                     Requester = request.Creator,
@@ -76,7 +77,7 @@ namespace Kahla.SDK.Abstract
             return MonitorEvents(websocketAddress);
         }
 
-        public virtual string AskServerAddress()
+        public string AskServerAddress()
         {
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
             BotLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
@@ -95,7 +96,7 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task<bool> TestKahlaLive()
+        public async Task<bool> TestKahlaLive()
         {
             try
             {
@@ -125,13 +126,13 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task<bool> SignedIn()
+        public async Task<bool> SignedIn()
         {
             var status = await AuthService.SignInStatusAsync();
             return status.Value;
         }
 
-        public virtual async Task OpenSignIn()
+        public async Task OpenSignIn()
         {
             BotLogger.LogInfo($"Signing in to Kahla...");
             var address = await AuthService.OAuthAsync();
@@ -141,7 +142,7 @@ namespace Kahla.SDK.Abstract
             //410969371
         }
 
-        public virtual async Task<int> AskCode()
+        public async Task<int> AskCode()
         {
             int code;
             while (true)
@@ -159,7 +160,7 @@ namespace Kahla.SDK.Abstract
             return code;
         }
 
-        public virtual async Task SignIn(int code)
+        public async Task SignIn(int code)
         {
             while (true)
             {
@@ -181,23 +182,22 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task SetProfile()
+        public async Task RefreshUserProfile()
         {
             await Task.Delay(200);
             BotLogger.LogInfo($"Getting account profile...");
             var profile = await AuthService.MeAsync();
             Profile = profile.Value;
-            await OnInit();
         }
 
-        public virtual async Task<string> GetWSAddress()
+        public async Task<string> GetWSAddress()
         {
             var address = await AuthService.InitPusherAsync();
             await Task.Delay(200);
             return address.ServerPath;
         }
 
-        public virtual Task MonitorEvents(string websocketAddress)
+        public Task MonitorEvents(string websocketAddress)
         {
             var exitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
@@ -211,7 +211,7 @@ namespace Kahla.SDK.Abstract
             return Task.Run(exitEvent.WaitOne);
         }
 
-        public virtual async void OnStargateMessage(ResponseMessage msg)
+        public async void OnStargateMessage(ResponseMessage msg)
         {
             var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
             if (inevent.Type == EventType.NewMessage)
@@ -222,33 +222,31 @@ namespace Kahla.SDK.Abstract
             else if (inevent.Type == EventType.NewFriendRequestEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                await OnNewFriendRequest(typedEvent);
+                await OnFriendRequest(typedEvent);
             }
         }
 
-        public virtual async Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        public async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
             string decrypted = AES.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             BotLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
-        public virtual async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
+        public Task CompleteRequest(int requestId, bool accept)
         {
-            BotLogger.LogWarning($"New friend request from '{typedEvent.Requester.NickName}'!");
-            var result = await OnFriendRequest(typedEvent);
-            await FriendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
-            var text = result ? "accepted" : "rejected";
-            BotLogger.LogWarning($"Friend request from '{typedEvent.Requester.NickName}' was {text}.");
+            var text = accept ? "accepted" : "rejected";
+            BotLogger.LogWarning($"Friend request with id '{requestId}' was {text}.");
+            return FriendshipService.CompleteRequestAsync(requestId, accept);
         }
 
-        public virtual async Task SendMessage(string message, int conversationId, string aesKey)
+        public async Task SendMessage(string message, int conversationId, string aesKey)
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 
-        public virtual async Task Command()
+        public async Task Command()
         {
             await Task.Delay(0);
             while (true)

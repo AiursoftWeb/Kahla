@@ -1,7 +1,6 @@
 ﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
-using Kahla.SDK.Models;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
@@ -11,14 +10,12 @@ namespace Kahla.Bot.Bots
     public class TranslateBot : BotBase
     {
         private readonly BingTranslator _bingTranslator;
-        public override KahlaUser Profile { get; set; }
-
         public TranslateBot(BingTranslator bingTranslator)
         {
             _bingTranslator = bingTranslator;
         }
 
-        public override Task OnInit()
+        public override Task OnBotInit()
         {
             var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
             Console.WriteLine(profilestring);
@@ -44,10 +41,9 @@ namespace Kahla.Bot.Bots
             await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
-        public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
+        public override Task OnFriendRequest(NewFriendRequestEvent arg)
         {
-            await Task.Delay(0);
-            return true;
+            return CompleteRequest(arg.RequestId, true);
         }
     }
 }
