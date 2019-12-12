@@ -59,5 +59,16 @@ namespace Kahla.SDK.Services
                 throw new AiurUnexceptedResponse(JResult);
             return JResult;
         }
+
+        public async Task<AiurValue<bool>> SignInStatusAsync()
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Auth", "SignInStatus", new { });
+            var result = await _http.Get(url);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<bool>>(result);
+
+            if (JResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(JResult);
+            return JResult;
+        }
     }
 }

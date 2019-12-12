@@ -48,10 +48,17 @@ namespace Kahla.SDK.Abstract
             {
                 return Task.CompletedTask;
             }
-            await OpenSignIn();
-            var code = await AskCode();
-            await SignIn(code);
-            await DisplayMyProfile();
+            if (!await SignedIn())
+            {
+                await OpenSignIn();
+                var code = await AskCode();
+                await SignIn(code);
+            }
+            else
+            {
+                BotLogger.LogSuccess($"You are already signed in! Welcome!");
+            }
+            await SetProfile();
             var websocketAddress = await GetWSAddress();
             BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             var requests = (await FriendshipService.MyRequestsAsync())
@@ -118,6 +125,12 @@ namespace Kahla.SDK.Abstract
             }
         }
 
+        public virtual async Task<bool> SignedIn()
+        {
+            var status = await AuthService.SignInStatusAsync();
+            return status.Value;
+        }
+
         public virtual async Task OpenSignIn()
         {
             BotLogger.LogInfo($"Signing in to Kahla...");
@@ -168,7 +181,7 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task DisplayMyProfile()
+        public virtual async Task SetProfile()
         {
             await Task.Delay(200);
             BotLogger.LogInfo($"Getting account profile...");
