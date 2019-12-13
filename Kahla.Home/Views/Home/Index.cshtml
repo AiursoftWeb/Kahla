@@ -48,7 +48,11 @@
             @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
             @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
         </p>
-        @if (!isChineseUser || !blockMainlandChineseUser)
+        @if (isChineseUser && blockMainlandChineseUser)
+        {
+            <p class="text-danger">很抱歉，卡拉不为中国大陆用户提供服务。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">为什么？</a></p>
+        }
+        else
         {
             <p>
                 <a asp-controller="Home" asp-action="PlatformSupport">View platform support status</a>
@@ -60,10 +64,6 @@
                 @Localizer["By downloading, you agree to the"]
                 <a href="@(Values.Footer["Terms"])">@Localizer["license agreement"]</a>@Localizer["."]
             </p>
-        }
-        else
-        {
-            <p class="text-danger">很抱歉，卡拉不为中国大陆用户提供服务。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">为什么？</a></p>
         }
         <div class="d-block width-fit mx-auto mt-6 mb-6">
             <img style="width:100%;max-width:640px;" src="@ServiceLocation.UI/images/kahla-demo.png" class="app-screenshot" />
@@ -138,16 +138,17 @@
             <i class="fa fa-fw fa-github"></i>
             @Localizer["View on GitHub"]
         </a>
-        @if (!isChineseUser || !blockMainlandChineseUser)
+        @if (isChineseUser && blockMainlandChineseUser)
+        {
+            <p class="text-danger">很抱歉，由于您所在地区政策原因，卡拉无法向您提供服务，请关闭此页。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">了解更多</a></p>
+
+        }
+        else
         {
             <a class="btn btn-outline-white f4 mb-6" href="#" data-toggle="modal" data-target="#downloadModal">
                 <i class="fa fa-fw fa-download"></i>
                 @Localizer["Download now"]
             </a>
-        }
-        else
-        {
-            <p class="text-danger">很抱歉，由于您所在地区政策原因，卡拉无法向您提供服务，请关闭此页。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">了解更多</a></p>
         }
         <hr class="my-6 mx-auto" style="width: 100px;">
     </div>
