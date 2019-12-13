@@ -101,12 +101,9 @@ namespace Kahla.SDK.Abstract
             try
             {
                 BotLogger.LogInfo($"Using Kahla Server: {KahlaLocation}");
-                await Task.Delay(200);
                 BotLogger.LogInfo("Testing Kahla server connection...");
-                await Task.Delay(1000);
                 var index = await HomeService.IndexAsync();
                 BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
-                await Task.Delay(200);
                 BotLogger.LogInfo($"Server time: \t\t{index.UTCTime}\tLocal time: \t\t{DateTime.UtcNow}");
                 BotLogger.LogInfo($"Server version: \t{index.APIVersion}\t\t\tLocal version: \t{VersionService.GetSDKVersion()}");
                 if (index.APIVersion != VersionService.GetSDKVersion())
@@ -147,7 +144,7 @@ namespace Kahla.SDK.Abstract
             int code;
             while (true)
             {
-                await Task.Delay(500);
+                await Task.Delay(10);
                 BotLogger.LogInfo($"Please enther the `code` in the address bar(after signing in):");
                 var codeString = Console.ReadLine().Trim();
                 if (!int.TryParse(codeString, out code))
@@ -184,7 +181,6 @@ namespace Kahla.SDK.Abstract
 
         public async Task RefreshUserProfile()
         {
-            await Task.Delay(200);
             BotLogger.LogInfo($"Getting account profile...");
             var profile = await AuthService.MeAsync();
             Profile = profile.Value;
@@ -193,7 +189,6 @@ namespace Kahla.SDK.Abstract
         public async Task<string> GetWSAddress()
         {
             var address = await AuthService.InitPusherAsync();
-            await Task.Delay(200);
             return address.ServerPath;
         }
 
@@ -248,9 +243,9 @@ namespace Kahla.SDK.Abstract
 
         public async Task Command()
         {
-            await Task.Delay(0);
             while (true)
             {
+                Console.Write($"Bot:\\System\\{Profile.NickName}>");
                 var command = Console.ReadLine();
                 if (command.Length < 1)
                 {
@@ -261,6 +256,22 @@ namespace Kahla.SDK.Abstract
                     case 'q':
                         Environment.Exit(0);
                         return;
+                    case 'a':
+                        var conversations = await ConversationService.AllAsync();
+                        BotLogger.LogSuccess($"Successfully get all your conversations.");
+                        foreach (var conversation in conversations.Items)
+                        {
+                            BotLogger.LogInfo($"ID:\t{conversation.ConversationId}");
+                            BotLogger.LogInfo($"Name:\t{conversation.DisplayName}");
+                            BotLogger.LogInfo($"Type:\t{conversation.Discriminator}");
+                            BotLogger.LogInfo($"Last:\t{conversation.LatestMessage}");
+                            BotLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
+                            BotLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}\n");
+                        }
+                        break;
+                    case 'c':
+                        Console.Clear();
+                        break;
                     case 'h':
                         BotLogger.LogInfo($"Kahla bot commands:");
 
@@ -268,6 +279,7 @@ namespace Kahla.SDK.Abstract
                         BotLogger.LogInfo($"\ta\tShow all conversations.");
                         BotLogger.LogInfo($"\ts\tSay something to someone.");
                         BotLogger.LogInfo($"\tb\tBroadcast to all conversations.");
+                        BotLogger.LogInfo($"\tc\tClear console.");
 
                         BotLogger.LogInfo($"\r\nGroup");
                         BotLogger.LogInfo($"\tm\tMute all groups.");
