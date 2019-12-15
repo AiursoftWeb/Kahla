@@ -47,6 +47,7 @@ namespace Kahla.SDK.Models
         public int CurrentChannel { get; set; } = -1;
         public string ConnectKey { get; set; }
         public DateTime LastEmailHimTime { get; set; } = DateTime.MinValue;
+        public string EmailReasonInJson { get; set; }
 
         [JsonProperty]
         public bool MakeEmailPublic { get; set; } = true;

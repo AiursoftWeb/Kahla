@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Text;
@@ -62,15 +63,21 @@ namespace Kahla.Server.Services
                     foreach (var user in users)
                     {
                         _logger.LogInformation($"Building email for user: {user.NickName}...");
-                        var emailMessage = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
+                        var (emailMessage, reason) = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
                         if (string.IsNullOrWhiteSpace(emailMessage))
                         {
                             _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
                             continue;
                         }
+                        if (user.EmailReasonInJson == JsonConvert.SerializeObject(reason))
+                        {
+                            _logger.LogInformation($"User: {user.NickName}'s Email has the same send reason with the previous one. Skip.");
+                            continue;
+                        }
                         _logger.LogInformation($"Sending email to user: {user.NickName}.");
                         await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
                         user.LastEmailHimTime = DateTime.UtcNow;
+                        user.EmailReasonInJson = JsonConvert.SerializeObject(reason);
                         dbContext.Update(user);
                     }
                     await dbContext.SaveChangesAsync();
@@ -97,8 +104,9 @@ namespace Kahla.Server.Services
             return count >= 2 ? "s" : string.Empty;
         }
 
-        public async Task<string> BuildEmail(KahlaUser user, KahlaDbContext dbContext, string domain)
+        public async Task<(string content, EmailReason reason)> BuildEmail(KahlaUser user, KahlaDbContext dbContext, string domain)
         {
+            var reason = new EmailReason();
             int totalUnread = 0, inConversations = 0;
             var conversations = await dbContext.MyContacts(user.Id).ToListAsync();
             var msg = new StringBuilder();
@@ -117,6 +125,7 @@ namespace Kahla.Server.Services
 
                 totalUnread += currentUnread;
                 inConversations++;
+                reason.UnreadInConversationIds.Add(contact.ConversationId);
                 if (inConversations == 20)
                 {
                     msg.AppendLine("<li>Some conversations haven't been displayed because there are too many items.</li>");
@@ -130,13 +139,19 @@ namespace Kahla.Server.Services
                     msg.AppendLine($"<li>{currentUnread} unread message{AppendS(currentUnread)} in {(contact.Discriminator == nameof(GroupConversation) ? "group" : "friend")} <a href=\"{domain}/talking/{contact.ConversationId}\">{contact.DisplayName}</a>.</li>");
                 }
             }
-            var pendingRequests = await dbContext
+            var pendingRequestsQuery = dbContext
                 .Requests
                 .AsNoTracking()
-                .Where(t => t.TargetId == user.Id)
+                .Where(t => t.TargetId == user.Id);
+            var pendingRequestsCount = await pendingRequestsQuery
                 .CountAsync(t => t.Completed == false);
+            var pendingRequestsIds = await pendingRequestsQuery
+                .Select(t => t.Id)
+                .ToListAsync();
 
-            if (inConversations > 0 || pendingRequests > 0)
+            reason.UnreadFriendRequestIds.AddRange(pendingRequestsIds);
+
+            if (inConversations > 0 || pendingRequestsCount > 0)
             {
                 if (inConversations > 0)
                 {
@@ -145,16 +160,16 @@ namespace Kahla.Server.Services
                     msg.AppendLine("</ul>");
                 }
 
-                if (pendingRequests > 0)
+                if (pendingRequestsCount > 0)
                 {
-                    msg.AppendLine($"<h4>You have {pendingRequests} pending friend request{AppendS(pendingRequests)} in Kahla.<h4>");
+                    msg.AppendLine($"<h4>You have {pendingRequestsCount} pending friend request{AppendS(pendingRequestsCount)} in Kahla.<h4>");
                 }
 
                 msg.AppendLine($"Click to <a href='{domain}'>Open Kahla Now</a>.");
                 msg.AppendLine($"<br><p>Click <a href='{domain}/advanced-setting'>here</a> to unsubscribe all notifications.</p>");
-                return msg.ToString();
+                return (msg.ToString(), reason);
             }
-            return string.Empty;
+            return (string.Empty, reason);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
