@@ -228,7 +228,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurValue<Folder>))]
+        [APIProduces(typeof(AiurCollection<Folder>))]
         public async Task<IActionResult> FileHistory([Required]int id)
         {
             var user = await GetKahlaUser();
@@ -250,7 +250,7 @@ namespace Kahla.Server.Controllers
                 var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{subfolder.FolderName}");
                 subfolder.Files = filesInSubfolder.Value.Files;
             }
-            return Json(new AiurValue<Folder>(files.Value)
+            return Json(new AiurCollection<Folder>(files.Value.SubFolders.ToList())
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all files in your conversation."
