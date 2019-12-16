@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Models.Probe;
 using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.SDK.Models;
@@ -228,7 +227,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurCollection<Folder>))]
+        [APIProduces(typeof(FileHistoryViewModel))]
         public async Task<IActionResult> FileHistory([Required]int id)
         {
             var user = await GetKahlaUser();
@@ -250,10 +249,12 @@ namespace Kahla.Server.Controllers
                 var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{subfolder.FolderName}");
                 subfolder.Files = filesInSubfolder.Value.Files;
             }
-            return Json(new AiurCollection<Folder>(files.Value.SubFolders.ToList())
+            return Json(new FileHistoryViewModel(files.Value.SubFolders.ToList())
             {
                 Code = ErrorType.Success,
-                Message = "Successfully get all files in your conversation."
+                Message = "Successfully get all files in your conversation. Please download with pattern: 'https://{siteName}.aiursoft.io/{rootPath}/{folderName}/{fileName}'.",
+                SiteName = _configuration["UserFilesSiteName"],
+                RootPath = $"conversation-{conversation.Id}"
             });
         }
 
