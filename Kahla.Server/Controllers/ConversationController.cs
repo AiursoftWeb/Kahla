@@ -1,6 +1,9 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Aiursoft.Pylon.Models.Probe;
+using Aiursoft.Pylon.Services;
+using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -9,6 +12,7 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,15 +30,24 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
+        private readonly FoldersService _foldersService;
+        private readonly AppsContainer _appsContainer;
+        private readonly IConfiguration _configuration;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pushService)
+            KahlaPushService pushService,
+            FoldersService foldersService,
+            AppsContainer appsContainer,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
+            _foldersService = foldersService;
+            _appsContainer = appsContainer;
+            _configuration = configuration;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -66,18 +79,15 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var timeLimit = DateTime.UtcNow - TimeSpan.FromSeconds(target.MaxLiveSeconds);
-            Message skipStart = null;
+            DateTime? skipStart = null;
             if (!string.IsNullOrWhiteSpace(skipFrom))
             {
-                if (!Guid.TryParse(skipFrom, out Guid guid))
-                {
-                    return this.Protocol(ErrorType.InvalidInput, $"Your 'skipFrom': '{skipFrom}' is not a valid GUID!");
-                }
-                skipStart = await _dbContext
+                Guid.TryParse(skipFrom, out Guid guid);
+                skipStart = (await _dbContext
                     .Messages
                     .AsNoTracking()
                     .Where(t => t.ConversationId == target.Id)
-                    .SingleOrDefaultAsync(t => t.Id == guid);
+                    .SingleOrDefaultAsync(t => t.Id == guid))?.SendTime;
             }
             //Get Messages
             var allMessages = await _dbContext
@@ -88,7 +98,7 @@ namespace Kahla.Server.Controllers
                 .Include(t => t.Sender)
                 .Where(t => t.ConversationId == target.Id)
                 .Where(t => t.SendTime > timeLimit)
-                .Where(t => skipStart == null || t.SendTime < skipStart.SendTime)
+                .Where(t => skipStart == null || t.SendTime < skipStart)
                 .OrderByDescending(t => t.SendTime)
                 .Take(take)
                 .OrderBy(t => t.SendTime)
@@ -215,6 +225,35 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get target conversation."
+            });
+        }
+
+        [APIProduces(typeof(AiurValue<Folder>))]
+        public async Task<IActionResult> FileHistory([Required]int id)
+        {
+            var user = await GetKahlaUser();
+            var conversation = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (conversation == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+            }
+            if (!conversation.HasUser(user.Id))
+            {
+                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+            }
+            var files = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
+            foreach (var subfolder in files.Value.SubFolders)
+            {
+                var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{subfolder.FolderName}");
+                subfolder.Files = filesInSubfolder.Value.Files;
+            }
+            return Json(new AiurValue<Folder>(files.Value)
+            {
+                Code = ErrorType.Success,
+                Message = "Successfully get all files in your conversation."
             });
         }
 
