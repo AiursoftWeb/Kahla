@@ -92,7 +92,7 @@ namespace Kahla.Server.Services
                     {
                         var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
                         var accessToken = await _appsContainer.AccessToken();
-                        await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception);
+                        await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception, string.Empty);
                     }
                 }
                 catch { }
