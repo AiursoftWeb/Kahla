@@ -263,6 +263,7 @@ namespace Kahla.SDK.Abstract
                         {
                             BotLogger.LogInfo($"ID:\t{conversation.ConversationId}");
                             BotLogger.LogInfo($"Name:\t{conversation.DisplayName}");
+                            BotLogger.LogInfo($"Online:\t{conversation.Online}");
                             BotLogger.LogInfo($"Type:\t{conversation.Discriminator}");
                             BotLogger.LogInfo($"Last:\t{conversation.LatestMessage}");
                             BotLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
