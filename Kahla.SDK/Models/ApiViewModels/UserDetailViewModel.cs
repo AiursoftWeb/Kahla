@@ -9,6 +9,5 @@ namespace Kahla.SDK.Models.ApiViewModels
         public bool SentRequest { get; set; }
         public Request PendingRequest { get; set; }
         public int? ConversationId { get; set; }
-        public bool Online { get; set; }
     }
 }

@@ -1,22 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Kahla.Server.Attributes
+namespace Kahla.SDK.Attributes
 {
     public class OnlineDetector : ActionFilterAttribute
     {
+        public static Dictionary<string, DateTime> OnlineCache = new Dictionary<string, DateTime>();
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             if (context.HttpContext.User.Identity.IsAuthenticated)
             {
-                var cache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
                 var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (cache != null && !string.IsNullOrWhiteSpace(userId))
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    cache.Set($"last-call-user-{userId}", DateTime.UtcNow);
+                    OnlineCache[userId] = DateTime.UtcNow;
                 }
             }
         }

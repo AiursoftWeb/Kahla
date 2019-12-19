@@ -1,16 +1,15 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
-using Kahla.Server.Attributes;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -28,19 +27,16 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
-        private readonly IMemoryCache _cache;
         private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pushService,
-            IMemoryCache cache)
+            KahlaPushService pushService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
-            _cache = cache;
         }
 
         [APIProduces(typeof(MineViewModel))]
@@ -329,7 +325,6 @@ namespace Kahla.Server.Controllers
                 model.ConversationId = null;
             }
             model.User = target;
-            model.Online = target.IsOnline(_cache);
             model.PendingRequest = await _dbContext.Requests
                 .Include(t => t.Creator)
                 .Where(t =>

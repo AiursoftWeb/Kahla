@@ -1,10 +1,10 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
-using Kahla.Server.Attributes;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
