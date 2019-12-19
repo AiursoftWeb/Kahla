@@ -28,14 +28,14 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
-        private readonly MemoryCache _cache;
+        private readonly IMemoryCache _cache;
         private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pushService,
-            MemoryCache cache)
+            IMemoryCache cache)
         {
             _userManager = userManager;
             _dbContext = dbContext;

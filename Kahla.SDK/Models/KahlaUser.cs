@@ -71,7 +71,7 @@ namespace Kahla.SDK.Models
         public bool EnableEnterToSendMessage { get; set; } = true;
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
 
-        public bool IsOnline(MemoryCache cache)
+        public bool IsOnline(IMemoryCache cache)
         {
             if (cache.TryGetValue($"last-call-user-{Id}", out DateTime lastcallAPI))
             {

@@ -12,7 +12,7 @@ namespace Kahla.Server.Attributes
         {
             if (context.HttpContext.User.Identity.IsAuthenticated)
             {
-                var cache = context.HttpContext.RequestServices.GetService<MemoryCache>();
+                var cache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
                 var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (cache != null && !string.IsNullOrWhiteSpace(userId))
                 {
