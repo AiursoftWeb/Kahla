@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Models;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -69,5 +70,14 @@ namespace Kahla.SDK.Models
         [JsonProperty]
         public bool EnableEnterToSendMessage { get; set; } = true;
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
+
+        public bool IsOnline(MemoryCache cache)
+        {
+            if (cache.TryGetValue($"last-call-user-{Id}", out DateTime lastcallAPI))
+            {
+                return DateTime.UtcNow < lastcallAPI + TimeSpan.FromMinutes(5);
+            }
+            return false;
+        }
     }
 }

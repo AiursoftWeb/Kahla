@@ -5,6 +5,7 @@ using Aiursoft.Pylon.Services;
 using Aiursoft.Pylon.Services.ToProbeServer;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
+using Kahla.Server.Attributes;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
+    [OnlineDetector]
     public class StorageController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;

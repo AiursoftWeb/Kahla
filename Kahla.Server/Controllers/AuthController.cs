@@ -10,6 +10,7 @@ using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
+using Kahla.Server.Attributes;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
 using Kahla.Server.Services;
@@ -28,6 +29,7 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
+    [OnlineDetector]
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;

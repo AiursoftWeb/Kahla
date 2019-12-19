@@ -4,6 +4,7 @@ using Aiursoft.Pylon.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
+using Kahla.Server.Attributes;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
+    [OnlineDetector]
     public class HomeController : Controller
     {
         private readonly IWebHostEnvironment _env;
