@@ -78,7 +78,10 @@ namespace Kahla.SDK.Models
             {
                 if (OnlineDetector.OnlineCache.ContainsKey(Id))
                 {
-                    return OnlineDetector.OnlineCache[Id] + TimeSpan.FromMinutes(5) > DateTime.UtcNow;
+                    lock (OnlineDetector._obj)
+                    {
+                        return OnlineDetector.OnlineCache[Id] + TimeSpan.FromMinutes(5) > DateTime.UtcNow;
+                    }
                 }
                 return false;
             }
