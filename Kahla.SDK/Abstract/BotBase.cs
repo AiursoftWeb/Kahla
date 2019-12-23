@@ -248,6 +248,11 @@ namespace Kahla.SDK.Abstract
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 
+        public async Task LogOff()
+        {
+            await AuthService.LogoffAsync();
+        }
+
         public async Task Command()
         {
             while (true)
@@ -260,7 +265,7 @@ namespace Kahla.SDK.Abstract
                 }
                 switch (command.ToLower().Trim()[0])
                 {
-                    case 'q':
+                    case 'e':
                         Environment.Exit(0);
                         return;
                     case 'a':
@@ -279,6 +284,10 @@ namespace Kahla.SDK.Abstract
                         break;
                     case 'c':
                         Console.Clear();
+                        break;
+                    case 'l':
+                        await LogOff();
+                        BotLogger.LogWarning($"Successfully log off. Use command:`r` to reconnect.");
                         break;
                     case 'h':
                         BotLogger.LogInfo($"Kahla bot commands:");
@@ -299,7 +308,7 @@ namespace Kahla.SDK.Abstract
 
                         BotLogger.LogInfo($"\r\nProgram");
                         BotLogger.LogInfo($"\th\tShow help.");
-                        BotLogger.LogInfo($"\tq\tQuit bot.");
+                        BotLogger.LogInfo($"\te\tQuit bot.");
                         break;
                     default:
                         BotLogger.LogDanger($"Unknown command: {command}. Please try command: 'h' for help.");

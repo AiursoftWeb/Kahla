@@ -12,7 +12,7 @@ namespace Kahla.SDK.Services
         {
             try
             {
-                var settingString = File.ReadAllText("bot.dat");
+                var settingString = File.ReadAllText("bot.json");
                 _cached = JsonConvert.DeserializeObject<BotSettings>(settingString);
                 return _cached;
             }
@@ -27,7 +27,7 @@ namespace Kahla.SDK.Services
             var setting = Read();
             setting.ServerAddress = server;
             var settingString = JsonConvert.SerializeObject(setting);
-            File.WriteAllText("bot.dat", settingString);
+            File.WriteAllText("bot.json", settingString);
         }
 
         public void Save(int coreIndex)
@@ -35,7 +35,7 @@ namespace Kahla.SDK.Services
             var setting = Read();
             setting.BotCoreIndex = coreIndex;
             var settingString = JsonConvert.SerializeObject(setting);
-            File.WriteAllText("bot.dat", settingString);
+            File.WriteAllText("bot.json", settingString);
         }
     }
 }
