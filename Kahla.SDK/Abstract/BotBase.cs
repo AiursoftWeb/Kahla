@@ -23,6 +23,7 @@ namespace Kahla.SDK.Abstract
         public HomeService HomeService;
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
+        public SettingsService SettingsService;
 
         public KahlaUser Profile { get; set; }
 
@@ -43,6 +44,7 @@ namespace Kahla.SDK.Abstract
         public async Task<Task> Connect()
         {
             var server = AskServerAddress();
+            SettingsService.Save(server);
             KahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
@@ -79,6 +81,11 @@ namespace Kahla.SDK.Abstract
 
         public string AskServerAddress()
         {
+            var cached = SettingsService.Read();
+            if (!string.IsNullOrWhiteSpace(cached.ServerAddress))
+            {
+                return cached.ServerAddress;
+            }
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
             BotLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
             var result = Console.ReadLine();
