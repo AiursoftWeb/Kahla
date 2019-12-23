@@ -1,4 +1,6 @@
 ﻿using Aiursoft.Pylon;
+using Kahla.Bot.Services;
+using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -35,6 +37,36 @@ namespace Kahla.SDK.Abstract
                 services.AddScoped(typeof(BotBase), item);
             }
             return services;
+        }
+
+        public static BotBase SelectBot(
+            IEnumerable<BotBase> bots,
+            SettingsService settingsService,
+            BotLogger botLogger)
+        {
+            var builtBots = bots.ToList();
+            int code = settingsService.Read().BotCoreIndex;
+            if (code < 0)
+            {
+                botLogger.LogWarning("Select your bot:\n");
+                for (int i = 0; i < builtBots.Count; i++)
+                {
+                    botLogger.LogInfo($"\t{i.ToString()} {builtBots[i].GetType().Name}");
+                }
+                while (true)
+                {
+                    botLogger.LogInfo($"Select bot:");
+                    var codeString = Console.ReadLine().Trim();
+                    if (!int.TryParse(codeString, out code) || code >= builtBots.Count)
+                    {
+                        botLogger.LogDanger($"Invalid item!");
+                        continue;
+                    }
+                    break;
+                }
+                settingsService.Save(code);
+            }
+            return builtBots[code];
         }
     }
 }

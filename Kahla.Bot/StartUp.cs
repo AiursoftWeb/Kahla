@@ -7,16 +7,14 @@ using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Bot
 {
     public class StartUp : IScopedDependency
     {
-        private readonly BotBase _echoBot;
+        private readonly BotBase _bot;
 
         public StartUp(
             ConversationService conversationService,
@@ -30,39 +28,17 @@ namespace Kahla.Bot
             SettingsService settingsService,
             AES aes)
         {
-            var builtBots = bots.ToList();
-            int code = settingsService.Read().BotCoreIndex;
-            if (code < 0)
-            {
-                botLogger.LogWarning("Select your bot:\n");
-                for (int i = 0; i < builtBots.Count; i++)
-                {
-                    botLogger.LogInfo($"\t{i.ToString()} {builtBots[i].GetType().Name}");
-                }
-                while (true)
-                {
-                    botLogger.LogInfo($"Select bot:");
-                    var codeString = Console.ReadLine().Trim();
-                    if (!int.TryParse(codeString, out code) || code >= builtBots.Count)
-                    {
-                        botLogger.LogDanger($"Invalid item!");
-                        continue;
-                    }
-                    break;
-                }
-                settingsService.Save(code);
-            }
-            var echoBot = builtBots[code];
-            echoBot.BotLogger = botLogger;
-            echoBot.AES = aes;
-            echoBot.ConversationService = conversationService;
-            echoBot.FriendshipService = friendshipService;
-            echoBot.HomeService = homeService;
-            echoBot.KahlaLocation = kahlaLocation;
-            echoBot.AuthService = authService;
-            echoBot.VersionService = versionService;
-            echoBot.SettingsService = settingsService;
-            _echoBot = echoBot;
+            var bot = BotConfigurer.SelectBot(bots, settingsService, botLogger);
+            bot.BotLogger = botLogger;
+            bot.AES = aes;
+            bot.ConversationService = conversationService;
+            bot.FriendshipService = friendshipService;
+            bot.HomeService = homeService;
+            bot.KahlaLocation = kahlaLocation;
+            bot.AuthService = authService;
+            bot.VersionService = versionService;
+            bot.SettingsService = settingsService;
+            _bot = bot;
         }
 
         public static IServiceScope ConfigureServices()
@@ -82,6 +58,6 @@ namespace Kahla.Bot
                 .CreateScope();
         }
 
-        public Task Start() => _echoBot.Start();
+        public Task Start() => _bot.Start();
     }
 }
