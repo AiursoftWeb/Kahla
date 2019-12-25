@@ -43,11 +43,9 @@ namespace Kahla.Server.Services
             try
             {
                 _logger.LogInformation("Cleaner task started!");
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var foldersService = scope.ServiceProvider.GetRequiredService<FoldersService>();
-                    await AllClean(foldersService);
-                }
+                using var scope = _scopeFactory.CreateScope();
+                var foldersService = scope.ServiceProvider.GetRequiredService<FoldersService>();
+                await AllClean(foldersService);
             }
             catch (Exception ex)
             {

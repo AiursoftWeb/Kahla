@@ -102,10 +102,8 @@ namespace Kahla.SDK.Services
             {
                 var base64 = File.ReadAllText("cookies.dat");
                 var bytes = base64.Base64ToBytes();
-                using (MemoryStream stream = new MemoryStream(bytes))
-                {
-                    return (CookieContainer)new BinaryFormatter().Deserialize(stream);
-                }
+                using MemoryStream stream = new MemoryStream(bytes);
+                return (CookieContainer)new BinaryFormatter().Deserialize(stream);
             }
             catch
             {

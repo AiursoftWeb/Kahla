@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Pylon.Models;
-using Kahla.SDK.Attributes;
+using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -72,19 +72,13 @@ namespace Kahla.SDK.Models
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
 
         [JsonProperty]
-        public bool IsOnline
+        [NotMapped]
+        public bool IsOnline { get; set; } = false;
+
+        public KahlaUser Build(OnlineJudger judge)
         {
-            get
-            {
-                if (OnlineDetector.OnlineCache.ContainsKey(Id))
-                {
-                    lock (OnlineDetector._obj)
-                    {
-                        return OnlineDetector.OnlineCache[Id] + TimeSpan.FromMinutes(5) > DateTime.UtcNow;
-                    }
-                }
-                return false;
-            }
+            IsOnline = judge.IsOnline(Id);
+            return this;
         }
     }
 }

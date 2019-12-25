@@ -32,7 +32,7 @@ namespace Kahla.Bot.Bots
                     .Replace('?', '!');
             if (eventContext.Mentioned)
             {
-                replaced = replaced + $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
+                replaced += $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
             }
             replaced.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             await Task.Delay(700);

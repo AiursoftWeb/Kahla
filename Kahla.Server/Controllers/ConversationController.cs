@@ -7,6 +7,7 @@ using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
@@ -34,6 +35,7 @@ namespace Kahla.Server.Controllers
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
+        private readonly OnlineJudger _onlineJudger;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
@@ -41,7 +43,8 @@ namespace Kahla.Server.Controllers
             KahlaPushService pushService,
             FoldersService foldersService,
             AppsContainer appsContainer,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            OnlineJudger onlineJudger)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -49,6 +52,7 @@ namespace Kahla.Server.Controllers
             _foldersService = foldersService;
             _appsContainer = appsContainer;
             _configuration = configuration;
+            _onlineJudger = onlineJudger;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -56,6 +60,11 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var contacts = await _dbContext.MyContacts(user.Id).ToListAsync();
+            foreach (var contact in contacts)
+            {
+                contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
+                    _onlineJudger.IsOnline(contact.UserId) : false;
+            }
             return Json(new AiurCollection<ContactInfo>(contacts)
             {
                 Code = ErrorType.Success,
@@ -122,7 +131,7 @@ namespace Kahla.Server.Controllers
             {
                 model.RecordTime = DateTime.UtcNow;
             }
-            model.At = model.At ?? new string[0];
+            model.At ??= new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations

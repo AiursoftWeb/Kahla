@@ -2,6 +2,7 @@
 using Kahla.SDK.Events;
 using System.Threading.Tasks;
 
+#pragma warning disable CS1998
 namespace Kahla.Bot.Bots
 {
     public class EmptyBot : BotBase
@@ -22,3 +23,4 @@ namespace Kahla.Bot.Bots
         }
     }
 }
+#pragma warning restore CS1998

@@ -47,53 +47,49 @@ namespace Kahla.Server.Services
             try
             {
                 _logger.LogInformation("Email notifier task started!");
-                using (var scope = _scopeFactory.CreateScope())
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
+                var timeLimit = DateTime.UtcNow - TimeSpan.FromHours(23);
+                var users = await dbContext
+                                .Users
+                                .Where(t => t.EmailConfirmed)
+                                .Where(t => t.EnableEmailNotification)
+                                // Only for users who did not send email for a long time.
+                                .Where(t => t.LastEmailHimTime < timeLimit)
+                                .ToListAsync();
+                foreach (var user in users)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                    var emailSender = scope.ServiceProvider.GetRequiredService<AiurEmailSender>();
-                    var timeLimit = DateTime.UtcNow - TimeSpan.FromHours(23);
-                    var users = await dbContext
-                                    .Users
-                                    .Where(t => t.EmailConfirmed)
-                                    .Where(t => t.EnableEmailNotification)
-                                    // Only for users who did not send email for a long time.
-                                    .Where(t => t.LastEmailHimTime < timeLimit)
-                                    .ToListAsync();
-                    foreach (var user in users)
+                    _logger.LogInformation($"Building email for user: {user.NickName}...");
+                    var (emailMessage, reason) = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
+                    if (string.IsNullOrWhiteSpace(emailMessage))
                     {
-                        _logger.LogInformation($"Building email for user: {user.NickName}...");
-                        var (emailMessage, reason) = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
-                        if (string.IsNullOrWhiteSpace(emailMessage))
-                        {
-                            _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
-                            continue;
-                        }
-                        if (user.EmailReasonInJson == JsonConvert.SerializeObject(reason))
-                        {
-                            _logger.LogInformation($"User: {user.NickName}'s Email has the same send reason with the previous one. Skip.");
-                            continue;
-                        }
-                        _logger.LogInformation($"Sending email to user: {user.NickName}.");
-                        await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
-                        user.LastEmailHimTime = DateTime.UtcNow;
-                        user.EmailReasonInJson = JsonConvert.SerializeObject(reason);
-                        dbContext.Update(user);
+                        _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
+                        continue;
                     }
-                    await dbContext.SaveChangesAsync();
+                    if (user.EmailReasonInJson == JsonConvert.SerializeObject(reason))
+                    {
+                        _logger.LogInformation($"User: {user.NickName}'s Email has the same send reason with the previous one. Skip.");
+                        continue;
+                    }
+                    _logger.LogInformation($"Sending email to user: {user.NickName}.");
+                    await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
+                    user.LastEmailHimTime = DateTime.UtcNow;
+                    user.EmailReasonInJson = JsonConvert.SerializeObject(reason);
+                    dbContext.Update(user);
                 }
+                await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 try
                 {
                     _logger.LogCritical(ex, ex.Message);
-                    using (var scope = _scopeFactory.CreateScope())
-                    {
-                        var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
-                        var accessToken = await _appsContainer.AccessToken();
-                        await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception, string.Empty);
-                    }
+                    using var scope = _scopeFactory.CreateScope();
+                    var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
+                    var accessToken = await _appsContainer.AccessToken();
+                    await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception, string.Empty);
                 }
                 catch { }
             }
