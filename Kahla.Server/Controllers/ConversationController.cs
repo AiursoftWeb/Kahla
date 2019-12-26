@@ -116,6 +116,7 @@ namespace Kahla.Server.Controllers
             var lastReadTime = await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
             allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
+            allMessages.ForEach(t => t.Sender.Build(_onlineJudger));
             return Json(new AiurCollection<Message>(allMessages)
             {
                 Code = ErrorType.Success,
