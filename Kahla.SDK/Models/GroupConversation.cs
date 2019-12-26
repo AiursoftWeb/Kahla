@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Kahla.SDK.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -69,11 +70,15 @@ namespace Kahla.SDK.Models
             return Users.SingleOrDefault(t => t.UserId == userId).Muted;
         }
 
-        public override Conversation Build(string userId)
+        public override Conversation Build(string userId, OnlineJudger onlineJudger)
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
             Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
+            foreach (var user in Users)
+            {
+                user.User.Build(onlineJudger);
+            }
             return this;
         }
 

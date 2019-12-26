@@ -232,7 +232,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            return Json(new AiurValue<Conversation>(target.Build(user.Id))
+            return Json(new AiurValue<Conversation>(target.Build(user.Id, _onlineJudger))
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get target conversation."
