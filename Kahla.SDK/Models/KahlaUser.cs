@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Models;
+using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -47,6 +48,7 @@ namespace Kahla.SDK.Models
         public int CurrentChannel { get; set; } = -1;
         public string ConnectKey { get; set; }
         public DateTime LastEmailHimTime { get; set; } = DateTime.MinValue;
+        public string EmailReasonInJson { get; set; }
 
         [JsonProperty]
         public bool MakeEmailPublic { get; set; } = true;
@@ -68,5 +70,15 @@ namespace Kahla.SDK.Models
         [JsonProperty]
         public bool EnableEnterToSendMessage { get; set; } = true;
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
+
+        [JsonProperty]
+        [NotMapped]
+        public bool IsOnline { get; set; } = false;
+
+        public KahlaUser Build(OnlineJudger judge)
+        {
+            IsOnline = judge.IsOnline(Id);
+            return this;
+        }
     }
 }

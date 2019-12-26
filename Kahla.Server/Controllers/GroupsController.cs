@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -20,6 +21,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(true)]
+    [OnlineDetector]
     public class GroupsController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;

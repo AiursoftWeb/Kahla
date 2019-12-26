@@ -1,22 +1,20 @@
 ﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
-using Kahla.SDK.Models;
 using System.Threading.Tasks;
 
+#pragma warning disable CS1998
 namespace Kahla.Bot.Bots
 {
     public class EmptyBot : BotBase
     {
-        public override KahlaUser Profile { get; set; }
-
-        public override async Task OnInit()
+        public override async Task OnBotInit()
         {
 
         }
 
-        public override async Task<bool> OnFriendRequest(NewFriendRequestEvent arg)
+        public override async Task OnFriendRequest(NewFriendRequestEvent arg)
         {
-            return true;
+
         }
 
         public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
@@ -25,3 +23,4 @@ namespace Kahla.Bot.Bots
         }
     }
 }
+#pragma warning restore CS1998

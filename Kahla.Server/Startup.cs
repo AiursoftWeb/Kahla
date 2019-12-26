@@ -10,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using WebPush;
 
@@ -28,11 +26,6 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            };
             services.AddDbContext<KahlaDbContext>(options =>
                 options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
 
@@ -44,12 +37,7 @@ namespace Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
-            services.AddControllers().AddNewtonsoftJson(opt =>
-            {
-                opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            });
-
+            services.AddAiurMvc();
             services.AddAiurDependencies<KahlaUser>("Kahla");
             services.AddScoped<WebPushClient>();
         }

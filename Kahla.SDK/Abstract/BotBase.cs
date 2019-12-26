@@ -23,16 +23,17 @@ namespace Kahla.SDK.Abstract
         public HomeService HomeService;
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
+        public SettingsService SettingsService;
 
-        public abstract KahlaUser Profile { get; set; }
+        public KahlaUser Profile { get; set; }
 
-        public abstract Task OnInit();
+        public abstract Task OnBotInit();
 
-        public abstract Task<bool> OnFriendRequest(NewFriendRequestEvent arg);
+        public abstract Task OnFriendRequest(NewFriendRequestEvent arg);
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
 
-        public virtual async Task Start()
+        public async Task Start()
         {
             var listenTask = await Connect();
 
@@ -40,18 +41,27 @@ namespace Kahla.SDK.Abstract
             await Task.WhenAll(listenTask, Command());
         }
 
-        public virtual async Task<Task> Connect()
+        public async Task<Task> Connect()
         {
             var server = AskServerAddress();
+            SettingsService.Save(server);
             KahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
                 return Task.CompletedTask;
             }
-            await OpenSignIn();
-            var code = await AskCode();
-            await SignIn(code);
-            await DisplayMyProfile();
+            if (!await SignedIn())
+            {
+                await OpenSignIn();
+                var code = await AskCode();
+                await SignIn(code);
+            }
+            else
+            {
+                BotLogger.LogSuccess($"You are already signed in! Welcome!");
+            }
+            await RefreshUserProfile();
+            await OnBotInit();
             var websocketAddress = await GetWSAddress();
             BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             var requests = (await FriendshipService.MyRequestsAsync())
@@ -59,7 +69,7 @@ namespace Kahla.SDK.Abstract
                 .Where(t => !t.Completed);
             foreach (var request in requests)
             {
-                await OnNewFriendRequest(new NewFriendRequestEvent
+                await OnFriendRequest(new NewFriendRequestEvent
                 {
                     RequestId = request.Id,
                     Requester = request.Creator,
@@ -69,8 +79,13 @@ namespace Kahla.SDK.Abstract
             return MonitorEvents(websocketAddress);
         }
 
-        public virtual string AskServerAddress()
+        public string AskServerAddress()
         {
+            var cached = SettingsService.Read();
+            if (!string.IsNullOrWhiteSpace(cached.ServerAddress))
+            {
+                return cached.ServerAddress;
+            }
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
             BotLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
             var result = Console.ReadLine();
@@ -88,17 +103,14 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task<bool> TestKahlaLive()
+        public async Task<bool> TestKahlaLive()
         {
             try
             {
                 BotLogger.LogInfo($"Using Kahla Server: {KahlaLocation}");
-                await Task.Delay(200);
                 BotLogger.LogInfo("Testing Kahla server connection...");
-                await Task.Delay(1000);
                 var index = await HomeService.IndexAsync();
                 BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
-                await Task.Delay(200);
                 BotLogger.LogInfo($"Server time: \t\t{index.UTCTime}\tLocal time: \t\t{DateTime.UtcNow}");
                 BotLogger.LogInfo($"Server version: \t{index.APIVersion}\t\t\tLocal version: \t{VersionService.GetSDKVersion()}");
                 if (index.APIVersion != VersionService.GetSDKVersion())
@@ -118,7 +130,13 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task OpenSignIn()
+        public async Task<bool> SignedIn()
+        {
+            var status = await AuthService.SignInStatusAsync();
+            return status.Value;
+        }
+
+        public async Task OpenSignIn()
         {
             BotLogger.LogInfo($"Signing in to Kahla...");
             var address = await AuthService.OAuthAsync();
@@ -128,12 +146,12 @@ namespace Kahla.SDK.Abstract
             //410969371
         }
 
-        public virtual async Task<int> AskCode()
+        public async Task<int> AskCode()
         {
             int code;
             while (true)
             {
-                await Task.Delay(500);
+                await Task.Delay(10);
                 BotLogger.LogInfo($"Please enther the `code` in the address bar(after signing in):");
                 var codeString = Console.ReadLine().Trim();
                 if (!int.TryParse(codeString, out code))
@@ -146,7 +164,7 @@ namespace Kahla.SDK.Abstract
             return code;
         }
 
-        public virtual async Task SignIn(int code)
+        public async Task SignIn(int code)
         {
             while (true)
             {
@@ -168,23 +186,20 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public virtual async Task DisplayMyProfile()
+        public async Task RefreshUserProfile()
         {
-            await Task.Delay(200);
             BotLogger.LogInfo($"Getting account profile...");
             var profile = await AuthService.MeAsync();
             Profile = profile.Value;
-            await OnInit();
         }
 
-        public virtual async Task<string> GetWSAddress()
+        public async Task<string> GetWSAddress()
         {
             var address = await AuthService.InitPusherAsync();
-            await Task.Delay(200);
             return address.ServerPath;
         }
 
-        public virtual Task MonitorEvents(string websocketAddress)
+        public Task MonitorEvents(string websocketAddress)
         {
             var exitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
@@ -198,7 +213,7 @@ namespace Kahla.SDK.Abstract
             return Task.Run(exitEvent.WaitOne);
         }
 
-        public virtual async void OnStargateMessage(ResponseMessage msg)
+        public async void OnStargateMessage(ResponseMessage msg)
         {
             var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
             if (inevent.Type == EventType.NewMessage)
@@ -209,37 +224,40 @@ namespace Kahla.SDK.Abstract
             else if (inevent.Type == EventType.NewFriendRequestEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                await OnNewFriendRequest(typedEvent);
+                await OnFriendRequest(typedEvent);
             }
         }
 
-        public virtual async Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        public async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
             string decrypted = AES.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             BotLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
-        public virtual async Task OnNewFriendRequest(NewFriendRequestEvent typedEvent)
+        public Task CompleteRequest(int requestId, bool accept)
         {
-            BotLogger.LogWarning($"New friend request from '{typedEvent.Requester.NickName}'!");
-            var result = await OnFriendRequest(typedEvent);
-            await FriendshipService.CompleteRequestAsync(typedEvent.RequestId, result);
-            var text = result ? "accepted" : "rejected";
-            BotLogger.LogWarning($"Friend request from '{typedEvent.Requester.NickName}' was {text}.");
+            var text = accept ? "accepted" : "rejected";
+            BotLogger.LogWarning($"Friend request with id '{requestId}' was {text}.");
+            return FriendshipService.CompleteRequestAsync(requestId, accept);
         }
 
-        public virtual async Task SendMessage(string message, int conversationId, string aesKey)
+        public async Task SendMessage(string message, int conversationId, string aesKey)
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 
-        public virtual async Task Command()
+        public async Task LogOff()
         {
-            await Task.Delay(0);
+            await AuthService.LogoffAsync();
+        }
+
+        public async Task Command()
+        {
             while (true)
             {
+                Console.Write($"Bot:\\System\\{Profile.NickName}>");
                 var command = Console.ReadLine();
                 if (command.Length < 1)
                 {
@@ -247,9 +265,30 @@ namespace Kahla.SDK.Abstract
                 }
                 switch (command.ToLower().Trim()[0])
                 {
-                    case 'q':
+                    case 'e':
                         Environment.Exit(0);
                         return;
+                    case 'a':
+                        var conversations = await ConversationService.AllAsync();
+                        BotLogger.LogSuccess($"Successfully get all your conversations.");
+                        foreach (var conversation in conversations.Items)
+                        {
+                            BotLogger.LogInfo($"ID:\t{conversation.ConversationId}");
+                            BotLogger.LogInfo($"Name:\t{conversation.DisplayName}");
+                            BotLogger.LogInfo($"Online:\t{conversation.Online}");
+                            BotLogger.LogInfo($"Type:\t{conversation.Discriminator}");
+                            BotLogger.LogInfo($"Last:\t{conversation.LatestMessage}");
+                            BotLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
+                            BotLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}\n");
+                        }
+                        break;
+                    case 'c':
+                        Console.Clear();
+                        break;
+                    case 'l':
+                        await LogOff();
+                        BotLogger.LogWarning($"Successfully log off. Use command:`r` to reconnect.");
+                        break;
                     case 'h':
                         BotLogger.LogInfo($"Kahla bot commands:");
 
@@ -257,6 +296,7 @@ namespace Kahla.SDK.Abstract
                         BotLogger.LogInfo($"\ta\tShow all conversations.");
                         BotLogger.LogInfo($"\ts\tSay something to someone.");
                         BotLogger.LogInfo($"\tb\tBroadcast to all conversations.");
+                        BotLogger.LogInfo($"\tc\tClear console.");
 
                         BotLogger.LogInfo($"\r\nGroup");
                         BotLogger.LogInfo($"\tm\tMute all groups.");
@@ -268,7 +308,7 @@ namespace Kahla.SDK.Abstract
 
                         BotLogger.LogInfo($"\r\nProgram");
                         BotLogger.LogInfo($"\th\tShow help.");
-                        BotLogger.LogInfo($"\tq\tQuit bot.");
+                        BotLogger.LogInfo($"\te\tQuit bot.");
                         break;
                     default:
                         BotLogger.LogDanger($"Unknown command: {command}. Please try command: 'h' for help.");

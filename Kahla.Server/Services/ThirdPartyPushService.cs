@@ -32,42 +32,40 @@ namespace Kahla.Server.Services
 
         public async Task PushAsync(IEnumerable<Device> devices, string triggerEmail, string payload)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
-                string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
-                // Push to all devices.
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+            string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
+            string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
+            // Push to all devices.
 
-                var pushTasks = new List<Task>();
-                foreach (var device in devices)
+            var pushTasks = new List<Task>();
+            foreach (var device in devices)
+            {
+                async Task PushToDevice()
                 {
-                    async Task PushToDevice()
+                    try
                     {
-                        try
-                        {
-                            var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-                            var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
-                            await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
-                        }
-                        catch (WebPushException e)
-                        {
-                            dbContext.Devices.Remove(device);
-                            await dbContext.SaveChangesAsync();
-                            _logger.LogCritical(e, "A WebPush error occured while calling WebPush API: " + e.Message);
-                            _logger.LogCritical(e, e.Message);
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogCritical(e, "An error occured while calling WebPush API: " + e.Message);
-                        }
+                        var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                        var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
+                        await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
                     }
-                    pushTasks.Add(PushToDevice());
+                    catch (WebPushException e)
+                    {
+                        dbContext.Devices.Remove(device);
+                        await dbContext.SaveChangesAsync();
+                        _logger.LogCritical(e, "A WebPush error occured while calling WebPush API: " + e.Message);
+                        _logger.LogCritical(e, e.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogCritical(e, "An error occured while calling WebPush API: " + e.Message);
+                    }
                 }
-                await Task.WhenAny(
-                    Task.WhenAll(pushTasks),
-                    Task.Delay(2000));
+                pushTasks.Add(PushToDevice());
             }
+            await Task.WhenAny(
+                Task.WhenAll(pushTasks),
+                Task.Delay(2000));
         }
     }
 }

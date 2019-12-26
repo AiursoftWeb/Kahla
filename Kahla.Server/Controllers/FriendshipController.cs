@@ -1,9 +1,11 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Models;
+using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
@@ -20,21 +22,25 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
+    [OnlineDetector]
     public class FriendshipController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
+        private readonly OnlineJudger _onlineJudger;
         private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pushService)
+            KahlaPushService pushService,
+            OnlineJudger onlineJudger)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
+            _onlineJudger = onlineJudger;
         }
 
         [APIProduces(typeof(MineViewModel))]
@@ -46,6 +52,7 @@ namespace Kahla.Server.Controllers
                .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
                .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
                .ToListAsync())
+               .Select(t => t.Build(_onlineJudger))
                .OrderBy(t => t.NickName);
             var groups = await _dbContext.GroupConversations
                 .AsNoTracking()
@@ -322,7 +329,7 @@ namespace Kahla.Server.Controllers
                 model.AreFriends = false;
                 model.ConversationId = null;
             }
-            model.User = target;
+            model.User = target.Build(_onlineJudger);
             model.PendingRequest = await _dbContext.Requests
                 .Include(t => t.Creator)
                 .Where(t =>

@@ -16,6 +16,7 @@
     }
     var requestCulture = requestCultureFeature.RequestCulture.UICulture.IetfLanguageTag;
     var isChineseUser = requestCulture.ToLower().Trim() == "zh";
+    var blockMainlandChineseUser = Configuration["BlockMainlandChineseUser"] == true.ToString();
 }
 
 <vc:kahla-nav is-production="@Model.IsProduction"></vc:kahla-nav>
@@ -44,10 +45,14 @@
         </p>
         <p>
             @Localizer["App Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.AppLatestVersion</kbd>
-            @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.CLILatestVersion</kbd>
-            @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
+            @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
         </p>
-        @if (!isChineseUser)
+        @if (isChineseUser && blockMainlandChineseUser)
+        {
+            <p class="text-danger">很抱歉，卡拉不为中国大陆用户提供服务。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">为什么？</a></p>
+        }
+        else
         {
             <p>
                 <a asp-controller="Home" asp-action="PlatformSupport">View platform support status</a>
@@ -59,10 +64,6 @@
                 @Localizer["By downloading, you agree to the"]
                 <a href="@(Values.Footer["Terms"])">@Localizer["license agreement"]</a>@Localizer["."]
             </p>
-        }
-        else
-        {
-            <p class="text-danger">很抱歉，卡拉不为中国大陆用户提供服务。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">为什么？</a></p>
         }
         <div class="d-block width-fit mx-auto mt-6 mb-6">
             <img style="width:100%;max-width:640px;" src="@ServiceLocation.UI/images/kahla-demo.png" class="app-screenshot" />
@@ -137,16 +138,17 @@
             <i class="fa fa-fw fa-github"></i>
             @Localizer["View on GitHub"]
         </a>
-        @if (!isChineseUser)
+        @if (isChineseUser && blockMainlandChineseUser)
+        {
+            <p class="text-danger">很抱歉，由于您所在地区政策原因，卡拉无法向您提供服务，请关闭此页。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">了解更多</a></p>
+
+        }
+        else
         {
             <a class="btn btn-outline-white f4 mb-6" href="#" data-toggle="modal" data-target="#downloadModal">
                 <i class="fa fa-fw fa-download"></i>
                 @Localizer["Download now"]
             </a>
-        }
-        else
-        {
-            <p class="text-danger">很抱歉，由于您所在地区政策原因，卡拉无法向您提供服务，请关闭此页。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">了解更多</a></p>
         }
         <hr class="my-6 mx-auto" style="width: 100px;">
     </div>
@@ -173,7 +175,7 @@
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="app-tab" data-toggle="tab" href="#app" role="tab" aria-controls="app" aria-selected="true">
-                            Desktop
+                            PC
                             <span class="badge badge-secondary ml-1">@Model.AppLatestVersion</span>
                         </a>
                     </li>
@@ -239,7 +241,7 @@
                         <h3 class="mt-3">@Localizer["For iOS"]</h3>
                         <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" href="@Html.Raw(Model.KahlaWebPath)"><label class="text-muted">@Localizer["(We are working on iOS app...)"]</label></a>
                     </div>
-                    <div class="tab-pane fade" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
+                    <div class="tab-pane fade" id="sdk" role="tabpanel" aria-labelledby="sdk-tab">
                         <h3 class="mt-3 mb-2">@Localizer["For .NET Core"]</h3>
                         <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" href="https://www.nuget.org/packages/Kahla.SDK/" target="_blank">
                             @Localizer["Nuget.org"]
