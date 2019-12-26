@@ -162,7 +162,7 @@ namespace Kahla.Server.Controllers
                 Id = Guid.Parse(model.MessageId),
                 Content = model.Content,
                 SenderId = user.Id,
-                Sender = user,
+                Sender = user.Build(_onlineJudger),
                 ConversationId = target.Id,
                 SendTime = model.RecordTime
             };
