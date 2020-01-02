@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aiursoft.Pylon" Version="0.22.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
   </ItemGroup>
 

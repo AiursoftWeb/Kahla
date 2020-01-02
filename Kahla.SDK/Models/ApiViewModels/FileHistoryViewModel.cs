@@ -1,5 +1,5 @@
-﻿using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Models.Probe;
+﻿using Aiursoft.SDK.Models.Probe;
+using Aiursoft.XelNaga.Models;
 using System;
 using System.Collections.Generic;
 

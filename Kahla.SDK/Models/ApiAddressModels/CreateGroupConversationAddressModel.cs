@@ -1,4 +1,4 @@
-using Aiursoft.Pylon.Attributes;
+using Aiursoft.SDK.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.SDK.Models.ApiAddressModels
@@ -8,7 +8,7 @@ namespace Kahla.SDK.Models.ApiAddressModels
         [Required]
         [MinLength(3)]
         [MaxLength(25)]
-        [Display(Name ="new group's name")]
+        [Display(Name = "new group's name")]
         public string GroupName { get; set; }
 
         [MaxLength(100, ErrorMessage = "Your password was too long.")]

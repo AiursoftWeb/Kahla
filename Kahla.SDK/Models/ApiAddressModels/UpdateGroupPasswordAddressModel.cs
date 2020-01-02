@@ -1,4 +1,4 @@
-﻿using Aiursoft.Pylon.Attributes;
+﻿using Aiursoft.SDK.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.SDK.Models.ApiAddressModels

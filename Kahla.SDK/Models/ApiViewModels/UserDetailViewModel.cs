@@ -1,4 +1,4 @@
-using Aiursoft.Pylon.Models;
+using Aiursoft.XelNaga.Models;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {

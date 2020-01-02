@@ -1,7 +1,7 @@
-﻿using Aiursoft.Pylon.Exceptions;
-using Aiursoft.Pylon.Interfaces;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Models.ForApps.AddressModels;
+﻿using Aiursoft.SDK.Models.ForApps.AddressModels;
+using Aiursoft.XelNaga.Exceptions;
+using Aiursoft.XelNaga.Interfaces;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
@@ -53,11 +53,11 @@ namespace Kahla.SDK.Services
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Auth", "InitPusher", new { });
             var result = await _http.Get(url);
-            var JResult = JsonConvert.DeserializeObject<InitPusherViewModel>(result);
+            var jresult = JsonConvert.DeserializeObject<InitPusherViewModel>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
-            return JResult;
+            if (jresult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(jresult);
+            return jresult;
         }
 
         public async Task<AiurValue<bool>> SignInStatusAsync()
