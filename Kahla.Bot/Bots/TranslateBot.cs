@@ -20,9 +20,14 @@ namespace Kahla.Bot.Bots
             var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
             Console.WriteLine(profilestring);
 
-            BotLogger.LogWarning("Please enter your bing API key:");
-            var key = Console.ReadLine();
+            var key = SettingsService.Read("BingTranslateAPIKey") as string;
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                BotLogger.LogWarning("Please enter your bing API key:");
+                key = Console.ReadLine();
+            }
             _bingTranslator.Init(key);
+            SettingsService.Save("BingTranslateAPIKey", key);
             return Task.CompletedTask;
         }
 
