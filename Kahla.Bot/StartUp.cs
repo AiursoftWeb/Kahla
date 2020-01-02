@@ -1,8 +1,7 @@
-﻿using Aiursoft.Pylon;
-using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
+using Aiursoft.XelNaga.Tools;
 using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
-using Kahla.SDK.Models;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -51,7 +50,7 @@ namespace Kahla.Bot
             };
 
             return new ServiceCollection()
-                .AddAiurDependencies<KahlaUser>("Kahla")
+                .AddAccessiableDependencies()
                 .AddBots()
                 .BuildServiceProvider()
                 .GetService<IServiceScopeFactory>()
