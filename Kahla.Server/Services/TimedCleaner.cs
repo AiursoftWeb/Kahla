@@ -1,4 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,27 +37,25 @@ namespace Kahla.Server.Services
             try
             {
                 _logger.LogInformation("Cleaner task started!");
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
-                    var hugeConversationMessages = dbContext
-                        .Conversations
-                        .Where(t => t.Messages.Count() > 20000)
-                        .SelectMany(t => t.Messages)
-                        .OrderBy(t => t.SendTime)
-                        .Take(1000);
-                    dbContext.Messages.RemoveRange(hugeConversationMessages);
-                    await dbContext.SaveChangesAsync();
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+                var hugeConversationMessages = dbContext
+                    .Conversations
+                    .Where(t => t.Messages.Count() > 20000)
+                    .SelectMany(t => t.Messages)
+                    .OrderBy(t => t.SendTime)
+                    .Take(1000);
+                dbContext.Messages.RemoveRange(hugeConversationMessages);
+                await dbContext.SaveChangesAsync();
 
-                    // try delete messages too old.
-                    var outdatedMessages = (await dbContext
-                        .Messages
-                        .Include(t => t.Conversation)
-                        .ToListAsync())
-                        .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
-                    dbContext.Messages.RemoveRange(outdatedMessages);
-                    await dbContext.SaveChangesAsync();
-                }
+                // try delete messages too old.
+                var outdatedMessages = (await dbContext
+                    .Messages
+                    .Include(t => t.Conversation)
+                    .ToListAsync())
+                    .Where(t => DateTime.UtcNow > t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds));
+                dbContext.Messages.RemoveRange(outdatedMessages);
+                await dbContext.SaveChangesAsync();
             }
             catch (Exception e)
             {

@@ -1,8 +1,8 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToStargateServer;
+using Aiursoft.SDK.Services;
+using Aiursoft.SDK.Services.ToStargateServer;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Attributes;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;

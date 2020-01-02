@@ -1,8 +1,9 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToProbeServer;
+using Aiursoft.SDK.Attributes;
+using Aiursoft.SDK.Services;
+using Aiursoft.SDK.Services.ToProbeServer;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
