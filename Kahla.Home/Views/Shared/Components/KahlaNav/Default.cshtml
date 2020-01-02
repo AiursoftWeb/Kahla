@@ -24,7 +24,7 @@
             @if (Model.IsProduction)
             {
                 <li>
-                    <a class="d-inline-block m-2" asp-controller="Home" asp-action="Staging">
+                    <a class="d-inline-block m-2" href="//staging.kahla.app">
                         @Localizer["Staging version"]
                     </a>
                 </li>
@@ -32,7 +32,7 @@
             else
             {
                 <li>
-                    <a class="d-inline-block m-2" asp-controller="Home" asp-action="Index">
+                    <a class="d-inline-block m-2" href="//www.kahla.app">
                         @Localizer["Production version"]
                     </a>
                 </li>
