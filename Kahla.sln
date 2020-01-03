@@ -14,6 +14,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kahla.Bot", "Kahla.Bot\Kahl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kahla.Home", "Kahla.Home\Kahla.Home.csproj", "{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK", "SDK", "{717D65A6-7B59-4352-BAD8-E4D74FD7A508}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{0C9ED400-F809-4009-9440-4458F9E056D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{C777DD3A-EC1B-4753-A1CB-FA19D2A905A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +45,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C29736F-572D-42D9-91D1-C3E71A536015} = {C777DD3A-EC1B-4753-A1CB-FA19D2A905A7}
+		{E64C30D5-B506-4574-89FC-8A5F60CA5AD8} = {717D65A6-7B59-4352-BAD8-E4D74FD7A508}
+		{8786A349-6B05-4CFA-AF4E-EAE9839C5AB0} = {0C9ED400-F809-4009-9440-4458F9E056D4}
+		{4BCA5677-7506-48F3-B4A6-E4A26EF47AD0} = {C777DD3A-EC1B-4753-A1CB-FA19D2A905A7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {92784B39-DB60-4E5A-A2C6-98537462EEC3}
