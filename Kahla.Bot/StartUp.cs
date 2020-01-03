@@ -17,6 +17,7 @@ namespace Kahla.Bot
 
         public StartUp(
             ConversationService conversationService,
+            GroupsService groupsService,
             FriendshipService friendshipService,
             AuthService authService,
             HomeService homeService,
@@ -37,6 +38,7 @@ namespace Kahla.Bot
             bot.AuthService = authService;
             bot.VersionService = versionService;
             bot.SettingsService = settingsService;
+            bot.GroupsService = groupsService;
             _bot = bot;
         }
 

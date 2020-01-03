@@ -16,7 +16,10 @@ namespace Kahla.SDK.Abstract
     public abstract class BotBase : ISingletonDependency
     {
         public AES AES;
+
+
         public BotLogger BotLogger;
+        public GroupsService GroupsService;
         public ConversationService ConversationService;
         public FriendshipService FriendshipService;
         public AuthService AuthService;
@@ -255,6 +258,11 @@ namespace Kahla.SDK.Abstract
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
+        }
+
+        public async Task JoinGroup(string groupName, string password)
+        {
+            await GroupsService.JoinGroupAsync(groupName, password);
         }
 
         public async Task LogOff()
