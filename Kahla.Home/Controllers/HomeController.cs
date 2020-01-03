@@ -50,7 +50,10 @@ namespace Kahla.Home.Controllers
 
         public IActionResult PlatformSupport()
         {
-            return View();
+            var mode = Request.Host.ToString().ToLower().Contains("staging") ?
+                "staging" : "production";
+            var isProduction = mode == "production";
+            return View(isProduction);
         }
 
         public IActionResult Error()
