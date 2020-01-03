@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kahla.SDK.Services;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace Kahla.SDK.Models
             return false;
         }
 
-        public override Conversation Build(string userId)
+        public override Conversation Build(string userId, OnlineJudger onlineJudger)
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);

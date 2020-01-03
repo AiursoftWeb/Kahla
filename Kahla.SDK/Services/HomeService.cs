@@ -1,6 +1,6 @@
-﻿using Aiursoft.Pylon.Exceptions;
-using Aiursoft.Pylon.Interfaces;
-using Aiursoft.Pylon.Models;
+﻿using Aiursoft.XelNaga.Exceptions;
+using Aiursoft.XelNaga.Interfaces;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System.Threading.Tasks;

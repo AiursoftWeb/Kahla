@@ -17,6 +17,11 @@ namespace Kahla.Bot.Bots
 
         }
 
+        public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
+        {
+
+        }
+
         public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
 

@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Pylon.Services;
+using Aiursoft.SDK.Services;
 using Kahla.Home.Models.HomeViewModels;
 using Kahla.Home.Services;
 using Kahla.SDK.Services;
@@ -30,42 +31,29 @@ namespace Kahla.Home.Controllers
         {
             var (appVersion, cliVersion) = await _cache.GetAndCache("Version.Cache", () => _version.CheckKahla());
             var downloadSite = "https://download.kahla.app";
+            var mode = Request.Host.ToString().ToLower().Contains("staging") ?
+                "staging" : "production";
+            var isProduction = mode == "production";
             var model = new IndexViewModel
             {
                 AppLatestVersion = appVersion,
                 CLILatestVersion = cliVersion,
                 SDKLatestVersion = _versionService.GetSDKVersion(),
-                DownloadRoot = $"{downloadSite}/production",
-                CliDownloadRoot = $"{downloadSite}/productioncli",
+                DownloadRoot = $"{downloadSite}/{mode}",
+                CliDownloadRoot = $"{downloadSite}/{mode}",
                 ArchiveRoot = "https://github.com/AiursoftWeb/Kahla.App/archive",
-                KahlaWebPath = "//web.kahla.app",
-                IsProduction = true,
+                KahlaWebPath = isProduction ? "//web.kahla.app" : "//staging.web.kahla.app",
+                IsProduction = isProduction,
             };
             return View(model);
         }
 
-        [Route("/Staging")]
-        public async Task<IActionResult> Staging()
-        {
-            var (appVersion, cliVersion) = await _cache.GetAndCache("Version.Cache.Staging", () => _version.CheckKahlaStaging());
-            var downloadSite = "https://download.kahla.app";
-            var model = new IndexViewModel
-            {
-                AppLatestVersion = appVersion,
-                CLILatestVersion = cliVersion,
-                SDKLatestVersion = _versionService.GetSDKVersion(),
-                DownloadRoot = $"{downloadSite}/staging",
-                CliDownloadRoot = $"{downloadSite}/stagingcli",
-                ArchiveRoot = "https://github.com/AiursoftWeb/Kahla.App/archive",
-                KahlaWebPath = "//staging.kahla.app",
-                IsProduction = false
-            };
-            return View(nameof(Index), model);
-        }
-
         public IActionResult PlatformSupport()
         {
-            return View();
+            var mode = Request.Host.ToString().ToLower().Contains("staging") ?
+                "staging" : "production";
+            var isProduction = mode == "production";
+            return View(isProduction);
         }
 
         public IActionResult Error()

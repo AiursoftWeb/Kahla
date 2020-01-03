@@ -1,4 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.Extensions.Configuration;

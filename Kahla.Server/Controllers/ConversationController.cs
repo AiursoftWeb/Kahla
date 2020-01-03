@@ -1,8 +1,9 @@
 ﻿using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToProbeServer;
+using Aiursoft.SDK.Attributes;
+using Aiursoft.SDK.Services;
+using Aiursoft.SDK.Services.ToProbeServer;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -232,7 +233,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            return Json(new AiurValue<Conversation>(target.Build(user.Id))
+            return Json(new AiurValue<Conversation>(target.Build(user.Id, _onlineJudger))
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get target conversation."

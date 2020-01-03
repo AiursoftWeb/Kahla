@@ -1,39 +1,42 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Kahla.SDK.Services
 {
     public class SettingsService : ISingletonDependency
     {
-        private BotSettings _cached;
-        public BotSettings Read()
+        public Dictionary<string, object> _cached;
+        public Dictionary<string, object> ReadAll()
         {
             try
             {
                 var settingString = File.ReadAllText("bot.json");
-                _cached = JsonConvert.DeserializeObject<BotSettings>(settingString);
+                _cached = JsonConvert.DeserializeObject<Dictionary<string, object>>(settingString);
                 return _cached;
             }
             catch (IOException)
             {
-                return new BotSettings();
+                return new Dictionary<string, object>();
             }
         }
 
-        public void Save(string server)
+        public object Read(string key)
         {
-            var setting = Read();
-            setting.ServerAddress = server;
-            var settingString = JsonConvert.SerializeObject(setting);
-            File.WriteAllText("bot.json", settingString);
+            var content = ReadAll();
+            if (content.ContainsKey(key.ToLower()))
+            {
+                return content[key.ToLower()];
+            }
+            return null;
         }
 
-        public void Save(int coreIndex)
+        public void Save(string key, object value)
         {
-            var setting = Read();
-            setting.BotCoreIndex = coreIndex;
+            var setting = ReadAll();
+            setting[key.ToLower()] = value;
             var settingString = JsonConvert.SerializeObject(setting);
             File.WriteAllText("bot.json", settingString);
         }

@@ -20,9 +20,14 @@ namespace Kahla.Bot.Bots
             var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
             Console.WriteLine(profilestring);
 
-            BotLogger.LogWarning("Please enter your bing API key:");
-            var key = Console.ReadLine();
+            var key = SettingsService.Read("BingTranslateAPIKey") as string;
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                BotLogger.LogWarning("Please enter your bing API key:");
+                key = Console.ReadLine();
+            }
             _bingTranslator.Init(key);
+            SettingsService.Save("BingTranslateAPIKey", key);
             return Task.CompletedTask;
         }
 
@@ -36,7 +41,7 @@ namespace Kahla.Bot.Bots
             {
                 return;
             }
-            inputMessage = inputMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
+            inputMessage = ReplaceMention(inputMessage, eventContext);
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
             await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
@@ -44,6 +49,15 @@ namespace Kahla.Bot.Bots
         public override Task OnFriendRequest(NewFriendRequestEvent arg)
         {
             return CompleteRequest(arg.RequestId, true);
+        }
+
+        public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
+        {
+            var group = await GroupsService.GroupSummaryAsync(groupId);
+            if (!group.Value.HasPassword)
+            {
+                await JoinGroup(group.Value.Name, string.Empty);
+            }
         }
     }
 }

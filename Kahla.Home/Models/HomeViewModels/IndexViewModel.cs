@@ -8,7 +8,7 @@
         public string CliDownloadRoot { get; internal set; }
         public string ArchiveRoot { get; internal set; }
         public string KahlaWebPath { get; internal set; }
-        public bool IsProduction { get; internal set; }
         public string SDKLatestVersion { get; set; }
+        public bool IsProduction { get; set; }
     }
 }

@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aiursoft.Pylon" Version="0.22.1" />
     <PackageReference Include="WebPush" Version="1.0.11" />
   </ItemGroup>
 

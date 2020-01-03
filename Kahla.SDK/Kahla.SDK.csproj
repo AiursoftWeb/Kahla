@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.8.6</Version>
+    <Version>3.8.7</Version>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Company>Aiursoft</Company>
@@ -23,7 +23,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Pylon" Version="0.21.0" />
+    <PackageReference Include="Aiursoft.SDK" Version="0.22.1" />
     <PackageReference Include="RestSharp" Version="106.6.10" />
     <PackageReference Include="Websocket.Client" Version="3.2.59" />
   </ItemGroup>

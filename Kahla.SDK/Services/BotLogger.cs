@@ -1,4 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
 using System;
 
 namespace Kahla.Bot.Services

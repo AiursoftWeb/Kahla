@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Services;
+using Aiursoft.SDK.Services;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;

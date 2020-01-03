@@ -1,4 +1,4 @@
-﻿using Aiursoft.Pylon.Interfaces;
+﻿using Aiursoft.XelNaga.Interfaces;
 using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -16,7 +16,10 @@ namespace Kahla.SDK.Abstract
     public abstract class BotBase : ISingletonDependency
     {
         public AES AES;
+
+
         public BotLogger BotLogger;
+        public GroupsService GroupsService;
         public ConversationService ConversationService;
         public FriendshipService FriendshipService;
         public AuthService AuthService;
@@ -33,6 +36,8 @@ namespace Kahla.SDK.Abstract
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
 
+        public abstract Task OnGroupInvitation(int groupId, NewMessageEvent eventContext);
+
         public async Task Start()
         {
             var listenTask = await Connect();
@@ -44,7 +49,7 @@ namespace Kahla.SDK.Abstract
         public async Task<Task> Connect()
         {
             var server = AskServerAddress();
-            SettingsService.Save(server);
+            SettingsService.Save("ServerAddress", server);
             KahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
@@ -81,10 +86,10 @@ namespace Kahla.SDK.Abstract
 
         public string AskServerAddress()
         {
-            var cached = SettingsService.Read();
-            if (!string.IsNullOrWhiteSpace(cached.ServerAddress))
+            var cached = SettingsService.Read("ServerAddress") as string;
+            if (!string.IsNullOrWhiteSpace(cached))
             {
-                return cached.ServerAddress;
+                return cached;
             }
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
             BotLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
@@ -232,7 +237,14 @@ namespace Kahla.SDK.Abstract
         {
             string decrypted = AES.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             BotLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
+            if (decrypted.StartsWith("[group]") && int.TryParse(decrypted.Substring(7), out int groupId))
+            {
+                await OnGroupInvitation(groupId, typedEvent);
+            }
+            else
+            {
+                await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
+            }
         }
 
         public Task CompleteRequest(int requestId, bool accept)
@@ -246,6 +258,21 @@ namespace Kahla.SDK.Abstract
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
+        }
+
+        public async Task JoinGroup(string groupName, string password)
+        {
+            await GroupsService.JoinGroupAsync(groupName, password);
+        }
+
+        public string ReplaceMention(string sourceMessage, NewMessageEvent eventContext)
+        {
+            if (eventContext.Mentioned)
+            {
+                sourceMessage += $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
+            }
+            sourceMessage = sourceMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
+            return sourceMessage;
         }
 
         public async Task LogOff()

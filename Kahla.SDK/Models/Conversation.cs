@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Kahla.SDK.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,7 +32,7 @@ namespace Kahla.SDK.Models
         public abstract int GetUnReadAmount(string userId);
         public abstract bool WasAted(string userId);
         public abstract bool Muted(string userId);
-        public abstract Conversation Build(string userId);
+        public abstract Conversation Build(string userId, OnlineJudger onlineJudger);
         public abstract Message GetLatestMessage();
         public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function);
         public abstract bool HasUser(string userId);
