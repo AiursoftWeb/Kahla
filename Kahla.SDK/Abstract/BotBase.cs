@@ -265,6 +265,16 @@ namespace Kahla.SDK.Abstract
             await GroupsService.JoinGroupAsync(groupName, password);
         }
 
+        public string ReplaceMention(string sourceMessage, NewMessageEvent eventContext)
+        {
+            if (eventContext.Mentioned)
+            {
+                sourceMessage += $" @{eventContext.Message.Sender.NickName.Replace(" ", "")}";
+            }
+            sourceMessage = sourceMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
+            return sourceMessage;
+        }
+
         public async Task LogOff()
         {
             await AuthService.LogoffAsync();
