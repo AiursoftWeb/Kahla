@@ -33,6 +33,8 @@ namespace Kahla.SDK.Abstract
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
 
+        public abstract Task OnGroupInvitation(int groupId, NewMessageEvent eventContext);
+
         public async Task Start()
         {
             var listenTask = await Connect();
@@ -232,7 +234,14 @@ namespace Kahla.SDK.Abstract
         {
             string decrypted = AES.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             BotLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
+            if (decrypted.StartsWith("[group]") && int.TryParse(decrypted.Substring(7), out int groupId))
+            {
+                await OnGroupInvitation(groupId, typedEvent);
+            }
+            else
+            {
+                await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
+            }
         }
 
         public Task CompleteRequest(int requestId, bool accept)

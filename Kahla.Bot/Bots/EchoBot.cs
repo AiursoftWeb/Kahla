@@ -43,5 +43,10 @@ namespace Kahla.Bot.Bots
         {
             return CompleteRequest(arg.RequestId, true);
         }
+
+        public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
+        {
+
+        }
     }
 }
