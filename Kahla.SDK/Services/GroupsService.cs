@@ -22,12 +22,12 @@ namespace Kahla.SDK.Services
 
         public async Task<AiurProtocol> JoinGroupAsync(string groupName, string joinPassword)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "JoinGroup", new
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "JoinGroup", new { });
+            var form = new AiurUrl(string.Empty, new
             {
                 groupName,
                 joinPassword
             });
-            var form = new AiurUrl(string.Empty, new { });
             var result = await _http.Post(url, form);
             var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
 
