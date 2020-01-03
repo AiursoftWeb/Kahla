@@ -46,7 +46,7 @@ namespace Kahla.SDK.Abstract
         {
             var builtBots = bots.ToList();
             int code = Convert.ToInt32(settingsService.Read("BotCoreIndex"));
-            if (!(code > 0))
+            if (!(code >= 0))
             {
                 botLogger.LogWarning("Select your bot:\n");
                 for (int i = 0; i < builtBots.Count; i++)
@@ -64,8 +64,8 @@ namespace Kahla.SDK.Abstract
                     }
                     break;
                 }
-                settingsService.Save("BotCoreIndex", code);
             }
+            settingsService.Save("BotCoreIndex", code);
             return builtBots[code];
         }
     }
