@@ -16,8 +16,6 @@ namespace Kahla.SDK.Abstract
     public abstract class BotBase : ISingletonDependency
     {
         public AES AES;
-
-
         public BotLogger BotLogger;
         public GroupsService GroupsService;
         public ConversationService ConversationService;

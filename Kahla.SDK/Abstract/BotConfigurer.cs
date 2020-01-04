@@ -45,8 +45,7 @@ namespace Kahla.SDK.Abstract
             BotLogger botLogger)
         {
             var builtBots = bots.ToList();
-            int code = Convert.ToInt32(settingsService.Read("BotCoreIndex"));
-            if (!(code >= 0))
+            if (!int.TryParse(settingsService.Read("BotCoreIndex")?.ToString(), out int code))
             {
                 botLogger.LogWarning("Select your bot:\n");
                 for (int i = 0; i < builtBots.Count; i++)
