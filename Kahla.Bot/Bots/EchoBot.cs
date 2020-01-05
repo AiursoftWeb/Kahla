@@ -26,11 +26,14 @@ namespace Kahla.Bot.Bots
             {
                 return;
             }
-            var replaced = ReplaceMention(inputMessage
+            var replaced = RemoveMentionMe(inputMessage
                     .Replace("吗", "")
                     .Replace('？', '！')
-                    .Replace('?', '!'), eventContext);
-
+                    .Replace('?', '!'));
+            if (eventContext.Mentioned)
+            {
+                replaced = AddMention(replaced, eventContext.Message.Sender);
+            }
             await Task.Delay(700);
             await SendMessage(replaced, eventContext.Message.ConversationId, eventContext.AESKey);
         }

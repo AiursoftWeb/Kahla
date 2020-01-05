@@ -41,8 +41,12 @@ namespace Kahla.Bot.Bots
             {
                 return;
             }
-            inputMessage = ReplaceMention(inputMessage, eventContext);
+            inputMessage = RemoveMentionMe(inputMessage);
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
+            if (eventContext.Mentioned)
+            {
+                translated = AddMention(translated, eventContext.Message.Sender);
+            }
             await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
         }
 
