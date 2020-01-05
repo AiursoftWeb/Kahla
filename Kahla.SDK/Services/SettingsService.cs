@@ -23,22 +23,24 @@ namespace Kahla.SDK.Services
             }
         }
 
-        public object Read(string key)
+        public object this[string key]
         {
-            var content = ReadAll();
-            if (content.ContainsKey(key.ToLower()))
+            get
             {
-                return content[key.ToLower()];
+                var content = ReadAll();
+                if (content.ContainsKey(key.ToLower()))
+                {
+                    return content[key.ToLower()];
+                }
+                return null;
             }
-            return null;
-        }
-
-        public void Save(string key, object value)
-        {
-            var setting = ReadAll();
-            setting[key.ToLower()] = value;
-            var settingString = JsonConvert.SerializeObject(setting);
-            File.WriteAllText("bot.json", settingString);
+            set
+            {
+                var setting = ReadAll();
+                setting[key.ToLower()] = value;
+                var settingString = JsonConvert.SerializeObject(setting);
+                File.WriteAllText("bot.json", settingString);
+            }
         }
     }
 }

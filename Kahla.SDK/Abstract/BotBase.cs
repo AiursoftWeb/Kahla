@@ -47,7 +47,7 @@ namespace Kahla.SDK.Abstract
         public async Task<Task> Connect()
         {
             var server = AskServerAddress();
-            SettingsService.Save("ServerAddress", server);
+            SettingsService["ServerAddress"] = server;
             KahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
@@ -84,7 +84,7 @@ namespace Kahla.SDK.Abstract
 
         public string AskServerAddress()
         {
-            var cached = SettingsService.Read("ServerAddress") as string;
+            var cached = SettingsService["ServerAddress"] as string;
             if (!string.IsNullOrWhiteSpace(cached))
             {
                 return cached;
