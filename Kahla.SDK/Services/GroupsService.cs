@@ -36,6 +36,22 @@ namespace Kahla.SDK.Services
             return JResult;
         }
 
+        public async Task<AiurProtocol> SetGroupMutedAsync(string groupName, bool setMuted)
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "SetGroupMuted", new { });
+            var form = new AiurUrl(string.Empty, new
+            {
+                groupName,
+                setMuted
+            });
+            var result = await _http.Post(url, form);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+
+            if (JResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(JResult);
+            return JResult;
+        }
+
         public async Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "GroupSummary", new
