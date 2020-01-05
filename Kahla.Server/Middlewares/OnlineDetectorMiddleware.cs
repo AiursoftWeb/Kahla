@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Aiursoft.Pylon;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Middlewares
@@ -24,7 +24,7 @@ namespace Kahla.Server.Middlewares
         {
             if (context.User.Identity.IsAuthenticated)
             {
-                var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = context.User.GetUserId();
                 if (!string.IsNullOrWhiteSpace(userId))
                 {
                     lock (_obj)
