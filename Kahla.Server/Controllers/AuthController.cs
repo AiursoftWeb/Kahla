@@ -9,7 +9,6 @@ using Aiursoft.SDK.Services.ToGatewayServer;
 using Aiursoft.SDK.Services.ToStargateServer;
 using Aiursoft.SDK.Services.ToStatusServer;
 using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -32,7 +31,6 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
-    [OnlineDetector]
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;

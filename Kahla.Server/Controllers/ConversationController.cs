@@ -4,7 +4,6 @@ using Aiursoft.SDK.Attributes;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToProbeServer;
 using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -27,7 +26,6 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    [OnlineDetector]
     public class ConversationController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;

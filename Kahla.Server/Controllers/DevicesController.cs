@@ -3,7 +3,6 @@ using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToStargateServer;
 using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -24,7 +23,6 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    [OnlineDetector]
     public class DevicesController : Controller
     {
         private readonly KahlaDbContext _dbContext;
