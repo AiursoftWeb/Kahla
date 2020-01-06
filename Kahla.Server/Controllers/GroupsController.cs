@@ -94,6 +94,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> JoinGroup([Required]string groupName, string joinPassword)
         {
             var user = await GetKahlaUser();
@@ -134,7 +135,11 @@ namespace Kahla.Server.Controllers
                 _dbContext.SaveChanges();
             }
             await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id));
-            return this.Protocol(ErrorType.Success, $"You have successfully joint the group: {groupName}!");
+            return Json(new AiurValue<int>(group.Id)
+            {
+                Code = ErrorType.Success,
+                Message = $"You have successfully joint the group: {groupName}!"
+            });
         }
 
         [HttpPost]

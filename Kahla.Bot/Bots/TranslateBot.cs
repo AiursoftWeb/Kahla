@@ -1,6 +1,7 @@
 ﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
+using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
@@ -31,6 +32,25 @@ namespace Kahla.Bot.Bots
             return Task.CompletedTask;
         }
 
+        public override Task OnFriendRequest(NewFriendRequestEvent arg)
+        {
+            return CompleteRequest(arg.RequestId, true);
+        }
+
+        public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
+        {
+            var group = await GroupsService.GroupSummaryAsync(groupId);
+            if (!group.Value.HasPassword)
+            {
+                await JoinGroup(group.Value.Name, string.Empty);
+            }
+        }
+
+        public async override Task OnGroupConnected(SearchedGroup group)
+        {
+            await MuteGroup(group.Name, true);
+        }
+
         public override async Task OnMessage(string inputMessage, NewMessageEvent eventContext)
         {
             if (eventContext.Muted)
@@ -48,20 +68,6 @@ namespace Kahla.Bot.Bots
                 translated = AddMention(translated, eventContext.Message.Sender);
             }
             await SendMessage(translated, eventContext.Message.ConversationId, eventContext.AESKey);
-        }
-
-        public override Task OnFriendRequest(NewFriendRequestEvent arg)
-        {
-            return CompleteRequest(arg.RequestId, true);
-        }
-
-        public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
-        {
-            var group = await GroupsService.GroupSummaryAsync(groupId);
-            if (!group.Value.HasPassword)
-            {
-                await JoinGroup(group.Value.Name, string.Empty);
-            }
         }
     }
 }

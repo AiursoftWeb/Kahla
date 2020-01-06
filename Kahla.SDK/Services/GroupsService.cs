@@ -20,7 +20,7 @@ namespace Kahla.SDK.Services
             _kahlaLocation = kahlaLocation;
         }
 
-        public async Task<AiurProtocol> JoinGroupAsync(string groupName, string joinPassword)
+        public async Task<AiurValue<int>> JoinGroupAsync(string groupName, string joinPassword)
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "JoinGroup", new { });
             var form = new AiurUrl(string.Empty, new
@@ -29,7 +29,7 @@ namespace Kahla.SDK.Services
                 joinPassword
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
             if (JResult.Code != ErrorType.Success)
                 throw new AiurUnexceptedResponse(JResult);

@@ -1,7 +1,9 @@
 ﻿using Aiursoft.XelNaga.Interfaces;
+using Aiursoft.XelNaga.Models;
 using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
@@ -31,6 +33,8 @@ namespace Kahla.SDK.Abstract
         public abstract Task OnBotInit();
 
         public abstract Task OnFriendRequest(NewFriendRequestEvent arg);
+
+        public abstract Task OnGroupConnected(SearchedGroup group);
 
         public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
 
@@ -67,6 +71,7 @@ namespace Kahla.SDK.Abstract
             await OnBotInit();
             var websocketAddress = await GetWSAddress();
             BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
+            // Trigger on request.
             var requests = (await FriendshipService.MyRequestsAsync())
                 .Items
                 .Where(t => !t.Completed);
@@ -78,6 +83,12 @@ namespace Kahla.SDK.Abstract
                     Requester = request.Creator,
                     RequesterId = request.CreatorId,
                 });
+            }
+            // Trigger group connected.
+            var friends = (await FriendshipService.MineAsync());
+            foreach (var group in friends.Groups)
+            {
+                await OnGroupConnected(group);
             }
             return MonitorEvents(websocketAddress);
         }
@@ -252,6 +263,13 @@ namespace Kahla.SDK.Abstract
             return FriendshipService.CompleteRequestAsync(requestId, accept);
         }
 
+        public Task MuteGroup(string groupName, bool mute)
+        {
+            var text = mute ? "muted" : "unmuted";
+            BotLogger.LogWarning($"Group with name '{groupName}' was {text}.");
+            return GroupsService.SetGroupMutedAsync(groupName, mute);
+        }
+
         public async Task SendMessage(string message, int conversationId, string aesKey)
         {
             var encrypted = AES.OpenSSLEncrypt(message, aesKey);
@@ -260,7 +278,12 @@ namespace Kahla.SDK.Abstract
 
         public async Task JoinGroup(string groupName, string password)
         {
-            await GroupsService.JoinGroupAsync(groupName, password);
+            var result = await GroupsService.JoinGroupAsync(groupName, password);
+            if (result.Code == ErrorType.Success)
+            {
+                var group = await GroupsService.GroupSummaryAsync(result.Value);
+                await OnGroupConnected(group.Value);
+            }
         }
 
         public string RemoveMentionMe(string sourceMessage)
