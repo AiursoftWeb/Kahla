@@ -27,6 +27,7 @@ namespace Kahla.SDK.Abstract
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
         public SettingsService SettingsService;
+        public ManualResetEvent ExitEvent;
 
         public KahlaUser Profile { get; set; }
 
@@ -42,14 +43,14 @@ namespace Kahla.SDK.Abstract
 
         public async Task Start()
         {
-            var listenTask = await Connect();
-
+            await Connect().ConfigureAwait(false);
             BotLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
-            await Task.WhenAll(listenTask, Command());
+            await Command();
         }
 
         public async Task<Task> Connect()
         {
+            ExitEvent?.Set();
             var server = AskServerAddress();
             SettingsService["ServerAddress"] = server;
             KahlaLocation.UseKahlaServer(server);
@@ -215,7 +216,7 @@ namespace Kahla.SDK.Abstract
 
         public Task MonitorEvents(string websocketAddress)
         {
-            var exitEvent = new ManualResetEvent(false);
+            ExitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
             var client = new WebsocketClient(url)
             {
@@ -224,7 +225,7 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type}"));
             client.MessageReceived.Subscribe(OnStargateMessage);
             client.Start();
-            return Task.Run(exitEvent.WaitOne);
+            return Task.Run(ExitEvent.WaitOne);
         }
 
         public async void OnStargateMessage(ResponseMessage msg)
@@ -300,6 +301,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task LogOff()
         {
+            ExitEvent?.Set();
             await AuthService.LogoffAsync();
         }
 
@@ -338,6 +340,9 @@ namespace Kahla.SDK.Abstract
                     case 'l':
                         await LogOff();
                         BotLogger.LogWarning($"Successfully log off. Use command:`r` to reconnect.");
+                        break;
+                    case 'r':
+                        await Connect().ConfigureAwait(false);
                         break;
                     case 'h':
                         BotLogger.LogInfo($"Kahla bot commands:");
