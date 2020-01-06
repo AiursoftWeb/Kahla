@@ -47,7 +47,7 @@ namespace Kahla.SDK.Services
             var result = await _http.Post(url, form);
             var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
 
-            if (JResult.Code != ErrorType.Success)
+            if (JResult.Code != ErrorType.Success || JResult.Code != ErrorType.HasDoneAlready)
                 throw new AiurUnexceptedResponse(JResult);
             return JResult;
         }
