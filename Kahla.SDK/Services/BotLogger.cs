@@ -1,7 +1,7 @@
 ﻿using Aiursoft.XelNaga.Interfaces;
 using System;
 
-namespace Kahla.Bot.Services
+namespace Kahla.SDK.Services
 {
     public class BotLogger : ISingletonDependency
     {

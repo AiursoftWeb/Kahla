@@ -1,6 +1,5 @@
 ﻿using Aiursoft.XelNaga.Interfaces;
 using Aiursoft.XelNaga.Models;
-using Kahla.Bot.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;

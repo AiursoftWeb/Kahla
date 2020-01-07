@@ -1,5 +1,6 @@
 ﻿using Aiursoft.XelNaga.Interfaces;
 using Kahla.Bot.Services.BingModels;
+using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using RestSharp;
 using System.Collections.Generic;
