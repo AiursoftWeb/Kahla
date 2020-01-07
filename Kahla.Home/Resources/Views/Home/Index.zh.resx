@@ -231,8 +231,8 @@
   <data name="Always free" xml:space="preserve">
     <value>永久免费</value>
   </data>
-  <data name="Kahla is an open source project supported by grants and donations. There is no ad, no affiliate marketer, no creepy tracking. Just for a fast, simple, and secure messaging experience." xml:space="preserve">
-    <value>卡拉是一个捐款支持的开源项目。没有广告，没有合作营销，没有令人毛骨悚然的信息审查。只为简单和安全的沟通体验。</value>
+  <data name="Kahla is an open source project supported by grants and donations. There is no ad, no affiliate marketer, no tracking and auditting. Just for a fast, simple, and secure messaging experience." xml:space="preserve">
+    <value>卡拉是一个捐款支持的开源项目。没有广告，没有合作营销，没有信息审查。只为简单和安全的沟通体验。</value>
   </data>
   <data name="Kahla opens all of its APIs to the public for free. Whether it's building notifier, open account or chatbots, Kahla makes the process extremely easy." xml:space="preserve">
     <value>卡拉向公众免费开放它的全部API。无论是构建推送器、公众号还是聊天机器人，卡拉都让这个过程变得极其简便。</value>
