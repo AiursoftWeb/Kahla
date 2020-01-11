@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotFactory : ISingletonDependency
+    public class BotFactory : IScopedDependency
     {
         private readonly IEnumerable<BotBase> _bots;
         private readonly ConversationService _conversationService;
