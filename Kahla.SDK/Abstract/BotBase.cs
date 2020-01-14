@@ -222,6 +222,7 @@ namespace Kahla.SDK.Abstract
                 ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds
             };
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type}"));
+            client.DisconnectionHappened.Subscribe(async t => await Connect().ConfigureAwait(false));
             client.MessageReceived.Subscribe(OnStargateMessage);
             client.Start();
             return Task.Run(ExitEvent.WaitOne);
