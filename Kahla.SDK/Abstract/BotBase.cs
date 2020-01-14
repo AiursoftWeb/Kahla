@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
@@ -27,6 +28,7 @@ namespace Kahla.SDK.Abstract
         public VersionService VersionService;
         public SettingsService SettingsService;
         public ManualResetEvent ExitEvent;
+        private SemaphoreSlim _connectingLock = new SemaphoreSlim(1);
 
         public KahlaUser Profile { get; set; }
 
@@ -42,20 +44,23 @@ namespace Kahla.SDK.Abstract
 
         public async Task Start()
         {
-            await Connect().ConfigureAwait(false);
+            var _ = Connect().ConfigureAwait(false);
             BotLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
-            await Command();
+            await Task.WhenAll(Command());
         }
 
-        public async Task<Task> Connect()
+        public async Task Connect()
         {
+            await _connectingLock.WaitAsync();
+            BotLogger.LogWarning("Establishing the connection to Kahla...");
             ExitEvent?.Set();
+            ExitEvent = null;
             var server = AskServerAddress();
             SettingsService["ServerAddress"] = server;
             KahlaLocation.UseKahlaServer(server);
             if (!await TestKahlaLive())
             {
-                return Task.CompletedTask;
+                return;
             }
             if (!await SignedIn())
             {
@@ -90,7 +95,9 @@ namespace Kahla.SDK.Abstract
             {
                 await OnGroupConnected(group);
             }
-            return MonitorEvents(websocketAddress);
+            _connectingLock.Release();
+            await MonitorEvents(websocketAddress);
+            return;
         }
 
         public string AskServerAddress()
@@ -101,8 +108,7 @@ namespace Kahla.SDK.Abstract
                 return cached;
             }
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
-            BotLogger.LogWarning("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
-            var result = Console.ReadLine();
+            var result = BotLogger.ReadLine("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
             if (result.Trim() == 1.ToString())
             {
                 return "https://server.kahla.app";
@@ -166,8 +172,7 @@ namespace Kahla.SDK.Abstract
             while (true)
             {
                 await Task.Delay(10);
-                BotLogger.LogInfo($"Please enther the `code` in the address bar(after signing in):");
-                var codeString = Console.ReadLine().Trim();
+                var codeString = BotLogger.ReadLine($"Please enther the `code` in the address bar(after signing in):").Trim();
                 if (!int.TryParse(codeString, out code))
                 {
                     BotLogger.LogDanger($"Invalid code! Code is a number! You can find it in the address bar after you sign in.");
@@ -215,17 +220,31 @@ namespace Kahla.SDK.Abstract
 
         public Task MonitorEvents(string websocketAddress)
         {
+            if (ExitEvent != null)
+            {
+                BotLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
+                return Task.CompletedTask;
+            }
             ExitEvent = new ManualResetEvent(false);
             var url = new Uri(websocketAddress);
             var client = new WebsocketClient(url)
             {
-                ReconnectTimeoutMs = (int)TimeSpan.FromSeconds(30).TotalMilliseconds
+                ReconnectTimeoutMs = (int)TimeSpan.FromDays(1).TotalMilliseconds
             };
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type}"));
-            client.DisconnectionHappened.Subscribe(async t => await Connect().ConfigureAwait(false));
+            client.DisconnectionHappened.Subscribe(t =>
+            {
+                BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                var _ = Connect().ConfigureAwait(false);
+            });
             client.MessageReceived.Subscribe(OnStargateMessage);
             client.Start();
-            return Task.Run(ExitEvent.WaitOne);
+            return Task.Run(() =>
+            {
+                ExitEvent.WaitOne();
+                BotLogger.LogVerbose("Websocket connection disconnected.");
+                client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
+            });
         }
 
         public async void OnStargateMessage(ResponseMessage msg)
@@ -302,6 +321,7 @@ namespace Kahla.SDK.Abstract
         public async Task LogOff()
         {
             ExitEvent?.Set();
+            ExitEvent = null;
             await AuthService.LogoffAsync();
         }
 
@@ -309,8 +329,11 @@ namespace Kahla.SDK.Abstract
         {
             while (true)
             {
-                Console.Write($"Bot:\\System\\{Profile.NickName}>");
-                var command = Console.ReadLine();
+                while (_connectingLock.CurrentCount == 0)
+                {
+                    await Task.Delay(1000);
+                }
+                var command = BotLogger.ReadLine($"Bot:\\System\\{Profile?.NickName}>");
                 if (command.Length < 1)
                 {
                     continue;
@@ -342,7 +365,7 @@ namespace Kahla.SDK.Abstract
                         BotLogger.LogWarning($"Successfully log off. Use command:`r` to reconnect.");
                         break;
                     case 'r':
-                        await Connect().ConfigureAwait(false);
+                        var _ = Connect().ConfigureAwait(false);
                         break;
                     case 'h':
                         BotLogger.LogInfo($"Kahla bot commands:");

@@ -69,6 +69,7 @@ namespace Kahla.SDK.Abstract
         public BotBase SelectBot()
         {
             var bot = BotConfigurer.SelectBot(_bots, _settingsService, _botLogger);
+            _botLogger.LogVerbose($"Bot: '{bot.GetType().Name}' was selected to run.");
             return BuildBotProperties(bot);
         }
     }
