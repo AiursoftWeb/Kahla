@@ -8,7 +8,7 @@ namespace Kahla.Bot
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public async static Task Main(string[] args)
         {
             if (args.Any() && args[0].Trim() == "version")
             {

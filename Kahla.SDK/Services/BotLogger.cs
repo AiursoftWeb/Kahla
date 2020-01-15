@@ -8,7 +8,7 @@ namespace Kahla.SDK.Services
         private static object _obj = new object();
         public string ReadLine(string ask)
         {
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write(ask);
             return Console.ReadLine();
         }

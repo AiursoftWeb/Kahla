@@ -28,7 +28,8 @@ namespace Kahla.SDK.Abstract
         public VersionService VersionService;
         public SettingsService SettingsService;
         public ManualResetEvent ExitEvent;
-        private SemaphoreSlim _connectingLock = new SemaphoreSlim(1);
+        public BotCommander BotCommander;
+        public SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
 
         public KahlaUser Profile { get; set; }
 
@@ -46,12 +47,12 @@ namespace Kahla.SDK.Abstract
         {
             var _ = Connect().ConfigureAwait(false);
             BotLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
-            await Task.WhenAll(Command());
+            await Task.WhenAll(BotCommander.Command());
         }
 
         public async Task Connect()
         {
-            await _connectingLock.WaitAsync();
+            await ConnectingLock.WaitAsync();
             BotLogger.LogWarning("Establishing the connection to Kahla...");
             ExitEvent?.Set();
             ExitEvent = null;
@@ -95,7 +96,7 @@ namespace Kahla.SDK.Abstract
             {
                 await OnGroupConnected(group);
             }
-            _connectingLock.Release();
+            ConnectingLock.Release();
             MonitorEvents(websocketAddress);
             return;
         }
@@ -322,86 +323,6 @@ namespace Kahla.SDK.Abstract
             await AuthService.LogoffAsync();
         }
 
-        public async Task Command()
-        {
-            while (true)
-            {
-                while (_connectingLock.CurrentCount == 0)
-                {
-                    await Task.Delay(1000);
-                }
-                var command = BotLogger.ReadLine($"Bot:\\System\\{Profile?.NickName}>");
-                if (command.Length < 1)
-                {
-                    continue;
-                }
-                switch (command.ToLower().Trim())
-                {
-                    case "exit":
-                        await LogOff();
-                        return;
-                    case "version":
-                        await TestKahlaLive();
-                        break;
-                    case "conv":
-                        var conversations = await ConversationService.AllAsync();
-                        BotLogger.LogSuccess($"Successfully get all your conversations.");
-                        foreach (var conversation in conversations.Items)
-                        {
-                            BotLogger.LogInfo($"ID:\t{conversation.ConversationId}");
-                            BotLogger.LogInfo($"Name:\t{conversation.DisplayName}");
-                            BotLogger.LogInfo($"Online:\t{conversation.Online}");
-                            BotLogger.LogInfo($"Type:\t{conversation.Discriminator}");
-                            BotLogger.LogInfo($"Last:\t{conversation.LatestMessage}");
-                            BotLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
-                            if (conversation.UnReadAmount > 0)
-                            {
-                                BotLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**\n");
-                            }
-                            else
-                            {
-                                BotLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}\n");
-                            }
-                        }
-                        break;
-                    case "clear":
-                        Console.Clear();
-                        break;
-                    case "logout":
-                        await LogOff();
-                        BotLogger.LogWarning($"Successfully log out. Use command:`r` to reconnect.");
-                        break;
-                    case "rec":
-                        var _ = Connect().ConfigureAwait(false);
-                        break;
-                    case "help":
-                        BotLogger.LogInfo($"Kahla bot commands:");
 
-                        BotLogger.LogInfo($"\r\nConversation");
-                        BotLogger.LogInfo($"\tconv\tShow all conversations.");
-                        BotLogger.LogInfo($"\ts\tSay something to someone.");
-                        BotLogger.LogInfo($"\tb\tBroadcast to all conversations.");
-                        BotLogger.LogInfo($"\tclear\tClear console.");
-
-                        BotLogger.LogInfo($"\r\nGroup");
-                        BotLogger.LogInfo($"\tm\tMute all groups.");
-                        BotLogger.LogInfo($"\tu\tUnmute all groups.");
-
-                        BotLogger.LogInfo($"\r\nNetwork");
-                        BotLogger.LogInfo($"\trec\tReconnect to Stargate.");
-                        BotLogger.LogInfo($"\tlogout\tLogout.");
-
-                        BotLogger.LogInfo($"\r\nProgram");
-                        BotLogger.LogInfo($"\thelp\tShow help.");
-                        BotLogger.LogInfo($"\tversion\tCheck and show version info.");
-                        BotLogger.LogInfo($"\texit\tQuit bot.");
-                        BotLogger.LogInfo($"");
-                        break;
-                    default:
-                        BotLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
-                        break;
-                }
-            }
-        }
     }
 }
