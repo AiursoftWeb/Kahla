@@ -109,7 +109,7 @@ namespace Kahla.SDK.Abstract
                 return cached;
             }
             BotLogger.LogInfo("Welcome! Please enter the server address of Kahla.");
-            var result = BotLogger.ReadLine("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app");
+            var result = BotLogger.ReadLine("\r\nEnter 1 for production\r\nEnter 2 for staging\r\nFor other server, enter like: https://server.kahla.app\r\n");
             if (result.Trim() == 1.ToString())
             {
                 return "https://server.kahla.app";
