@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Version>3.8.8</Version>
@@ -23,8 +23,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Aiursoft.SDK" Version="3.1.0" />
-    <PackageReference Include="RestSharp" Version="106.6.10" />
-    <PackageReference Include="Websocket.Client" Version="3.2.59" />
+    <PackageReference Include="Aiursoft.SDK" Version="3.1.1.1" />
+    <PackageReference Include="RestSharp" Version="106.10.1" />
+    <PackageReference Include="Websocket.Client" Version="4.1.77" />
   </ItemGroup>
 </Project>
