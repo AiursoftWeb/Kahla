@@ -232,7 +232,7 @@ namespace Kahla.SDK.Abstract
             {
                 ReconnectTimeout = TimeSpan.FromDays(1)
             };
-            client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type}"));
+            client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
                 BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
