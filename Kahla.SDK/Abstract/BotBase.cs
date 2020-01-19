@@ -230,7 +230,7 @@ namespace Kahla.SDK.Abstract
             var url = new Uri(websocketAddress);
             var client = new WebsocketClient(url)
             {
-                ReconnectTimeoutMs = (int)TimeSpan.FromDays(1).TotalMilliseconds
+                ReconnectTimeout = TimeSpan.FromDays(1)
             };
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type}"));
             client.DisconnectionHappened.Subscribe(t =>
