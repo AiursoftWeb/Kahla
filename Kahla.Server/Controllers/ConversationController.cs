@@ -62,7 +62,7 @@ namespace Kahla.Server.Controllers
             foreach (var contact in contacts)
             {
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
-                    _onlineJudger.IsOnline(contact.UserId) : false;
+                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : false;
             }
             return Json(new AiurCollection<ContactInfo>(contacts)
             {

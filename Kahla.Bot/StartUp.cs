@@ -1,5 +1,5 @@
-﻿using Aiursoft.XelNaga.Interfaces;
-using Aiursoft.XelNaga.Tools;
+﻿using Aiursoft.Scanner;
+using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -21,8 +21,7 @@ namespace Kahla.Bot
             };
 
             return new ServiceCollection()
-                .AddAccessiableDependencies()
-                .AddBots()
+                .AddScannedDependencies(typeof(BotBase))
                 .BuildServiceProvider()
                 .GetService<IServiceScopeFactory>()
                 .CreateScope();

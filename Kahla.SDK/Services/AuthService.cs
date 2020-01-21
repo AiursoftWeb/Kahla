@@ -1,6 +1,6 @@
-﻿using Aiursoft.SDK.Models.ForApps.AddressModels;
+﻿using Aiursoft.Scanner.Interfaces;
+using Aiursoft.SDK.Models.ForApps.AddressModels;
 using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;

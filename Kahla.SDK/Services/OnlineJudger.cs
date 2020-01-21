@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 
@@ -13,8 +13,12 @@ namespace Kahla.SDK.Services
             _memoryCache = memoryCache;
         }
 
-        public bool IsOnline(string userId)
+        public bool IsOnline(string userId, bool allowSeen)
         {
+            if (!allowSeen)
+            {
+                return false;
+            }
             var isOnline = false;
             if (_memoryCache.TryGetValue(userId, out DateTime lastAccess))
             {

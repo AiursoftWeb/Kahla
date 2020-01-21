@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 
 namespace Kahla.SDK.Services
 {

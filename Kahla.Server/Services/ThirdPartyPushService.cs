@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.Extensions.Configuration;

@@ -1,5 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
-using Kahla.SDK.Models;
+﻿using Aiursoft.Scanner.Interfaces;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;

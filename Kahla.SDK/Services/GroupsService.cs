@@ -1,5 +1,5 @@
-﻿using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
+using Aiursoft.XelNaga.Exceptions;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;

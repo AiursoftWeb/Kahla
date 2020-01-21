@@ -191,6 +191,10 @@ namespace Kahla.Server.Controllers
             {
                 currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
             }
+            if (model.EnableInvisiable.HasValue)
+            {
+                currentUser.EnableInvisiable = model.EnableInvisiable == true;
+            }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
         }

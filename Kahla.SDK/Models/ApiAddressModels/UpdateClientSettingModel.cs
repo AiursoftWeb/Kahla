@@ -7,5 +7,7 @@
         public bool? EnableEmailNotification { get; set; }
 
         public bool? EnableEnterToSendMessage { get; set; }
+
+        public bool? EnableInvisiable { get; set; }
     }
 }

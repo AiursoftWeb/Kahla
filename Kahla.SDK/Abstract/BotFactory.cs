@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Services;
 using System.Collections.Generic;
 using System.Linq;

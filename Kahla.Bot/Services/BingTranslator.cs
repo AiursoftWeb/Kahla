@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.Bot.Services.BingModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;

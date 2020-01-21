@@ -1,5 +1,5 @@
-﻿using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
+using Aiursoft.XelNaga.Exceptions;
 using Aiursoft.XelNaga.Models;
 using Aiursoft.XelNaga.Services;
 using Microsoft.Extensions.Configuration;

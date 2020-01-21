@@ -1,8 +1,8 @@
 ﻿using Aiursoft.Pylon.Services;
+using Aiursoft.Scanner.Interfaces;
 using Aiursoft.SDK.Models.Status;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToStatusServer;
-using Aiursoft.XelNaga.Interfaces;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
