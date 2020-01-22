@@ -1,5 +1,5 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Aiursoft.XelNaga.Models;
+﻿using Aiursoft.Handler.Models;
+using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;

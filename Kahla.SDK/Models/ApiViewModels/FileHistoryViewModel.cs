@@ -1,5 +1,5 @@
-﻿using Aiursoft.SDK.Models.Probe;
-using Aiursoft.XelNaga.Models;
+﻿using Aiursoft.Handler.Models;
+using Aiursoft.SDK.Models.Probe;
 using System;
 using System.Collections.Generic;
 
