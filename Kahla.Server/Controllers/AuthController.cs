@@ -171,7 +171,6 @@ namespace Kahla.Server.Controllers
             currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
-            currentUser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
@@ -197,6 +196,10 @@ namespace Kahla.Server.Controllers
             if (model.EnableInvisiable.HasValue)
             {
                 currentUser.EnableInvisiable = model.EnableInvisiable == true;
+            }
+            if (model.MarkEmailPublic.HasValue)
+            {
+                currentUser.MakeEmailPublic = model.MarkEmailPublic == true;
             }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
