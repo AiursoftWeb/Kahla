@@ -11,7 +11,5 @@ namespace Kahla.SDK.Models.ApiAddressModels
         public virtual string Bio { get; set; }
         [Required]
         public virtual string HeadIconPath { get; set; }
-        [Required]
-        public bool HideMyEmail { get; set; } = false;
     }
 }

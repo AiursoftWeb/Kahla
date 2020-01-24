@@ -1,11 +1,17 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Models;
-using Aiursoft.Pylon.Models.ForApps.AddressModels;
-using Aiursoft.Pylon.Models.Stargate.ListenAddressModels;
 using Aiursoft.Pylon.Services;
-using Aiursoft.Pylon.Services.ToGatewayServer;
-using Aiursoft.Pylon.Services.ToStargateServer;
+using Aiursoft.SDK.Models.ForApps.AddressModels;
+using Aiursoft.SDK.Models.Stargate.ListenAddressModels;
+using Aiursoft.SDK.Models.Status;
+using Aiursoft.SDK.Services;
+using Aiursoft.SDK.Services.ToGatewayServer;
+using Aiursoft.SDK.Services.ToStargateServer;
+using Aiursoft.SDK.Services.ToStatusServer;
+using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -41,6 +47,8 @@ namespace Kahla.Server.Controllers
         private readonly VersionChecker _version;
         private readonly VersionService _sdkVersion;
         private readonly KahlaDbContext _dbContext;
+        private readonly EventService _eventService;
+        private readonly OnlineJudger _onlineJudger;
         private readonly AiurCache _cache;
         private readonly List<DomainSettings> _appDomains;
 
@@ -57,6 +65,8 @@ namespace Kahla.Server.Controllers
             VersionService sdkVersion,
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
+            EventService eventService,
+            OnlineJudger onlineJudger,
             AiurCache cache)
         {
             _serviceLocation = serviceLocation;
@@ -70,6 +80,8 @@ namespace Kahla.Server.Controllers
             _version = version;
             _sdkVersion = sdkVersion;
             _dbContext = dbContext;
+            _eventService = eventService;
+            _onlineJudger = onlineJudger;
             _cache = cache;
             _appDomains = optionsAccessor.Value;
         }
@@ -134,13 +146,17 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
+            user.IsMe = true;
             try
             {
                 user = await _authService.OnlyUpdate(user);
             }
-            catch (WebException) { }
-            user.IsMe = true;
-            return Json(new AiurValue<KahlaUser>(user)
+            catch (WebException e)
+            {
+                var accessToken = await _appsContainer.AccessToken();
+                await _eventService.LogAsync(accessToken, e.Message, e.StackTrace, EventLevel.Warning, HttpContext.Request.Path);
+            }
+            return Json(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your information."
@@ -155,7 +171,6 @@ namespace Kahla.Server.Controllers
             currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
-            currentUser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
@@ -177,6 +192,14 @@ namespace Kahla.Server.Controllers
             if (model.EnableEnterToSendMessage.HasValue)
             {
                 currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
+            }
+            if (model.EnableInvisiable.HasValue)
+            {
+                currentUser.EnableInvisiable = model.EnableInvisiable == true;
+            }
+            if (model.MarkEmailPublic.HasValue)
+            {
+                currentUser.MakeEmailPublic = model.MarkEmailPublic == true;
             }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
