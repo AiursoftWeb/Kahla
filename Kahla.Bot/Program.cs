@@ -1,31 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Kahla.SDK.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Kahla.Bot
 {
     public class Program
     {
-        public static string GetSDKVersion()
-        {
-            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
-            return $"{version[0]}.{version[1]}.{version[2]}";
-        }
-
-        static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             if (args.Any() && args[0].Trim() == "version")
             {
-                Console.WriteLine(GetSDKVersion());
+                Console.WriteLine(VersionService.SDKVersion());
                 return;
             }
 
-            StartUp.ConfigureServices()
+            await StartUp.ConfigureServices()
                 .ServiceProvider
                 .GetService<StartUp>()
-                .Start()
-                .Wait();
+                .Bot
+                .Start();
         }
     }
 }

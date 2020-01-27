@@ -62,7 +62,10 @@ namespace Kahla.Server.Data
                     AesKey = t.AESKey,
                     SomeoneAtMe = (t is GroupConversation) ? t.Messages
                         .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
-                        .Any(p => p.Ats.Any(k => k.TargetUserId == userId)) : false
+                        .Any(p => p.Ats.Any(k => k.TargetUserId == userId)) : false,
+                    EnableInvisiable = (t is PrivateConversation) ?
+                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.EnableInvisiable : ((PrivateConversation)t).RequestUser.EnableInvisiable) :
+                        false,
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessageTime);

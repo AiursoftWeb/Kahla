@@ -1,4 +1,7 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.Pylon.Services;
 using Aiursoft.SDK.Models.ForApps.AddressModels;
@@ -9,7 +12,6 @@ using Aiursoft.SDK.Services.ToGatewayServer;
 using Aiursoft.SDK.Services.ToStargateServer;
 using Aiursoft.SDK.Services.ToStatusServer;
 using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -32,7 +34,6 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
-    [OnlineDetector]
     public class AuthController : Controller
     {
         private readonly ServiceLocation _serviceLocation;
@@ -170,7 +171,6 @@ namespace Kahla.Server.Controllers
             currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
-            currentUser.MakeEmailPublic = !model.HideMyEmail;
             await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessToken(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
@@ -192,6 +192,14 @@ namespace Kahla.Server.Controllers
             if (model.EnableEnterToSendMessage.HasValue)
             {
                 currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
+            }
+            if (model.EnableInvisiable.HasValue)
+            {
+                currentUser.EnableInvisiable = model.EnableInvisiable == true;
+            }
+            if (model.MarkEmailPublic.HasValue)
+            {
+                currentUser.MakeEmailPublic = model.MarkEmailPublic == true;
             }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");

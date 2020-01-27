@@ -46,7 +46,7 @@ namespace Kahla.Server
         {
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseAiurAPIHandler(env.IsDevelopment());
-            app.UseAiursoftDefault();
+            app.UseAiursoftDefault(t => t.UseMiddleware<OnlineDetectorMiddleware>());
         }
     }
 }

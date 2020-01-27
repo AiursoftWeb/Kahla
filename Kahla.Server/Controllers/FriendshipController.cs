@@ -1,7 +1,8 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -22,7 +23,6 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    [OnlineDetector]
     public class FriendshipController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;

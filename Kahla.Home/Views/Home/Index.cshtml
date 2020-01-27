@@ -44,9 +44,16 @@
             @ViewBag.Des
         </p>
         <p>
-            @Localizer["App Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.AppLatestVersion</kbd>
-            @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
-            @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            @if (Model.AppLatestVersion == Model.CLILatestVersion && Model.AppLatestVersion == Model.SDKLatestVersion)
+            {
+                @Localizer["Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            }
+            else
+            {
+                @Localizer["App Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.AppLatestVersion</kbd>
+                @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
+                @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            }
         </p>
         @if (isChineseUser && blockMainlandChineseUser)
         {
@@ -65,8 +72,11 @@
                 <a href="@(Values.Footer["Terms"])">@Localizer["license agreement"]</a>@Localizer["."]
             </p>
         }
-        <div class="d-block width-fit mx-auto mt-6 mb-6">
+        <div class="d-block d-md-none width-fit mx-auto mt-6 mb-6">
             <img style="width:100%;max-width:640px;" src="@ServiceLocation.UI/images/kahla-demo.png" class="app-screenshot" />
+        </div>
+        <div class="d-block d-none d-md-inline">
+            <img style="width:100%;max-width:1140px;" src="@ServiceLocation.UI/images/kahla-demo-wide.png" class="app-screenshot" />
         </div>
     </div>
 </div>

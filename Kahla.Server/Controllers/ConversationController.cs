@@ -1,10 +1,11 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDK.Attributes;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToProbeServer;
-using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -27,7 +28,6 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    [OnlineDetector]
     public class ConversationController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;
@@ -64,7 +64,7 @@ namespace Kahla.Server.Controllers
             foreach (var contact in contacts)
             {
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
-                    _onlineJudger.IsOnline(contact.UserId) : false;
+                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : false;
             }
             return Json(new AiurCollection<ContactInfo>(contacts)
             {

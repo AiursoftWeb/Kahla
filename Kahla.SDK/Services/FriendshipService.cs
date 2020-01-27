@@ -1,8 +1,10 @@
-﻿using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Handler.Exceptions;
+using Aiursoft.Handler.Models;
+using Aiursoft.Scanner.Interfaces;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
+using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
@@ -19,6 +21,18 @@ namespace Kahla.SDK.Services
         {
             _kahlaLocation = kahlaLocation;
             _http = http;
+        }
+
+        public async Task<MineViewModel> MineAsync()
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "Mine", new { });
+            var result = await _http.Get(url);
+            var jsonResult = JsonConvert.DeserializeObject<MineViewModel>(result);
+
+            if (jsonResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(jsonResult);
+
+            return jsonResult;
         }
 
         public async Task CompleteRequestAsync(int requestId, bool accept)

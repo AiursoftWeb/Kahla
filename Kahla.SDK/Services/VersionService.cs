@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using System.Reflection;
 
 namespace Kahla.SDK.Services
@@ -7,11 +7,12 @@ namespace Kahla.SDK.Services
     {
         public string GetSDKVersion()
         {
-            var assembly = Assembly
-                .GetExecutingAssembly();
+            return SDKVersion();
+        }
 
-            var version = assembly.GetName().Version.ToString().Split('.');
-
+        public static string SDKVersion()
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
             return $"{version[0]}.{version[1]}.{version[2]}";
         }
     }

@@ -1,7 +1,7 @@
-﻿using Aiursoft.SDK.Models.Stargate.ChannelViewModels;
+﻿using Aiursoft.Scanner.Interfaces;
+using Aiursoft.SDK.Models.Stargate.ChannelViewModels;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToStargateServer;
-using Aiursoft.XelNaga.Interfaces;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;

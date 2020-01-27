@@ -1,9 +1,11 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToProbeServer;
 using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.Server.Data;
@@ -20,7 +22,6 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    [OnlineDetector]
     public class StorageController : Controller
     {
         private readonly UserManager<KahlaUser> _userManager;

@@ -1,7 +1,7 @@
-﻿using Aiursoft.Pylon.Attributes;
+﻿using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Handler.Models;
+using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDK.Services;
-using Aiursoft.XelNaga.Models;
-using Kahla.SDK.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
-    [OnlineDetector]
     public class HomeController : Controller
     {
         private readonly IWebHostEnvironment _env;

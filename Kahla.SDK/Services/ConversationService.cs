@@ -1,5 +1,6 @@
-﻿using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Handler.Exceptions;
+using Aiursoft.Handler.Models;
+using Aiursoft.Scanner.Interfaces;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;

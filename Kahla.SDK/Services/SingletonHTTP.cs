@@ -1,4 +1,4 @@
-﻿using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Scanner.Interfaces;
 using Aiursoft.XelNaga.Models;
 using Aiursoft.XelNaga.Tools;
 using System.Collections.Generic;

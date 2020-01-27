@@ -72,12 +72,17 @@ namespace Kahla.SDK.Models
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
 
         [JsonProperty]
+        public bool EnableInvisiable { get; set; } = false;
+        public bool ShouldSerializeEnableInvisiable() => IsMe;
+
+
+        [JsonProperty]
         [NotMapped]
         public bool IsOnline { get; set; } = false;
 
         public KahlaUser Build(OnlineJudger judge)
         {
-            IsOnline = judge.IsOnline(Id);
+            IsOnline = judge.IsOnline(Id, !EnableInvisiable);
             return this;
         }
     }

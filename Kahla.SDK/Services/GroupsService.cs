@@ -1,5 +1,6 @@
-﻿using Aiursoft.XelNaga.Exceptions;
-using Aiursoft.XelNaga.Interfaces;
+﻿using Aiursoft.Handler.Exceptions;
+using Aiursoft.Handler.Models;
+using Aiursoft.Scanner.Interfaces;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Kahla.SDK.Services
             _kahlaLocation = kahlaLocation;
         }
 
-        public async Task<AiurProtocol> JoinGroupAsync(string groupName, string joinPassword)
+        public async Task<AiurValue<int>> JoinGroupAsync(string groupName, string joinPassword)
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "JoinGroup", new { });
             var form = new AiurUrl(string.Empty, new
@@ -29,9 +30,25 @@ namespace Kahla.SDK.Services
                 joinPassword
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
             if (JResult.Code != ErrorType.Success)
+                throw new AiurUnexceptedResponse(JResult);
+            return JResult;
+        }
+
+        public async Task<AiurProtocol> SetGroupMutedAsync(string groupName, bool setMuted)
+        {
+            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "SetGroupMuted", new { });
+            var form = new AiurUrl(string.Empty, new
+            {
+                groupName,
+                setMuted
+            });
+            var result = await _http.Post(url, form);
+            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+
+            if (JResult.Code != ErrorType.Success && JResult.Code != ErrorType.HasDoneAlready)
                 throw new AiurUnexceptedResponse(JResult);
             return JResult;
         }
