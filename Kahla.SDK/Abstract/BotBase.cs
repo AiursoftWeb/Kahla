@@ -1,4 +1,5 @@
-﻿using Aiursoft.Handler.Models;
+﻿using Aiursoft.Handler.Exceptions;
+using Aiursoft.Handler.Models;
 using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -296,11 +297,15 @@ namespace Kahla.SDK.Abstract
 
         public async Task JoinGroup(string groupName, string password)
         {
-            var result = await GroupsService.JoinGroupAsync(groupName, password);
-            if (result.Code == ErrorType.Success)
+            try
             {
+                var result = await GroupsService.JoinGroupAsync(groupName, password);
                 var group = await GroupsService.GroupSummaryAsync(result.Value);
                 await OnGroupConnected(group.Value);
+            }
+            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready)
+            {
+                // do nothing.
             }
         }
 
