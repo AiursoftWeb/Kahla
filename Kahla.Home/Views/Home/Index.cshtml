@@ -44,9 +44,16 @@
             @ViewBag.Des
         </p>
         <p>
-            @Localizer["App Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.AppLatestVersion</kbd>
-            @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
-            @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            @if (Model.AppLatestVersion == Model.CLILatestVersion && Model.AppLatestVersion == Model.SDKLatestVersion)
+            {
+                @Localizer["Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            }
+            else
+            {
+                @Localizer["App Latest version:"] <kbd data-href="@Configuration["GitHubAddress"]">@Model.AppLatestVersion</kbd>
+                @Localizer["CLI Latest version:"] <kbd data-href="@Configuration["CLIGitHubAddress"]">@Model.CLILatestVersion</kbd>
+                @Localizer["SDK Latest version:"] <kbd data-href="@Configuration["SDKGitHubAddress"]">@Model.SDKLatestVersion</kbd>
+            }
         </p>
         @if (isChineseUser && blockMainlandChineseUser)
         {

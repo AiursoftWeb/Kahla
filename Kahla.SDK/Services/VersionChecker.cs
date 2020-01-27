@@ -7,19 +7,22 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
-namespace Kahla.Server.Services
+namespace Kahla.SDK.Services
 {
     public class VersionChecker : IScopedDependency
     {
         private readonly HTTPService _http;
         private readonly IConfiguration _configuration;
+        private readonly VersionService _versionService;
+
         public VersionChecker(
             HTTPService http,
-            IConfiguration configuration
-            )
+            IConfiguration configuration,
+            VersionService versionService)
         {
             _http = http;
             _configuration = configuration;
+            _versionService = versionService;
         }
 
         public async Task<(string appVersion, string cliVersion)> CheckKahla()
@@ -28,13 +31,9 @@ namespace Kahla.Server.Services
             var response = await _http.Get(url, false);
             var result = JsonConvert.DeserializeObject<NodePackageJson>(response);
 
-            var urlcli = new AiurUrl(_configuration["CLIMasterPackageJson"], new { });
-            var responsecli = await _http.Get(urlcli, false);
-            var resultcli = JsonConvert.DeserializeObject<NodePackageJson>(responsecli);
-
             if (result.Name.ToLower() == "kahla")
             {
-                return (result.Version, resultcli.Version);
+                return (result.Version, _versionService.GetSDKVersion());
             }
             else
             {

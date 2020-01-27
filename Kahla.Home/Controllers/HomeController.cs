@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Pylon.Services;
 using Kahla.Home.Models.HomeViewModels;
-using Kahla.Home.Services;
 using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
