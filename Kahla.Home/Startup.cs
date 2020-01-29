@@ -20,6 +20,7 @@ namespace Kahla.Home
         {
             services.AddAiurMvc();
             services.AddAiurDependencies("KahlaHome");
+            services.AddApplicationInsightsTelemetry();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
