@@ -77,7 +77,6 @@ namespace Kahla.SDK.Abstract
             await RefreshUserProfile();
             await OnBotInit();
             var websocketAddress = await GetWSAddress();
-            BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             // Trigger on request.
             var requests = (await FriendshipService.MyRequestsAsync())
                 .Items
@@ -216,12 +215,14 @@ namespace Kahla.SDK.Abstract
 
         public async Task<string> GetWSAddress()
         {
+            BotLogger.LogInfo($"Getting websocket channel...");
             var address = await AuthService.InitPusherAsync();
             return address.ServerPath;
         }
 
         public void MonitorEvents(string websocketAddress)
         {
+            bool orderedToStop = false;
             if (ExitEvent != null)
             {
                 BotLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
@@ -236,12 +237,18 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
-                BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
-                var _ = Connect().ConfigureAwait(false);
+                if (!orderedToStop)
+                {
+                    orderedToStop = true;
+                    BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                    var _ = Connect().ConfigureAwait(false);
+                }
             });
             client.MessageReceived.Subscribe(OnStargateMessage);
+            BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             client.Start();
             ExitEvent.WaitOne();
+            orderedToStop = true;
             BotLogger.LogVerbose("Websocket connection disconnected.");
             client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
         }
