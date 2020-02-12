@@ -9,8 +9,34 @@ namespace Kahla.SDK.Services
         public string ReadLine(string ask)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(ask);
+            Console.Write("\n" + ask);
             return Console.ReadLine();
+        }
+
+        public void AppendResult(bool success, int tabs = 1)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < tabs; i++)
+            {
+                Console.Write("\t");
+            }
+            lock (_obj)
+            {
+                Console.Write("[");
+                if (success)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write("  OK  ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write(" FAIL ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.Write("]");
+            }
         }
 
         public void LogSuccess(string success)
@@ -18,7 +44,7 @@ namespace Kahla.SDK.Services
             lock (_obj)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(success);
+                Console.Write(success + "\n");
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
@@ -28,7 +54,7 @@ namespace Kahla.SDK.Services
             lock (_obj)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(info);
+                Console.Write("\n" + info);
             }
         }
 
@@ -37,7 +63,7 @@ namespace Kahla.SDK.Services
             lock (_obj)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine(warning);
+                Console.Write("\n" + warning);
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
@@ -47,7 +73,7 @@ namespace Kahla.SDK.Services
             lock (_obj)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(danger);
+                Console.Write("\n" + danger);
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
@@ -57,7 +83,7 @@ namespace Kahla.SDK.Services
             lock (_obj)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine(warning);
+                Console.Write("\n" + warning);
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
