@@ -51,7 +51,6 @@ namespace Kahla.SDK.Abstract
 
         public async Task Connect()
         {
-            BotLogger.LogVerbose("Starting bot: " + this.GetType().Name);
             await ConnectingLock.WaitAsync();
             BotLogger.LogWarning("Establishing the connection to Kahla...");
             ExitEvent?.Set();
