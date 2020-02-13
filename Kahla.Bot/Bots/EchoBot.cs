@@ -2,7 +2,6 @@
 using Kahla.SDK.Events;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
-using System;
 using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
@@ -12,7 +11,7 @@ namespace Kahla.Bot.Bots
         public override Task OnBotInit()
         {
             var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
-            Console.WriteLine(profilestring);
+            BotLogger.LogVerbose(profilestring);
             return Task.CompletedTask;
         }
 

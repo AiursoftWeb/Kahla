@@ -191,16 +191,17 @@ namespace Kahla.SDK.Abstract
             {
                 try
                 {
-                    BotLogger.LogInfo($"Calling sign in API with code: {code}...");
+                    BotLogger.LogInfo($"Calling sign in API...");
                     var response = await AuthService.SignIn(code);
                     if (!string.IsNullOrWhiteSpace(response))
                     {
-                        BotLogger.LogSuccess($"Successfully signed in to your account!");
+                        BotLogger.AppendResult(true, 7);
                         break;
                     }
                 }
                 catch (WebException)
                 {
+                    BotLogger.AppendResult(false, 7);
                     BotLogger.LogDanger($"Invalid code!");
                     code = await AskCode();
                 }
