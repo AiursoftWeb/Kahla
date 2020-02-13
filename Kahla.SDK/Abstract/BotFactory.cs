@@ -1,13 +1,10 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Services;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotFactory : IScopedDependency
+    public class BotFactory : ITransientDependency
     {
-        private readonly IEnumerable<BotBase> _bots;
         private readonly ConversationService _conversationService;
         private readonly GroupsService _groupsService;
         private readonly FriendshipService _friendshipService;
@@ -21,7 +18,6 @@ namespace Kahla.SDK.Abstract
         private readonly AES _aes;
 
         public BotFactory(
-            IEnumerable<BotBase> bots,
             ConversationService conversationService,
             GroupsService groupsService,
             FriendshipService friendshipService,
@@ -41,14 +37,13 @@ namespace Kahla.SDK.Abstract
             _homeService = homeService;
             _kahlaLocation = kahlaLocation;
             _botLogger = botLogger;
-            _bots = bots;
             _versionService = versionService;
             _settingsService = settingsService;
             _botCommander = botCommander;
             _aes = aes;
         }
 
-        private BotBase BuildBotProperties(BotBase bareBot)
+        public BotBase BuildBotProperties(BotBase bareBot)
         {
             bareBot.BotLogger = _botLogger;
             bareBot.AES = _aes;
@@ -62,19 +57,6 @@ namespace Kahla.SDK.Abstract
             bareBot.GroupsService = _groupsService;
             bareBot.BotCommander = _botCommander.Init(bareBot);
             return bareBot;
-        }
-
-        public BotBase GetBot<T>() where T : BotBase
-        {
-            var bot = _bots.ToList().Where(t => t.GetType() == typeof(T)).FirstOrDefault();
-            return BuildBotProperties(bot);
-        }
-
-        public BotBase SelectBot()
-        {
-            var bot = BotConfigurer.SelectBot(_bots, _settingsService, _botLogger);
-            _botLogger.LogVerbose($"Bot: '{bot.GetType().Name}' was selected to run.");
-            return BuildBotProperties(bot);
         }
     }
 }

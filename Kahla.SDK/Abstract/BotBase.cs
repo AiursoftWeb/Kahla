@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
-using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
@@ -16,7 +15,7 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public abstract class BotBase : ISingletonDependency
+    public abstract class BotBase
     {
         public AES AES;
         public BotLogger BotLogger;
@@ -47,11 +46,12 @@ namespace Kahla.SDK.Abstract
         public async Task Start()
         {
             var _ = Connect().ConfigureAwait(false);
-            await Task.WhenAll(BotCommander.Command());
+            await BotCommander.Command();
         }
 
         public async Task Connect()
         {
+            BotLogger.LogVerbose("Starting bot: " + this.GetType().Name);
             await ConnectingLock.WaitAsync();
             BotLogger.LogWarning("Establishing the connection to Kahla...");
             ExitEvent?.Set();
@@ -340,7 +340,5 @@ namespace Kahla.SDK.Abstract
             ExitEvent = null;
             await AuthService.LogoffAsync();
         }
-
-
     }
 }

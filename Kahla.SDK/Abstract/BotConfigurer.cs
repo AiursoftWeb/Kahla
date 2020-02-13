@@ -1,38 +1,50 @@
-﻿using Kahla.SDK.Services;
+﻿using Aiursoft.Scanner.Interfaces;
+using Kahla.SDK.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Kahla.SDK.Abstract
 {
-    public static class BotConfigurer
+    public class BotConfigurer : ISingletonDependency
     {
-        public static BotBase SelectBot(
+        private readonly IEnumerable<BotBase> _bots;
+        private readonly SettingsService _settingsService;
+        private readonly BotLogger _botLogger;
+
+        public BotConfigurer(
             IEnumerable<BotBase> bots,
             SettingsService settingsService,
             BotLogger botLogger)
         {
-            var builtBots = bots.ToList();
-            if (!int.TryParse(settingsService["BotCoreIndex"]?.ToString(), out int code))
+            _bots = bots;
+            _settingsService = settingsService;
+            _botLogger = botLogger;
+        }
+
+        public BotBase SelectBot()
+        {
+            var builtBots = _bots.ToList();
+            if (!int.TryParse(_settingsService["BotCoreIndex"]?.ToString(), out int code))
             {
-                botLogger.LogWarning("Select your bot:\n");
+                _botLogger.LogWarning("Select your bot:\n");
                 for (int i = 0; i < builtBots.Count; i++)
                 {
-                    botLogger.LogInfo($"\t{i.ToString()} {builtBots[i].GetType().Name}");
+                    _botLogger.LogInfo($"\t{i.ToString()} {builtBots[i].GetType().Name}");
                 }
                 while (true)
                 {
-                    botLogger.LogInfo($"Select bot:");
+                    _botLogger.LogInfo($"Select bot:");
                     var codeString = Console.ReadLine().Trim();
                     if (!int.TryParse(codeString, out code) || code >= builtBots.Count)
                     {
-                        botLogger.LogDanger($"Invalid item!");
+                        _botLogger.LogDanger($"Invalid item!");
                         continue;
                     }
                     break;
                 }
             }
-            settingsService["BotCoreIndex"] = code;
+            _settingsService["BotCoreIndex"] = code;
             return builtBots[code];
         }
     }

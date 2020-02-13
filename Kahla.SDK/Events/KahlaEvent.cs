@@ -27,6 +27,7 @@ namespace Kahla.SDK.Events
         public string AESKey { get; set; }
         public bool Muted { get; set; }
         public bool Mentioned { get; set; }
+        public int ConversationId => Message.ConversationId;
         public Message Message { get; set; }
     }
     public class NewFriendRequestEvent : KahlaEvent

@@ -4,6 +4,7 @@ using Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Kahla.Bot
 {
@@ -11,7 +12,12 @@ namespace Kahla.Bot
     {
         public BotBase Bot { get; set; }
 
-        public static IServiceScope ConfigureServices()
+        public StartUp(BotConfigurer botConfigurer)
+        {
+            Bot = botConfigurer.SelectBot();
+        }
+
+        public static IServiceProvider ConfigureServices()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
@@ -21,15 +27,8 @@ namespace Kahla.Bot
             };
 
             return new ServiceCollection()
-                .AddScannedDependencies(typeof(BotBase))
-                .BuildServiceProvider()
-                .GetService<IServiceScopeFactory>()
-                .CreateScope();
-        }
-
-        public StartUp(BotFactory botFactory)
-        {
-            Bot = botFactory.SelectBot();
+                .AddScannedDependencies()
+                .AddBots();
         }
     }
 }

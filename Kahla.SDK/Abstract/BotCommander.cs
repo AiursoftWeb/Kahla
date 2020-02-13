@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander : IScopedDependency
+    public class BotCommander : ITransientDependency
     {
         private BotBase _botBase;
         private readonly ConversationService _conversationService;
@@ -94,7 +94,7 @@ namespace Kahla.SDK.Abstract
                         await _botBase.LogOff();
                         _botLogger.LogWarning($"Successfully log out. Use command:`rec` to reconnect.");
                         break;
-                    case "rec":
+                    case "reboot":
                         var _ = _botBase.Connect().ConfigureAwait(false);
                         break;
                     case "help":
@@ -111,7 +111,7 @@ namespace Kahla.SDK.Abstract
                         _botLogger.LogInfo($"\tu\tUnmute all groups.");
 
                         _botLogger.LogInfo($"\r\nNetwork");
-                        _botLogger.LogInfo($"\trec\tReconnect to Stargate.");
+                        _botLogger.LogInfo($"\treboot\tReconnect to Stargate.");
                         _botLogger.LogInfo($"\tlogout\tLogout.");
 
                         _botLogger.LogInfo($"\r\nProgram");

@@ -17,7 +17,6 @@ namespace Kahla.Bot
             }
 
             await StartUp.ConfigureServices()
-                .ServiceProvider
                 .GetService<StartUp>()
                 .Bot
                 .Start();
