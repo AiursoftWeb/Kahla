@@ -209,10 +209,18 @@ namespace Kahla.SDK.Abstract
 
         public async Task RefreshUserProfile()
         {
-            BotLogger.LogInfo($"Getting account profile...");
-            var profile = await AuthService.MeAsync();
-            BotLogger.AppendResult(true, 6);
-            Profile = profile.Value;
+            try
+            {
+                BotLogger.LogInfo($"Getting account profile...");
+                var profile = await AuthService.MeAsync();
+                BotLogger.AppendResult(true, 6);
+                Profile = profile.Value;
+            }
+            catch (AiurUnexceptedResponse e)
+            {
+                BotLogger.AppendResult(false, 6);
+                BotLogger.LogDanger(e.Message);
+            }
         }
 
         public async Task<string> GetWSAddress()

@@ -110,7 +110,7 @@ namespace Kahla.SDK.Abstract
                         break;
                     case "logout":
                         await _botBase.LogOff();
-                        _botLogger.LogWarning($"Successfully log out. Use command:`rec` to reconnect.");
+                        _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
                         break;
                     case "reboot":
                         Console.Clear();
