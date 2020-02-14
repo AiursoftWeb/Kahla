@@ -24,5 +24,6 @@ namespace Kahla.SDK.Models
         public DateTime SendTime { get; set; } = DateTime.UtcNow;
         public string Content { get; set; }
         public bool Read { get; set; }
+        public bool GroupWithPrevious { get; set; }
     }
 }
