@@ -6,13 +6,13 @@ using System.Linq;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotConfigurer : ISingletonDependency
+    public class BotSelector : ISingletonDependency
     {
         private readonly IEnumerable<BotBase> _bots;
         private readonly SettingsService _settingsService;
         private readonly BotLogger _botLogger;
 
-        public BotConfigurer(
+        public BotSelector(
             IEnumerable<BotBase> bots,
             SettingsService settingsService,
             BotLogger botLogger)

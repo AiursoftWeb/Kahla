@@ -32,10 +32,9 @@ namespace Kahla.SDK.Abstract
             {
                 serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
             }
-            foreach (var botType in ScanBots())
+            foreach (var bot in ScanBots().Select(t => serviceProvider.GetService(t) as BotBase))
             {
-                var botService = serviceProvider.GetService(botType) as BotBase;
-                serviceProvider.GetService<BotFactory>().BuildBotProperties(botService);
+                serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
             }
             return serviceProvider;
         }

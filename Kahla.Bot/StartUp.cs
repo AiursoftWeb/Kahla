@@ -12,7 +12,7 @@ namespace Kahla.Bot
     {
         public BotBase Bot { get; set; }
 
-        public StartUp(BotConfigurer botConfigurer)
+        public StartUp(BotSelector botConfigurer)
         {
             Bot = botConfigurer.SelectBot();
         }
