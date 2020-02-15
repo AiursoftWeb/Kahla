@@ -23,7 +23,7 @@ namespace Kahla.SDK.Services
         {
             if (_memoryCache.TryGetValue($"conversation-{conversationId}-last-said", out DateTime lastSaid))
             {
-                var justSaid = lastSaid + TimeSpan.FromMinutes(2) > DateTime.UtcNow;
+                var justSaid = lastSaid + TimeSpan.FromHours(1) > DateTime.UtcNow;
                 if (justSaid)
                 {
                     if (_memoryCache.TryGetValue($"conversation-{conversationId}-last-said-person", out string lastSaidPerson))
