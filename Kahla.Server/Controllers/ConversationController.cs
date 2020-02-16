@@ -37,6 +37,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly OnlineJudger _onlineJudger;
+        private readonly LastSaidJudger _lastSaidJudger;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
@@ -45,7 +46,8 @@ namespace Kahla.Server.Controllers
             FoldersService foldersService,
             AppsContainer appsContainer,
             IConfiguration configuration,
-            OnlineJudger onlineJudger)
+            OnlineJudger onlineJudger,
+            LastSaidJudger lastSaidJudger)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -54,6 +56,7 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _configuration = configuration;
             _onlineJudger = onlineJudger;
+            _lastSaidJudger = lastSaidJudger;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -165,10 +168,12 @@ namespace Kahla.Server.Controllers
                 SenderId = user.Id,
                 Sender = user.Build(_onlineJudger),
                 ConversationId = target.Id,
-                SendTime = model.RecordTime
+                SendTime = model.RecordTime,
+                GroupWithPrevious = _lastSaidJudger.ShallBeGroupped(user.Id, target.Id)
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
+            _lastSaidJudger.MarkSend(user.Id, target.Id);
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {

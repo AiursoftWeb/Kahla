@@ -1,5 +1,5 @@
-﻿using Aiursoft.Handler.Models;
-using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Handler.Exceptions;
+using Aiursoft.Handler.Models;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
@@ -15,7 +15,7 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public abstract class BotBase : ISingletonDependency
+    public abstract class BotBase
     {
         public AES AES;
         public BotLogger BotLogger;
@@ -46,8 +46,7 @@ namespace Kahla.SDK.Abstract
         public async Task Start()
         {
             var _ = Connect().ConfigureAwait(false);
-            BotLogger.LogSuccess("Bot started! Waitting for commands. Enter 'help' to view available commands.");
-            await Task.WhenAll(BotCommander.Command());
+            await BotCommander.Command();
         }
 
         public async Task Connect()
@@ -71,12 +70,11 @@ namespace Kahla.SDK.Abstract
             }
             else
             {
-                BotLogger.LogSuccess($"You are already signed in! Welcome!");
+                BotLogger.LogSuccess($"\nYou are already signed in! Welcome!");
             }
             await RefreshUserProfile();
             await OnBotInit();
             var websocketAddress = await GetWSAddress();
-            BotLogger.LogInfo($"Listening to your account channel: {websocketAddress}");
             // Trigger on request.
             var requests = (await FriendshipService.MyRequestsAsync())
                 .Items
@@ -131,16 +129,18 @@ namespace Kahla.SDK.Abstract
                 BotLogger.LogInfo($"Using Kahla Server: {KahlaLocation}");
                 BotLogger.LogInfo("Testing Kahla server connection...");
                 var index = await HomeService.IndexAsync();
-                BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
+                BotLogger.AppendResult(true, 5);
+                //BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
                 BotLogger.LogInfo($"Server time: \t{index.UTCTime}\tServer version: \t{index.APIVersion}");
                 BotLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{VersionService.GetSDKVersion()}");
                 if (index.APIVersion != VersionService.GetSDKVersion())
                 {
+                    BotLogger.AppendResult(false, 1);
                     BotLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");
                 }
                 else
                 {
-                    BotLogger.LogSuccess("API version match!");
+                    BotLogger.AppendResult(true, 1);
                 }
                 return true;
             }
@@ -190,16 +190,17 @@ namespace Kahla.SDK.Abstract
             {
                 try
                 {
-                    BotLogger.LogInfo($"Calling sign in API with code: {code}...");
+                    BotLogger.LogInfo($"Calling sign in API...");
                     var response = await AuthService.SignIn(code);
                     if (!string.IsNullOrWhiteSpace(response))
                     {
-                        BotLogger.LogSuccess($"Successfully signed in to your account!");
+                        BotLogger.AppendResult(true, 7);
                         break;
                     }
                 }
                 catch (WebException)
                 {
+                    BotLogger.AppendResult(false, 7);
                     BotLogger.LogDanger($"Invalid code!");
                     code = await AskCode();
                 }
@@ -208,19 +209,31 @@ namespace Kahla.SDK.Abstract
 
         public async Task RefreshUserProfile()
         {
-            BotLogger.LogInfo($"Getting account profile...");
-            var profile = await AuthService.MeAsync();
-            Profile = profile.Value;
+            try
+            {
+                BotLogger.LogInfo($"Getting account profile...");
+                var profile = await AuthService.MeAsync();
+                BotLogger.AppendResult(true, 6);
+                Profile = profile.Value;
+            }
+            catch (AiurUnexceptedResponse e)
+            {
+                BotLogger.AppendResult(false, 6);
+                BotLogger.LogDanger(e.Message);
+            }
         }
 
         public async Task<string> GetWSAddress()
         {
+            BotLogger.LogInfo($"Getting websocket channel...");
             var address = await AuthService.InitPusherAsync();
+            BotLogger.AppendResult(true, 6);
             return address.ServerPath;
         }
 
         public void MonitorEvents(string websocketAddress)
         {
+            bool orderedToStop = false;
             if (ExitEvent != null)
             {
                 BotLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
@@ -235,12 +248,20 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
-                BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
-                var _ = Connect().ConfigureAwait(false);
+                if (!orderedToStop)
+                {
+                    orderedToStop = true;
+                    BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                    var _ = Connect().ConfigureAwait(false);
+                }
             });
             client.MessageReceived.Subscribe(OnStargateMessage);
+            BotLogger.LogInfo($"Listening to your account channel.");
+            BotLogger.LogVerbose(websocketAddress + "\n");
             client.Start();
+            BotLogger.AppendResult(true, 9);
             ExitEvent.WaitOne();
+            orderedToStop = true;
             BotLogger.LogVerbose("Websocket connection disconnected.");
             client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
         }
@@ -296,11 +317,15 @@ namespace Kahla.SDK.Abstract
 
         public async Task JoinGroup(string groupName, string password)
         {
-            var result = await GroupsService.JoinGroupAsync(groupName, password);
-            if (result.Code == ErrorType.Success)
+            try
             {
+                var result = await GroupsService.JoinGroupAsync(groupName, password);
                 var group = await GroupsService.GroupSummaryAsync(result.Value);
                 await OnGroupConnected(group.Value);
+            }
+            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready)
+            {
+                // do nothing.
             }
         }
 
@@ -322,7 +347,5 @@ namespace Kahla.SDK.Abstract
             ExitEvent = null;
             await AuthService.LogoffAsync();
         }
-
-
     }
 }

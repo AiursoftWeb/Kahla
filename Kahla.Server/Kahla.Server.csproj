@@ -14,10 +14,12 @@
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.git</RepositoryUrl>
+    <ApplicationInsightsResourceId>/subscriptions/fede90ca-9005-45b0-9d74-c6d6ab4dc168/resourcegroups/Kahla/providers/microsoft.insights/components/KahlaServer</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Pylon" Version="3.1.1.5" />
+    <PackageReference Include="Aiursoft.Pylon" Version="3.1.1.7" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.12.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -27,6 +29,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
 </Project>

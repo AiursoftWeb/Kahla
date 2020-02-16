@@ -6,18 +6,21 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander : IScopedDependency
+    public class BotCommander : ITransientDependency
     {
         private BotBase _botBase;
         private readonly ConversationService _conversationService;
         private readonly BotLogger _botLogger;
+        private readonly AES _aes;
 
         public BotCommander(
             ConversationService conversationService,
-            BotLogger botLogger)
+            BotLogger botLogger,
+            AES aes)
         {
             _conversationService = conversationService;
             _botLogger = botLogger;
+            _aes = aes;
         }
 
         public BotCommander Init(BotBase botBase)
@@ -26,15 +29,23 @@ namespace Kahla.SDK.Abstract
             return this;
         }
 
+        public async Task BlockIfConnecting()
+        {
+            while (_botBase.ConnectingLock.CurrentCount == 0)
+            {
+                await Task.Delay(1000);
+            }
+        }
+
         public async Task Command()
         {
+            await BlockIfConnecting();
+            await Task.Delay(1000);
+            Console.Clear();
             while (true)
             {
-                while (_botBase.ConnectingLock.CurrentCount == 0)
-                {
-                    await Task.Delay(1000);
-                }
-                var command = _botBase.BotLogger.ReadLine($"Bot:\\System\\{_botBase.Profile?.NickName}>");
+                await BlockIfConnecting();
+                var command = _botBase.BotLogger.ReadLine($"K:\\Bots\\{_botBase.GetType().Name}\\{_botBase.Profile?.NickName}>");
                 if (command.Length < 1)
                 {
                     continue;
@@ -71,20 +82,27 @@ namespace Kahla.SDK.Abstract
                         _botLogger.LogSuccess($"Successfully get all your conversations.");
                         foreach (var conversation in conversations.Items)
                         {
-                            _botLogger.LogInfo($"ID:\t{conversation.ConversationId}");
+                            var online = conversation.Online ? "online" : "offline";
                             _botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
-                            _botLogger.LogInfo($"Online:\t{conversation.Online}");
-                            _botLogger.LogInfo($"Type:\t{conversation.Discriminator}");
-                            _botLogger.LogInfo($"Last:\t{conversation.LatestMessage}");
-                            _botLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
+                            _botLogger.LogInfo($"ID:\t{conversation.ConversationId}\t{online}\t\t{conversation.Discriminator}");
+                            if (!string.IsNullOrWhiteSpace(conversation.LatestMessage))
+                            {
+                                _botLogger.LogInfo($"Last:\t{_aes.OpenSSLDecrypt(conversation.LatestMessage, conversation.AesKey)}");
+                                _botLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
+                            }
                             if (conversation.UnReadAmount > 0)
                             {
-                                _botLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**\n");
+                                _botLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**");
                             }
                             else
                             {
-                                _botLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}\n");
+                                _botLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}");
                             }
+                            if (conversation.SomeoneAtMe)
+                            {
+                                _botLogger.LogWarning($"At!");
+                            }
+                            _botLogger.LogInfo($"\n");
                         }
                         break;
                     case "clear":
@@ -92,9 +110,10 @@ namespace Kahla.SDK.Abstract
                         break;
                     case "logout":
                         await _botBase.LogOff();
-                        _botLogger.LogWarning($"Successfully log out. Use command:`rec` to reconnect.");
+                        _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
                         break;
-                    case "rec":
+                    case "reboot":
+                        Console.Clear();
                         var _ = _botBase.Connect().ConfigureAwait(false);
                         break;
                     case "help":
@@ -111,7 +130,7 @@ namespace Kahla.SDK.Abstract
                         _botLogger.LogInfo($"\tu\tUnmute all groups.");
 
                         _botLogger.LogInfo($"\r\nNetwork");
-                        _botLogger.LogInfo($"\trec\tReconnect to Stargate.");
+                        _botLogger.LogInfo($"\treboot\tReconnect to Stargate.");
                         _botLogger.LogInfo($"\tlogout\tLogout.");
 
                         _botLogger.LogInfo($"\r\nProgram");

@@ -1,10 +1,12 @@
-﻿<!doctype html>
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!doctype html>
 <html>
 <head>
     <vc:aiur-header></vc:aiur-header>
     <title>@ViewBag.Title | @Values.ProjectName</title>
     <link href="@ServiceLocation.UI/dist/AiurCore.min.css" rel="stylesheet">
     <link href="@ServiceLocation.UI/dist/AiurProduct.min.css" rel="stylesheet">
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
     @RenderBody()
