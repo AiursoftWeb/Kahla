@@ -102,14 +102,14 @@ Execute the following command to start your bot.
 $ dotnet run
 ```
 
-![demo](./Pics/rundemo.png)
+![demo](https://github.com/AiursoftWeb/Kahla/raw/dev/Kahla.SDK/Pics/rundemo.png)
 
 
 You need to sign in an Aiursoft account which identies your bot. If you don't have one, register [here](https://server.kahla.app/Auth/GoRegister).
 
 After your bot is started, just talk to it with another account!
 
-![demo](./Pics/botchatdemo.png)
+![demo](https://github.com/AiursoftWeb/Kahla/raw/dev/Kahla.SDK/Pics/botchatdemo.png)
 
 That's all! Happy coding!
 
