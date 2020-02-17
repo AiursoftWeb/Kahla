@@ -6,6 +6,8 @@
 
 Kahla is a cross-platform business messaging app. This is the server side code repo for Kahla.
 
+If you are writting bots and extends for Kahla, view SDK document [here](./Kahla.SDK/Readme.md).
+
 ## Requirements
 
 Requirements about how to run:

@@ -1,4 +1,5 @@
-﻿using Aiursoft.Pylon.Services;
+﻿using Aiursoft.Handler.Attributes;
+using Aiursoft.Pylon.Services;
 using Aiursoft.SDK.Services;
 using Kahla.Home.Models.HomeViewModels;
 using Kahla.SDK.Services;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.Home.Controllers
 {
+    [LimitPerMin(20)]
     public class HomeController : Controller
     {
         private readonly VersionChecker _version;
