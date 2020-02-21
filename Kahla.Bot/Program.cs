@@ -8,16 +8,16 @@ namespace Kahla.Bot
     {
         public async static Task Main(string[] args)
         {
-            var command = true;
-            if (args.Any() && args[0].Trim() == "no-command")
+            var asService = false;
+            if (args.Any() && args[0].Trim() == "as-service")
             {
-                command = false;
+                asService = true;
             }
 
             await StartUp.ConfigureServices()
                 .GetService<StartUp>()
                 .Bot
-                .Start(command);
+                .Start(enableCommander: !asService);
         }
     }
 }
