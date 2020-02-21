@@ -1,6 +1,8 @@
+using System.Threading.Tasks;
+
 namespace Kahla.SDK.Abstract
 {
-    public class CommandHandlerBase
+    public abstract class CommandHandlerBase
     {
         protected readonly BotCommander _botCommander;
 
@@ -8,5 +10,7 @@ namespace Kahla.SDK.Abstract
         {
             _botCommander = botCommander;
         }
+
+        public abstract Task Execute(string command);
     }
 }
