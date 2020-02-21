@@ -79,37 +79,6 @@ namespace Kahla.SDK.Abstract
                     .CreateInstance(handler.FullName, true, BindingFlags.Default, null, new object[1] { this }, null, null)
                     as CommandHandlerBase;
                 await handlerObject.Execute(command);
-
-
-                //switch (command.ToLower().Trim())
-                //{
-                //    case "say":
-                //        var conversations = await _conversationService.AllAsync();
-                //        _botLogger.LogInfo($"");
-                //        foreach (var conversation in conversations.Items)
-                //        {
-                //            _botLogger.LogInfo($"ID: {conversation.ConversationId}\tName:\t{conversation.DisplayName}");
-                //        }
-                //        _botLogger.LogInfo($"");
-                //        var convId = _botLogger.ReadLine($"Enter conversation ID you want to say:");
-                //        var target = conversations.Items.FirstOrDefault(t => t.ConversationId.ToString() == convId);
-                //        if (target == null)
-                //        {
-                //            _botLogger.LogDanger($"Can't find conversation with ID: {convId}");
-                //            break;
-                //        }
-                //        var toSay = _botLogger.ReadLine($"Enter the message you want to send to '{target.DisplayName}':");
-                //        await _botBase.SendMessage(toSay, target.ConversationId, target.AesKey);
-                //        _botLogger.LogSuccess($"Sent.");
-                //        break;
-                //    case "logout":
-                //        await _botBase.LogOff();
-                //        _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
-                //        break;
-                //    case "reboot":
-                //        Console.Clear();
-                //        var _ = _botBase.Connect().ConfigureAwait(false);
-                //        break;
             }
         }
     }
