@@ -102,17 +102,6 @@ namespace Kahla.SDK.Abstract
                 //        await _botBase.SendMessage(toSay, target.ConversationId, target.AesKey);
                 //        _botLogger.LogSuccess($"Sent.");
                 //        break;
-                //    case "exit":
-                //        await _botBase.LogOff();
-                //        return;
-                //    case "version":
-                //        await _botBase.TestKahlaLive();
-                //        break;
-                //    case "conv":
-
-                //    case "clear":
-                //        Console.Clear();
-                //        break;
                 //    case "logout":
                 //        await _botBase.LogOff();
                 //        _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
@@ -121,12 +110,6 @@ namespace Kahla.SDK.Abstract
                 //        Console.Clear();
                 //        var _ = _botBase.Connect().ConfigureAwait(false);
                 //        break;
-                //    case "help":
-
-                //        break;
-                //    default:
-                //        break;
-                //}
             }
         }
     }
