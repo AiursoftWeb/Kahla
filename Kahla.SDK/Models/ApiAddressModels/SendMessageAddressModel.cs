@@ -1,5 +1,4 @@
 ﻿using Aiursoft.SDK.Attributes;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.SDK.Models.ApiAddressModels
@@ -22,10 +21,5 @@ namespace Kahla.SDK.Models.ApiAddressModels
         [IsGuidOrEmpty]
         [Required]
         public string MessageId { get; set; }
-        /// <summary>
-        /// The time when the user press the send button.
-        /// </summary>
-        [Required]
-        public DateTime RecordTime { get; set; }
     }
 }

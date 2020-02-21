@@ -132,10 +132,6 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
-            if (model.RecordTime > DateTime.UtcNow || model.RecordTime + TimeSpan.FromSeconds(100) < DateTime.UtcNow)
-            {
-                model.RecordTime = DateTime.UtcNow;
-            }
             model.At ??= new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -168,7 +164,7 @@ namespace Kahla.Server.Controllers
                 SenderId = user.Id,
                 Sender = user.Build(_onlineJudger),
                 ConversationId = target.Id,
-                SendTime = model.RecordTime,
+                SendTime = DateTime.UtcNow,
                 GroupWithPrevious = _lastSaidJudger.ShallBeGroupped(user.Id, target.Id)
             };
             _dbContext.Messages.Add(message);

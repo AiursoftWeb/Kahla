@@ -63,8 +63,7 @@ namespace Kahla.SDK.Services
             {
                 Content = content,
                 Id = conversationId,
-                MessageId = Guid.NewGuid().ToString("N"),
-                RecordTime = DateTime.UtcNow + TimeSpan.FromSeconds(0.7)
+                MessageId = Guid.NewGuid().ToString("N")
             });
             var result = await _http.Post(url, form);
             var JResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
