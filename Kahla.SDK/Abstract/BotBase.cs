@@ -43,10 +43,17 @@ namespace Kahla.SDK.Abstract
 
         public abstract Task OnGroupInvitation(int groupId, NewMessageEvent eventContext);
 
-        public async Task Start()
+        public async Task Start(bool enableCommander)
         {
-            var _ = Connect().ConfigureAwait(false);
-            await BotCommander.Command();
+            if (enableCommander)
+            {
+                var _ = Connect().ConfigureAwait(false);
+                await BotCommander.Command();
+            }
+            else
+            {
+                await Connect();
+            }
         }
 
         public async Task Connect()
