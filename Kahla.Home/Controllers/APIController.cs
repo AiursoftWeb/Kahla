@@ -38,7 +38,7 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> KahlaServerList()
         {
             var serversFileAddress = _configuration["KahlaServerList"];
-            var serversJson = await _httpService.Get(new AiurUrl(serversFileAddress), false);
+            var serversJson = await _cache.GetAndCache($"servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress), false));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new List<IndexViewModel>();
             var taskList = new List<Task>();
