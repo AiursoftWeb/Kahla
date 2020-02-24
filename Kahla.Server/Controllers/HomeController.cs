@@ -9,6 +9,7 @@ using Kahla.Server.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 
@@ -23,6 +24,7 @@ namespace Kahla.Server.Controllers
         private readonly AuthService<KahlaUser> _authService;
         private readonly AppsContainer _appsContainer;
         private readonly VersionService _sdkVersion;
+        private readonly IConfiguration _configuration;
 
         public HomeController(
             IWebHostEnvironment env,
@@ -30,7 +32,8 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             AuthService<KahlaUser> authService,
             AppsContainer appsContainer,
-            VersionService sdkVersion)
+            VersionService sdkVersion,
+            IConfiguration configuration)
         {
             _env = env;
             _serviceLocation = serviceLocation;
@@ -38,6 +41,7 @@ namespace Kahla.Server.Controllers
             _authService = authService;
             _appsContainer = appsContainer;
             _sdkVersion = sdkVersion;
+            _configuration = configuration;
         }
 
         [APIProduces(typeof(IndexViewModel))]
@@ -50,7 +54,8 @@ namespace Kahla.Server.Controllers
                 WikiPath = _serviceLocation.Wiki,
                 ServerTime = DateTime.Now,
                 UTCTime = DateTime.UtcNow,
-                APIVersion = _sdkVersion.GetSDKVersion()
+                APIVersion = _sdkVersion.GetSDKVersion(),
+                VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"]
             });
         }
 
