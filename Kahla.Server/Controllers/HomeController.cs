@@ -50,6 +50,7 @@ namespace Kahla.Server.Controllers
             return Json(new IndexViewModel
             {
                 Code = ErrorType.Success,
+                Mode = _env.EnvironmentName,
                 Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
                 WikiPath = _serviceLocation.Wiki,
                 ServerTime = DateTime.Now,

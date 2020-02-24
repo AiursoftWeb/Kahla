@@ -11,5 +11,6 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string APIVersion { get; set; }
         public string VapidPublicKey { get; set; }
         public string ServerName { get; set; }
+        public string Mode { get; set; }
     }
 }
