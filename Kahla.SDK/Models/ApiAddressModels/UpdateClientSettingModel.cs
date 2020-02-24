@@ -11,5 +11,7 @@
         public bool? EnableInvisiable { get; set; }
 
         public bool? MarkEmailPublic { get; set; }
+
+        public bool? ListInSearchResult { get; set; }
     }
 }

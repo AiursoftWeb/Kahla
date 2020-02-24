@@ -75,6 +75,9 @@ namespace Kahla.SDK.Models
         public bool EnableInvisiable { get; set; } = false;
         public bool ShouldSerializeEnableInvisiable() => IsMe;
 
+        [JsonProperty]
+        public bool ListInSearchResult { get; set; } = true;
+        public bool ShouldSerializeListInSearchResult() => IsMe;
 
         [JsonProperty]
         [NotMapped]
