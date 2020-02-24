@@ -11,19 +11,15 @@ namespace Kahla.SDK.Services
     public class HomeService : IScopedDependency
     {
         private readonly SingletonHTTP _http;
-        private readonly KahlaLocation _kahlaLocation;
 
-        public HomeService(
-            SingletonHTTP http,
-            KahlaLocation kahlaLocation)
+        public HomeService(SingletonHTTP http)
         {
             _http = http;
-            _kahlaLocation = kahlaLocation;
         }
 
-        public async Task<IndexViewModel> IndexAsync()
+        public async Task<IndexViewModel> IndexAsync(string serverRoot)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Home", "Index", new { });
+            var url = new AiurUrl(serverRoot, "Home", "Index", new { });
             var result = await _http.Get(url);
             var JResult = JsonConvert.DeserializeObject<IndexViewModel>(result);
 
