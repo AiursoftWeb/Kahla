@@ -13,15 +13,18 @@ namespace Kahla.SDK.Abstract
         public BotBase _botBase;
         public readonly ConversationService _conversationService;
         public readonly BotLogger _botLogger;
+        public readonly KahlaLocation _kahlaLocation;
         public readonly AES _aes;
 
         public BotCommander(
             ConversationService conversationService,
             BotLogger botLogger,
+            KahlaLocation kahlaLocation,
             AES aes)
         {
             _conversationService = conversationService;
             _botLogger = botLogger;
+            _kahlaLocation = kahlaLocation;
             _aes = aes;
         }
 

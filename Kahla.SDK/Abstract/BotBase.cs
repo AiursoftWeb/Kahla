@@ -65,7 +65,7 @@ namespace Kahla.SDK.Abstract
             var server = AskServerAddress();
             SettingsService["ServerAddress"] = server;
             KahlaLocation.UseKahlaServer(server);
-            if (!await TestKahlaLive())
+            if (!await TestKahlaLive(server))
             {
                 return;
             }
@@ -129,13 +129,13 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public async Task<bool> TestKahlaLive()
+        public async Task<bool> TestKahlaLive(string server)
         {
             try
             {
                 BotLogger.LogInfo($"Using Kahla Server: {KahlaLocation}");
                 BotLogger.LogInfo("Testing Kahla server connection...");
-                var index = await HomeService.IndexAsync();
+                var index = await HomeService.IndexAsync(server);
                 BotLogger.AppendResult(true, 5);
                 //BotLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
                 BotLogger.LogInfo($"Server time: \t{index.UTCTime}\tServer version: \t{index.APIVersion}");
