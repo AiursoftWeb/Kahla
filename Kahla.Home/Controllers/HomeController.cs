@@ -49,6 +49,7 @@ namespace Kahla.Home.Controllers
             return View(model);
         }
 
+        [Route("platform-support")]
         public IActionResult PlatformSupport()
         {
             var mode = Request.Host.ToString().ToLower().Contains("staging") ?
