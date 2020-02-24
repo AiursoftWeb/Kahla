@@ -55,7 +55,8 @@ namespace Kahla.Server.Controllers
                 ServerTime = DateTime.Now,
                 UTCTime = DateTime.UtcNow,
                 APIVersion = _sdkVersion.GetSDKVersion(),
-                VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"]
+                VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
+                ServerName = _configuration["ServerName"]
             });
         }
 
