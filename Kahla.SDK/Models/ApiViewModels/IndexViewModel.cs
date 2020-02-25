@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Handler.Models;
 using System;
-using System.Collections.Generic;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
@@ -13,6 +12,6 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string VapidPublicKey { get; set; }
         public string ServerName { get; set; }
         public string Mode { get; set; }
-        public List<DomainSettings> Domains { get; set; }
+        public DomainSettings Domain { get; set; }
     }
 }

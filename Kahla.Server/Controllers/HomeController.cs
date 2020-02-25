@@ -6,7 +6,6 @@ using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server.Data;
-using Kahla.Server.Middlewares;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -64,7 +64,7 @@ namespace Kahla.Server.Controllers
                 APIVersion = _sdkVersion.GetSDKVersion(),
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
                 ServerName = _configuration["ServerName"],
-                Domains = _appDomain
+                Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[0] == Request.Host.Host)
             });
         }
 
