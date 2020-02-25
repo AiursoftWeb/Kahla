@@ -6,11 +6,14 @@ using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server.Data;
+using Kahla.Server.Middlewares;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -25,6 +28,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly VersionService _sdkVersion;
         private readonly IConfiguration _configuration;
+        private readonly List<DomainSettings> _appDomain;
 
         public HomeController(
             IWebHostEnvironment env,
@@ -33,6 +37,7 @@ namespace Kahla.Server.Controllers
             AuthService<KahlaUser> authService,
             AppsContainer appsContainer,
             VersionService sdkVersion,
+            IOptions<List<DomainSettings>> optionsAccessor,
             IConfiguration configuration)
         {
             _env = env;
@@ -42,6 +47,7 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _sdkVersion = sdkVersion;
             _configuration = configuration;
+            _appDomain = optionsAccessor.Value;
         }
 
         [APIProduces(typeof(IndexViewModel))]
@@ -57,7 +63,8 @@ namespace Kahla.Server.Controllers
                 UTCTime = DateTime.UtcNow,
                 APIVersion = _sdkVersion.GetSDKVersion(),
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
-                ServerName = _configuration["ServerName"]
+                ServerName = _configuration["ServerName"],
+                Domains = _appDomain
             });
         }
 
