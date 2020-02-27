@@ -1,6 +1,4 @@
-﻿using Kahla.SDK.Services;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,16 +8,16 @@ namespace Kahla.Bot
     {
         public async static Task Main(string[] args)
         {
-            if (args.Any() && args[0].Trim() == "version")
+            var asService = false;
+            if (args.Any() && args[0].Trim() == "as-service")
             {
-                Console.WriteLine(VersionService.SDKVersion());
-                return;
+                asService = true;
             }
 
             await StartUp.ConfigureServices()
                 .GetService<StartUp>()
                 .Bot
-                .Start();
+                .Start(enableCommander: !asService);
         }
     }
 }

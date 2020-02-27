@@ -195,9 +195,11 @@ namespace Kahla.Server.Controllers
             var users = _dbContext
                 .Users
                 .AsNoTracking()
+                .Where(t => t.ListInSearchResult || t.Id == model.SearchInput)
                 .Where(t =>
-                    t.MakeEmailPublic && t.Email.Contains(model.SearchInput) ||
-                    t.NickName.Contains(model.SearchInput));
+                    t.MarkEmailPublic && t.Email.Contains(model.SearchInput) ||
+                    t.NickName.Contains(model.SearchInput) ||
+                    t.Id == model.SearchInput);
 
             var groups = _dbContext
                 .GroupConversations

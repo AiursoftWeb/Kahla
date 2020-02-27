@@ -199,7 +199,11 @@ namespace Kahla.Server.Controllers
             }
             if (model.MarkEmailPublic.HasValue)
             {
-                currentUser.MakeEmailPublic = model.MarkEmailPublic == true;
+                currentUser.MarkEmailPublic = model.MarkEmailPublic == true;
+            }
+            if (model.ListInSearchResult.HasValue)
+            {
+                currentUser.ListInSearchResult = model.ListInSearchResult == true;
             }
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully update your client setting.");

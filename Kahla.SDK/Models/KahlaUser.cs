@@ -51,7 +51,7 @@ namespace Kahla.SDK.Models
         public string EmailReasonInJson { get; set; }
 
         [JsonProperty]
-        public bool MakeEmailPublic { get; set; } = true;
+        public bool MarkEmailPublic { get; set; } = true;
         [NotMapped]
         public bool IsMe { get; set; }
 
@@ -61,7 +61,7 @@ namespace Kahla.SDK.Models
 
         [JsonProperty]
         public override string Email { get; set; }
-        public bool ShouldSerializeEmail() => MakeEmailPublic || IsMe;
+        public bool ShouldSerializeEmail() => MarkEmailPublic || IsMe;
 
         [JsonProperty]
         public bool EnableEmailNotification { get; set; }
@@ -75,6 +75,9 @@ namespace Kahla.SDK.Models
         public bool EnableInvisiable { get; set; } = false;
         public bool ShouldSerializeEnableInvisiable() => IsMe;
 
+        [JsonProperty]
+        public bool ListInSearchResult { get; set; } = true;
+        public bool ShouldSerializeListInSearchResult() => IsMe;
 
         [JsonProperty]
         [NotMapped]

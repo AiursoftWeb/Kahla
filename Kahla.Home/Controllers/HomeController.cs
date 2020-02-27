@@ -14,17 +14,20 @@ namespace Kahla.Home.Controllers
         private readonly VersionChecker _version;
         private readonly VersionService _versionService;
         private readonly ServiceLocation _serviceLocation;
+        private readonly HomeService _homeService;
         private readonly AiurCache _cache;
 
         public HomeController(
             VersionChecker version,
             VersionService versionService,
             ServiceLocation serviceLocation,
+            HomeService homeService,
             AiurCache cache)
         {
             _version = version;
             _versionService = versionService;
             _serviceLocation = serviceLocation;
+            _homeService = homeService;
             _cache = cache;
         }
 
@@ -49,6 +52,7 @@ namespace Kahla.Home.Controllers
             return View(model);
         }
 
+        [Route("platform-support")]
         public IActionResult PlatformSupport()
         {
             var mode = Request.Host.ToString().ToLower().Contains("staging") ?

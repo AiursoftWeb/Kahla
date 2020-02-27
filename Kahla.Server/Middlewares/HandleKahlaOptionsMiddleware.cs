@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Kahla.SDK.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,11 +7,6 @@ using System.Threading.Tasks;
 
 namespace Kahla.Server.Middlewares
 {
-    public class DomainSettings
-    {
-        public string Server { get; set; }
-        public string Client { get; set; }
-    }
     public class HandleKahlaOptionsMiddleware
     {
         private List<DomainSettings> _appDomain { get; }
