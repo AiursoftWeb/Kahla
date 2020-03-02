@@ -2,6 +2,7 @@
 using Aiursoft.Handler.Models;
 using Aiursoft.Scanner.Interfaces;
 using Aiursoft.XelNaga.Models;
+using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -10,9 +11,9 @@ namespace Kahla.SDK.Services
 {
     public class HomeService : IScopedDependency
     {
-        private readonly SingletonHTTP _http;
+        private readonly HTTPService _http;
 
-        public HomeService(SingletonHTTP http)
+        public HomeService(HTTPService http)
         {
             _http = http;
         }
@@ -20,7 +21,7 @@ namespace Kahla.SDK.Services
         public async Task<IndexViewModel> IndexAsync(string serverRoot)
         {
             var url = new AiurUrl(serverRoot, "Home", "Index", new { });
-            var result = await _http.Get(url);
+            var result = await _http.Get(url, false);
             var JResult = JsonConvert.DeserializeObject<IndexViewModel>(result);
 
             if (JResult.Code != ErrorType.Success)
