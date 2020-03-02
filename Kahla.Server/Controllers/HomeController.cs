@@ -69,7 +69,11 @@ namespace Kahla.Server.Controllers
             // This part of code is not beautiful. Try to resolve it in the future.
             if (model.Domain != null)
             {
-                model.Domain.Server = Request.Scheme + "://" + model.Domain.Server;
+                model.Domain = new DomainSettings
+                {
+                    Server = Request.Scheme + "://" + model.Domain.Server,
+                    Client = model.Domain.Client
+                };
             }
             return Json(model);
         }
