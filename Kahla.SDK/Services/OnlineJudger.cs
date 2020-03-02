@@ -20,7 +20,7 @@ namespace Kahla.SDK.Services
                 return false;
             }
             var isOnline = false;
-            if (_memoryCache.TryGetValue(userId, out DateTime lastAccess))
+            if (_memoryCache.TryGetValue($"last-access-time-{userId}", out DateTime lastAccess))
             {
                 isOnline = lastAccess + TimeSpan.FromMinutes(5) > DateTime.UtcNow;
             }

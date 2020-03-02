@@ -9,6 +9,8 @@ Kahla.SDK is a library for writting bots and extends for Kahla.
 
 This will introduce how to write a bot for Kahla. Before starting, make sure you have `.NET Core SDK` installed.
 
+Download .NET Core SDK [here](http://dot.net).
+
 ### 1. Create a new console .NET Core app
 
 Open your terminal and type the following command to create a new console app.
@@ -57,7 +59,7 @@ namespace MyBot
                 return;
             }
             // Echo all messages.
-            await SendMessage(replaced, eventContext.ConversationId, eventContext.AESKey);
+            await SendMessage(inputMessage, eventContext.ConversationId, eventContext.AESKey);
         }
     }
 }
@@ -77,9 +79,9 @@ namespace MyBot
 {
     class Program
     {
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            return new ServiceCollection()
+            await new ServiceCollection()
                 // Add all dependencies.
                 .AddScannedDependencies()
                 // Register your bot.

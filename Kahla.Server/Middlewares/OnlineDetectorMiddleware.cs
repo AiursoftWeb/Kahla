@@ -29,7 +29,7 @@ namespace Kahla.Server.Middlewares
                 {
                     lock (_obj)
                     {
-                        _memoryCache.Set(userId, DateTime.UtcNow);
+                        _memoryCache.Set($"last-access-time-{userId}", DateTime.UtcNow);
                     }
                 }
             }
