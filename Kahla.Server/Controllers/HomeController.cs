@@ -64,7 +64,7 @@ namespace Kahla.Server.Controllers
                 APIVersion = _sdkVersion.GetSDKVersion(),
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
                 ServerName = _configuration["ServerName"],
-                Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[1] == Request.Host.Host)
+                Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[0] == Request.Host.Host)
             };
             // This part of code is not beautiful. Try to resolve it in the future.
             if (model.Domain != null)
