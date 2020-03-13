@@ -27,6 +27,7 @@ namespace Kahla.Bot
             };
 
             return new ServiceCollection()
+                .AddHttpClient()
                 .AddScannedDependencies()
                 .AddBots();
         }
