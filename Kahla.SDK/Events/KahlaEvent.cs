@@ -18,6 +18,7 @@ namespace Kahla.SDK.Events
         public EventType Type { get; set; }
         public string TypeDescription => Type.ToString();
     }
+
     public class NewMessageEvent : KahlaEvent
     {
         public NewMessageEvent()
@@ -29,6 +30,7 @@ namespace Kahla.SDK.Events
         public bool Mentioned { get; set; }
         public int ConversationId => Message.ConversationId;
         public Message Message { get; set; }
+        public string PreviousMessageId { get; set; }
     }
     public class NewFriendRequestEvent : KahlaEvent
     {
