@@ -132,6 +132,7 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
+            // Ensure everything is safe.
             model.At ??= new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
@@ -156,6 +157,17 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             }
+            // Get last message Id.
+            string lastMessageId = null;
+            try
+            {
+                lastMessageId = _lastSaidJudger.LastMessageId(target.Id);
+            }
+            catch (ArgumentNullException)
+            {
+                Guid? nullableLastMessageId = await _dbContext.Messages.OrderByDescending(t => t.SendTime).Select(t => t.Id).FirstOrDefaultAsync();
+                lastMessageId = nullableLastMessageId?.ToString() ?? null;
+            }
             // Create message.
             var message = new Message
             {
@@ -169,15 +181,6 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            string lastMessageId = null;
-            try
-            {
-                lastMessageId = _lastSaidJudger.LastMessageId(target.Id);
-            }
-            catch (ArgumentNullException)
-            {
-                lastMessageId = _dbContext.Messages.OrderByDescending(t => t.SendTime).Select(t => t.Id).FirstOrDefault().ToString();
-            }
             _lastSaidJudger.MarkSend(user.Id, target.Id, message.Id);
             // Create at info for this message.
             foreach (var atTargetId in model.At)
