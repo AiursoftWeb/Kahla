@@ -13,10 +13,20 @@ namespace Kahla.SDK.Services
             _memoryCache = memoryCache;
         }
 
-        public void MarkSend(string userId, int conversationId)
+        public void MarkSend(string userId, int conversationId, Guid messageId)
         {
             _memoryCache.Set($"conversation-{conversationId}-last-said", DateTime.UtcNow);
             _memoryCache.Set($"conversation-{conversationId}-last-said-person", userId);
+            _memoryCache.Set($"conversation-{conversationId}-last-said-message", messageId.ToString());
+        }
+
+        public string LastMessageId(int conversationId)
+        {
+            if (_memoryCache.TryGetValue($"conversation-{conversationId}-last-said-message", out string lastMessageId))
+            {
+                return lastMessageId;
+            }
+            throw new ArgumentNullException("Last message is not in memory.");
         }
 
         public bool ShallBeGroupped(string userId, int conversationId)

@@ -169,7 +169,16 @@ namespace Kahla.Server.Controllers
             };
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
-            _lastSaidJudger.MarkSend(user.Id, target.Id);
+            string lastMessageId = null;
+            try
+            {
+                lastMessageId = _lastSaidJudger.LastMessageId(target.Id);
+            }
+            catch (ArgumentNullException)
+            {
+                lastMessageId = _dbContext.Messages.OrderByDescending(t => t.SendTime).Select(t => t.Id).FirstOrDefault().ToString();
+            }
+            _lastSaidJudger.MarkSend(user.Id, target.Id, message.Id);
             // Create at info for this message.
             foreach (var atTargetId in model.At)
             {
@@ -203,6 +212,7 @@ namespace Kahla.Server.Controllers
                                 devices: eachUser.HisDevices,
                                 conversation: target,
                                 message: message,
+                                lastMessageId: lastMessageId,
                                 pushAlert: eachUser.Id != user.Id && (mentioned || !(relation?.Muted ?? false)),
                                 mentioned: mentioned
                                 );
