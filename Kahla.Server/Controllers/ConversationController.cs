@@ -165,7 +165,12 @@ namespace Kahla.Server.Controllers
             }
             catch (ArgumentNullException)
             {
-                Guid? nullableLastMessageId = await _dbContext.Messages.OrderByDescending(t => t.SendTime).Select(t => t.Id).FirstOrDefaultAsync();
+                Guid? nullableLastMessageId = await _dbContext
+                    .Messages
+                    .Where(t => t.ConversationId == target.Id)
+                    .OrderByDescending(t => t.SendTime)
+                    .Select(t => t.Id)
+                    .FirstOrDefaultAsync();
                 lastMessageId = nullableLastMessageId?.ToString() ?? null;
             }
             // Create message.
