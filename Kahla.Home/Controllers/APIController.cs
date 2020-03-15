@@ -68,7 +68,7 @@ namespace Kahla.Home.Controllers
                 LatestVersion = appVersion,
                 LatestCLIVersion = cliVersion,
                 Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
-                DownloadAddress = "https://www.kahla.app"
+                DownloadAddress = $"{Request.Protocol}://{Request.Host}"
             });
         }
     }
