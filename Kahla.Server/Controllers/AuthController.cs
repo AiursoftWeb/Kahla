@@ -17,7 +17,6 @@ using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server.Data;
-using Kahla.Server.Middlewares;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -84,20 +83,6 @@ namespace Kahla.Server.Controllers
             _onlineJudger = onlineJudger;
             _cache = cache;
             _appDomains = optionsAccessor.Value;
-        }
-
-        [APIProduces(typeof(VersionViewModel))]
-        public async Task<IActionResult> Version()
-        {
-            var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
-            return Json(new VersionViewModel
-            {
-                LatestVersion = appVersion,
-                LatestCLIVersion = cliVersion,
-                APIVersion = _sdkVersion.GetSDKVersion(),
-                Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
-                DownloadAddress = "https://www.kahla.app"
-            });
         }
 
         [AiurForceAuth("", "", justTry: false, register: false)]
