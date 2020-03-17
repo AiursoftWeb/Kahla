@@ -1,10 +1,10 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
+using Kahla.SDK.Data;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
@@ -27,21 +27,22 @@ namespace Kahla.SDK.Abstract
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
         public SettingsService SettingsService;
+        public EventSyncer EventSyncer;
         public ManualResetEvent ExitEvent;
         public BotCommander BotCommander;
         public SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
 
         public KahlaUser Profile { get; set; }
 
-        public abstract Task OnBotInit();
+        public virtual Task OnBotInit() => Task.CompletedTask;
 
-        public abstract Task OnFriendRequest(NewFriendRequestEvent arg);
+        public virtual Task OnFriendRequest(NewFriendRequestEvent arg) => Task.CompletedTask;
 
-        public abstract Task OnGroupConnected(SearchedGroup group);
+        public virtual Task OnGroupConnected(SearchedGroup group) => Task.CompletedTask;
 
-        public abstract Task OnMessage(string inputMessage, NewMessageEvent eventContext);
+        public virtual Task OnMessage(string inputMessage, NewMessageEvent eventContext) => Task.CompletedTask;
 
-        public abstract Task OnGroupInvitation(int groupId, NewMessageEvent eventContext);
+        public virtual Task OnGroupInvitation(int groupId, NewMessageEvent eventContext) => Task.CompletedTask;
 
         public async Task Start(bool enableCommander)
         {
@@ -102,7 +103,7 @@ namespace Kahla.SDK.Abstract
                 await OnGroupConnected(group);
             }
             ConnectingLock.Release();
-            MonitorEvents(websocketAddress);
+            await MonitorEvents(websocketAddress);
             return;
         }
 
@@ -238,7 +239,7 @@ namespace Kahla.SDK.Abstract
             return address.ServerPath;
         }
 
-        public void MonitorEvents(string websocketAddress)
+        public async Task MonitorEvents(string websocketAddress)
         {
             bool orderedToStop = false;
             if (ExitEvent != null)
@@ -262,44 +263,15 @@ namespace Kahla.SDK.Abstract
                     var _ = Connect().ConfigureAwait(false);
                 }
             });
-            client.MessageReceived.Subscribe(OnStargateMessage);
+            await EventSyncer.Init(client, this);
             BotLogger.LogInfo($"Listening to your account channel.");
             BotLogger.LogVerbose(websocketAddress + "\n");
-            client.Start();
+            await client.Start();
             BotLogger.AppendResult(true, 9);
             ExitEvent.WaitOne();
             orderedToStop = true;
             BotLogger.LogVerbose("Websocket connection disconnected.");
-            client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
-        }
-
-        public async void OnStargateMessage(ResponseMessage msg)
-        {
-            var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
-            if (inevent.Type == EventType.NewMessage)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                await OnNewMessageEvent(typedEvent);
-            }
-            else if (inevent.Type == EventType.NewFriendRequestEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                await OnFriendRequest(typedEvent);
-            }
-        }
-
-        public async Task OnNewMessageEvent(NewMessageEvent typedEvent)
-        {
-            string decrypted = AES.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
-            BotLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
-            if (decrypted.StartsWith("[group]") && int.TryParse(decrypted.Substring(7), out int groupId))
-            {
-                await OnGroupInvitation(groupId, typedEvent);
-            }
-            else
-            {
-                await OnMessage(decrypted, typedEvent).ConfigureAwait(false);
-            }
+            await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
         }
 
         public Task CompleteRequest(int requestId, bool accept)

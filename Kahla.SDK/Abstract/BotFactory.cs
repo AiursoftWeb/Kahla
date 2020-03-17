@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Scanner.Interfaces;
+using Kahla.SDK.Data;
 using Kahla.SDK.Services;
 
 namespace Kahla.SDK.Abstract
@@ -15,6 +16,7 @@ namespace Kahla.SDK.Abstract
         private readonly VersionService _versionService;
         private readonly SettingsService _settingsService;
         private readonly BotCommander _botCommander;
+        private readonly EventSyncer _eventSyncer;
         private readonly AES _aes;
 
         public BotFactory(
@@ -28,6 +30,7 @@ namespace Kahla.SDK.Abstract
             VersionService versionService,
             SettingsService settingsService,
             BotCommander botCommander,
+            EventSyncer eventSyncer,
             AES aes)
         {
             _conversationService = conversationService;
@@ -40,6 +43,7 @@ namespace Kahla.SDK.Abstract
             _versionService = versionService;
             _settingsService = settingsService;
             _botCommander = botCommander;
+            _eventSyncer = eventSyncer;
             _aes = aes;
         }
 
@@ -55,6 +59,7 @@ namespace Kahla.SDK.Abstract
             bareBot.VersionService = _versionService;
             bareBot.SettingsService = _settingsService;
             bareBot.GroupsService = _groupsService;
+            bareBot.EventSyncer = _eventSyncer;
             bareBot.BotCommander = _botCommander.Init(bareBot);
             return bareBot;
         }
