@@ -54,6 +54,7 @@ namespace Kahla.Server.Data
                         t.Messages.Count(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp) :
                         t.Messages.Count(p => !p.Read && p.SenderId != userId),
 
+                    LatestMessageId = t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Id).FirstOrDefault(),
                     LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Content).FirstOrDefault(),
                     LatestMessageTime = t.Messages.Max(m => m.SendTime),
 
