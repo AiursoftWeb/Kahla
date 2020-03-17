@@ -73,12 +73,14 @@ namespace Kahla.Server.Services
             await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(newFriendRequestEvent));
         }
 
-        public async Task FriendsChangedEvent(int stargateChannel, IEnumerable<Device> devices, Request request)
+        public async Task FriendsChangedEvent(int stargateChannel, IEnumerable<Device> devices, Request request, bool result, PrivateConversation conversation)
         {
             var token = await _appsContainer.AccessToken();
             var friendAcceptedEvent = new FriendsChangedEvent
             {
-                Request = request
+                Request = request,
+                Result = result,
+                CreatedConversation = conversation
             };
             if (stargateChannel != -1)
             {

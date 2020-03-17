@@ -160,6 +160,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
             request.Completed = true;
+            PrivateConversation newConversation = null;
             if (model.Accept)
             {
                 if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
@@ -167,7 +168,7 @@ namespace Kahla.Server.Controllers
                     await _dbContext.SaveChangesAsync();
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
-                _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
             }
             else
@@ -175,8 +176,18 @@ namespace Kahla.Server.Controllers
                 await _dbContext.SaveChangesAsync();
             }
             await Task.WhenAll(
-                _pusher.FriendsChangedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, request),
-                _pusher.FriendsChangedEvent(request.Target.CurrentChannel, request.Target.HisDevices, request)
+                _pusher.FriendsChangedEvent(
+                    request.Creator.CurrentChannel,
+                    request.Creator.HisDevices,
+                    request,
+                    model.Accept,
+                    newConversation.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                _pusher.FriendsChangedEvent(
+                    request.Target.CurrentChannel,
+                    request.Target.HisDevices,
+                    request,
+                    model.Accept,
+                    newConversation.Build(request.TargetId, _onlineJudger) as PrivateConversation)
             );
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }

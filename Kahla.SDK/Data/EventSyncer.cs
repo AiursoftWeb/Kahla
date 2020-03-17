@@ -7,6 +7,7 @@ using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Websocket.Client;
 
@@ -68,7 +69,16 @@ namespace Kahla.SDK.Data
             else if (inevent.Type == EventType.NewFriendRequestEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                if (!Requests.Any(t => t.Id == typedEvent.Request.Id))
+                {
+                    Requests.Add(typedEvent.Request);
+                }
                 await _bot.OnFriendRequest(typedEvent);
+            }
+            else if (inevent.Type == EventType.FriendsChangedEvent)
+            {
+                var typedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
+                SyncFriendRequest(typedEvent.Request, typedEvent.Result, typedEvent.CreatedConversation);
             }
         }
 
@@ -86,9 +96,44 @@ namespace Kahla.SDK.Data
             }
         }
 
-        public async Task SyncFriendRequest()
+        public void SyncFriendRequest(
+            Request request,
+            bool accept,
+            PrivateConversation createdConversation)
         {
-
+            if (request.TargetId == _bot.Profile.Id)
+            {
+                // Sent to me from another user.
+                var inMemory = Requests.SingleOrDefault(t => t.Id == request.Id);
+                inMemory = request;
+            }
+            if (accept)
+            {
+                Contacts.Add(new ContactInfo
+                {
+                    DisplayName = request.TargetId == _bot.Profile.Id ?
+                        request.Creator.NickName :
+                        request.Target.NickName,
+                    DisplayImagePath = request.TargetId == _bot.Profile.Id ?
+                        request.Creator.IconFilePath :
+                        request.Target.IconFilePath,
+                    LatestMessage = null,
+                    LatestMessageTime = DateTime.MinValue,
+                    UnReadAmount = 0,
+                    ConversationId = createdConversation.Id,
+                    Discriminator = createdConversation.Discriminator,
+                    UserId = request.TargetId == _bot.Profile.Id ?
+                        request.Creator.Id :
+                        request.Target.Id,
+                    AesKey = createdConversation.AESKey,
+                    Muted = createdConversation.Muted(_bot.Profile.Id),
+                    SomeoneAtMe = false,
+                    Online = request.TargetId == _bot.Profile.Id ?
+                        request.Creator.IsOnline :
+                        request.Target.IsOnline,
+                    LatestMessageId = Guid.Empty
+                }); ;
+            }
         }
     }
 }

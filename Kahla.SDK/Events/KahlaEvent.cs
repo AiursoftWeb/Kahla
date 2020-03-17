@@ -50,6 +50,8 @@ namespace Kahla.SDK.Events
             Type = EventType.FriendsChangedEvent;
         }
         public Request Request { get; set; }
+        public bool Result { get; set; }
+        public PrivateConversation CreatedConversation { get; set; }
     }
 
     public class WereDeletedEvent : KahlaEvent

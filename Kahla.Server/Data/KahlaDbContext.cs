@@ -113,14 +113,16 @@ namespace Kahla.Server.Data
             return newGroup;
         }
 
-        public void AddFriend(string userId1, string userId2)
+        public PrivateConversation AddFriend(string userId1, string userId2)
         {
-            PrivateConversations.Add(new PrivateConversation
+            var conversation = new PrivateConversation
             {
                 RequesterId = userId1,
                 TargetId = userId2,
                 AESKey = Guid.NewGuid().ToString("N")
-            });
+            };
+            PrivateConversations.Add(conversation);
+            return conversation;
         }
 
         public async Task<DateTime> SetLastRead(Conversation conversation, string userId)
