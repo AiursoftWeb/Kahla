@@ -28,8 +28,9 @@ namespace Kahla.SDK.Abstract
         public VersionService VersionService;
         public SettingsService SettingsService;
         public EventSyncer EventSyncer;
-        public ManualResetEvent ExitEvent;
         public BotCommander BotCommander;
+
+        public ManualResetEvent ExitEvent;
         public SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
 
         public KahlaUser Profile { get; set; }
@@ -91,9 +92,7 @@ namespace Kahla.SDK.Abstract
             {
                 await OnFriendRequest(new NewFriendRequestEvent
                 {
-                    RequestId = request.Id,
-                    Requester = request.Creator,
-                    RequesterId = request.CreatorId,
+                    Request = request
                 });
             }
             // Trigger group connected.
@@ -241,7 +240,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task MonitorEvents(string websocketAddress)
         {
-            bool orderedToStop = false;
+            bool okToStop = false;
             if (ExitEvent != null)
             {
                 BotLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
@@ -256,22 +255,22 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => BotLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
-                if (!orderedToStop)
+                if (!okToStop)
                 {
-                    orderedToStop = true;
+                    okToStop = true;
                     BotLogger.LogDanger("Websocket connection dropped! Auto retry...");
                     var _ = Connect().ConfigureAwait(false);
                 }
             });
-            await EventSyncer.Init(client, this);
+            await EventSyncer.Init(client, this, forceRefresh: true);
+            await client.Start();
             BotLogger.LogInfo($"Listening to your account channel.");
             BotLogger.LogVerbose(websocketAddress + "\n");
-            await client.Start();
             BotLogger.AppendResult(true, 9);
             ExitEvent.WaitOne();
-            orderedToStop = true;
-            BotLogger.LogVerbose("Websocket connection disconnected.");
+            okToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
+            BotLogger.LogVerbose("Websocket connection disconnected.");
         }
 
         public Task CompleteRequest(int requestId, bool accept)
@@ -308,16 +307,15 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public string RemoveMentionMe(string sourceMessage)
+        protected string RemoveMentionMe(string sourceMessage)
         {
             sourceMessage = sourceMessage.Replace($"@{Profile.NickName.Replace(" ", "")}", "");
             return sourceMessage;
         }
 
-        public string AddMention(string sourceMessage, KahlaUser target)
+        protected string Mention(KahlaUser target)
         {
-            sourceMessage += $" @{target.NickName.Replace(" ", "")}";
-            return sourceMessage;
+            return $" @{target.NickName.Replace(" ", "")}";
         }
 
         public async Task LogOff()

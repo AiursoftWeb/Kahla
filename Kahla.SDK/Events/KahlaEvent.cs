@@ -32,15 +32,15 @@ namespace Kahla.SDK.Events
         public Message Message { get; set; }
         public string PreviousMessageId { get; set; }
     }
+
     public class NewFriendRequestEvent : KahlaEvent
     {
         public NewFriendRequestEvent()
         {
             Type = EventType.NewFriendRequestEvent;
         }
-        public string RequesterId { get; set; }
-        public KahlaUser Requester { get; set; }
-        public int RequestId { get; set; }
+
+        public Request Request { get; set; }
     }
     public class WereDeletedEvent : KahlaEvent
     {

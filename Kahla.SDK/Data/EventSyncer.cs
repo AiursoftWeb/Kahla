@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
+using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
@@ -14,6 +15,7 @@ namespace Kahla.SDK.Data
     public class EventSyncer : ISingletonDependency
     {
         private readonly ConversationService _conversationService;
+        private readonly FriendshipService _friendshipService;
         private readonly BotLogger _botLogger;
         private readonly AES _aes;
 
@@ -21,13 +23,16 @@ namespace Kahla.SDK.Data
         private BotBase _bot;
 
         public List<ContactInfo> Contacts { get; set; }
+        public List<Request> Requests { get; set; }
 
         public EventSyncer(
             ConversationService conversationService,
+            FriendshipService friendshipService,
             BotLogger botLogger,
             AES aes)
         {
             _conversationService = conversationService;
+            _friendshipService = friendshipService;
             _botLogger = botLogger;
             _aes = aes;
         }
@@ -43,6 +48,11 @@ namespace Kahla.SDK.Data
             {
                 var allResponse = await _conversationService.AllAsync();
                 Contacts = allResponse.Items;
+            }
+            if (Requests == null || forceRefresh)
+            {
+                var requestsResponse = await _friendshipService.MyRequestsAsync();
+                Requests = requestsResponse.Items;
             }
             client.MessageReceived.Subscribe(OnStargateMessage);
         }
@@ -74,6 +84,11 @@ namespace Kahla.SDK.Data
             {
                 await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
             }
+        }
+
+        public async Task SyncFriendRequest()
+        {
+
         }
     }
 }

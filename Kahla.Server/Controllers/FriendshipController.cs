@@ -119,11 +119,16 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
                 }
-                request = new Request { CreatorId = user.Id, TargetId = id };
+                request = new Request
+                {
+                    CreatorId = user.Id,
+                    Creator = user,
+                    TargetId = id,
+                };
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request.Id);
+            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request);
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
