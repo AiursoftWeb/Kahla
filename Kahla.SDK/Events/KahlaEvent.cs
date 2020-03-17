@@ -7,7 +7,7 @@ namespace Kahla.SDK.Events
         NewMessage = 0,
         NewFriendRequestEvent = 1,
         WereDeletedEvent = 2,
-        FriendAcceptedEvent = 3,
+        FriendsChangedEvent = 3,
         TimerUpdatedEvent = 4,
         NewMemberEvent = 5,
         SomeoneLeftEvent = 6,
@@ -42,6 +42,16 @@ namespace Kahla.SDK.Events
 
         public Request Request { get; set; }
     }
+
+    public class FriendsChangedEvent : KahlaEvent
+    {
+        public FriendsChangedEvent()
+        {
+            Type = EventType.FriendsChangedEvent;
+        }
+        public Request Request { get; set; }
+    }
+
     public class WereDeletedEvent : KahlaEvent
     {
         public WereDeletedEvent()
@@ -50,14 +60,7 @@ namespace Kahla.SDK.Events
         }
         public KahlaUser Trigger { get; set; }
     }
-    public class FriendAcceptedEvent : KahlaEvent
-    {
-        public FriendAcceptedEvent()
-        {
-            Type = EventType.FriendAcceptedEvent;
-        }
-        public KahlaUser Target { get; set; }
-    }
+
 
     public class TimerUpdatedEvent : KahlaEvent
     {

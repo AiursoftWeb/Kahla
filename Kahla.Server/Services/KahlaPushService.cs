@@ -70,7 +70,21 @@ namespace Kahla.Server.Services
             {
                 await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(newFriendRequestEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(devices, requester.Email, JsonConvert.SerializeObject(newFriendRequestEvent));
+            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(newFriendRequestEvent));
+        }
+
+        public async Task FriendsChangedEvent(int stargateChannel, IEnumerable<Device> devices, Request request)
+        {
+            var token = await _appsContainer.AccessToken();
+            var friendAcceptedEvent = new FriendsChangedEvent
+            {
+                Request = request
+            };
+            if (stargateChannel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendAcceptedEvent), true);
+            }
+            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent));
         }
 
         public async Task WereDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger)
@@ -85,20 +99,6 @@ namespace Kahla.Server.Services
                 await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(wereDeletedEvent), true);
             }
             await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(wereDeletedEvent));
-        }
-
-        public async Task FriendAcceptedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser accepter)
-        {
-            var token = await _appsContainer.AccessToken();
-            var friendAcceptedEvent = new FriendAcceptedEvent
-            {
-                Target = accepter
-            };
-            if (stargateChannel != -1)
-            {
-                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendAcceptedEvent), true);
-            }
-            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)

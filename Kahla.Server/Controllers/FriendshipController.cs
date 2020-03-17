@@ -144,6 +144,8 @@ namespace Kahla.Server.Controllers
                 .Requests
                 .Include(t => t.Creator)
                 .ThenInclude(t => t.HisDevices)
+                .Include(t => t.Target)
+                .ThenInclude(t => t.HisDevices)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (request == null)
             {
@@ -167,12 +169,15 @@ namespace Kahla.Server.Controllers
                 }
                 _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
-                await _pusher.FriendAcceptedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, user);
             }
             else
             {
                 await _dbContext.SaveChangesAsync();
             }
+            await Task.WhenAll(
+                _pusher.FriendsChangedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, request),
+                _pusher.FriendsChangedEvent(request.Target.CurrentChannel, request.Target.HisDevices, request)
+            );
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }
 
