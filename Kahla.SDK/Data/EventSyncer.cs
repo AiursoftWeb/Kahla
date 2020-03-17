@@ -40,22 +40,21 @@ namespace Kahla.SDK.Data
 
         public async Task Init(
             WebsocketClient client,
-            BotBase bot,
-            bool forceRefresh = false)
+            BotBase bot)
         {
             _websocket = client;
             _bot = bot;
-            if (Contacts == null || forceRefresh)
-            {
-                var allResponse = await _conversationService.AllAsync();
-                Contacts = allResponse.Items;
-            }
-            if (Requests == null || forceRefresh)
-            {
-                var requestsResponse = await _friendshipService.MyRequestsAsync();
-                Requests = requestsResponse.Items;
-            }
+            await Clone();
             client.MessageReceived.Subscribe(OnStargateMessage);
+        }
+
+        public async Task Clone()
+        {
+            var allResponse = await _conversationService.AllAsync();
+            Contacts = allResponse.Items;
+
+            var requestsResponse = await _friendshipService.MyRequestsAsync();
+            Requests = requestsResponse.Items;
         }
 
         public async void OnStargateMessage(ResponseMessage msg)
@@ -69,16 +68,18 @@ namespace Kahla.SDK.Data
             else if (inevent.Type == EventType.NewFriendRequestEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                if (!Requests.Any(t => t.Id == typedEvent.Request.Id))
-                {
-                    Requests.Add(typedEvent.Request);
-                }
+                PatchFriendRequest(typedEvent.Request);
                 await _bot.OnFriendRequest(typedEvent);
             }
             else if (inevent.Type == EventType.FriendsChangedEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
-                SyncFriendRequest(typedEvent.Request, typedEvent.Result, typedEvent.CreatedConversation);
+                PatchFriendRequest(typedEvent.Request);
+                if (typedEvent.Result)
+                {
+                    SyncFriendRequestToContacts(typedEvent.Request, typedEvent.CreatedConversation);
+                }
+                await _bot.OnFriendsChangedEvent(typedEvent);
             }
         }
 
@@ -96,44 +97,52 @@ namespace Kahla.SDK.Data
             }
         }
 
-        public void SyncFriendRequest(
-            Request request,
-            bool accept,
-            PrivateConversation createdConversation)
+        public void PatchFriendRequest(Request request)
         {
             if (request.TargetId == _bot.Profile.Id)
             {
                 // Sent to me from another user.
                 var inMemory = Requests.SingleOrDefault(t => t.Id == request.Id);
-                inMemory = request;
-            }
-            if (accept)
-            {
-                Contacts.Add(new ContactInfo
+                if (inMemory == null)
                 {
-                    DisplayName = request.TargetId == _bot.Profile.Id ?
-                        request.Creator.NickName :
-                        request.Target.NickName,
-                    DisplayImagePath = request.TargetId == _bot.Profile.Id ?
-                        request.Creator.IconFilePath :
-                        request.Target.IconFilePath,
-                    LatestMessage = null,
-                    LatestMessageTime = DateTime.MinValue,
-                    UnReadAmount = 0,
-                    ConversationId = createdConversation.Id,
-                    Discriminator = createdConversation.Discriminator,
-                    UserId = request.TargetId == _bot.Profile.Id ?
-                        request.Creator.Id :
-                        request.Target.Id,
-                    AesKey = createdConversation.AESKey,
-                    Muted = createdConversation.Muted(_bot.Profile.Id),
-                    SomeoneAtMe = false,
-                    Online = request.TargetId == _bot.Profile.Id ?
-                        request.Creator.IsOnline :
-                        request.Target.IsOnline,
-                    LatestMessageId = Guid.Empty
-                }); ;
+                    Requests.Add(request);
+                }
+                else
+                {
+                    inMemory = request;
+                }
             }
+        }
+
+        public void SyncFriendRequestToContacts(
+            Request request,
+            PrivateConversation createdConversation)
+        {
+
+            Contacts.Add(new ContactInfo
+            {
+                DisplayName = request.TargetId == _bot.Profile.Id ?
+                    request.Creator.NickName :
+                    request.Target.NickName,
+                DisplayImagePath = request.TargetId == _bot.Profile.Id ?
+                    request.Creator.IconFilePath :
+                    request.Target.IconFilePath,
+                LatestMessage = null,
+                LatestMessageTime = DateTime.MinValue,
+                UnReadAmount = 0,
+                ConversationId = createdConversation.Id,
+                Discriminator = createdConversation.Discriminator,
+                UserId = request.TargetId == _bot.Profile.Id ?
+                    request.Creator.Id :
+                    request.Target.Id,
+                AesKey = createdConversation.AESKey,
+                Muted = createdConversation.Muted(_bot.Profile.Id),
+                SomeoneAtMe = false,
+                Online = request.TargetId == _bot.Profile.Id ?
+                    request.Creator.IsOnline :
+                    request.Target.IsOnline,
+                LatestMessageId = Guid.Empty
+            }); ;
         }
     }
 }

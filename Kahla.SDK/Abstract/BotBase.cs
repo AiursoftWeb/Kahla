@@ -39,6 +39,8 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnFriendRequest(NewFriendRequestEvent arg) => Task.CompletedTask;
 
+        public virtual Task OnFriendsChangedEvent(FriendsChangedEvent arg) => Task.CompletedTask;
+
         public virtual Task OnGroupConnected(SearchedGroup group) => Task.CompletedTask;
 
         public virtual Task OnMessage(string inputMessage, NewMessageEvent eventContext) => Task.CompletedTask;
@@ -262,7 +264,7 @@ namespace Kahla.SDK.Abstract
                     var _ = Connect().ConfigureAwait(false);
                 }
             });
-            await EventSyncer.Init(client, this, forceRefresh: true);
+            await EventSyncer.Init(client, this);
             await client.Start();
             BotLogger.LogInfo($"Listening to your account channel.");
             BotLogger.LogVerbose(websocketAddress + "\n");
