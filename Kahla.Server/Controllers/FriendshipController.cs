@@ -132,8 +132,8 @@ namespace Kahla.Server.Controllers
                 _dbContext.SaveChanges();
             }
             await Task.WhenAll(
-                _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, request),
-                _pusher.NewFriendRequestEvent(user.CurrentChannel, user.HisDevices, request)
+                _pusher.NewFriendRequestEvent(target, request),
+                _pusher.NewFriendRequestEvent(user, request)
             );
             return Json(new AiurValue<int>(request.Id)
             {
@@ -183,14 +183,12 @@ namespace Kahla.Server.Controllers
             }
             await Task.WhenAll(
                 _pusher.FriendsChangedEvent(
-                    request.Creator.CurrentChannel,
-                    request.Creator.HisDevices,
+                    request.Creator,
                     request,
                     model.Accept,
                     newConversation.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
                 _pusher.FriendsChangedEvent(
-                    request.Target.CurrentChannel,
-                    request.Target.HisDevices,
+                    request.Target,
                     request,
                     model.Accept,
                     newConversation.Build(request.TargetId, _onlineJudger) as PrivateConversation)
