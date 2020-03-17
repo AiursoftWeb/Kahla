@@ -93,6 +93,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CreateRequest([Required]string id)
         {
             var user = await GetKahlaUser();
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -128,7 +131,8 @@ namespace Kahla.Server.Controllers
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request);
+            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, request);
+            await _pusher.NewFriendRequestEvent(user.CurrentChannel, user.HisDevices, request);
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
