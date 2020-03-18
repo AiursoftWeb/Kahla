@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
@@ -7,8 +6,10 @@ namespace Kahla.SDK.Models.ApiViewModels
     {
         public string DisplayName { get; set; }
         public string DisplayImagePath { get; set; }
-        public string LatestMessage { get; set; }
-        public DateTime LatestMessageTime { get; set; }
+        //public string LatestMessage { get; set; }
+        //public DateTime LatestMessageTime { get; set; }
+        //public Guid LatestMessageId { get; set; }
+        public Message LatestMessage { get; set; }
         public int UnReadAmount { get; set; }
         public int ConversationId { get; set; }
         public string Discriminator { get; set; }
@@ -19,6 +20,5 @@ namespace Kahla.SDK.Models.ApiViewModels
         public bool Online { get; set; }
         [JsonIgnore]
         public bool EnableInvisiable { get; set; }
-        public Guid LatestMessageId { get; set; }
     }
 }

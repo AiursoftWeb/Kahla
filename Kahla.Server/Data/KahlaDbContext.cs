@@ -54,9 +54,7 @@ namespace Kahla.Server.Data
                         t.Messages.Count(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp) :
                         t.Messages.Count(p => !p.Read && p.SenderId != userId),
 
-                    LatestMessageId = t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Id).FirstOrDefault(),
-                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Content).FirstOrDefault(),
-                    LatestMessageTime = t.Messages.Max(m => m.SendTime),
+                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
 
                     Muted = (t is GroupConversation) ?
                         ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,
@@ -69,7 +67,7 @@ namespace Kahla.Server.Data
                         false,
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
-                .ThenByDescending(t => t.LatestMessageTime);
+                .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
