@@ -19,10 +19,10 @@ namespace Kahla.SDK.CommandHandlers
                 var online = conversation.Online ? "online" : "offline";
                 _botCommander._botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
                 _botCommander._botLogger.LogInfo($"ID:\t{conversation.ConversationId}\t{online}\t\t{conversation.Discriminator}");
-                if (!string.IsNullOrWhiteSpace(conversation.LatestMessage))
+                if (!string.IsNullOrWhiteSpace(conversation.LatestMessage?.Content))
                 {
-                    _botCommander._botLogger.LogInfo($"Last:\t{_botCommander._aes.OpenSSLDecrypt(conversation.LatestMessage, conversation.AesKey)}");
-                    _botCommander._botLogger.LogInfo($"Time:\t{conversation.LatestMessageTime}");
+                    _botCommander._botLogger.LogInfo($"Last:\t{_botCommander._aes.OpenSSLDecrypt(conversation.LatestMessage.Content, conversation.AesKey)}");
+                    _botCommander._botLogger.LogInfo($"Time:\t{conversation.LatestMessage.SendTime}");
                 }
                 if (conversation.UnReadAmount > 0)
                 {

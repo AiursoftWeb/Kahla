@@ -128,7 +128,6 @@ namespace Kahla.SDK.Data
                     request.Creator.IconFilePath :
                     request.Target.IconFilePath,
                 LatestMessage = null,
-                LatestMessageTime = DateTime.MinValue,
                 UnReadAmount = 0,
                 ConversationId = createdConversation.Id,
                 Discriminator = createdConversation.Discriminator,
@@ -140,8 +139,7 @@ namespace Kahla.SDK.Data
                 SomeoneAtMe = false,
                 Online = request.TargetId == _bot.Profile.Id ?
                     request.Creator.IsOnline :
-                    request.Target.IsOnline,
-                LatestMessageId = Guid.Empty
+                    request.Target.IsOnline
             }); ;
         }
     }
