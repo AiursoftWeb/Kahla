@@ -35,8 +35,6 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
                 .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
-                .Include(t => t.Messages)
-                .ThenInclude(t => t.Sender)
                 .Select(t => new ContactInfo
                 {
                     ConversationId = t.Id,
