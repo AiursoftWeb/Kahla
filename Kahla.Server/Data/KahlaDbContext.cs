@@ -35,6 +35,8 @@ namespace Kahla.Server.Data
                 .AsNoTracking()
                 .Where(t => !(t is PrivateConversation) || ((PrivateConversation)t).RequesterId == userId || ((PrivateConversation)t).TargetId == userId)
                 .Where(t => !(t is GroupConversation) || ((GroupConversation)t).Users.Any(p => p.UserId == userId))
+                .Include(t => t.Messages)
+                .ThenInclude(t => t.Sender)
                 .Select(t => new ContactInfo
                 {
                     ConversationId = t.Id,
@@ -66,7 +68,6 @@ namespace Kahla.Server.Data
                         (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.EnableInvisiable : ((PrivateConversation)t).RequestUser.EnableInvisiable) :
                         false,
                 })
-                .Include(t => t.LatestMessage.Sender)
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
         }
