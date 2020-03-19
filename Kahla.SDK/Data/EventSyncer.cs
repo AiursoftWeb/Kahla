@@ -60,32 +60,34 @@ namespace Kahla.SDK.Data
         public async void OnStargateMessage(ResponseMessage msg)
         {
             var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
-            if (inevent.Type == EventType.NewMessage)
+            switch (inevent.Type)
             {
-                var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                await OnNewMessageEvent(typedEvent);
-            }
-            else if (inevent.Type == EventType.NewFriendRequestEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                PatchFriendRequest(typedEvent.Request);
-                await _bot.OnFriendRequest(typedEvent);
-            }
-            else if (inevent.Type == EventType.FriendsChangedEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
-                PatchFriendRequest(typedEvent.Request);
-                if (typedEvent.Result)
-                {
-                    SyncFriendRequestToContacts(typedEvent.Request, typedEvent.CreatedConversation);
-                }
-                await _bot.OnFriendsChangedEvent(typedEvent);
-            }
-            else if (inevent.Type == EventType.WereDeletedEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
-                DeleteConversationIfExist(typedEvent.ConversationId);
-                await _bot.OnWasDeleted(typedEvent);
+                case EventType.NewMessage:
+                    var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                    await OnNewMessageEvent(newMessageEvent);
+                    break;
+                case EventType.NewFriendRequestEvent:
+                    var newFriendRequestEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                    PatchFriendRequest(newFriendRequestEvent.Request);
+                    await _bot.OnFriendRequest(newFriendRequestEvent);
+                    break;
+                case EventType.FriendsChangedEvent:
+                    var friendsChangedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
+                    PatchFriendRequest(friendsChangedEvent.Request);
+                    if (friendsChangedEvent.Result)
+                    {
+                        SyncFriendRequestToContacts(friendsChangedEvent.Request, friendsChangedEvent.CreatedConversation);
+                    }
+                    await _bot.OnFriendsChangedEvent(friendsChangedEvent);
+                    break;
+                case EventType.WereDeletedEvent:
+                    var wereDeletedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
+                    DeleteConversationIfExist(wereDeletedEvent.ConversationId);
+                    await _bot.OnWasDeleted(wereDeletedEvent);
+                    break;
+                default:
+                    _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
+                    break;
             }
         }
 

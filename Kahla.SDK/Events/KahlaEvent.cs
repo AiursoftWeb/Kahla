@@ -4,8 +4,17 @@ namespace Kahla.SDK.Events
 {
     public enum EventType
     {
+        /// <summary>
+        /// When some one sent you a new message.
+        /// </summary>
         NewMessage = 0,
+        /// <summary>
+        /// When a friend request related to you was created.
+        /// </summary>
         NewFriendRequestEvent = 1,
+        /// <summary>
+        /// When you was deleted by a friend or you deleted a friend.
+        /// </summary>
         WereDeletedEvent = 2,
         FriendsChangedEvent = 3,
         TimerUpdatedEvent = 4,
