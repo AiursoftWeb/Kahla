@@ -61,6 +61,10 @@ namespace Kahla.SDK.Data
             {
                 case EventType.NewMessage:
                     var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                    InsertNewMessage(
+                        newMessageEvent.ConversationId,
+                        newMessageEvent.Message,
+                        newMessageEvent.Mentioned);
                     await OnNewMessageEvent(newMessageEvent);
                     break;
                 case EventType.NewFriendRequestEvent:
@@ -130,6 +134,15 @@ namespace Kahla.SDK.Data
                 {
                     inMemory = request;
                 }
+            }
+        }
+
+        public void InsertNewMessage(int conversationId, Message message, bool mentioned)
+        {
+            if (!Contacts.Any(t => t.ConversationId == conversationId))
+            {
+                _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
+                return;
             }
         }
 

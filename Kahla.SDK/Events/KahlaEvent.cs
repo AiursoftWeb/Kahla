@@ -36,6 +36,10 @@ namespace Kahla.SDK.Events
         /// When the group owner dissolved the group.
         /// </summary>
         DissolveEvent = 7,
+        /// <summary>
+        /// When you successfully joined a group.
+        /// </summary>
+        GroupJoinedEvent = 8
     }
     public class KahlaEvent
     {
@@ -51,6 +55,9 @@ namespace Kahla.SDK.Events
         }
         public string AESKey { get; set; }
         public bool Muted { get; set; }
+        /// <summary>
+        /// If you was mentioned in this message.
+        /// </summary>
         public bool Mentioned { get; set; }
         public int ConversationId => Message.ConversationId;
         public Message Message { get; set; }

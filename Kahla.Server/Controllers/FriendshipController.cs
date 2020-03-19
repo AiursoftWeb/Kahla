@@ -73,6 +73,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DeleteFriend([Required]string id)
         {
             var user = await GetKahlaUser();
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
