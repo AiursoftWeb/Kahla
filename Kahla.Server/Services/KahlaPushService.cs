@@ -4,6 +4,7 @@ using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToStargateServer;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -92,16 +93,16 @@ namespace Kahla.Server.Services
         public async Task FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
         {
             var token = await _appsContainer.AccessToken();
-            var wereDeletedEvent = new FriendDeletedEvent
+            var friendDeletedEvent = new FriendDeletedEvent
             {
                 Trigger = trigger,
                 ConversationId = deletedConversationId
             };
             if (stargateChannel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(wereDeletedEvent), true);
+                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendDeletedEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(wereDeletedEvent));
+            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendDeletedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
@@ -161,6 +162,21 @@ namespace Kahla.Server.Services
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(dissolvevent), true);
+            }
+        }
+
+        public async Task GroupJoinedDissolveEvent(KahlaUser receiver, ContactInfo createdContact)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var groupJoinedEvent = new GroupJoinedEvent
+            {
+                CreatedContact = createdContact
+            };
+
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(groupJoinedEvent), true);
             }
         }
     }

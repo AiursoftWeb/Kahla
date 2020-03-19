@@ -1,4 +1,5 @@
 ﻿using Kahla.SDK.Models;
+using Kahla.SDK.Models.ApiViewModels;
 
 namespace Kahla.SDK.Events
 {
@@ -134,5 +135,15 @@ namespace Kahla.SDK.Events
         }
 
         public int ConversationId { get; set; }
+    }
+
+    public class GroupJoinedEvent : KahlaEvent
+    {
+        public GroupJoinedEvent()
+        {
+            Type = EventType.GroupJoinedEvent;
+        }
+
+        public ContactInfo CreatedContact { get; set; }
     }
 }
