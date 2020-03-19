@@ -15,7 +15,7 @@ namespace Kahla.SDK.Events
         /// <summary>
         /// When you was deleted by a friend or you deleted a friend.
         /// </summary>
-        WereDeletedEvent = 2,
+        FriendDeletedEvent = 2,
         /// <summary>
         /// When one of friend request related to you was completed.
         /// </summary>
@@ -85,11 +85,11 @@ namespace Kahla.SDK.Events
         public PrivateConversation CreatedConversation { get; set; }
     }
 
-    public class WereDeletedEvent : KahlaEvent
+    public class FriendDeletedEvent : KahlaEvent
     {
-        public WereDeletedEvent()
+        public FriendDeletedEvent()
         {
-            Type = EventType.WereDeletedEvent;
+            Type = EventType.FriendDeletedEvent;
         }
 
         public KahlaUser Trigger { get; set; }

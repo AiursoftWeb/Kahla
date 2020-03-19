@@ -47,7 +47,7 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnGroupInvitation(int groupId, NewMessageEvent eventContext) => Task.CompletedTask;
 
-        public virtual Task OnWasDeleted(WereDeletedEvent typedEvent) => Task.CompletedTask;
+        public virtual Task OnWasDeleted(FriendDeletedEvent typedEvent) => Task.CompletedTask;
 
         public virtual Task OnGroupDissolve(DissolveEvent typedEvent) => Task.CompletedTask;
 

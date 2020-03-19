@@ -88,8 +88,8 @@ namespace Kahla.Server.Controllers
             var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
             await Task.WhenAll(
-                _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
-                _pusher.WereDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
+                _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
+                _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
             );
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }

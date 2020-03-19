@@ -81,10 +81,10 @@ namespace Kahla.SDK.Data
                     }
                     await _bot.OnFriendsChangedEvent(friendsChangedEvent);
                     break;
-                case EventType.WereDeletedEvent:
-                    var wereDeletedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
-                    DeleteConversationIfExist(wereDeletedEvent.ConversationId);
-                    await _bot.OnWasDeleted(wereDeletedEvent);
+                case EventType.FriendDeletedEvent:
+                    var friendDeletedEvent = JsonConvert.DeserializeObject<FriendDeletedEvent>(msg.ToString());
+                    DeleteConversationIfExist(friendDeletedEvent.ConversationId);
+                    await _bot.OnWasDeleted(friendDeletedEvent);
                     break;
                 case EventType.DissolveEvent:
                     var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString());
