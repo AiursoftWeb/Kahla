@@ -136,6 +136,10 @@ namespace Kahla.Server.Controllers
                 _dbContext.UserGroupRelations.Add(newRelationship);
                 _dbContext.SaveChanges();
             }
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
+            await _pusher.GroupJoinedEvent(user, new ContactInfo());
             await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id));
             return Json(new AiurValue<int>(group.Id)
             {

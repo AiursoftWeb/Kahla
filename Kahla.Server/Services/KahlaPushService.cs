@@ -165,7 +165,7 @@ namespace Kahla.Server.Services
             }
         }
 
-        public async Task GroupJoinedDissolveEvent(KahlaUser receiver, ContactInfo createdContact)
+        public async Task GroupJoinedEvent(KahlaUser receiver, ContactInfo createdContact)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
