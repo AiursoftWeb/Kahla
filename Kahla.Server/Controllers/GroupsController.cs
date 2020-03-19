@@ -6,6 +6,7 @@ using Aiursoft.Pylon.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
@@ -28,18 +29,21 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
+        private readonly OnlineJudger _onlineJudger;
         private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pusher,
-            OwnerChecker ownerChecker)
+            OwnerChecker ownerChecker,
+            OnlineJudger onlineJudger)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
             _ownerChecker = ownerChecker;
+            _onlineJudger = onlineJudger;
         }
 
         [HttpPost]
@@ -139,7 +143,30 @@ namespace Kahla.Server.Controllers
             await _dbContext.Entry(user)
                 .Collection(t => t.HisDevices)
                 .LoadAsync();
-            await _pusher.GroupJoinedEvent(user, new ContactInfo());
+            var messagesCount = await _dbContext.Entry(group)
+                .Collection(t => t.Messages)
+                .Query()
+                .CountAsync();
+            var latestMessage = await _dbContext
+                .Messages
+                .Include(t => t.Sender)
+                .OrderByDescending(t => t.SendTime)
+                .FirstOrDefaultAsync();
+            await _pusher.GroupJoinedEvent(user, new ContactInfo
+            {
+                AesKey = group.AESKey,
+                SomeoneAtMe = false,
+                UnReadAmount = messagesCount,
+                ConversationId = group.Id,
+                Discriminator = nameof(GroupConversation),
+                DisplayImagePath = group.GroupImagePath,
+                DisplayName = group.GroupName,
+                EnableInvisiable = false,
+                LatestMessage = latestMessage,
+                Muted = false,
+                Online = false,
+                UserId = group.OwnerId
+            });
             await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id));
             return Json(new AiurValue<int>(group.Id)
             {
