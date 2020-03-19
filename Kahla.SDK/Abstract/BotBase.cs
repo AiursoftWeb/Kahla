@@ -49,6 +49,8 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnWasDeleted(WereDeletedEvent typedEvent) => Task.CompletedTask;
 
+        public virtual Task OnGroupDissolve(DissolveEvent typedEvent) => Task.CompletedTask;
+
         public async Task Start(bool enableCommander)
         {
             if (enableCommander)

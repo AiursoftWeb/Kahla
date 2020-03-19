@@ -19,8 +19,6 @@ namespace Kahla.SDK.Data
         private readonly FriendshipService _friendshipService;
         private readonly BotLogger _botLogger;
         private readonly AES _aes;
-
-        private WebsocketClient _websocket;
         private BotBase _bot;
 
         public List<ContactInfo> Contacts { get; set; }
@@ -42,7 +40,6 @@ namespace Kahla.SDK.Data
             WebsocketClient client,
             BotBase bot)
         {
-            _websocket = client;
             _bot = bot;
             await SyncFromServer();
             client.MessageReceived.Subscribe(OnStargateMessage);
@@ -84,6 +81,23 @@ namespace Kahla.SDK.Data
                     var wereDeletedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
                     DeleteConversationIfExist(wereDeletedEvent.ConversationId);
                     await _bot.OnWasDeleted(wereDeletedEvent);
+                    break;
+                case EventType.DissolveEvent:
+                    var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString());
+                    DeleteConversationIfExist(dissolveEvent.ConversationId);
+                    await _bot.OnGroupDissolve(dissolveEvent);
+                    break;
+                case EventType.SomeoneLeftEvent:
+                    var someoneLeftEvent = JsonConvert.DeserializeObject<SomeoneLeftEvent>(msg.ToString());
+                    if (someoneLeftEvent.LeftUser.Id == _bot.Profile.Id)
+                    {
+                        // you was kicked
+                        DeleteConversationIfExist(someoneLeftEvent.ConversationId);
+                    }
+                    else
+                    {
+                        // Some other one, not me, was deleted in a conversation.
+                    }
                     break;
                 default:
                     _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
