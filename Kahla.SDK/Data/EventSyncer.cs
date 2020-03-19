@@ -81,6 +81,12 @@ namespace Kahla.SDK.Data
                 }
                 await _bot.OnFriendsChangedEvent(typedEvent);
             }
+            else if (inevent.Type == EventType.WereDeletedEvent)
+            {
+                var typedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
+                typedEvent.Trigger
+
+            }
         }
 
         public async Task OnNewMessageEvent(NewMessageEvent typedEvent)

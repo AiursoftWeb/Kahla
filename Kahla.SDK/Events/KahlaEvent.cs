@@ -60,9 +60,10 @@ namespace Kahla.SDK.Events
         {
             Type = EventType.WereDeletedEvent;
         }
-        public KahlaUser Trigger { get; set; }
-    }
 
+        public KahlaUser Trigger { get; set; }
+        public int ConversationId { get; set; }
+    }
 
     public class TimerUpdatedEvent : KahlaEvent
     {

@@ -82,9 +82,9 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
             }
-            await _dbContext.RemoveFriend(user.Id, target.Id);
+            var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
-            await _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user);
+            await _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId);
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 

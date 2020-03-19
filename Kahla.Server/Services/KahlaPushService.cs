@@ -89,12 +89,13 @@ namespace Kahla.Server.Services
             await _thirdPartyPushService.PushAsync(target.HisDevices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent));
         }
 
-        public async Task WereDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger)
+        public async Task WereDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
         {
             var token = await _appsContainer.AccessToken();
             var wereDeletedEvent = new WereDeletedEvent
             {
-                Trigger = trigger
+                Trigger = trigger,
+                ConversationId = deletedConversationId
             };
             if (stargateChannel != -1)
             {

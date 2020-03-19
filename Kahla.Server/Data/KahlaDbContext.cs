@@ -89,12 +89,21 @@ namespace Kahla.Server.Data
             return await FindConversationAsync(userId1, userId2) != null;
         }
 
-        public async Task RemoveFriend(string userId1, string userId2)
+        public async Task<int> RemoveFriend(string userId1, string userId2)
         {
             var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
             var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            if (relation != null) PrivateConversations.Remove(relation);
-            if (belation != null) PrivateConversations.Remove(belation);
+            if (relation != null)
+            {
+                PrivateConversations.Remove(relation);
+                return relation.Id;
+            }
+            if (belation != null)
+            {
+                PrivateConversations.Remove(belation);
+                return belation.Id;
+            }
+            return -1;
         }
 
         public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
