@@ -55,6 +55,7 @@ namespace Kahla.Server.Data
                         t.Messages.Count(p => !p.Read && p.SenderId != userId),
 
                     LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+                    Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(t => t.Sender).FirstOrDefault() : null,
 
                     Muted = (t is GroupConversation) ?
                         ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,

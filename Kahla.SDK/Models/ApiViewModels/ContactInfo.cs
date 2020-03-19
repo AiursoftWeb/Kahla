@@ -17,5 +17,7 @@ namespace Kahla.SDK.Models.ApiViewModels
         public bool Online { get; set; }
         [JsonIgnore]
         public bool EnableInvisiable { get; set; }
+        [JsonIgnore]
+        public KahlaUser Sender { get; set; }
     }
 }
