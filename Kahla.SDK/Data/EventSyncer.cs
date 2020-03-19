@@ -84,8 +84,8 @@ namespace Kahla.SDK.Data
             else if (inevent.Type == EventType.WereDeletedEvent)
             {
                 var typedEvent = JsonConvert.DeserializeObject<WereDeletedEvent>(msg.ToString());
-                typedEvent.Trigger
-
+                DeleteConversationIfExist(typedEvent.ConversationId);
+                await _bot.OnWasDeleted(typedEvent);
             }
         }
 
@@ -144,6 +144,14 @@ namespace Kahla.SDK.Data
                     request.Creator.IsOnline :
                     request.Target.IsOnline
             }); ;
+        }
+
+        public void DeleteConversationIfExist(int conversationId)
+        {
+            if (Contacts.Any(t => t.ConversationId == conversationId))
+            {
+                Contacts.RemoveAll(t => t.ConversationId == conversationId);
+            }
         }
     }
 }
