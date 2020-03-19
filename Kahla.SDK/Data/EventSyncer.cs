@@ -44,11 +44,11 @@ namespace Kahla.SDK.Data
         {
             _websocket = client;
             _bot = bot;
-            await Clone();
+            await SyncFromServer();
             client.MessageReceived.Subscribe(OnStargateMessage);
         }
 
-        public async Task Clone()
+        public async Task SyncFromServer()
         {
             var allResponse = await _conversationService.AllAsync();
             Contacts = allResponse.Items;
@@ -91,10 +91,7 @@ namespace Kahla.SDK.Data
             {
                 await _bot.OnGroupInvitation(groupId, typedEvent);
             }
-            else
-            {
-                await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
-            }
+            await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
         public void PatchFriendRequest(Request request)
