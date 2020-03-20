@@ -156,6 +156,7 @@ namespace Kahla.SDK.Data
         {
             if (!_contacts.Any(t => t.ConversationId == conversationId))
             {
+                // Can't find the conversation.
                 _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
                 return;
             }
