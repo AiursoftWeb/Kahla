@@ -49,6 +49,13 @@ namespace Kahla.SDK.Data
         {
             var allResponse = await _conversationService.AllAsync();
             Contacts = allResponse.Items;
+            foreach (var contact in Contacts)
+            {
+                if (contact.LatestMessage != null)
+                {
+                    contact.Messages.Add(contact.LatestMessage);
+                }
+            }
 
             var requestsResponse = await _friendshipService.MyRequestsAsync();
             Requests = requestsResponse.Items;
@@ -61,10 +68,11 @@ namespace Kahla.SDK.Data
             {
                 case EventType.NewMessage:
                     var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                    InsertNewMessage(
+                    await InsertNewMessage(
                         newMessageEvent.ConversationId,
                         newMessageEvent.Message,
-                        newMessageEvent.Mentioned);
+                        newMessageEvent.Mentioned,
+                        newMessageEvent.PreviousMessageId);
                     await OnNewMessageEvent(newMessageEvent);
                     break;
                 case EventType.NewFriendRequestEvent:
@@ -114,7 +122,7 @@ namespace Kahla.SDK.Data
             }
         }
 
-        public async Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        protected virtual async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
@@ -125,7 +133,7 @@ namespace Kahla.SDK.Data
             await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
-        public void PatchFriendRequest(Request request)
+        private void PatchFriendRequest(Request request)
         {
             if (request.TargetId == _bot.Profile.Id)
             {
@@ -142,18 +150,37 @@ namespace Kahla.SDK.Data
             }
         }
 
-        public void InsertNewMessage(int conversationId, Message message, bool mentioned)
+        private async Task InsertNewMessage(int conversationId, Message message, bool mentioned, string previousMessageId)
         {
             if (!Contacts.Any(t => t.ConversationId == conversationId))
             {
                 _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
                 return;
             }
+            var conversation = Contacts.SingleOrDefault(t => t.ConversationId == conversationId);
+            if (Guid.Parse(previousMessageId) != Guid.Empty)  // On server, has previous message.)
+            {
+                if (conversation.LatestMessage.Id != Guid.Parse(previousMessageId) || // Local latest message is not latest.
+                   !conversation.Messages.Any(t => t.Id == Guid.Parse(previousMessageId))) // Server side previous message do not exists locally.
+                {
+                    // Some message was lost.
+                    _botLogger.LogWarning($"Some message was lost. Trying to sync...");
+                    var missedMessages = await _conversationService.GetMessagesAsync(conversationId, 15, message.Id.ToString());
+                    foreach (var missedMessage in missedMessages.Items)
+                    {
+                        if (!conversation.Messages.Any(t => t.Id == missedMessage.Id))
+                        {
+                            conversation.Messages.Add(missedMessage);
+                        }
+
+                    }
+                }
+            }
+            conversation.LatestMessage = message;
+            conversation.Messages.Add(message);
         }
 
-        public void SyncFriendRequestToContacts(
-            Request request,
-            PrivateConversation createdConversation)
+        private void SyncFriendRequestToContacts(Request request, PrivateConversation createdConversation)
         {
 
             Contacts.Add(new ContactInfo
@@ -180,7 +207,7 @@ namespace Kahla.SDK.Data
             }); ;
         }
 
-        public void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
+        private void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
         {
             Contacts.Add(new ContactInfo
             {
@@ -199,7 +226,7 @@ namespace Kahla.SDK.Data
             });
         }
 
-        public void DeleteConversationIfExist(int conversationId)
+        private void DeleteConversationIfExist(int conversationId)
         {
             if (Contacts.Any(t => t.ConversationId == conversationId))
             {
