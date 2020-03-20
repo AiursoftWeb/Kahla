@@ -103,6 +103,11 @@ namespace Kahla.SDK.Data
                         // Some other one, not me, was deleted in a conversation.
                     }
                     break;
+                case EventType.GroupJoinedEvent:
+                    var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString());
+                    SyncGroupToContacts(groupJoinedEvent.CreatedConversation);
+                    await _bot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
+                    break;
                 default:
                     _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
                     break;
@@ -173,6 +178,25 @@ namespace Kahla.SDK.Data
                     request.Creator.IsOnline :
                     request.Target.IsOnline
             }); ;
+        }
+
+        public void SyncGroupToContacts(GroupConversation createdConversation)
+        {
+            Contacts.Add(new ContactInfo
+            {
+                AesKey = createdConversation.AESKey,
+                SomeoneAtMe = false,
+                UnReadAmount = 0, // This is not accurate.
+                ConversationId = createdConversation.Id,
+                Discriminator = nameof(GroupConversation),
+                DisplayImagePath = createdConversation.GroupImagePath,
+                DisplayName = createdConversation.GroupName,
+                EnableInvisiable = false,
+                LatestMessage = null,// This is not accurate.
+                Muted = false,
+                Online = false,
+                UserId = createdConversation.OwnerId
+            });
         }
 
         public void DeleteConversationIfExist(int conversationId)

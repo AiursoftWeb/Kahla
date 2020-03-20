@@ -4,7 +4,6 @@ using Aiursoft.SDK.Services;
 using Aiursoft.SDK.Services.ToStargateServer;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -165,13 +164,13 @@ namespace Kahla.Server.Services
             }
         }
 
-        public async Task GroupJoinedEvent(KahlaUser receiver, ContactInfo createdContact)
+        public async Task GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
             var groupJoinedEvent = new GroupJoinedEvent
             {
-                CreatedContact = createdContact
+                CreatedConversation = createdConversation
             };
 
             if (channel != -1)
