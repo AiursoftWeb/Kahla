@@ -19,8 +19,6 @@ namespace Kahla.SDK.Data
         private readonly FriendshipService _friendshipService;
         private readonly BotLogger _botLogger;
         private readonly AES _aes;
-
-        private WebsocketClient _websocket;
         private BotBase _bot;
 
         public List<ContactInfo> Contacts { get; set; }
@@ -42,13 +40,12 @@ namespace Kahla.SDK.Data
             WebsocketClient client,
             BotBase bot)
         {
-            _websocket = client;
             _bot = bot;
-            await Clone();
+            await SyncFromServer();
             client.MessageReceived.Subscribe(OnStargateMessage);
         }
 
-        public async Task Clone()
+        public async Task SyncFromServer()
         {
             var allResponse = await _conversationService.AllAsync();
             Contacts = allResponse.Items;
@@ -60,26 +57,60 @@ namespace Kahla.SDK.Data
         public async void OnStargateMessage(ResponseMessage msg)
         {
             var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
-            if (inevent.Type == EventType.NewMessage)
+            switch (inevent.Type)
             {
-                var typedEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                await OnNewMessageEvent(typedEvent);
-            }
-            else if (inevent.Type == EventType.NewFriendRequestEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
-                PatchFriendRequest(typedEvent.Request);
-                await _bot.OnFriendRequest(typedEvent);
-            }
-            else if (inevent.Type == EventType.FriendsChangedEvent)
-            {
-                var typedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
-                PatchFriendRequest(typedEvent.Request);
-                if (typedEvent.Result)
-                {
-                    SyncFriendRequestToContacts(typedEvent.Request, typedEvent.CreatedConversation);
-                }
-                await _bot.OnFriendsChangedEvent(typedEvent);
+                case EventType.NewMessage:
+                    var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                    InsertNewMessage(
+                        newMessageEvent.ConversationId,
+                        newMessageEvent.Message,
+                        newMessageEvent.Mentioned);
+                    await OnNewMessageEvent(newMessageEvent);
+                    break;
+                case EventType.NewFriendRequestEvent:
+                    var newFriendRequestEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                    PatchFriendRequest(newFriendRequestEvent.Request);
+                    await _bot.OnFriendRequest(newFriendRequestEvent);
+                    break;
+                case EventType.FriendsChangedEvent:
+                    var friendsChangedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
+                    PatchFriendRequest(friendsChangedEvent.Request);
+                    if (friendsChangedEvent.Result)
+                    {
+                        SyncFriendRequestToContacts(friendsChangedEvent.Request, friendsChangedEvent.CreatedConversation);
+                    }
+                    await _bot.OnFriendsChangedEvent(friendsChangedEvent);
+                    break;
+                case EventType.FriendDeletedEvent:
+                    var friendDeletedEvent = JsonConvert.DeserializeObject<FriendDeletedEvent>(msg.ToString());
+                    DeleteConversationIfExist(friendDeletedEvent.ConversationId);
+                    await _bot.OnWasDeleted(friendDeletedEvent);
+                    break;
+                case EventType.DissolveEvent:
+                    var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString());
+                    DeleteConversationIfExist(dissolveEvent.ConversationId);
+                    await _bot.OnGroupDissolve(dissolveEvent);
+                    break;
+                case EventType.SomeoneLeftEvent:
+                    var someoneLeftEvent = JsonConvert.DeserializeObject<SomeoneLeftEvent>(msg.ToString());
+                    if (someoneLeftEvent.LeftUser.Id == _bot.Profile.Id)
+                    {
+                        // you was kicked
+                        DeleteConversationIfExist(someoneLeftEvent.ConversationId);
+                    }
+                    else
+                    {
+                        // Some other one, not me, was deleted in a conversation.
+                    }
+                    break;
+                case EventType.GroupJoinedEvent:
+                    var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString());
+                    SyncGroupToContacts(groupJoinedEvent.CreatedConversation, groupJoinedEvent.MessageCount, groupJoinedEvent.LatestMessage);
+                    await _bot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
+                    break;
+                default:
+                    _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
+                    break;
             }
         }
 
@@ -91,10 +122,7 @@ namespace Kahla.SDK.Data
             {
                 await _bot.OnGroupInvitation(groupId, typedEvent);
             }
-            else
-            {
-                await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
-            }
+            await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
         public void PatchFriendRequest(Request request)
@@ -111,6 +139,15 @@ namespace Kahla.SDK.Data
                 {
                     inMemory = request;
                 }
+            }
+        }
+
+        public void InsertNewMessage(int conversationId, Message message, bool mentioned)
+        {
+            if (!Contacts.Any(t => t.ConversationId == conversationId))
+            {
+                _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
+                return;
             }
         }
 
@@ -141,6 +178,33 @@ namespace Kahla.SDK.Data
                     request.Creator.IsOnline :
                     request.Target.IsOnline
             }); ;
+        }
+
+        public void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
+        {
+            Contacts.Add(new ContactInfo
+            {
+                AesKey = createdConversation.AESKey,
+                SomeoneAtMe = false,
+                UnReadAmount = messageCount,
+                ConversationId = createdConversation.Id,
+                Discriminator = nameof(GroupConversation),
+                DisplayImagePath = createdConversation.GroupImagePath,
+                DisplayName = createdConversation.GroupName,
+                EnableInvisiable = false,
+                LatestMessage = latestMessage,
+                Muted = false,
+                Online = false,
+                UserId = createdConversation.OwnerId
+            });
+        }
+
+        public void DeleteConversationIfExist(int conversationId)
+        {
+            if (Contacts.Any(t => t.ConversationId == conversationId))
+            {
+                Contacts.RemoveAll(t => t.ConversationId == conversationId);
+            }
         }
     }
 }

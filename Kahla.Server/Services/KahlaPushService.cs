@@ -89,18 +89,19 @@ namespace Kahla.Server.Services
             await _thirdPartyPushService.PushAsync(target.HisDevices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent));
         }
 
-        public async Task WereDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger)
+        public async Task FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
         {
             var token = await _appsContainer.AccessToken();
-            var wereDeletedEvent = new WereDeletedEvent
+            var friendDeletedEvent = new FriendDeletedEvent
             {
-                Trigger = trigger
+                Trigger = trigger,
+                ConversationId = deletedConversationId
             };
             if (stargateChannel != -1)
             {
-                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(wereDeletedEvent), true);
+                await _stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendDeletedEvent), true);
             }
-            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(wereDeletedEvent));
+            await _thirdPartyPushService.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendDeletedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
@@ -160,6 +161,23 @@ namespace Kahla.Server.Services
             if (channel != -1)
             {
                 await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(dissolvevent), true);
+            }
+        }
+
+        public async Task GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation, Message latestMessage, int messageCount)
+        {
+            var token = await _appsContainer.AccessToken();
+            var channel = receiver.CurrentChannel;
+            var groupJoinedEvent = new GroupJoinedEvent
+            {
+                CreatedConversation = createdConversation,
+                LatestMessage = latestMessage,
+                MessageCount = messageCount
+            };
+
+            if (channel != -1)
+            {
+                await _stargatePushService.PushMessageAsync(token, channel, JsonConvert.SerializeObject(groupJoinedEvent), true);
             }
         }
     }

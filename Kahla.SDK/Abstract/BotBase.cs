@@ -47,6 +47,10 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnGroupInvitation(int groupId, NewMessageEvent eventContext) => Task.CompletedTask;
 
+        public virtual Task OnWasDeleted(FriendDeletedEvent typedEvent) => Task.CompletedTask;
+
+        public virtual Task OnGroupDissolve(DissolveEvent typedEvent) => Task.CompletedTask;
+
         public async Task Start(bool enableCommander)
         {
             if (enableCommander)
@@ -107,6 +111,7 @@ namespace Kahla.SDK.Abstract
             await MonitorEvents(websocketAddress);
             return;
         }
+
 
         public string AskServerAddress()
         {

@@ -73,6 +73,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DeleteFriend([Required]string id)
         {
             var user = await GetKahlaUser();
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -82,9 +85,12 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
             }
-            await _dbContext.RemoveFriend(user.Id, target.Id);
+            var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
-            await _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user);
+            await Task.WhenAll(
+                _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
+                _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
+            );
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 

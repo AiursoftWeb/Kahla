@@ -4,14 +4,42 @@ namespace Kahla.SDK.Events
 {
     public enum EventType
     {
+        /// <summary>
+        /// When some one sent you a new message.
+        /// </summary>
         NewMessage = 0,
+        /// <summary>
+        /// When a friend request related to you was created.
+        /// </summary>
         NewFriendRequestEvent = 1,
-        WereDeletedEvent = 2,
+        /// <summary>
+        /// When you was deleted by a friend or you deleted a friend.
+        /// </summary>
+        FriendDeletedEvent = 2,
+        /// <summary>
+        /// When one of friend request related to you was completed.
+        /// </summary>
         FriendsChangedEvent = 3,
+        /// <summary>
+        /// When the timer of one of the conversations you joined was changed.
+        /// </summary>
         TimerUpdatedEvent = 4,
+        /// <summary>
+        /// When some one joined a group you joined.
+        /// </summary>
         NewMemberEvent = 5,
+        /// <summary>
+        /// When some one left a group you joined or kicked out of a group.
+        /// </summary>
         SomeoneLeftEvent = 6,
+        /// <summary>
+        /// When the group owner dissolved the group.
+        /// </summary>
         DissolveEvent = 7,
+        /// <summary>
+        /// When you successfully joined a group.
+        /// </summary>
+        GroupJoinedEvent = 8
     }
     public class KahlaEvent
     {
@@ -27,6 +55,9 @@ namespace Kahla.SDK.Events
         }
         public string AESKey { get; set; }
         public bool Muted { get; set; }
+        /// <summary>
+        /// If you was mentioned in this message.
+        /// </summary>
         public bool Mentioned { get; set; }
         public int ConversationId => Message.ConversationId;
         public Message Message { get; set; }
@@ -54,15 +85,16 @@ namespace Kahla.SDK.Events
         public PrivateConversation CreatedConversation { get; set; }
     }
 
-    public class WereDeletedEvent : KahlaEvent
+    public class FriendDeletedEvent : KahlaEvent
     {
-        public WereDeletedEvent()
+        public FriendDeletedEvent()
         {
-            Type = EventType.WereDeletedEvent;
+            Type = EventType.FriendDeletedEvent;
         }
-        public KahlaUser Trigger { get; set; }
-    }
 
+        public KahlaUser Trigger { get; set; }
+        public int ConversationId { get; set; }
+    }
 
     public class TimerUpdatedEvent : KahlaEvent
     {
@@ -102,5 +134,17 @@ namespace Kahla.SDK.Events
         }
 
         public int ConversationId { get; set; }
+    }
+
+    public class GroupJoinedEvent : KahlaEvent
+    {
+        public GroupJoinedEvent()
+        {
+            Type = EventType.GroupJoinedEvent;
+        }
+
+        public GroupConversation CreatedConversation { get; set; }
+        public Message LatestMessage { get; set; }
+        public int MessageCount { get; set; }
     }
 }
