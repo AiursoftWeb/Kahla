@@ -164,13 +164,15 @@ namespace Kahla.Server.Services
             }
         }
 
-        public async Task GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation)
+        public async Task GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation, Message latestMessage, int messageCount)
         {
             var token = await _appsContainer.AccessToken();
             var channel = receiver.CurrentChannel;
             var groupJoinedEvent = new GroupJoinedEvent
             {
-                CreatedConversation = createdConversation
+                CreatedConversation = createdConversation,
+                LatestMessage = latestMessage,
+                MessageCount = messageCount
             };
 
             if (channel != -1)

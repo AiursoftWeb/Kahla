@@ -153,7 +153,7 @@ namespace Kahla.Server.Controllers
                 .OrderByDescending(t => t.SendTime)
                 .FirstOrDefaultAsync();
             await Task.WhenAll(
-                _pusher.GroupJoinedEvent(user, group),
+                _pusher.GroupJoinedEvent(user, group, latestMessage, messagesCount),
                 group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id))
             );
             return Json(new AiurValue<int>(group.Id)

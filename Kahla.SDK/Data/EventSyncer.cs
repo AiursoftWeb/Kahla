@@ -105,7 +105,7 @@ namespace Kahla.SDK.Data
                     break;
                 case EventType.GroupJoinedEvent:
                     var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString());
-                    SyncGroupToContacts(groupJoinedEvent.CreatedConversation);
+                    SyncGroupToContacts(groupJoinedEvent.CreatedConversation, groupJoinedEvent.MessageCount, groupJoinedEvent.LatestMessage);
                     await _bot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
                     break;
                 default:
@@ -180,19 +180,19 @@ namespace Kahla.SDK.Data
             }); ;
         }
 
-        public void SyncGroupToContacts(GroupConversation createdConversation)
+        public void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
         {
             Contacts.Add(new ContactInfo
             {
                 AesKey = createdConversation.AESKey,
                 SomeoneAtMe = false,
-                UnReadAmount = 0, // This is not accurate.
+                UnReadAmount = messageCount,
                 ConversationId = createdConversation.Id,
                 Discriminator = nameof(GroupConversation),
                 DisplayImagePath = createdConversation.GroupImagePath,
                 DisplayName = createdConversation.GroupName,
                 EnableInvisiable = false,
-                LatestMessage = null,// This is not accurate.
+                LatestMessage = latestMessage,
                 Muted = false,
                 Online = false,
                 UserId = createdConversation.OwnerId

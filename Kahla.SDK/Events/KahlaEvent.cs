@@ -144,5 +144,7 @@ namespace Kahla.SDK.Events
         }
 
         public GroupConversation CreatedConversation { get; set; }
+        public Message LatestMessage { get; set; }
+        public int MessageCount { get; set; }
     }
 }
