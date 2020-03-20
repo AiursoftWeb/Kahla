@@ -12,9 +12,8 @@ namespace Kahla.SDK.CommandHandlers
 
         public async override Task Execute(string command)
         {
-            var conversations = await _botCommander._conversationService.AllAsync();
-            _botCommander._botLogger.LogSuccess($"Successfully get all your conversations.");
-            foreach (var conversation in conversations.Items)
+            await Task.Delay(0);
+            foreach (var conversation in _botCommander._botBase.EventSyncer.Contacts)
             {
                 var online = conversation.Online ? "online" : "offline";
                 _botCommander._botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
@@ -28,13 +27,13 @@ namespace Kahla.SDK.CommandHandlers
                 {
                     _botCommander._botLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**");
                 }
-                else
-                {
-                    _botCommander._botLogger.LogInfo($"Unread:\t{conversation.UnReadAmount}");
-                }
                 if (conversation.SomeoneAtMe)
                 {
                     _botCommander._botLogger.LogWarning($"At!");
+                }
+                if (conversation.Messages.Count > 0)
+                {
+                    _botCommander._botLogger.LogVerbose($"Local Messages:\t**{conversation.Messages.Count}**");
                 }
                 _botCommander._botLogger.LogInfo($"\n");
             }
