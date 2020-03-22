@@ -13,16 +13,17 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Data
 {
-    public class EventSyncer : ISingletonDependency
+    public class EventSyncer : IScopedDependency
     {
         private readonly ConversationService _conversationService;
         private readonly FriendshipService _friendshipService;
         private readonly BotLogger _botLogger;
         private readonly AES _aes;
         private BotBase _bot;
-
-        public List<ContactInfo> Contacts { get; set; }
-        public List<Request> Requests { get; set; }
+        private List<ContactInfo> _contacts;
+        private List<Request> _requests;
+        public IEnumerable<ContactInfo> Contacts => _contacts.OrderByDescending(t => t.LatestMessage?.SendTime ?? DateTime.MinValue);
+        public IEnumerable<Request> Requests => _requests.OrderByDescending(t => t.CreateTime);
 
         public EventSyncer(
             ConversationService conversationService,
@@ -48,10 +49,17 @@ namespace Kahla.SDK.Data
         public async Task SyncFromServer()
         {
             var allResponse = await _conversationService.AllAsync();
-            Contacts = allResponse.Items;
+            _contacts = allResponse.Items;
+            foreach (var contact in _contacts)
+            {
+                if (contact.LatestMessage != null)
+                {
+                    contact.Messages.Add(contact.LatestMessage);
+                }
+            }
 
             var requestsResponse = await _friendshipService.MyRequestsAsync();
-            Requests = requestsResponse.Items;
+            _requests = requestsResponse.Items;
         }
 
         public async void OnStargateMessage(ResponseMessage msg)
@@ -61,10 +69,11 @@ namespace Kahla.SDK.Data
             {
                 case EventType.NewMessage:
                     var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
-                    InsertNewMessage(
+                    await InsertNewMessage(
                         newMessageEvent.ConversationId,
                         newMessageEvent.Message,
-                        newMessageEvent.Mentioned);
+                        newMessageEvent.Mentioned,
+                        newMessageEvent.PreviousMessageId);
                     await OnNewMessageEvent(newMessageEvent);
                     break;
                 case EventType.NewFriendRequestEvent:
@@ -112,9 +121,10 @@ namespace Kahla.SDK.Data
                     _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
                     break;
             }
+            await _bot.OnMemoryChanged();
         }
 
-        public async Task OnNewMessageEvent(NewMessageEvent typedEvent)
+        protected virtual async Task OnNewMessageEvent(NewMessageEvent typedEvent)
         {
             string decrypted = _aes.OpenSSLDecrypt(typedEvent.Message.Content, typedEvent.AESKey);
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
@@ -125,15 +135,15 @@ namespace Kahla.SDK.Data
             await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
-        public void PatchFriendRequest(Request request)
+        private void PatchFriendRequest(Request request)
         {
             if (request.TargetId == _bot.Profile.Id)
             {
                 // Sent to me from another user.
-                var inMemory = Requests.SingleOrDefault(t => t.Id == request.Id);
+                var inMemory = _requests.SingleOrDefault(t => t.Id == request.Id);
                 if (inMemory == null)
                 {
-                    Requests.Add(request);
+                    _requests.Add(request);
                 }
                 else
                 {
@@ -142,21 +152,41 @@ namespace Kahla.SDK.Data
             }
         }
 
-        public void InsertNewMessage(int conversationId, Message message, bool mentioned)
+        private async Task InsertNewMessage(int conversationId, Message message, bool mentioned, string previousMessageId)
         {
-            if (!Contacts.Any(t => t.ConversationId == conversationId))
+            if (!_contacts.Any(t => t.ConversationId == conversationId))
             {
+                // Can't find the conversation.
                 _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
                 return;
             }
+            var conversation = _contacts.SingleOrDefault(t => t.ConversationId == conversationId);
+            if (Guid.Parse(previousMessageId) != Guid.Empty)  // On server, has previous message.)
+            {
+                if (conversation.LatestMessage.Id != Guid.Parse(previousMessageId) || // Local latest message is not latest.
+                   !conversation.Messages.Any(t => t.Id == Guid.Parse(previousMessageId))) // Server side previous message do not exists locally.
+                {
+                    // Some message was lost.
+                    _botLogger.LogWarning($"Some message was lost. Trying to sync...");
+                    var missedMessages = await _conversationService.GetMessagesAsync(conversationId, 15, message.Id.ToString());
+                    foreach (var missedMessage in missedMessages.Items)
+                    {
+                        if (!conversation.Messages.Any(t => t.Id == missedMessage.Id))
+                        {
+                            conversation.Messages.Add(missedMessage);
+                        }
+
+                    }
+                }
+            }
+            conversation.LatestMessage = message;
+            conversation.Messages.Add(message);
         }
 
-        public void SyncFriendRequestToContacts(
-            Request request,
-            PrivateConversation createdConversation)
+        private void SyncFriendRequestToContacts(Request request, PrivateConversation createdConversation)
         {
 
-            Contacts.Add(new ContactInfo
+            _contacts.Add(new ContactInfo
             {
                 DisplayName = request.TargetId == _bot.Profile.Id ?
                     request.Creator.NickName :
@@ -180,9 +210,9 @@ namespace Kahla.SDK.Data
             }); ;
         }
 
-        public void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
+        private void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
         {
-            Contacts.Add(new ContactInfo
+            _contacts.Add(new ContactInfo
             {
                 AesKey = createdConversation.AESKey,
                 SomeoneAtMe = false,
@@ -199,11 +229,11 @@ namespace Kahla.SDK.Data
             });
         }
 
-        public void DeleteConversationIfExist(int conversationId)
+        private void DeleteConversationIfExist(int conversationId)
         {
-            if (Contacts.Any(t => t.ConversationId == conversationId))
+            if (_contacts.Any(t => t.ConversationId == conversationId))
             {
-                Contacts.RemoveAll(t => t.ConversationId == conversationId);
+                _contacts.RemoveAll(t => t.ConversationId == conversationId);
             }
         }
     }

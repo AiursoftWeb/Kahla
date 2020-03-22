@@ -51,6 +51,8 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnGroupDissolve(DissolveEvent typedEvent) => Task.CompletedTask;
 
+        public virtual Task OnMemoryChanged() => Task.CompletedTask;
+
         public async Task Start(bool enableCommander)
         {
             if (enableCommander)

@@ -58,6 +58,11 @@ namespace Kahla.SDK.Abstract
             return scannedHandler.FirstOrDefault();
         }
 
+        public void RenderHeader()
+        {
+            _botLogger.WriteGrayNewLine($"K:\\Bots\\{_botBase.GetType().Name}\\{_botBase.Profile?.NickName}>");
+        }
+
         public async Task Command()
         {
             await BlockIfConnecting();
@@ -66,7 +71,8 @@ namespace Kahla.SDK.Abstract
             while (true)
             {
                 await BlockIfConnecting();
-                var command = _botBase.BotLogger.ReadLine($"K:\\Bots\\{_botBase.GetType().Name}\\{_botBase.Profile?.NickName}>");
+                RenderHeader();
+                var command = Console.ReadLine();
                 if (command.Length < 1)
                 {
                     continue;

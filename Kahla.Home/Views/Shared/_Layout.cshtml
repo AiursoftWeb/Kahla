@@ -1,10 +1,9 @@
-﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
     <vc:aiur-header></vc:aiur-header>
     <title>@ViewBag.Title | @Values.ProjectName</title>
-    <link href="@ServiceLocation.UI/dist/AiurCore.min.css" rel="stylesheet">
+    <vc:aiur-core-css></vc:aiur-core-css>
     <link href="@ServiceLocation.UI/dist/AiurProduct.min.css" rel="stylesheet">
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
@@ -17,7 +16,7 @@
             @Localizer["- All rights reserved."]
         </p>
     </footer>
-    <script src="@ServiceLocation.UI/dist/AiurCore.min.js"></script>
+    <vc:aiur-core-js></vc:aiur-core-js>
     <script src="@ServiceLocation.UI/dist/AiurProduct.min.js"></script>
     @RenderSection("scripts", required: false)
 </body>
