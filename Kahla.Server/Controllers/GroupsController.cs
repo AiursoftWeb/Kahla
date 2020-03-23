@@ -287,6 +287,7 @@ namespace Kahla.Server.Controllers
             {
                 group.GroupImagePath = model.AvatarPath;
             }
+            group.ListInSearchResult = model.ListInSearchResult;
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully updated the group '{model.GroupName}'.");
         }

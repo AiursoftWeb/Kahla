@@ -16,6 +16,8 @@ namespace Kahla.SDK.Models
         public string GroupName { get; set; }
         [JsonIgnore]
         public string JoinPassword { get; set; }
+        [JsonIgnore]
+        public bool ListInSearchResult { get; set; } = true;
 
         [JsonProperty]
         [NotMapped]
@@ -25,6 +27,7 @@ namespace Kahla.SDK.Models
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
         public KahlaUser Owner { get; set; }
+
         public override KahlaUser SpecialUser(string myId) => Owner;
         public override string GetDisplayName(string userId) => GroupName;
         public override string GetDisplayImagePath(string userId) => GroupImagePath;

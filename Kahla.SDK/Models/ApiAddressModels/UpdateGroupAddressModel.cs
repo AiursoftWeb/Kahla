@@ -13,5 +13,7 @@ namespace Kahla.SDK.Models.ApiAddressModels
         public string NewName { get; set; }
 
         public string AvatarPath { get; set; }
+
+        public bool ListInSearchResult { get; set; }
     }
 }
