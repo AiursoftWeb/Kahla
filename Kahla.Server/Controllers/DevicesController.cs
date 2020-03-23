@@ -115,6 +115,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var devices = await _dbContext
                 .Devices
+                .AsNoTracking()
                 .Where(t => t.UserId == user.Id)
                 .OrderByDescending(t => t.AddTime)
                 .ToListAsync();
@@ -123,6 +124,23 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully get all your devices."
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DropDevice(int id)
+        {
+            var user = await GetKahlaUser();
+            var device = await _dbContext
+                .Devices
+                .Where(t => t.UserId == user.Id)
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (device == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can't find your device with id: '{id}'.");
+            }
+            _dbContext.Devices.Remove(device);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, $"Successfully dropped your device with id: '{id}'.");
         }
 
         [HttpPost]
