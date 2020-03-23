@@ -16,7 +16,6 @@ namespace Kahla.SDK.Models
         public string GroupName { get; set; }
         [JsonIgnore]
         public string JoinPassword { get; set; }
-        [JsonIgnore]
         public bool ListInSearchResult { get; set; } = true;
 
         [JsonProperty]
