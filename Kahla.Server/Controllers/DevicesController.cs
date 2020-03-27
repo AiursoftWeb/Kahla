@@ -52,9 +52,14 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
-            if (_dbContext.Devices.Any(t => t.PushP256DH == model.PushP256DH))
+            var existingDevice = await _dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256DH == model.PushP256DH);
+            if (existingDevice != null)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
+                return Json(new AiurValue<long>(existingDevice.Id)
+                {
+                    Code = ErrorType.HasDoneAlready,
+                    Message = "There is already a device with the same `PushP256DH`. Please check the value in the response."
+                });
             }
             var devicesExists = await _dbContext.Devices.Where(t => t.UserId == user.Id).ToListAsync();
             if (devicesExists.Count >= 10)
