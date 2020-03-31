@@ -3,7 +3,6 @@ using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Services;
 using Aiursoft.SDK.Models.ForApps.AddressModels;
 using Aiursoft.SDK.Models.Stargate.ListenAddressModels;
 using Aiursoft.SDK.Models.Status;
@@ -49,7 +48,6 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly EventService _eventService;
         private readonly OnlineJudger _onlineJudger;
-        private readonly AiurCache _cache;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
@@ -66,8 +64,7 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
             EventService eventService,
-            OnlineJudger onlineJudger,
-            AiurCache cache)
+            OnlineJudger onlineJudger)
         {
             _serviceLocation = serviceLocation;
             _authService = authService;
@@ -82,7 +79,6 @@ namespace Kahla.Server.Controllers
             _dbContext = dbContext;
             _eventService = eventService;
             _onlineJudger = onlineJudger;
-            _cache = cache;
             _appDomains = optionsAccessor.Value;
         }
 
