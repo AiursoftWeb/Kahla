@@ -73,6 +73,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> DeleteFriend([Required]string id)
         {
             var user = await GetKahlaUser();
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -82,9 +85,12 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
             }
-            await _dbContext.RemoveFriend(user.Id, target.Id);
+            var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
-            await _pusher.WereDeletedEvent(target.CurrentChannel, target.HisDevices, user);
+            await Task.WhenAll(
+                _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
+                _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
+            );
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 
@@ -93,6 +99,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> CreateRequest([Required]string id)
         {
             var user = await GetKahlaUser();
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
@@ -119,11 +128,19 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
                 }
-                request = new Request { CreatorId = user.Id, TargetId = id };
+                request = new Request
+                {
+                    CreatorId = user.Id,
+                    Creator = user,
+                    TargetId = id,
+                };
                 _dbContext.Requests.Add(request);
                 _dbContext.SaveChanges();
             }
-            await _pusher.NewFriendRequestEvent(target.CurrentChannel, target.HisDevices, user, request.Id);
+            await Task.WhenAll(
+                _pusher.NewFriendRequestEvent(target, request),
+                _pusher.NewFriendRequestEvent(user, request)
+            );
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -139,6 +156,8 @@ namespace Kahla.Server.Controllers
                 .Requests
                 .Include(t => t.Creator)
                 .ThenInclude(t => t.HisDevices)
+                .Include(t => t.Target)
+                .ThenInclude(t => t.HisDevices)
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (request == null)
             {
@@ -153,6 +172,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
             request.Completed = true;
+            PrivateConversation newConversation = null;
             if (model.Accept)
             {
                 if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
@@ -160,14 +180,25 @@ namespace Kahla.Server.Controllers
                     await _dbContext.SaveChangesAsync();
                     return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
-                _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
-                await _pusher.FriendAcceptedEvent(request.Creator.CurrentChannel, request.Creator.HisDevices, user);
             }
             else
             {
                 await _dbContext.SaveChangesAsync();
             }
+            await Task.WhenAll(
+                _pusher.FriendsChangedEvent(
+                    request.Creator,
+                    request,
+                    model.Accept,
+                    newConversation.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                _pusher.FriendsChangedEvent(
+                    request.Target,
+                    request,
+                    model.Accept,
+                    newConversation.Build(request.TargetId, _onlineJudger) as PrivateConversation)
+            );
             return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
         }
 
@@ -204,6 +235,7 @@ namespace Kahla.Server.Controllers
             var groups = _dbContext
                 .GroupConversations
                 .AsNoTracking()
+                .Where(t => t.ListInSearchResult || t.Id.ToString() == model.SearchInput)
                 .Where(t => t.GroupName.Contains(model.SearchInput));
 
             var searched = SearchedGroup.Map(await groups.ToListAsync());

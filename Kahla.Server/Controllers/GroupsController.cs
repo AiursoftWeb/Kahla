@@ -6,6 +6,7 @@ using Aiursoft.Pylon.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
+using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
@@ -28,18 +29,21 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
+        private readonly OnlineJudger _onlineJudger;
         private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pusher,
-            OwnerChecker ownerChecker)
+            OwnerChecker ownerChecker,
+            OnlineJudger onlineJudger)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
             _ownerChecker = ownerChecker;
+            _onlineJudger = onlineJudger;
         }
 
         [HttpPost]
@@ -136,7 +140,22 @@ namespace Kahla.Server.Controllers
                 _dbContext.UserGroupRelations.Add(newRelationship);
                 _dbContext.SaveChanges();
             }
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id));
+            await _dbContext.Entry(user)
+                .Collection(t => t.HisDevices)
+                .LoadAsync();
+            var messagesCount = await _dbContext.Entry(group)
+                .Collection(t => t.Messages)
+                .Query()
+                .CountAsync();
+            var latestMessage = await _dbContext
+                .Messages
+                .Include(t => t.Sender)
+                .OrderByDescending(t => t.SendTime)
+                .FirstOrDefaultAsync();
+            await Task.WhenAll(
+                _pusher.GroupJoinedEvent(user, group, latestMessage, messagesCount),
+                group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id))
+            );
             return Json(new AiurValue<int>(group.Id)
             {
                 Code = ErrorType.Success,
@@ -268,6 +287,7 @@ namespace Kahla.Server.Controllers
             {
                 group.GroupImagePath = model.AvatarPath;
             }
+            group.ListInSearchResult = model.ListInSearchResult;
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully updated the group '{model.GroupName}'.");
         }

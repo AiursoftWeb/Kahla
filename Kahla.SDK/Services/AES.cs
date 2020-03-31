@@ -22,6 +22,7 @@ namespace Kahla.SDK.Services
             Buffer.BlockCopy(encryptedBytes, 0, encryptedBytesWithSalt, salt.Length + 8, encryptedBytes.Length);
             return Convert.ToBase64String(encryptedBytesWithSalt);
         }
+
         public string OpenSSLDecrypt(string encrypted, string passphrase)
         {
             byte[] encryptedBytesWithSalt = Convert.FromBase64String(encrypted);

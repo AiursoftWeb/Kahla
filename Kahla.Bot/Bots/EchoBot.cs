@@ -17,7 +17,7 @@ namespace Kahla.Bot.Bots
 
         public override Task OnFriendRequest(NewFriendRequestEvent arg)
         {
-            return CompleteRequest(arg.RequestId, true);
+            return CompleteRequest(arg.Request.Id, true);
         }
 
         public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
@@ -51,7 +51,7 @@ namespace Kahla.Bot.Bots
                     .Replace('?', '!'));
             if (eventContext.Mentioned)
             {
-                replaced = AddMention(replaced, eventContext.Message.Sender);
+                replaced = replaced + Mention(eventContext.Message.Sender);
             }
             await Task.Delay(700);
             await SendMessage(replaced, eventContext.ConversationId, eventContext.AESKey);

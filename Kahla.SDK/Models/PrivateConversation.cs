@@ -62,6 +62,8 @@ namespace Kahla.SDK.Models
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
             AnotherUserId = SpecialUser(userId).Id;
+            RequestUser.Build(onlineJudger);
+            TargetUser.Build(onlineJudger);
             return this;
         }
 

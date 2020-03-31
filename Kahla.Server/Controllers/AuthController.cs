@@ -3,7 +3,6 @@ using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.Pylon.Services;
 using Aiursoft.SDK.Models.ForApps.AddressModels;
 using Aiursoft.SDK.Models.Stargate.ListenAddressModels;
 using Aiursoft.SDK.Models.Status;
@@ -17,12 +16,12 @@ using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server.Data;
-using Kahla.Server.Middlewares;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -49,7 +48,6 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly EventService _eventService;
         private readonly OnlineJudger _onlineJudger;
-        private readonly AiurCache _cache;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
@@ -66,8 +64,7 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
             EventService eventService,
-            OnlineJudger onlineJudger,
-            AiurCache cache)
+            OnlineJudger onlineJudger)
         {
             _serviceLocation = serviceLocation;
             _authService = authService;
@@ -82,21 +79,20 @@ namespace Kahla.Server.Controllers
             _dbContext = dbContext;
             _eventService = eventService;
             _onlineJudger = onlineJudger;
-            _cache = cache;
             _appDomains = optionsAccessor.Value;
         }
 
-        [APIProduces(typeof(VersionViewModel))]
-        public async Task<IActionResult> Version()
+        [Obsolete]
+        public IActionResult Version()
         {
-            var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
-            return Json(new VersionViewModel
+            return Json(new
             {
-                LatestVersion = appVersion,
-                LatestCLIVersion = cliVersion,
-                APIVersion = _sdkVersion.GetSDKVersion(),
-                Message = "Successfully get the latest version number for Kahla App and Kahla.CLI.",
-                DownloadAddress = "https://www.kahla.app"
+                LatestVersion = "4.0.0",
+                LatestCLIVersion = "4.0.0",
+                DownloadAddress = "https://www.kahla.app",
+                ApiVersion = "4.0.0",
+                Code = 0,
+                Message = "This is an obsolete API!"
             });
         }
 

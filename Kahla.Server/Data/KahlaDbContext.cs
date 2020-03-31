@@ -54,8 +54,8 @@ namespace Kahla.Server.Data
                         t.Messages.Count(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp) :
                         t.Messages.Count(p => !p.Read && p.SenderId != userId),
 
-                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Content).FirstOrDefault(),
-                    LatestMessageTime = t.Messages.Max(m => m.SendTime),
+                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+                    Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(t => t.Sender).FirstOrDefault() : null,
 
                     Muted = (t is GroupConversation) ?
                         ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,
@@ -68,7 +68,7 @@ namespace Kahla.Server.Data
                         false,
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
-                .ThenByDescending(t => t.LatestMessageTime);
+                .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
@@ -89,12 +89,21 @@ namespace Kahla.Server.Data
             return await FindConversationAsync(userId1, userId2) != null;
         }
 
-        public async Task RemoveFriend(string userId1, string userId2)
+        public async Task<int> RemoveFriend(string userId1, string userId2)
         {
             var relation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId1 && t.TargetId == userId2);
             var belation = await PrivateConversations.SingleOrDefaultAsync(t => t.RequesterId == userId2 && t.TargetId == userId1);
-            if (relation != null) PrivateConversations.Remove(relation);
-            if (belation != null) PrivateConversations.Remove(belation);
+            if (relation != null)
+            {
+                PrivateConversations.Remove(relation);
+                return relation.Id;
+            }
+            if (belation != null)
+            {
+                PrivateConversations.Remove(belation);
+                return belation.Id;
+            }
+            return -1;
         }
 
         public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
@@ -112,14 +121,16 @@ namespace Kahla.Server.Data
             return newGroup;
         }
 
-        public void AddFriend(string userId1, string userId2)
+        public PrivateConversation AddFriend(string userId1, string userId2)
         {
-            PrivateConversations.Add(new PrivateConversation
+            var conversation = new PrivateConversation
             {
                 RequesterId = userId1,
                 TargetId = userId2,
                 AESKey = Guid.NewGuid().ToString("N")
-            });
+            };
+            PrivateConversations.Add(conversation);
+            return conversation;
         }
 
         public async Task<DateTime> SetLastRead(Conversation conversation, string userId)

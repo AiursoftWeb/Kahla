@@ -52,9 +52,14 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
-            if (_dbContext.Devices.Any(t => t.PushP256DH == model.PushP256DH))
+            var existingDevice = await _dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256DH == model.PushP256DH);
+            if (existingDevice != null)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "There is already an device with push 256DH: " + model.PushP256DH);
+                return Json(new AiurValue<long>(existingDevice.Id)
+                {
+                    Code = ErrorType.HasDoneAlready,
+                    Message = "There is already a device with the same `PushP256DH`. Please check the value in the response."
+                });
             }
             var devicesExists = await _dbContext.Devices.Where(t => t.UserId == user.Id).ToListAsync();
             if (devicesExists.Count >= 10)
@@ -115,6 +120,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var devices = await _dbContext
                 .Devices
+                .AsNoTracking()
                 .Where(t => t.UserId == user.Id)
                 .OrderByDescending(t => t.AddTime)
                 .ToListAsync();
@@ -123,6 +129,23 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = "Successfully get all your devices."
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DropDevice(int id)
+        {
+            var user = await GetKahlaUser();
+            var device = await _dbContext
+                .Devices
+                .Where(t => t.UserId == user.Id)
+                .SingleOrDefaultAsync(t => t.Id == id);
+            if (device == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Can't find your device with id: '{id}'.");
+            }
+            _dbContext.Devices.Remove(device);
+            await _dbContext.SaveChangesAsync();
+            return this.Protocol(ErrorType.Success, $"Successfully dropped your device with id: '{id}'.");
         }
 
         [HttpPost]
@@ -154,9 +177,10 @@ namespace Kahla.Server.Controllers
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
-            var token = await _appsContainer.AccessToken();
-            await _thirdPartyPushService.PushAsync(user.HisDevices, "postermaster@aiursoft.com", payload);
-            await _stargatePushService.PushMessageAsync(token, user.CurrentChannel, payload);
+            await Task.WhenAll(
+                _thirdPartyPushService.PushAsync(user.HisDevices, "postermaster@aiursoft.com", payload),
+                _stargatePushService.PushMessageAsync(await _appsContainer.AccessToken(), user.CurrentChannel, payload)
+            );
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
 

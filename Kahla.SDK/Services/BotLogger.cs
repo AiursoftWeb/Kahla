@@ -6,10 +6,16 @@ namespace Kahla.SDK.Services
     public class BotLogger : ISingletonDependency
     {
         private static object _obj = new object();
-        public string ReadLine(string ask)
+
+        public void WriteGrayNewLine(string content)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("\n" + ask);
+            Console.Write("\n" + content);
+        }
+
+        public string ReadLine(string ask)
+        {
+            WriteGrayNewLine(ask);
             return Console.ReadLine();
         }
 

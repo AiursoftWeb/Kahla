@@ -53,7 +53,7 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(IndexViewModel))]
         public IActionResult Index()
         {
-            return Json(new IndexViewModel
+            var model = new IndexViewModel
             {
                 Code = ErrorType.Success,
                 Mode = _env.EnvironmentName,
@@ -65,7 +65,17 @@ namespace Kahla.Server.Controllers
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
                 ServerName = _configuration["ServerName"],
                 Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[0] == Request.Host.Host)
-            });
+            };
+            // This part of code is not beautiful. Try to resolve it in the future.
+            if (model.Domain != null)
+            {
+                model.Domain = new DomainSettings
+                {
+                    Server = Request.Scheme + "://" + model.Domain.Server,
+                    Client = model.Domain.Client
+                };
+            }
+            return Json(model);
         }
 
         public async Task<IActionResult> Upgrade()
