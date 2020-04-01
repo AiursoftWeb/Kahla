@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -80,20 +79,6 @@ namespace Kahla.Server.Controllers
             _eventService = eventService;
             _onlineJudger = onlineJudger;
             _appDomains = optionsAccessor.Value;
-        }
-
-        [Obsolete]
-        public IActionResult Version()
-        {
-            return Json(new
-            {
-                LatestVersion = "4.0.0",
-                LatestCLIVersion = "4.0.0",
-                DownloadAddress = "https://www.kahla.app",
-                ApiVersion = "4.0.0",
-                Code = 0,
-                Message = "This is an obsolete API!"
-            });
         }
 
         [AiurForceAuth("", "", justTry: false, register: false)]
