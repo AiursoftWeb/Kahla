@@ -67,7 +67,7 @@ namespace Kahla.Server.Controllers
             foreach (var contact in contacts)
             {
                 if (contact.LatestMessage != null)
-                    contact.LatestMessage.Sender = contact.Sender;
+                    contact.LatestMessage.Sender = contact.Sender.Build(_onlineJudger);
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
                     _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : false;
             }
