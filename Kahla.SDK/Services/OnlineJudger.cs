@@ -13,11 +13,11 @@ namespace Kahla.SDK.Services
             _memoryCache = memoryCache;
         }
 
-        public bool IsOnline(string userId, bool allowSeen)
+        public bool? IsOnline(string userId, bool allowSeen)
         {
             if (!allowSeen)
             {
-                return false;
+                return null;
             }
             var isOnline = false;
             if (_memoryCache.TryGetValue($"last-access-time-{userId}", out DateTime lastAccess))

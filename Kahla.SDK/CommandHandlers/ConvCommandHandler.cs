@@ -36,7 +36,8 @@ namespace Kahla.SDK.CommandHandlers
             }
             foreach (var conversation in _botCommander._botBase.EventSyncer.Contacts)
             {
-                var online = conversation.Online ? "online" : "offline";
+                var online = conversation.Online == true ? "online" :
+                             conversation.Online == false ? "offline" : string.Empty;
                 _botCommander._botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
                 _botCommander._botLogger.LogInfo($"ID:\t{conversation.ConversationId}\t{online}\t\t{conversation.Discriminator}");
                 if (!string.IsNullOrWhiteSpace(conversation.LatestMessage?.Content))

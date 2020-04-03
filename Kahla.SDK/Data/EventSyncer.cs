@@ -185,7 +185,6 @@ namespace Kahla.SDK.Data
 
         private void SyncFriendRequestToContacts(Request request, PrivateConversation createdConversation)
         {
-
             _contacts.Add(new ContactInfo
             {
                 DisplayName = request.TargetId == _bot.Profile.Id ?

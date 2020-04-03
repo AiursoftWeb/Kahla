@@ -81,7 +81,7 @@ namespace Kahla.SDK.Models
 
         [JsonProperty]
         [NotMapped]
-        public bool IsOnline { get; set; } = false;
+        public bool? IsOnline { get; set; } = false;
 
         public KahlaUser Build(OnlineJudger judge)
         {
