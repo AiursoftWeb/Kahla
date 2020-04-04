@@ -69,7 +69,7 @@ namespace Kahla.Server.Controllers
                 if (contact.LatestMessage != null)
                     contact.LatestMessage.Sender = contact.Sender.Build(_onlineJudger);
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
-                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : false;
+                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : null;
             }
             return Json(new AiurCollection<ContactInfo>(contacts)
             {
