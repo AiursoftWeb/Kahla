@@ -1,4 +1,6 @@
-﻿namespace Kahla.SDK.Models
+﻿using System;
+
+namespace Kahla.SDK.Models
 {
     public enum ReportStatus
     {
@@ -17,5 +19,6 @@
 
         public string Reason { get; set; }
         public ReportStatus Status { get; set; } = ReportStatus.Pending;
+        public DateTime ReportTime { get; set; } = DateTime.UtcNow;
     }
 }
