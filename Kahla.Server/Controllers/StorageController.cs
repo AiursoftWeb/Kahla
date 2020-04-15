@@ -1,10 +1,11 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Services;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.SDK.Services;
-using Aiursoft.SDK.Services.ToProbeServer;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -29,7 +30,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly TokenService _tokenService;
         private readonly AppsContainer _appsContainer;
-        private readonly ServiceLocation _serviceLocation;
+        private readonly ProbeLocator _probeLocator;
 
         public StorageController(
             UserManager<KahlaUser> userManager,
@@ -37,14 +38,14 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             TokenService tokenService,
             AppsContainer appsContainer,
-            ServiceLocation serviceLocation)
+            ProbeLocator probeLocator)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _configuration = configuration;
             _tokenService = tokenService;
             _appsContainer = appsContainer;
-            _serviceLocation = serviceLocation;
+            _probeLocator = probeLocator;
         }
 
         [HttpGet]
@@ -59,7 +60,7 @@ namespace Kahla.Server.Controllers
                 siteName,
                 "Upload",
                 path);
-            var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
             {
                 pbtoken = token,
                 recursiveCreate = true
@@ -96,7 +97,7 @@ namespace Kahla.Server.Controllers
                 siteName,
                 "Upload",
                 path);
-            var address = new AiurUrl(_serviceLocation.Probe, $"/Files/UploadFile/{siteName}/{path}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
             {
                 pbtoken = token,
                 recursiveCreate = true

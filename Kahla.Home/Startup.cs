@@ -1,4 +1,5 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.Pylon;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -14,12 +15,14 @@ namespace Kahla.Home
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            AppsContainer.CurrentAppId = configuration["KahlaHomeAppId"];
+            AppsContainer.CurrentAppSecret = configuration["KahlaHomeAppSecret"];
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAiurMvc();
-            services.AddAiurDependencies("KahlaHome");
+            services.AddAiurDependencies();
             services.AddApplicationInsightsTelemetry();
         }
 

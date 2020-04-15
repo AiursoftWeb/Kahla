@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Pylon.Services;
-using Aiursoft.SDK.Services;
 using Kahla.Home.Models.HomeViewModels;
 using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,20 +13,17 @@ namespace Kahla.Home.Controllers
         private readonly VersionChecker _version;
         private readonly VersionService _versionService;
         private readonly ServiceLocation _serviceLocation;
-        private readonly HomeService _homeService;
         private readonly AiurCache _cache;
 
         public HomeController(
             VersionChecker version,
             VersionService versionService,
             ServiceLocation serviceLocation,
-            HomeService homeService,
             AiurCache cache)
         {
             _version = version;
             _versionService = versionService;
             _serviceLocation = serviceLocation;
-            _homeService = homeService;
             _cache = cache;
         }
 

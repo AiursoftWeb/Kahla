@@ -1,15 +1,17 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Gateway.SDK.Models.ForApps.AddressModels;
+using Aiursoft.Gateway.SDK.Services.ToGatewayServer;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.SDK.Models.ForApps.AddressModels;
-using Aiursoft.SDK.Models.Stargate.ListenAddressModels;
-using Aiursoft.SDK.Models.Status;
-using Aiursoft.SDK.Services;
-using Aiursoft.SDK.Services.ToGatewayServer;
-using Aiursoft.SDK.Services.ToStargateServer;
-using Aiursoft.SDK.Services.ToStatusServer;
+using Aiursoft.Pylon.Services;
+using Aiursoft.Stargate.SDK.Models.ListenAddressModels;
+using Aiursoft.Stargate.SDK.Services;
+using Aiursoft.Stargate.SDK.Services.ToStargateServer;
+using Aiursoft.Status.SDK.Models;
+using Aiursoft.Status.SDK.Services.ToStatusServer;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -34,7 +36,7 @@ namespace Kahla.Server.Controllers
     [APIModelStateChecker]
     public class AuthController : Controller
     {
-        private readonly ServiceLocation _serviceLocation;
+        private readonly StargateLocator _stargateLocator;
         private readonly AuthService<KahlaUser> _authService;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
@@ -42,15 +44,13 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly KahlaPushService _pusher;
         private readonly ChannelService _channelService;
-        private readonly VersionChecker _version;
-        private readonly VersionService _sdkVersion;
         private readonly KahlaDbContext _dbContext;
         private readonly EventService _eventService;
         private readonly OnlineJudger _onlineJudger;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
-            ServiceLocation serviceLocation,
+            StargateLocator serviceLocation,
             AuthService<KahlaUser> authService,
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
@@ -58,14 +58,12 @@ namespace Kahla.Server.Controllers
             AppsContainer appsContainer,
             KahlaPushService pusher,
             ChannelService channelService,
-            VersionChecker version,
-            VersionService sdkVersion,
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
             EventService eventService,
             OnlineJudger onlineJudger)
         {
-            _serviceLocation = serviceLocation;
+            _stargateLocator = serviceLocation;
             _authService = authService;
             _userManager = userManager;
             _signInManager = signInManager;
@@ -73,8 +71,6 @@ namespace Kahla.Server.Controllers
             _appsContainer = appsContainer;
             _pusher = pusher;
             _channelService = channelService;
-            _version = version;
-            _sdkVersion = sdkVersion;
             _dbContext = dbContext;
             _eventService = eventService;
             _onlineJudger = onlineJudger;
@@ -227,7 +223,7 @@ namespace Kahla.Server.Controllers
                 Message = "Successfully get your channel.",
                 ChannelId = user.CurrentChannel,
                 ConnectKey = user.ConnectKey,
-                ServerPath = new AiurUrl(_serviceLocation.StargateListenAddress, "Listen", "Channel", new ChannelAddressModel
+                ServerPath = new AiurUrl(_stargateLocator.ListenEndpoint, "Listen", "Channel", new ChannelAddressModel
                 {
                     Id = user.CurrentChannel,
                     Key = user.ConnectKey

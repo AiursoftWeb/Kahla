@@ -1,4 +1,4 @@
-﻿using Aiursoft.SDK.Models.Stargate.ChannelViewModels;
+﻿using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
