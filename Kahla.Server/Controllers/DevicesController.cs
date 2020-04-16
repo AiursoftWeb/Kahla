@@ -1,10 +1,10 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.SDK.Services;
-using Aiursoft.SDK.Services.ToStargateServer;
+using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;

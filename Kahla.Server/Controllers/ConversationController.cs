@@ -1,11 +1,11 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
-using Aiursoft.SDK.Attributes;
-using Aiursoft.SDK.Services;
-using Aiursoft.SDK.Services.ToProbeServer;
+using Aiursoft.SDKTools.Attributes;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -67,9 +67,9 @@ namespace Kahla.Server.Controllers
             foreach (var contact in contacts)
             {
                 if (contact.LatestMessage != null)
-                    contact.LatestMessage.Sender = contact.Sender;
+                    contact.LatestMessage.Sender = contact.Sender.Build(_onlineJudger);
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
-                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : false;
+                    _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : null;
             }
             return Json(new AiurCollection<ContactInfo>(contacts)
             {

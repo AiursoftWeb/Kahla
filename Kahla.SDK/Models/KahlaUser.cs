@@ -1,4 +1,4 @@
-﻿using Aiursoft.SDK.Models;
+﻿using Aiursoft.Gateway.SDK.Models;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;
@@ -81,7 +81,7 @@ namespace Kahla.SDK.Models
 
         [JsonProperty]
         [NotMapped]
-        public bool IsOnline { get; set; } = false;
+        public bool? IsOnline { get; set; } = false;
 
         public KahlaUser Build(OnlineJudger judge)
         {

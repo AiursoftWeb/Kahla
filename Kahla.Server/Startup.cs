@@ -1,4 +1,5 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.Pylon;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -22,6 +23,8 @@ namespace Kahla.Server
         public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
+            AppsContainer.CurrentAppId = configuration["KahlaAppId"];
+            AppsContainer.CurrentAppSecret = configuration["KahlaAppSecret"];
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -38,7 +41,7 @@ namespace Kahla.Server
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddAiurMvc();
-            services.AddAiurDependencies<KahlaUser>("Kahla");
+            services.AddAiurDependenciesWithIdentity<KahlaUser>();
             services.AddScoped<WebPushClient>();
             services.AddApplicationInsightsTelemetry();
         }

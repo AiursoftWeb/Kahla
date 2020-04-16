@@ -51,7 +51,7 @@ namespace Kahla.Bot.Bots
                     .Replace('?', '!'));
             if (eventContext.Mentioned)
             {
-                replaced = replaced + Mention(eventContext.Message.Sender);
+                replaced += Mention(eventContext.Message.Sender);
             }
             await Task.Delay(700);
             await SendMessage(replaced, eventContext.ConversationId, eventContext.AESKey);

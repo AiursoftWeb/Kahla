@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Handler.Models;
-using Aiursoft.SDK.Models.Probe;
+using Aiursoft.Probe.SDK.Models;
 using System;
 using System.Collections.Generic;
 

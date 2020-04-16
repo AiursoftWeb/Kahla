@@ -15,7 +15,7 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string AesKey { get; set; }
         public bool Muted { get; set; }
         public bool SomeoneAtMe { get; set; }
-        public bool Online { get; set; }
+        public bool? Online { get; set; }
         [JsonIgnore]
         public bool EnableInvisiable { get; set; }
         [JsonIgnore]
