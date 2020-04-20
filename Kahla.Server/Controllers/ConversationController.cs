@@ -235,7 +235,8 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(AiurValue<PrivateConversation>))]
-        [APIProduces(typeof(AiurValue<GroupConversation>))]
+#warning Reneable this when upgrade to 3.1.4.1
+        //[APIProduces(typeof(AiurValue<GroupConversation>))]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
