@@ -10,7 +10,7 @@ namespace Kahla.SDK.Models.ApiViewModels
         [Obsolete("This method is only for framework", true)]
         public FileHistoryViewModel() { }
 
-        public FileHistoryViewModel(List<Folder> folders) : base(folders) { }
+        public FileHistoryViewModel(List<File> folders) : base(folders) { }
 
         public string SiteName { get; set; }
         public string RootPath { get; set; }
