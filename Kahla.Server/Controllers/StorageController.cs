@@ -4,8 +4,8 @@ using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
+using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -55,10 +56,10 @@ namespace Kahla.Server.Controllers
             var accessToken = await _appsContainer.AccessToken();
             var siteName = _configuration["UserIconsSiteName"];
             var path = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            var token = await _tokenService.GetUploadTokenAsync(
+            var token = await _tokenService.GetTokenAsync(
                 accessToken,
                 siteName,
-                "Upload",
+                new string[] { "Upload" },
                 path);
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
             {
@@ -74,7 +75,7 @@ namespace Kahla.Server.Controllers
 
         [HttpGet]
         [APIProduces(typeof(AiurValue<string>))]
-        public async Task<IActionResult> InitFileUpload(InitFileUpload model)
+        public async Task<IActionResult> InitFileAccess(InitFileUpload model)
         {
             var conversation = await _dbContext
                 .Conversations
@@ -91,11 +92,14 @@ namespace Kahla.Server.Controllers
             }
             var accessToken = await _appsContainer.AccessToken();
             var siteName = _configuration["UserFilesSiteName"];
-            var path = $"conversation-{conversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}";
-            var token = await _tokenService.GetUploadTokenAsync(
+            var path = $"conversation-{conversation.Id}";
+            var permissions = new List<string>();
+            if (model.Upload) permissions.Add("Upload");
+            if (model.Download) permissions.Add("Download");
+            var token = await _tokenService.GetTokenAsync(
                 accessToken,
                 siteName,
-                "Upload",
+                permissions.ToArray(),
                 path);
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
             {
@@ -105,7 +109,7 @@ namespace Kahla.Server.Controllers
             return Json(new AiurValue<string>(address.ToString())
             {
                 Code = ErrorType.Success,
-                Message = $"Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
+                Message = $"Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
             });
         }
 

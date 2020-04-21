@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Pylon;
+using Aiursoft.SDK;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -40,7 +41,7 @@ namespace Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
-            services.AddAiurMvc();
+            services.AddAiurAPIMvc();
             services.AddAiurDependenciesWithIdentity<KahlaUser>();
             services.AddScoped<WebPushClient>();
             services.AddApplicationInsightsTelemetry();

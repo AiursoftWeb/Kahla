@@ -4,9 +4,9 @@ using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDKTools.Attributes;
+using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -239,8 +239,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(AiurValue<PrivateConversation>))]
-#warning Reneable this when upgrade to 3.1.4.1
-        //[APIProduces(typeof(AiurValue<GroupConversation>))]
+        [APIProduces(typeof(AiurValue<GroupConversation>))]
         public async Task<IActionResult> ConversationDetail([Required]int id)
         {
             var user = await GetKahlaUser();
