@@ -296,6 +296,7 @@ namespace Kahla.Server.Controllers
             return Json(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
             {
                 Code = ErrorType.Success,
+                ShowingDateUTC = folder.FolderName,
                 Message = $"Successfully get all files that day in your conversation. Please download with pattern: '{_probeLocator.ProbeOpenCDN}'.",
                 SiteName = _configuration["UserFilesSiteName"],
                 RootPath = $"conversation-{conversation.Id}"
