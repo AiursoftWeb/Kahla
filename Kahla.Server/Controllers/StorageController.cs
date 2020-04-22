@@ -9,6 +9,7 @@ using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
+using Kahla.SDK.Models.ApiViewModels;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -74,7 +75,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpGet]
-        [APIProduces(typeof(AiurValue<string>))]
+        [APIProduces(typeof(InitFileAccessViewModel))]
         public async Task<IActionResult> InitFileAccess(InitFileUpload model)
         {
             var conversation = await _dbContext
@@ -106,8 +107,9 @@ namespace Kahla.Server.Controllers
                 pbtoken = token,
                 recursiveCreate = true
             });
-            return Json(new AiurValue<string>(address.ToString())
+            return Json(new InitFileAccessViewModel(token)
             {
+                UploadAddress = address.ToString(),
                 Code = ErrorType.Success,
                 Message = $"Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
             });
