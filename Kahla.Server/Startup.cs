@@ -44,7 +44,6 @@ namespace Kahla.Server
             services.AddAiurAPIMvc();
             services.AddAiurDependenciesWithIdentity<KahlaUser>();
             services.AddScoped<WebPushClient>();
-            services.AddApplicationInsightsTelemetry();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
