@@ -44,19 +44,11 @@ namespace MyBot
 {
     public class FirstBot : BotBase
     {
-        public async override Task OnBotInit() { }
-
-        public async override Task OnFriendRequest(NewFriendRequestEvent arg) { }
-
-        public async override Task OnGroupConnected(SearchedGroup group) { }
-
-        public async override Task OnGroupInvitation(int groupId, NewMessageEvent eventContext) { }
-
         public async override Task OnMessage(string inputMessage, NewMessageEvent eventContext) 
         {
             if (eventContext.Message.SenderId == Profile.Id)
             {
-                return;
+                return; // Ignore messages sent by itself.
             }
             // Echo all messages.
             await SendMessage(inputMessage, eventContext.ConversationId, eventContext.AESKey);
@@ -79,17 +71,14 @@ namespace MyBot
 {
     class Program
     {
-        public static async Task Main(string[] args)
+        public static Task Main(string[] args)
         {
-            await new ServiceCollection()
-                // Add all dependencies.
-                .AddScannedDependencies()
-                // Register your bot.
-                .AddBots()
-                // Get your bot.
-                .GetService<FirstBot>()
-                // Start your bot.
-                .Start();
+            return new ServiceCollection()
+                .AddHttpClient()              // Add default Http Client
+                .AddScannedDependencies()     // Add all dependencies.
+                .AddBots()                    // Register your bot.
+                .GetService<FirstBot>()       // Get your bot.
+                .Start(enableCommander: true);// Start your bot.
         }
     }
 }
