@@ -102,7 +102,7 @@ namespace Kahla.Server.Controllers
                 siteName,
                 permissions.ToArray(),
                 path);
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new
             {
                 pbtoken = token,
                 recursiveCreate = true
