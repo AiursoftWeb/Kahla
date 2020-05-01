@@ -6,7 +6,6 @@ using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
-using Kahla.SDK.Services;
 using Kahla.Server.Data;
 using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
@@ -29,21 +28,18 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
-        private readonly OnlineJudger _onlineJudger;
         private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pusher,
-            OwnerChecker ownerChecker,
-            OnlineJudger onlineJudger)
+            OwnerChecker ownerChecker)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
             _ownerChecker = ownerChecker;
-            _onlineJudger = onlineJudger;
         }
 
         [HttpPost]
