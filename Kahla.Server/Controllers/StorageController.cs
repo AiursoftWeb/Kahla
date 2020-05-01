@@ -33,6 +33,7 @@ namespace Kahla.Server.Controllers
         private readonly TokenService _tokenService;
         private readonly AppsContainer _appsContainer;
         private readonly ProbeLocator _probeLocator;
+        private readonly FilesService _probeFileService;
 
         public StorageController(
             UserManager<KahlaUser> userManager,
@@ -40,7 +41,8 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             TokenService tokenService,
             AppsContainer appsContainer,
-            ProbeLocator probeLocator)
+            ProbeLocator probeLocator,
+            FilesService probeFileService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -48,6 +50,7 @@ namespace Kahla.Server.Controllers
             _tokenService = tokenService;
             _appsContainer = appsContainer;
             _probeLocator = probeLocator;
+            _probeFileService = probeFileService;
         }
 
         [HttpGet]
@@ -113,6 +116,46 @@ namespace Kahla.Server.Controllers
                 Code = ErrorType.Success,
                 Message = $"Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
             });
+        }
+
+        [HttpPost]
+        [APIProduces(typeof(UploadFileViewModel))]
+        public async Task<IActionResult> ForwardMedia(ForwardMediaAddressModel model)
+        {
+            var user = await GetKahlaUser();
+            var sourceConversation = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.SourceConversationId);
+            var targetConversation = await _dbContext
+                .Conversations
+                .Include(nameof(GroupConversation.Users))
+                .SingleOrDefaultAsync(t => t.Id == model.TargetConversationId);
+            if (sourceConversation == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Could not find the source conversation with id: {model.SourceConversationId}!");
+            }
+            if (targetConversation == null)
+            {
+                return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.TargetConversationId}!");
+            }
+            if (!sourceConversation.HasUser(user.Id))
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {sourceConversation.Id}!");
+            }
+            if (!targetConversation.HasUser(user.Id))
+            {
+                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {targetConversation.Id}!");
+            }
+            var accessToken = await _appsContainer.AccessToken();
+            var siteName = _configuration["UserFilesSiteName"];
+            var response = await _probeFileService.CopyFileAsync(
+                accessToken: accessToken,
+                siteName: siteName,
+                folderNames: $"conversation-{sourceConversation.Id}/{DateTime.Parse(model.FileUploadDate):yyyy-MM-dd}/{model.FileName}",
+                targetSiteName: siteName,
+                targetFolderNames: $"conversation-{targetConversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}");
+            return Json(response);
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
