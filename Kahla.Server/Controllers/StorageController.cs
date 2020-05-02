@@ -153,7 +153,7 @@ namespace Kahla.Server.Controllers
             var response = await _probeFileService.CopyFileAsync(
                 accessToken: accessToken,
                 siteName: siteName,
-                folderNames: $"conversation-{sourceConversation.Id}/{DateTime.Parse(model.FileUploadDate):yyyy-MM-dd}/{model.FileName}",
+                folderNames: $"conversation-{sourceConversation.Id}/{model.SourceFilePath}",
                 targetSiteName: siteName,
                 targetFolderNames: $"conversation-{targetConversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}");
             return Json(response);
