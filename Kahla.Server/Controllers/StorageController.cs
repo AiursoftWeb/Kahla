@@ -2,6 +2,7 @@
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Models.FilesAddressModels;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
@@ -106,10 +107,10 @@ namespace Kahla.Server.Controllers
                 siteName,
                 permissions.ToArray(),
                 path);
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
             {
-                pbtoken = token,
-                recursiveCreate = true
+                PBToken = token,
+                RecursiveCreate = true
             });
             return Json(new InitFileAccessViewModel(token)
             {
