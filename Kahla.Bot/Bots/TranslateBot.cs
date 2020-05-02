@@ -65,7 +65,7 @@ namespace Kahla.Bot.Bots
             var translated = _bingTranslator.CallTranslate(inputMessage, "en");
             if (eventContext.Mentioned)
             {
-                translated = translated + Mention(eventContext.Message.Sender);
+                translated += Mention(eventContext.Message.Sender);
             }
             await SendMessage(translated, eventContext.ConversationId, eventContext.AESKey);
         }

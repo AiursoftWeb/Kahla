@@ -1,4 +1,6 @@
-﻿using Aiursoft.Pylon;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.Probe.SDK;
+using Aiursoft.SDK;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +14,8 @@ namespace Kahla.Server
             CreateHostBuilder(args)
                 .Build()
                 .MigrateDbContext<KahlaDbContext>()
+                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.AccessToken())
+                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.AccessToken())
                 .Run();
         }
 

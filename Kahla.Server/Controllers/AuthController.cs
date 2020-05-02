@@ -12,6 +12,7 @@ using Aiursoft.Stargate.SDK.Services;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Aiursoft.Status.SDK.Models;
 using Aiursoft.Status.SDK.Services.ToStatusServer;
+using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;

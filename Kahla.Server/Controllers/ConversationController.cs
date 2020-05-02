@@ -2,10 +2,11 @@
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.Pylon;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.SDKTools.Attributes;
+using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -38,6 +39,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
+        private readonly ProbeLocator _probeLocator;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
@@ -47,7 +49,8 @@ namespace Kahla.Server.Controllers
             AppsContainer appsContainer,
             IConfiguration configuration,
             OnlineJudger onlineJudger,
-            LastSaidJudger lastSaidJudger)
+            LastSaidJudger lastSaidJudger,
+            ProbeLocator probeLocator)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -57,6 +60,7 @@ namespace Kahla.Server.Controllers
             _configuration = configuration;
             _onlineJudger = onlineJudger;
             _lastSaidJudger = lastSaidJudger;
+            _probeLocator = probeLocator;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -262,7 +266,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(FileHistoryViewModel))]
-        public async Task<IActionResult> FileHistory([Required]int id)
+        public async Task<IActionResult> FileHistory([Required]int id, [Required]int skipDates)
         {
             var user = await GetKahlaUser();
             var conversation = await _dbContext
@@ -277,16 +281,23 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            var files = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
-            foreach (var subfolder in files.Value.SubFolders)
+            var folders = await _foldersService
+                .ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
+            var folder = folders.Value
+                .SubFolders
+                .OrderByDescending(t => DateTime.Parse(t.FolderName))
+                .Skip(skipDates)
+                .FirstOrDefault();
+            if (folder == null)
             {
-                var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{subfolder.FolderName}");
-                subfolder.Files = filesInSubfolder.Value.Files;
+                return this.Protocol(ErrorType.RequireAttention, $"No files sent that day.");
             }
-            return Json(new FileHistoryViewModel(files.Value.SubFolders.ToList())
+            var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
+            return Json(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
             {
                 Code = ErrorType.Success,
-                Message = "Successfully get all files in your conversation. Please download with pattern: 'https://{siteName}.aiursoft.io/{rootPath}/{folderName}/{fileName}'.",
+                ShowingDateUTC = folder.FolderName,
+                Message = $"Successfully get all files that day in your conversation. Please download with pattern: '{_probeLocator.OpenFormat}'.",
                 SiteName = _configuration["UserFilesSiteName"],
                 RootPath = $"conversation-{conversation.Id}"
             });

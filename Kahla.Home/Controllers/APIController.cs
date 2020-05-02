@@ -1,6 +1,5 @@
 ﻿using Aiursoft.Handler.Attributes;
-using Aiursoft.Pylon;
-using Aiursoft.Pylon.Services;
+using Aiursoft.SDK.Services;
 using Aiursoft.XelNaga.Models;
 using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models.ApiViewModels;
@@ -48,11 +47,15 @@ namespace Kahla.Home.Controllers
             var serversRendered = new ConcurrentBag<IndexViewModel>();
             await servers.ForEachParallel(async server =>
             {
-                var serverInfo = await _cache.GetAndCache($"server-detail-{server}", () => _homeService.IndexAsync(server));
-                if (serverInfo != null)
+                try
                 {
-                    serversRendered.Add(serverInfo);
+                    var serverInfo = await _cache.GetAndCache($"server-detail-{server}", () => _homeService.IndexAsync(server));
+                    if (serverInfo != null)
+                    {
+                        serversRendered.Add(serverInfo);
+                    }
                 }
+                catch { }
             });
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             return Json(serversRendered);
