@@ -109,7 +109,7 @@ namespace Kahla.Server.Controllers
                 path);
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
             {
-                PBToken = token,
+                Token = token,
                 RecursiveCreate = true
             });
             return Json(new InitFileAccessViewModel(token)
