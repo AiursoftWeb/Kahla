@@ -81,7 +81,7 @@ namespace Kahla.Server.Controllers
 
         [HttpGet]
         [APIProduces(typeof(InitFileAccessViewModel))]
-        public async Task<IActionResult> InitFileAccess(InitFileUpload model)
+        public async Task<IActionResult> InitFileAccess(InitFileAccessAddressModel model)
         {
             var conversation = await _dbContext
                 .Conversations
