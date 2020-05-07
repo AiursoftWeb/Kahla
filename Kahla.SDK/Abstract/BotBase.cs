@@ -29,6 +29,7 @@ namespace Kahla.SDK.Abstract
         public SettingsService SettingsService;
         public EventSyncer EventSyncer;
         public BotCommander BotCommander;
+        public StorageService StorageService;
 
         public ManualResetEvent ExitEvent;
         public SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
@@ -113,7 +114,6 @@ namespace Kahla.SDK.Abstract
             await MonitorEvents(websocketAddress);
             return;
         }
-
 
         public string AskServerAddress()
         {

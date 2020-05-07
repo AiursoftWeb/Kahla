@@ -17,6 +17,7 @@ namespace Kahla.SDK.Abstract
         private readonly SettingsService _settingsService;
         private readonly BotCommander _botCommander;
         private readonly EventSyncer _eventSyncer;
+        private readonly StorageService _storageService;
         private readonly AES _aes;
 
         public BotFactory(
@@ -31,6 +32,7 @@ namespace Kahla.SDK.Abstract
             SettingsService settingsService,
             BotCommander botCommander,
             EventSyncer eventSyncer,
+            StorageService storageService,
             AES aes)
         {
             _conversationService = conversationService;
@@ -44,6 +46,7 @@ namespace Kahla.SDK.Abstract
             _settingsService = settingsService;
             _botCommander = botCommander;
             _eventSyncer = eventSyncer;
+            _storageService = storageService;
             _aes = aes;
         }
 
@@ -60,6 +63,7 @@ namespace Kahla.SDK.Abstract
             bareBot.SettingsService = _settingsService;
             bareBot.GroupsService = _groupsService;
             bareBot.EventSyncer = _eventSyncer;
+            bareBot.StorageService = _storageService;
             bareBot.BotCommander = _botCommander.Init(bareBot);
             return bareBot;
         }

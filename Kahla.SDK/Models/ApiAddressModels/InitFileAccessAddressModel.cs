@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.SDK.Models.ApiAddressModels
 {
-    public class InitFileUpload
+    public class InitFileAccessAddressModel
     {
         [Required]
         [FromQuery(Name = "conversationId")]

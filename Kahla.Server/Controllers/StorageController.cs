@@ -67,10 +67,10 @@ namespace Kahla.Server.Controllers
                 siteName,
                 new string[] { "Upload" },
                 path);
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
-                pbtoken = token,
-                recursiveCreate = true
+                Token = token,
+                RecursiveCreate = true
             });
             return Json(new AiurValue<string>(address.ToString())
             {
@@ -81,7 +81,7 @@ namespace Kahla.Server.Controllers
 
         [HttpGet]
         [APIProduces(typeof(InitFileAccessViewModel))]
-        public async Task<IActionResult> InitFileAccess(InitFileUpload model)
+        public async Task<IActionResult> InitFileAccess(InitFileAccessAddressModel model)
         {
             var conversation = await _dbContext
                 .Conversations
