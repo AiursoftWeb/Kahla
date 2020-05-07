@@ -67,10 +67,10 @@ namespace Kahla.Server.Controllers
                 siteName,
                 new string[] { "Upload" },
                 path);
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new
+            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
-                pbtoken = token,
-                recursiveCreate = true
+                Token = token,
+                RecursiveCreate = true
             });
             return Json(new AiurValue<string>(address.ToString())
             {
