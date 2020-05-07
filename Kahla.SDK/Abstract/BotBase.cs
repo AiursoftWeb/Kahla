@@ -115,7 +115,6 @@ namespace Kahla.SDK.Abstract
             return;
         }
 
-
         public string AskServerAddress()
         {
             var cached = SettingsService["ServerAddress"] as string;
