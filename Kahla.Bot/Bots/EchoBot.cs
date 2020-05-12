@@ -54,7 +54,7 @@ namespace Kahla.Bot.Bots
                 replaced += Mention(eventContext.Message.Sender);
             }
             await Task.Delay(700);
-            await SendMessage(replaced, eventContext.ConversationId, eventContext.AESKey);
+            await SendMessage(replaced, eventContext.ConversationId);
         }
     }
 }
