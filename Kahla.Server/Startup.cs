@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Pylon;
 using Aiursoft.SDK;
+using EFCoreSecondLevelCacheInterceptor;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Generic;
 using WebPush;
 
@@ -30,8 +32,14 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<KahlaDbContext>(options =>
-                options.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection")));
+            services.AddDbContextPool<KahlaDbContext>((serviceProvider, optionsBuilder) =>
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection"))
+                    .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>()));
+            services.AddEFSecondLevelCache(options =>
+            {
+                options.UseMemoryCacheProvider().DisableLogging(true);
+                options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(30));
+            });
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
