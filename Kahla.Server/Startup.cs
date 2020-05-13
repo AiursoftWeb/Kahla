@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Pylon;
 using Aiursoft.SDK;
-using EasyCaching.Core.Configurations;
 using EFCoreSecondLevelCacheInterceptor;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
@@ -34,19 +33,30 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var useRedis = _configuration["easycaching:enabled"] == true.ToString();
+
             services.AddDbContextPool<KahlaDbContext>((serviceProvider, optionsBuilder) =>
                 optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DatabaseConnection"))
                     .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>()));
             services.AddEFSecondLevelCache(options =>
             {
-                options.UseEasyCachingCoreProvider(_cacheProviderName).DisableLogging(true);
+                if (useRedis)
+                {
+                    options.UseEasyCachingCoreProvider(_cacheProviderName).DisableLogging(true);
+                }
+                else
+                {
+                    options.UseMemoryCacheProvider().DisableLogging(true);
+                }
                 options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(30));
             });
-
-            services.AddEasyCaching(option =>
+            if (useRedis)
             {
-                option.UseRedis(_configuration, _cacheProviderName);
-            });
+                services.AddEasyCaching(option =>
+                {
+                    option.UseRedis(_configuration, _cacheProviderName);
+                });
+            }
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
