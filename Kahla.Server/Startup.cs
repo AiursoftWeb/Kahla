@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Pylon;
 using Aiursoft.SDK;
+using EasyCaching.Core.Configurations;
 using EFCoreSecondLevelCacheInterceptor;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
@@ -22,6 +23,7 @@ namespace Kahla.Server
     public class Startup
     {
         private IConfiguration _configuration { get; }
+        private const string _cacheProviderName = "redis";
 
         public Startup(IConfiguration configuration)
         {
@@ -37,8 +39,13 @@ namespace Kahla.Server
                     .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>()));
             services.AddEFSecondLevelCache(options =>
             {
-                options.UseMemoryCacheProvider().DisableLogging(true);
+                options.UseEasyCachingCoreProvider(_cacheProviderName).DisableLogging(true);
                 options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(30));
+            });
+
+            services.AddEasyCaching(option =>
+            {
+                option.UseRedis(_configuration, _cacheProviderName);
             });
 
             services.AddIdentity<KahlaUser, IdentityRole>()
