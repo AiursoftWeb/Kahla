@@ -2,7 +2,6 @@
 using Kahla.SDK.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,12 +10,8 @@ namespace Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {
-        private readonly IConfiguration _configuration;
-        public KahlaDbContext(
-            DbContextOptions<KahlaDbContext> options,
-            IConfiguration configuration) : base(options)
+        public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
         {
-            _configuration = configuration;
         }
 
         public DbSet<Message> Messages { get; set; }
@@ -106,12 +101,12 @@ namespace Kahla.Server.Data
             return -1;
         }
 
-        public async Task<GroupConversation> CreateGroup(string groupName, string creatorId, string joinPassword)
+        public async Task<GroupConversation> CreateGroup(string groupName, string groupImagePath, string creatorId, string joinPassword)
         {
             var newGroup = new GroupConversation
             {
                 GroupName = groupName,
-                GroupImagePath = _configuration["GroupImagePath"],
+                GroupImagePath = groupImagePath,
                 AESKey = Guid.NewGuid().ToString("N"),
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty
