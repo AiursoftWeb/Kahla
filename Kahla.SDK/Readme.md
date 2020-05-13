@@ -51,7 +51,7 @@ namespace MyBot
                 return; // Ignore messages sent by itself.
             }
             // Echo all messages.
-            await SendMessage(inputMessage, eventContext.ConversationId, eventContext.AESKey);
+            await SendMessage(inputMessage, eventContext.ConversationId);
         }
     }
 }
