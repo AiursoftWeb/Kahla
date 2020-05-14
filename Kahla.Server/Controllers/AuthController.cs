@@ -124,6 +124,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> Me()
         {
             var user = await GetKahlaUser();
+            await _signInManager.RefreshSignInAsync(user);
             user.IsMe = true;
             try
             {

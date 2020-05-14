@@ -11,6 +11,7 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -28,18 +29,21 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
+        private readonly IConfiguration _configuration;
         private static readonly object _obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pusher,
-            OwnerChecker ownerChecker)
+            OwnerChecker ownerChecker,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
             _ownerChecker = ownerChecker;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -63,7 +67,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
             }
-            var createdGroup = await _dbContext.CreateGroup(model.GroupName, user.Id, model.JoinPassword);
+            var createdGroup = await _dbContext.CreateGroup(model.GroupName, _configuration["GroupImagePath"], user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
             {
                 UserId = user.Id,

@@ -11,14 +11,14 @@ namespace Kahla.SDK.Services
 {
     public class StorageService : IScopedDependency
     {
-        private readonly SingletonHTTP _http;
+        public readonly SingletonHTTP Http;
         private readonly KahlaLocation _kahlaLocation;
 
         public StorageService(
             SingletonHTTP http,
             KahlaLocation kahlaLocation)
         {
-            _http = http;
+            Http = http;
             _kahlaLocation = kahlaLocation;
         }
 
@@ -30,7 +30,7 @@ namespace Kahla.SDK.Services
                 Upload = canUpload,
                 Download = canDownload
             });
-            var result = await _http.Get(url);
+            var result = await Http.Get(url);
             var JResult = JsonConvert.DeserializeObject<InitFileAccessViewModel>(result);
 
             if (JResult.Code != ErrorType.Success)

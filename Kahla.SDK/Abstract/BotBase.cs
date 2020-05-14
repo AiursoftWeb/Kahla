@@ -1,11 +1,15 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Models.FilesViewModels;
+using Aiursoft.XelNaga.Tools;
 using Kahla.SDK.Data;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
+using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -91,7 +95,6 @@ namespace Kahla.SDK.Abstract
                 BotLogger.LogSuccess($"\nYou are already signed in! Welcome!");
             }
             await RefreshUserProfile();
-            await OnBotInit();
             var websocketAddress = await GetWSAddress();
             // Trigger on request.
             var requests = (await FriendshipService.MyRequestsAsync())
@@ -111,7 +114,7 @@ namespace Kahla.SDK.Abstract
                 await OnGroupConnected(group);
             }
             ConnectingLock.Release();
-            await MonitorEvents(websocketAddress);
+            await MonitorEvents(websocketAddress, OnBotInit);
             return;
         }
 
@@ -247,7 +250,7 @@ namespace Kahla.SDK.Abstract
             return address.ServerPath;
         }
 
-        public async Task MonitorEvents(string websocketAddress)
+        public async Task MonitorEvents(string websocketAddress, Func<Task> onConnected)
         {
             bool okToStop = false;
             if (ExitEvent != null)
@@ -276,6 +279,7 @@ namespace Kahla.SDK.Abstract
             BotLogger.LogInfo($"Listening to your account channel.");
             BotLogger.LogVerbose(websocketAddress + "\n");
             BotLogger.AppendResult(true, 9);
+            await onConnected();
             ExitEvent.WaitOne();
             okToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
@@ -296,9 +300,48 @@ namespace Kahla.SDK.Abstract
             return GroupsService.SetGroupMutedAsync(groupName, mute);
         }
 
-        public async Task SendMessage(string message, int conversationId, string aesKey)
+        private async Task SendFileWithPattern(int conversationId, Stream file, string extension, string pattern)
         {
-            var encrypted = AES.OpenSSLEncrypt(message, aesKey);
+            var savedFileName = Guid.NewGuid().ToString("N") + extension;
+            var token = await StorageService.InitFileAccessAsync(conversationId, true, false);
+            var fileResponse = await StorageService.Http.PostWithFile(token.UploadAddress, file, savedFileName);
+            var fileResponseObject = JsonConvert.DeserializeObject<UploadFileViewModel>(fileResponse);
+            await SendMessage(string.Format(pattern, fileResponseObject.FilePath), conversationId);
+        }
+
+        public Task SendPhoto(int conversationId, Stream file, string fileName, int width = 700, int height = 393)
+        {
+            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[img]{0}|" + $"{width}|{height}");
+        }
+
+        public Task SendFile(int conversationId, Stream file, string fileName)
+        {
+            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[file]{0}|" + $"{fileName}|{file.Length.HumanReadableSize()}");
+        }
+
+        public Task SendVideo(int conversationId, Stream file, string fileName)
+        {
+            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[video]{0}");
+        }
+
+        public Task SendAudio(int conversationId, Stream file, string fileName)
+        {
+            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[audio]{0}");
+        }
+
+        public Task SendGroupCard(int conversationId, int groupConversationId)
+        {
+            return SendMessage($"[group]{groupConversationId}", conversationId);
+        }
+
+        public Task SendUserCard(int conversationId, string userId)
+        {
+            return SendMessage($"[user]{userId}", conversationId);
+        }
+
+        public async Task SendMessage(string message, int conversationId)
+        {
+            var encrypted = AES.OpenSSLEncrypt(message, EventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 

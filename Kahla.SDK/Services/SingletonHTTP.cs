@@ -85,7 +85,31 @@ namespace Kahla.SDK.Services
             }
         }
 
-        public void Save(CookieContainer cookieContainer)
+        public async Task<string> PostWithFile(string url, Stream fileStream, string fileName)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = new MultipartFormDataContent
+                {
+                    { new StreamContent(fileStream), "file", fileName }
+                }
+            };
+
+
+            request.Headers.Add("accept", "application/json");
+
+            var response = await _client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                throw new WebException($"The remote server returned unexpcted status code: {response.StatusCode} - {response.ReasonPhrase}.");
+            }
+        }
+
+        private void Save(CookieContainer cookieContainer)
         {
             using MemoryStream stream = new MemoryStream();
             new BinaryFormatter().Serialize(stream, cookieContainer);
@@ -96,7 +120,7 @@ namespace Kahla.SDK.Services
             File.WriteAllText("cookies.dat", base64);
         }
 
-        public CookieContainer Load()
+        private CookieContainer Load()
         {
             try
             {

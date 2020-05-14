@@ -67,7 +67,7 @@ namespace Kahla.Bot.Bots
             {
                 translated += Mention(eventContext.Message.Sender);
             }
-            await SendMessage(translated, eventContext.ConversationId, eventContext.AESKey);
+            await SendMessage(translated, eventContext.ConversationId);
         }
     }
 }
