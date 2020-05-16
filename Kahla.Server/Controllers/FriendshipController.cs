@@ -1,6 +1,8 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.WebTools;
 using Kahla.SDK.Models;
@@ -12,6 +14,7 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -29,18 +32,27 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OnlineJudger _onlineJudger;
+        private readonly AppsContainer _appsContainer;
+        private readonly IConfiguration _configuration;
+        private readonly FoldersService _foldersService;
         private static readonly object _obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             KahlaPushService pushService,
-            OnlineJudger onlineJudger)
+            OnlineJudger onlineJudger,
+            AppsContainer appsContainer,
+            IConfiguration configuration,
+            FoldersService foldersService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pushService;
             _onlineJudger = onlineJudger;
+            _appsContainer = appsContainer;
+            _configuration = configuration;
+            _foldersService = foldersService;
         }
 
         [APIProduces(typeof(MineViewModel))]
@@ -91,6 +103,9 @@ namespace Kahla.Server.Controllers
                 _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
                 _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
             );
+            var token = await _appsContainer.AccessToken();
+            var siteName = _configuration["UserFilesSiteName"];
+            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 

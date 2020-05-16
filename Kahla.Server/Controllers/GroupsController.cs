@@ -1,6 +1,8 @@
-﻿using Aiursoft.DocGenerator.Attributes;
+﻿using Aiursoft.Archon.SDK.Services;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Pylon.Attributes;
 using Aiursoft.WebTools;
 using Kahla.SDK.Models;
@@ -30,6 +32,8 @@ namespace Kahla.Server.Controllers
         private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
         private readonly IConfiguration _configuration;
+        private readonly FoldersService _foldersService;
+        private readonly AppsContainer _appsContainer;
         private static readonly object _obj = new object();
 
         public GroupsController(
@@ -37,13 +41,17 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             KahlaPushService pusher,
             OwnerChecker ownerChecker,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            FoldersService foldersService,
+            AppsContainer appsContainer)
         {
             _userManager = userManager;
             _dbContext = dbContext;
             _pusher = pusher;
             _ownerChecker = ownerChecker;
             _configuration = configuration;
+            _foldersService = foldersService;
+            _appsContainer = appsContainer;
         }
 
         [HttpPost]
@@ -209,6 +217,9 @@ namespace Kahla.Server.Controllers
             await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id));
             _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
+            var token = await _appsContainer.AccessToken();
+            var siteName = _configuration["UserFilesSiteName"];
+            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
             return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
         }
 
