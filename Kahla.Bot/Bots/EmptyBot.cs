@@ -8,7 +8,7 @@ namespace Kahla.Bot.Bots
 {
     public class EmptyBot : BotBase
     {
-        public override async Task OnBotInit()
+        public override async Task OnBotStarted()
         {
 
         }

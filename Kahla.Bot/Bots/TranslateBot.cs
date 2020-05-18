@@ -16,10 +16,9 @@ namespace Kahla.Bot.Bots
             _bingTranslator = bingTranslator;
         }
 
-        public override Task OnBotInit()
+        public override Task OnBotStarting()
         {
-            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
-            Console.WriteLine(profilestring);
+
 
             var key = SettingsService["BingTranslateAPIKey"] as string;
             if (string.IsNullOrWhiteSpace(key))
@@ -29,6 +28,13 @@ namespace Kahla.Bot.Bots
             }
             _bingTranslator.Init(key);
             SettingsService["BingTranslateAPIKey"] = key;
+            return Task.CompletedTask;
+        }
+
+        public override Task OnBotStarted()
+        {
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            Console.WriteLine(profilestring);
             return Task.CompletedTask;
         }
 

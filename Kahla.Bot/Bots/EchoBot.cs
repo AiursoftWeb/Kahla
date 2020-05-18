@@ -1,20 +1,12 @@
 ﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {
     public class EchoBot : BotBase
     {
-        public override Task OnBotInit()
-        {
-            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
-            BotLogger.LogVerbose(profilestring);
-            return Task.CompletedTask;
-        }
-
         public override Task OnFriendRequest(NewFriendRequestEvent arg)
         {
             return CompleteRequest(arg.Request.Id, true);

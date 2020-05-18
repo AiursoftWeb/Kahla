@@ -8,6 +8,7 @@ using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
 using System;
 using System.IO;
 using System.Linq;
@@ -40,7 +41,17 @@ namespace Kahla.SDK.Abstract
 
         public KahlaUser Profile { get; set; }
 
-        public virtual Task OnBotInit() => Task.CompletedTask;
+        public virtual Task OnBotStarting()
+        {
+            BotLogger.LogInfo("Bot Starting...");
+            return Task.CompletedTask;
+        }
+        public virtual Task OnBotStarted()
+        {
+            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
+            BotLogger.LogVerbose(profilestring);
+            return Task.CompletedTask;
+        }
 
         public virtual Task OnFriendRequest(NewFriendRequestEvent arg) => Task.CompletedTask;
 
@@ -60,6 +71,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task Start(bool enableCommander)
         {
+            await OnBotStarting();
             if (enableCommander)
             {
                 var _ = Connect().ConfigureAwait(false);
@@ -114,7 +126,7 @@ namespace Kahla.SDK.Abstract
                 await OnGroupConnected(group);
             }
             ConnectingLock.Release();
-            await MonitorEvents(websocketAddress, OnBotInit);
+            await MonitorEvents(websocketAddress, OnBotStarted);
             return;
         }
 
@@ -300,33 +312,33 @@ namespace Kahla.SDK.Abstract
             return GroupsService.SetGroupMutedAsync(groupName, mute);
         }
 
-        private async Task SendFileWithPattern(int conversationId, Stream file, string extension, string pattern)
+        private async Task SendFileWithPattern(int conversationId, Stream file, string fileName, string pattern)
         {
-            var savedFileName = Guid.NewGuid().ToString("N") + extension;
             var token = await StorageService.InitFileAccessAsync(conversationId, true, false);
-            var fileResponse = await StorageService.Http.PostWithFile(token.UploadAddress, file, savedFileName);
+            var fileResponse = await StorageService.Http.PostWithFile(token.UploadAddress, file, fileName);
             var fileResponseObject = JsonConvert.DeserializeObject<UploadFileViewModel>(fileResponse);
             await SendMessage(string.Format(pattern, fileResponseObject.FilePath), conversationId);
         }
 
-        public Task SendPhoto(int conversationId, Stream file, string fileName, int width = 700, int height = 393)
+        public Task SendPhoto(int conversationId, Stream file, string fileName)
         {
-            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[img]{0}|" + $"{width}|{height}");
+            var image = Image.Load(file, out _);
+            return SendFileWithPattern(conversationId, file, fileName, "[img]{0}|" + $"{image.Width}|{image.Height}");
         }
 
         public Task SendFile(int conversationId, Stream file, string fileName)
         {
-            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[file]{0}|" + $"{fileName}|{file.Length.HumanReadableSize()}");
+            return SendFileWithPattern(conversationId, file, fileName, "[file]{0}|" + $"{fileName}|{file.Length.HumanReadableSize()}");
         }
 
         public Task SendVideo(int conversationId, Stream file, string fileName)
         {
-            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[video]{0}");
+            return SendFileWithPattern(conversationId, file, fileName, "[video]{0}");
         }
 
         public Task SendAudio(int conversationId, Stream file, string fileName)
         {
-            return SendFileWithPattern(conversationId, file, Path.GetExtension(fileName), "[audio]{0}");
+            return SendFileWithPattern(conversationId, file, fileName, "[audio]{0}");
         }
 
         public Task SendGroupCard(int conversationId, int groupConversationId)
