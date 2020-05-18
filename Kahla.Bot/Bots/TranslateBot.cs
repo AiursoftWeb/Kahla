@@ -2,7 +2,6 @@
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
 
@@ -18,8 +17,6 @@ namespace Kahla.Bot.Bots
 
         public override Task OnBotStarting()
         {
-
-
             var key = SettingsService["BingTranslateAPIKey"] as string;
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -28,13 +25,6 @@ namespace Kahla.Bot.Bots
             }
             _bingTranslator.Init(key);
             SettingsService["BingTranslateAPIKey"] = key;
-            return Task.CompletedTask;
-        }
-
-        public override Task OnBotStarted()
-        {
-            var profilestring = JsonConvert.SerializeObject(Profile, Formatting.Indented);
-            Console.WriteLine(profilestring);
             return Task.CompletedTask;
         }
 
