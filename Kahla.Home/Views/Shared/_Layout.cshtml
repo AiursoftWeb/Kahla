@@ -3,7 +3,7 @@
 <head>
     <vc:aiur-header></vc:aiur-header>
     <title>@ViewBag.Title | @Values.ProjectName</title>
-    <vc:aiur-core-css></vc:aiur-core-css>
+    <link href="@ServiceLocation.UI/dist/AiurCore.min.css" rel="stylesheet">
     <link href="@ServiceLocation.UI/dist/AiurProduct.min.css" rel="stylesheet">
 </head>
 <body>
@@ -15,7 +15,6 @@
             @Localizer["- All rights reserved."]
         </p>
     </footer>
-    <vc:aiur-core-js></vc:aiur-core-js>
     <script src="@ServiceLocation.UI/dist/AiurProduct.min.js"></script>
     @RenderSection("scripts", required: false)
 </body>
