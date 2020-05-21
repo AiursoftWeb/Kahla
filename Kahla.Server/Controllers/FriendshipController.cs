@@ -82,7 +82,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteFriend([Required]string id)
+        public async Task<IActionResult> DeleteFriend([Required] string id)
         {
             var user = await GetKahlaUser();
             await _dbContext.Entry(user)
@@ -111,7 +111,7 @@ namespace Kahla.Server.Controllers
 
         [HttpPost]
         [APIProduces(typeof(AiurValue<int>))]
-        public async Task<IActionResult> CreateRequest([Required]string id)
+        public async Task<IActionResult> CreateRequest([Required] string id)
         {
             var user = await GetKahlaUser();
             await _dbContext.Entry(user)
@@ -164,6 +164,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
+        [APIProduces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CompleteRequest(CompleteRequestAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -214,7 +215,11 @@ namespace Kahla.Server.Controllers
                     model.Accept,
                     newConversation.Build(request.TargetId, _onlineJudger) as PrivateConversation)
             );
-            return this.Protocol(ErrorType.Success, "You have successfully completed this request.");
+            return Json(new AiurValue<int>(newConversation.Id)
+            {
+                Code = ErrorType.Success,
+                Message = "You have successfully completed this request."
+            });
         }
 
         [APIProduces(typeof(AiurCollection<Request>))]
@@ -356,7 +361,7 @@ namespace Kahla.Server.Controllers
         }
 
         [APIProduces(typeof(UserDetailViewModel))]
-        public async Task<IActionResult> UserDetail([Required]string id)
+        public async Task<IActionResult> UserDetail([Required] string id)
         {
             var user = await GetKahlaUser();
             var target = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);

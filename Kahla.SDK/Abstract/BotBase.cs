@@ -298,11 +298,12 @@ namespace Kahla.SDK.Abstract
             BotLogger.LogVerbose("Websocket connection disconnected.");
         }
 
-        public Task CompleteRequest(int requestId, bool accept)
+        public async Task<int> CompleteRequest(int requestId, bool accept)
         {
             var text = accept ? "accepted" : "rejected";
             BotLogger.LogWarning($"Friend request with id '{requestId}' was {text}.");
-            return FriendshipService.CompleteRequestAsync(requestId, accept);
+            var createdConversationId = await FriendshipService.CompleteRequestAsync(requestId, accept);
+            return createdConversationId.Value;
         }
 
         public Task MuteGroup(string groupName, bool mute)
