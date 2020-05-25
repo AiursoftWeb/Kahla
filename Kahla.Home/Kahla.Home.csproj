@@ -3,11 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Description>Kahla - Connect everyone's thoughts - As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.</Description>
-    <ApplicationInsightsResourceId>/subscriptions/fede90ca-9005-45b0-9d74-c6d6ab4dc168/resourcegroups/Kahla/providers/microsoft.insights/components/KahlaHome</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Pylon" Version="3.1.12" />
+    <PackageReference Include="Aiursoft.SDK" Version="3.1.13" />
   </ItemGroup>
 
   <ItemGroup>

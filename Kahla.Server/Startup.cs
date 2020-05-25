@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Pylon;
 using Aiursoft.SDK;
+using Aiursoft.Stargate.SDK;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -41,6 +42,7 @@ namespace Kahla.Server
 
             services.AddAiurAPIMvc();
             services.AddAiurDependenciesWithIdentity<KahlaUser>();
+            services.AddStargateServer();
             services.AddScoped<WebPushClient>();
         }
 
