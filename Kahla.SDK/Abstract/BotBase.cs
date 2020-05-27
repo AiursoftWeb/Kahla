@@ -35,7 +35,7 @@ namespace Kahla.SDK.Abstract
         public EventSyncer EventSyncer;
         public StorageService StorageService;
 
-
+#warning Might be null!
         public KahlaUser Profile { get; set; }
 
         public virtual Task OnBotStarting()

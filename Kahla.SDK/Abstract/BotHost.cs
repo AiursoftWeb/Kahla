@@ -15,10 +15,11 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotHost<T> : IScopedDependency where T : BotBase
+    public class BotHost<T> : IScopedDependency, IBotHost where T : BotBase
     {
-        public T _bot => _botFactory.ProduceBot();
-        public readonly SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
+        public BotBase BuildBot => _botFactory.ProduceBot();
+        public SemaphoreSlim ConnectingLock { get; set; } = new SemaphoreSlim(1);
+
         private readonly BotCommander<T> _botCommander;
         private readonly BotLogger _botLogger;
         private readonly SettingsService _settingsService;
@@ -43,7 +44,7 @@ namespace Kahla.SDK.Abstract
             EventSyncer eventSyncer,
             BotFactory<T> botFactory)
         {
-            _botCommander = botCommander;
+            _botCommander = botCommander.Init(this);
             _botLogger = botLogger;
             _settingsService = settingsService;
             _kahlaLocation = kahlaLocation;
@@ -57,7 +58,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task Run(bool enableCommander)
         {
-            await _bot.OnBotStarting();
+            await BuildBot.OnBotStarting();
             if (enableCommander)
             {
                 var _ = Connect().ConfigureAwait(false);
@@ -100,7 +101,7 @@ namespace Kahla.SDK.Abstract
                 .Where(t => !t.Completed);
             foreach (var request in requests)
             {
-                await _bot.OnFriendRequest(new NewFriendRequestEvent
+                await BuildBot.OnFriendRequest(new NewFriendRequestEvent
                 {
                     Request = request
                 });
@@ -109,10 +110,10 @@ namespace Kahla.SDK.Abstract
             var friends = (await _friendshipService.MineAsync());
             foreach (var group in friends.Groups)
             {
-                await _bot.OnGroupConnected(group);
+                await BuildBot.OnGroupConnected(group);
             }
             ConnectingLock.Release();
-            await MonitorEvents(websocketAddress, _bot.OnBotStarted);
+            await MonitorEvents(websocketAddress, BuildBot.OnBotStarted);
             return;
         }
 
@@ -231,7 +232,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.LogInfo($"Getting account profile...");
                 var profile = await _authService.MeAsync();
                 _botLogger.AppendResult(true, 6);
-                _bot.Profile = profile.Value;
+                BuildBot.Profile = profile.Value;
             }
             catch (AiurUnexceptedResponse e)
             {
@@ -272,7 +273,7 @@ namespace Kahla.SDK.Abstract
                     var _ = Connect().ConfigureAwait(false);
                 }
             });
-            await _eventSyncer.Init(client, _bot);
+            await _eventSyncer.Init(client, BuildBot);
             await client.Start();
             _botLogger.LogInfo($"Listening to your account channel.");
             _botLogger.LogVerbose(websocketAddress + "\n");

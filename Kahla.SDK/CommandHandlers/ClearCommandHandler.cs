@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("clear")]
-    public class ClearCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class ClearCommandHandler : CommandHandlerBase
     {
-        public ClearCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        public ClearCommandHandler(IBotCommander botCommander) : base(botCommander)
         {
         }
 

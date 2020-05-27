@@ -13,7 +13,7 @@ namespace Kahla.SDK.CommandHandlers
         public async override Task Execute(string command)
         {
             await Task.Delay(0);
-            foreach (var request in _botCommander._botHost._bot.EventSyncer.Requests)
+            foreach (var request in _botCommander.BotHost._bot.EventSyncer.Requests)
             {
                 _botCommander._botLogger.LogInfo($"Name:\t{request.Creator.NickName}");
                 _botCommander._botLogger.LogInfo($"Time:\t{request.CreateTime}");

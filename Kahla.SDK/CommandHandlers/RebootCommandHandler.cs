@@ -15,7 +15,7 @@ namespace Kahla.SDK.CommandHandlers
         {
             await Task.Delay(0);
             Console.Clear();
-            var _ = _botCommander._botHost.Connect().ConfigureAwait(false);
+            var _ = _botCommander.BotHost.Connect().ConfigureAwait(false);
         }
     }
 }

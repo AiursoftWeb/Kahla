@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("conv")]
-    public class ConvCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class ConvCommandHandler : CommandHandlerBase
     {
-        public ConvCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        public ConvCommandHandler(IBotCommander botCommander) : base(botCommander)
         {
         }
 
@@ -16,7 +16,7 @@ namespace Kahla.SDK.CommandHandlers
             await Task.Delay(0);
             if (int.TryParse(command.Substring(4).Trim(), out int convId))
             {
-                var conversation = _botCommander._botHost._bot.EventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == convId);
+                var conversation = _botCommander.BotHost._bot.EventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == convId);
                 if (conversation == null)
                 {
                     _botCommander._botLogger.LogDanger($"Conversation with Id '{convId}' was not found!");
@@ -34,7 +34,7 @@ namespace Kahla.SDK.CommandHandlers
                 }
                 return;
             }
-            foreach (var conversation in _botCommander._botHost._bot.EventSyncer.Contacts)
+            foreach (var conversation in _botCommander.BotHost._bot.EventSyncer.Contacts)
             {
                 var online = conversation.Online == true ? "online" :
                              conversation.Online == false ? "offline" : string.Empty;

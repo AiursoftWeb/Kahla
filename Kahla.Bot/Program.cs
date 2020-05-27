@@ -12,7 +12,7 @@ namespace Kahla.Bot
         {
             await CreateBotBuilder()
                 .Build<EchoBot>()
-                .Run(args.FirstOrDefault()== "as-service");
+                .Run(args.FirstOrDefault() != "as-service");
         }
 
         public static BotBuilder CreateBotBuilder()

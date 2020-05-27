@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("say")]
-    public class SayCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class SayCommandHandler : CommandHandlerBase
     {
-        public SayCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        public SayCommandHandler(IBotCommander botCommander) : base(botCommander)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Kahla.SDK.CommandHandlers
                 _botCommander._botLogger.LogDanger($"Can't send empty content.");
                 return;
             }
-            await _botCommander._botHost._bot.SendMessage(toSay, target.ConversationId);
+            await _botCommander.BotHost._bot.SendMessage(toSay, target.ConversationId);
             _botCommander._botLogger.LogSuccess($"Sent.");
         }
     }

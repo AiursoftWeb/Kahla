@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("help")]
-    public class HelpCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class HelpCommandHandler : CommandHandlerBase
     {
-        public HelpCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        public HelpCommandHandler(IBotCommander botCommander) : base(botCommander)
         {
         }
 

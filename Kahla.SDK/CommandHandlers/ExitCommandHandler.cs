@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("exit")]
-    public class ExitCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class ExitCommandHandler : CommandHandlerBase
     {
-        public ExitCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        public ExitCommandHandler(IBotCommander botCommander) : base(botCommander)
         {
         }
 
         public async override Task Execute(string command)
         {
-            await _botCommander._botHost.LogOff();
+            await _botCommander.BotHost.LogOff();
             Environment.Exit(0);
         }
     }
