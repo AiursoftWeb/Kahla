@@ -17,26 +17,14 @@ namespace Kahla.SDK.Abstract
             return bots;
         }
 
-        public static IServiceProvider AddBots(this IServiceCollection services)
+        public static IServiceCollection AddBots(this IServiceCollection services)
         {
             // Register the bots.
             foreach (var botType in ScanBots())
             {
-                services.AddSingleton(botType);
-                services.AddSingleton(typeof(BotBase), botType);
+                services.AddScoped(typeof(BotBase), botType);
             }
-
-            // Get a service provider to get bots and factory.
-            var serviceProvider = services.BuildServiceProvider();
-            foreach (var bot in serviceProvider.GetServices<BotBase>())
-            {
-                serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
-            }
-            foreach (var bot in ScanBots().Select(t => serviceProvider.GetService(t) as BotBase))
-            {
-                serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
-            }
-            return serviceProvider;
+            return services;
         }
     }
 }
