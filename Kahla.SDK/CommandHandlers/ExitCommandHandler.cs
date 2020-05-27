@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("exit")]
-    public class ExitCommandHandler : CommandHandlerBase
+    public class ExitCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
     {
-        public ExitCommandHandler(BotCommander botCommander) : base(botCommander)
+        public ExitCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
         }
 

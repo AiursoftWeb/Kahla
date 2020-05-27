@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("logout")]
-    public class LogoutCommandHandler : CommandHandlerBase
+    public class LogoutCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
     {
-        public LogoutCommandHandler(BotCommander botCommander) : base(botCommander)
+        public LogoutCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
 
         }

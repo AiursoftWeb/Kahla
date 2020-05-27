@@ -33,7 +33,6 @@ namespace Kahla.SDK.Abstract
         public VersionService VersionService;
         public SettingsService SettingsService;
         public EventSyncer EventSyncer;
-        public BotCommander BotCommander;
         public StorageService StorageService;
 
 

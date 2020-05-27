@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("version")]
-    public class VersionCommandHandler : CommandHandlerBase
+    public class VersionCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
     {
-        public VersionCommandHandler(
-            BotCommander botCommander) : base(botCommander)
+        public VersionCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
 
         }

@@ -2,11 +2,11 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public abstract class CommandHandlerBase
+    public abstract class CommandHandlerBase<T> where T : BotBase
     {
-        protected readonly BotCommander _botCommander;
+        protected readonly BotCommander<T> _botCommander;
 
-        public CommandHandlerBase(BotCommander botCommander)
+        public CommandHandlerBase(BotCommander<T> botCommander)
         {
             _botCommander = botCommander;
         }

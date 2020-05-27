@@ -15,11 +15,11 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotHost : IScopedDependency
+    public class BotHost<T> : IScopedDependency where T : BotBase
     {
-        public readonly BotBase _bot;
+        public T _bot => _botFactory.ProduceBot();
         public readonly SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
-        private readonly BotCommander _botCommander;
+        private readonly BotCommander<T> _botCommander;
         private readonly BotLogger _botLogger;
         private readonly SettingsService _settingsService;
         private readonly KahlaLocation _kahlaLocation;
@@ -28,11 +28,11 @@ namespace Kahla.SDK.Abstract
         private readonly VersionService _versionService;
         private readonly AuthService _authService;
         private readonly EventSyncer _eventSyncer;
+        private readonly BotFactory<T> _botFactory;
         private ManualResetEvent _exitEvent;
 
         public BotHost(
-            BotBase bot,
-            BotCommander botCommander,
+            BotCommander<T> botCommander,
             BotLogger botLogger,
             SettingsService settingsService,
             KahlaLocation kahlaLocation,
@@ -40,9 +40,9 @@ namespace Kahla.SDK.Abstract
             HomeService homeService,
             VersionService versionService,
             AuthService authService,
-            EventSyncer eventSyncer)
+            EventSyncer eventSyncer,
+            BotFactory<T> botFactory)
         {
-            _bot = bot;
             _botCommander = botCommander;
             _botLogger = botLogger;
             _settingsService = settingsService;
@@ -52,6 +52,7 @@ namespace Kahla.SDK.Abstract
             _versionService = versionService;
             _authService = authService;
             _eventSyncer = eventSyncer;
+            _botFactory = botFactory;
         }
 
         public async Task Run(bool enableCommander)

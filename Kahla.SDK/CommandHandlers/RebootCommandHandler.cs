@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("reboot")]
-    public class RebootCommandHandler : CommandHandlerBase
+    public class RebootCommandHandler<T> : CommandHandlerBase<T> where T: BotBase
     {
-        public RebootCommandHandler(BotCommander botCommander) : base(botCommander)
+        public RebootCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
         }
 

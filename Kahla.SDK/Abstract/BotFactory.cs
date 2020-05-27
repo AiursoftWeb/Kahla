@@ -1,53 +1,51 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Data;
 using Kahla.SDK.Services;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotFactory : ITransientDependency
+    public class BotFactory<T> : IScopedDependency where T : BotBase
     {
-        private readonly ConversationService _conversationService;
-        private readonly GroupsService _groupsService;
-        private readonly FriendshipService _friendshipService;
-        private readonly AuthService _authService;
-        private readonly HomeService _homeService;
-        private readonly KahlaLocation _kahlaLocation;
-        private readonly BotLogger _botLogger;
-        private readonly VersionService _versionService;
-        private readonly SettingsService _settingsService;
-        private readonly BotCommander _botCommander;
-        private readonly EventSyncer _eventSyncer;
-        private readonly StorageService _storageService;
-        private readonly AES _aes;
+        private readonly IServiceScopeFactory _scopeFactory;
+
 
         public BotFactory(
-            ConversationService conversationService,
-            GroupsService groupsService,
-            FriendshipService friendshipService,
-            AuthService authService,
-            HomeService homeService,
-            KahlaLocation kahlaLocation,
-            BotLogger botLogger,
-            VersionService versionService,
-            SettingsService settingsService,
-            BotCommander botCommander,
-            EventSyncer eventSyncer,
-            StorageService storageService,
-            AES aes)
+            IServiceScopeFactory scopeFactory)
         {
-            _conversationService = conversationService;
-            _groupsService = groupsService;
-            _friendshipService = friendshipService;
-            _authService = authService;
-            _homeService = homeService;
-            _kahlaLocation = kahlaLocation;
-            _botLogger = botLogger;
-            _versionService = versionService;
-            _settingsService = settingsService;
-            _botCommander = botCommander;
-            _eventSyncer = eventSyncer;
-            _storageService = storageService;
-            _aes = aes;
+            _scopeFactory = scopeFactory;
+        }
+
+        public T ProduceBot()
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var conversationService = scope.ServiceProvider.GetRequiredService<ConversationService>();
+            var groupsService = scope.ServiceProvider.GetRequiredService<GroupsService>();
+            var friendshipService = scope.ServiceProvider.GetRequiredService<FriendshipService>();
+            var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+            var homeService = scope.ServiceProvider.GetRequiredService<HomeService>();
+            var kahlaLocation = scope.ServiceProvider.GetRequiredService<KahlaLocation>();
+            var botLogger = scope.ServiceProvider.GetRequiredService<BotLogger>();
+            var versionService = scope.ServiceProvider.GetRequiredService<VersionService>();
+            var settingsService = scope.ServiceProvider.GetRequiredService<SettingsService>();
+            var eventSyncer = scope.ServiceProvider.GetRequiredService<EventSyncer>();
+            var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
+            var aes = scope.ServiceProvider.GetRequiredService<AES>();
+            var bot = scope.ServiceProvider.GetRequiredService<T>();
+            bot.ConversationService = conversationService;
+            bot.GroupsService = groupsService;
+            bot.FriendshipService = friendshipService;
+            bot.AuthService = authService;
+            bot.HomeService = homeService;
+            bot.KahlaLocation = kahlaLocation;
+            bot.BotLogger = botLogger;
+            bot.VersionService = versionService;
+            bot.SettingsService = settingsService;
+            bot.EventSyncer = eventSyncer;
+            bot.StorageService = storageService;
+            bot.AES = aes;
+            return bot;
         }
     }
 }

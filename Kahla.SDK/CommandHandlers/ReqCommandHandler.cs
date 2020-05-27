@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("req")]
-    public class ReqCommandHandler : CommandHandlerBase
+    public class ReqCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
     {
-        public ReqCommandHandler(BotCommander botCommander) : base(botCommander)
+        public ReqCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
         }
 

@@ -11,7 +11,7 @@ namespace Kahla.Bot
         public async static Task Main(string[] args)
         {
             await CreateBotBuilder()
-                .Build()
+                .Build<EchoBot>()
                 .Run(args.FirstOrDefault()== "as-service");
         }
 

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Kahla.SDK.CommandHandlers
 {
     [CommandHandler("conv")]
-    public class ConvCommandHandler : CommandHandlerBase
+    public class ConvCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
     {
-        public ConvCommandHandler(BotCommander botCommander) : base(botCommander)
+        public ConvCommandHandler(BotCommander<T> botCommander) : base(botCommander)
         {
         }
 

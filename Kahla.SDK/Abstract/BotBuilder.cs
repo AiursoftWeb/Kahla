@@ -23,9 +23,9 @@ namespace Kahla.SDK.Abstract
             return this;
         }
 
-        public BotHost Build()
+        public BotHost<T> Build<T>() where T : BotBase
         {
-            var botHost = _serviceProvider.GetRequiredService<BotHost>();
+            var botHost = _serviceProvider.GetRequiredService<BotHost<T>>();
             return botHost;
         }
     }

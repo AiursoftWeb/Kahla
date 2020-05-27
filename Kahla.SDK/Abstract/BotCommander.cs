@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander : ITransientDependency
+    public class BotCommander<T> : ITransientDependency where T : BotBase
     {
-        public BotHost _botHost;
+        public BotHost<T> _botHost;
         public readonly ConversationService _conversationService;
         public readonly BotLogger _botLogger;
         public readonly KahlaLocation _kahlaLocation;
@@ -28,7 +28,7 @@ namespace Kahla.SDK.Abstract
             _aes = aes;
         }
 
-        public BotCommander Init(BotHost botBase)
+        public BotCommander<T> Init(BotHost<T> botBase)
         {
             _botHost = botBase;
             return this;
@@ -51,7 +51,7 @@ namespace Kahla.SDK.Abstract
         {
             var scannedHandler = new ClassScanner().AllAccessiableClass(false, false)
                     .Where(t => t.CustomAttributes.Any(a => a.AttributeType == typeof(CommandHandlerAttribute)))
-                    .Where(t => t.IsSubclassOf(typeof(CommandHandlerBase)))
+                    .Where(t => t.IsSubclassOf(typeof(CommandHandlerBase<T>)))
                     .Where(t =>
                         t.GetCustomAttributes(typeof(CommandHandlerAttribute), false)
                         .Any(a => command.ToLower().StartsWith(((CommandHandlerAttribute)a).Command.ToLower())));
@@ -78,15 +78,13 @@ namespace Kahla.SDK.Abstract
                     continue;
                 }
 
-                var handler = GetHandler(command);
+                var handler = GetHandler(command).MakeGenericType(typeof(T));
                 if (handler == null)
                 {
                     _botLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
                     continue;
                 }
-                var handlerObject = Assembly.GetAssembly(handler)
-                    .CreateInstance(handler.FullName, true, BindingFlags.Default, null, new object[1] { this }, null, null)
-                    as CommandHandlerBase;
+                var handlerObject = Activator.CreateInstance(handler) as CommandHandlerBase<T>;
                 await handlerObject.Execute(command);
             }
         }
