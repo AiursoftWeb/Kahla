@@ -10,7 +10,7 @@ namespace Kahla.SDK.Abstract
 {
     public class BotCommander : ITransientDependency
     {
-        public BotBase _botBase;
+        public BotHost _botHost;
         public readonly ConversationService _conversationService;
         public readonly BotLogger _botLogger;
         public readonly KahlaLocation _kahlaLocation;
@@ -28,15 +28,15 @@ namespace Kahla.SDK.Abstract
             _aes = aes;
         }
 
-        public BotCommander Init(BotBase botBase)
+        public BotCommander Init(BotHost botBase)
         {
-            _botBase = botBase;
+            _botHost = botBase;
             return this;
         }
 
         public async Task BlockIfConnecting()
         {
-            while (_botBase.ConnectingLock.CurrentCount == 0)
+            while (_botHost.ConnectingLock.CurrentCount == 0)
             {
                 await Task.Delay(1000);
             }
@@ -60,7 +60,7 @@ namespace Kahla.SDK.Abstract
 
         public void RenderHeader()
         {
-            _botLogger.WriteGrayNewLine($"K:\\Bots\\{_botBase.GetType().Name}\\{_botBase.Profile?.NickName}>");
+            _botLogger.WriteGrayNewLine($"K:\\Bots\\{_botHost.GetType().Name}\\{_botHost._bot.Profile?.NickName}>");
         }
 
         public async Task Command()

@@ -14,7 +14,7 @@ namespace Kahla.SDK.CommandHandlers
 
         public async override Task Execute(string command)
         {
-            await _botCommander._botBase.TestKahlaLive(_botCommander._kahlaLocation.ToString());
+            await _botCommander._botHost.TestKahlaLive(_botCommander._kahlaLocation.ToString());
         }
     }
 }

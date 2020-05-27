@@ -49,23 +49,5 @@ namespace Kahla.SDK.Abstract
             _storageService = storageService;
             _aes = aes;
         }
-
-        public BotBase BuildBotProperties(BotBase bareBot)
-        {
-            bareBot.BotLogger = _botLogger;
-            bareBot.AES = _aes;
-            bareBot.ConversationService = _conversationService;
-            bareBot.FriendshipService = _friendshipService;
-            bareBot.HomeService = _homeService;
-            bareBot.KahlaLocation = _kahlaLocation;
-            bareBot.AuthService = _authService;
-            bareBot.VersionService = _versionService;
-            bareBot.SettingsService = _settingsService;
-            bareBot.GroupsService = _groupsService;
-            bareBot.EventSyncer = _eventSyncer;
-            bareBot.StorageService = _storageService;
-            bareBot.BotCommander = _botCommander.Init(bareBot);
-            return bareBot;
-        }
     }
 }

@@ -22,7 +22,6 @@ namespace Kahla.SDK.Abstract
             // Register the bots.
             foreach (var botType in ScanBots())
             {
-                services.AddScoped(botType);
                 services.AddScoped(typeof(BotBase), botType);
             }
             return services;

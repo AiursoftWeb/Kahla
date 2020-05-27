@@ -15,9 +15,10 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotApplication<T> : ISingletonDependency where T : BotBase
+    public class BotHost : IScopedDependency
     {
-        private readonly T _bot;
+        public readonly BotBase _bot;
+        public readonly SemaphoreSlim ConnectingLock = new SemaphoreSlim(1);
         private readonly BotCommander _botCommander;
         private readonly BotLogger _botLogger;
         private readonly SettingsService _settingsService;
@@ -27,11 +28,10 @@ namespace Kahla.SDK.Abstract
         private readonly VersionService _versionService;
         private readonly AuthService _authService;
         private readonly EventSyncer _eventSyncer;
-        private readonly SemaphoreSlim _connectingLock = new SemaphoreSlim(1);
         private ManualResetEvent _exitEvent;
 
-        public BotApplication(
-            T bot,
+        public BotHost(
+            BotBase bot,
             BotCommander botCommander,
             BotLogger botLogger,
             SettingsService settingsService,
@@ -54,7 +54,7 @@ namespace Kahla.SDK.Abstract
             _eventSyncer = eventSyncer;
         }
 
-        public async Task Start(bool enableCommander)
+        public async Task Run(bool enableCommander)
         {
             await _bot.OnBotStarting();
             if (enableCommander)
@@ -70,7 +70,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task Connect()
         {
-            await _connectingLock.WaitAsync();
+            await ConnectingLock.WaitAsync();
             _botLogger.LogWarning("Establishing the connection to Kahla...");
             _exitEvent?.Set();
             _exitEvent = null;
@@ -110,7 +110,7 @@ namespace Kahla.SDK.Abstract
             {
                 await _bot.OnGroupConnected(group);
             }
-            _connectingLock.Release();
+            ConnectingLock.Release();
             await MonitorEvents(websocketAddress, _bot.OnBotStarted);
             return;
         }
@@ -281,6 +281,13 @@ namespace Kahla.SDK.Abstract
             okToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");
+        }
+
+        public async Task LogOff()
+        {
+            _exitEvent?.Set();
+            _exitEvent = null;
+            await _authService.LogoffAsync();
         }
     }
 }

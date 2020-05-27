@@ -151,12 +151,5 @@ namespace Kahla.SDK.Abstract
         {
             return $" @{target.NickName.Replace(" ", "")}";
         }
-
-        public async Task LogOff()
-        {
-            ExitEvent?.Set();
-            ExitEvent = null;
-            await AuthService.LogoffAsync();
-        }
     }
 }

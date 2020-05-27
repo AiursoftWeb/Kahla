@@ -33,7 +33,7 @@ namespace Kahla.SDK.CommandHandlers
                 _botCommander._botLogger.LogDanger($"Can't send empty content.");
                 return;
             }
-            await _botCommander._botBase.SendMessage(toSay, target.ConversationId);
+            await _botCommander._botHost._bot.SendMessage(toSay, target.ConversationId);
             _botCommander._botLogger.LogSuccess($"Sent.");
         }
     }

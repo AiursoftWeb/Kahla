@@ -13,7 +13,7 @@ namespace Kahla.SDK.CommandHandlers
 
         public async override Task Execute(string command)
         {
-            await _botCommander._botBase.LogOff();
+            await _botCommander._botHost.LogOff();
             Environment.Exit(0);
         }
     }
