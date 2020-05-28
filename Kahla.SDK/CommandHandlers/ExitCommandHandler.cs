@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class ExitCommandHandler : ICommandHandler
+    public class ExitCommandHandler<T> : ICommandHandler where T : BotBase
     {
         public  bool CanHandle(string command)
         {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class ConvCommandHandler : ICommandHandler
+    public class ConvCommandHandler<T> : ICommandHandler where T : BotBase
     {
         private readonly AES _aes;
         private readonly EventSyncer _eventSyncer;

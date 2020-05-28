@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Aiursoft.Scanner.Services;
 using Kahla.SDK.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,22 +12,25 @@ namespace Kahla.SDK.Abstract
 {
     public class BotCommander<T> : IScopedDependency where T : BotBase
     {
-        private readonly IEnumerable<ICommandHandler> _handlers;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly BotLogger _botLogger;
 
         public BotCommander(
-            BotLogger botLogger,
-            IEnumerable<ICommandHandler> handlers)
+            IServiceScopeFactory serviceProvider,
+            BotLogger botLogger
+            )
         {
+            _serviceScopeFactory = serviceProvider;
             _botLogger = botLogger;
-            _handlers = handlers;
         }
 
         private ICommandHandler GetHandler(string command)
         {
-            foreach(var handler in _handlers)
+            using var scope = _serviceScopeFactory.CreateScope();
+            var handlers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICommandHandler>>();
+            foreach (var handler in handlers)
             {
-                if(handler.CanHandle(command.ToLower().Trim()))
+                if (handler.CanHandle(command.ToLower().Trim()))
                 {
                     return handler;
                 }

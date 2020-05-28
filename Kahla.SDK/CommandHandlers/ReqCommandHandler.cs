@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class ReqCommandHandler: ICommandHandler
+    public class ReqCommandHandler<T> : ICommandHandler where T : BotBase
     {
         private readonly BotLogger _botLogger;
         private readonly EventSyncer _eventSyncer;

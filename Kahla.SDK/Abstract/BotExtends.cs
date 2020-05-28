@@ -36,7 +36,7 @@ namespace Kahla.SDK.Abstract
             }
             foreach(var handler in ScanHandler())
             {
-                services.AddScoped(typeof(ICommandHandler), handler);
+                services.AddScoped(typeof(ICommandHandler), handler.MakeGenericType(typeof(BotBase)));
             }
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class SayCommandHandler : ICommandHandler
+    public class SayCommandHandler<T> : ICommandHandler where T : BotBase
     {
         private readonly ConversationService _conversationService;
         private readonly BotLogger _botLogger;

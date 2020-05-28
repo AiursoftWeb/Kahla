@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class HelpCommandHandler : ICommandHandler
+    public class HelpCommandHandler<T> : ICommandHandler where T : BotBase
     {
         private readonly BotLogger _botLogger;
 
