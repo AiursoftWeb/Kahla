@@ -12,15 +12,14 @@ namespace Kahla.SDK.CommandHandlers
         {
             _botLogger = botLogger;
         }
-        public void InjectHost(BotHost<T> instance){ }
-        public  bool CanHandle(string command)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
         {
             return command.StartsWith("help");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
-            await Task.Delay(0);
             _botLogger.LogInfo($"Kahla bot commands:");
 
             _botLogger.LogInfo($"\r\nConversation");
@@ -44,6 +43,7 @@ namespace Kahla.SDK.CommandHandlers
             _botLogger.LogInfo($"\tversion\t\tCheck and show version info.");
             _botLogger.LogInfo($"\texit\t\tQuit bot.");
             _botLogger.LogInfo($"");
+            return true;
         }
     }
 }

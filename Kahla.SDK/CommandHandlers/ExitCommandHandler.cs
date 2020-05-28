@@ -6,15 +6,15 @@ namespace Kahla.SDK.CommandHandlers
 {
     public class ExitCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public void InjectHost(BotHost<T> instance){ }
-        public  bool CanHandle(string command)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
         {
             return command.StartsWith("exit");
         }
-        public  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             Environment.Exit(0);
-            return Task.CompletedTask;
+            return false;
         }
     }
 }

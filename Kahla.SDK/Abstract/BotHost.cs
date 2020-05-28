@@ -4,6 +4,7 @@ using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -30,6 +31,7 @@ namespace Kahla.SDK.Abstract
         private readonly ProfileContainer<T> _profileContainer;
         private readonly BotFactory<T> _botFactory;
         private ManualResetEvent _exitEvent;
+        private bool _enableCommander;
 
         public BotHost(
             BotCommander<T> botCommander,
@@ -60,16 +62,8 @@ namespace Kahla.SDK.Abstract
         public async Task Run(bool enableCommander = true)
         {
             await BuildBot.OnBotStarting();
-            if (enableCommander)
-            {
-                var _ = Connect().ConfigureAwait(false);
-#warning May start without connected!
-                await _botCommander.Command();
-            }
-            else
-            {
-                await Connect();
-            }
+            _enableCommander = enableCommander;
+            await Connect();
         }
 
         public async Task Connect()
@@ -115,7 +109,18 @@ namespace Kahla.SDK.Abstract
                 await BuildBot.OnGroupConnected(group);
             }
             ConnectingLock.Release();
-            await MonitorEvents(websocketAddress, BuildBot.OnBotStarted);
+            var monitorTasks = new List<Task>
+            {
+                MonitorEvents(websocketAddress, async () =>
+                {
+                    await BuildBot.OnBotStarted();
+                })
+            };
+            if (_enableCommander)
+            {
+                monitorTasks.Add(_botCommander.Command());
+            }
+            await Task.WhenAll(monitorTasks);
             return;
         }
 
@@ -280,8 +285,8 @@ namespace Kahla.SDK.Abstract
             _botLogger.LogInfo($"Listening to your account channel.");
             _botLogger.LogVerbose(websocketAddress + "\n");
             _botLogger.AppendResult(true, 9);
-            await onConnected();
-            _exitEvent.WaitOne();
+            var _ = onConnected();
+            _exitEvent?.WaitOne();
             okToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");

@@ -18,11 +18,12 @@ namespace Kahla.SDK.CommandHandlers
             return command.StartsWith("reboot");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             await Task.Delay(0);
             Console.Clear();
             var _ = _botHost.Connect().ConfigureAwait(false);
+            return true;
         }
     }
 }

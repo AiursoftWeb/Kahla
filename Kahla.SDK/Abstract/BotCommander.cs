@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander<T>  where T : BotBase
+    public class BotCommander<T> where T : BotBase
     {
         private readonly CommandFactory<T> _commandFactory;
         private readonly BotLogger _botLogger;
@@ -26,9 +26,8 @@ namespace Kahla.SDK.Abstract
 
         public async Task Command()
         {
-            await Task.Delay(1000);
-            Console.Clear();
-            while (true)
+            var commanding = true;
+            while (commanding)
             {
                 _botLogger.WriteGrayNewLine($"K:\\Bots\\>");
                 var command = Console.ReadLine();
@@ -43,10 +42,8 @@ namespace Kahla.SDK.Abstract
                     _botLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
                     continue;
                 }
-                await handler.Execute(command);
+                commanding = await handler.Execute(command);
             }
         }
-
-
     }
 }

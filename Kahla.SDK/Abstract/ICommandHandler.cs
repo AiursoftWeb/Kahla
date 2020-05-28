@@ -6,6 +6,6 @@ namespace Kahla.SDK.Abstract
     {
         void InjectHost(BotHost<T> instance);
         bool CanHandle(string command);
-        Task Execute(string command);
+        Task<bool> Execute(string command);
     }
 }

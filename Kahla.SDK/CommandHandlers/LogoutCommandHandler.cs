@@ -20,15 +20,16 @@ namespace Kahla.SDK.CommandHandlers
             _botHost = instance;
         }
 
-        public  bool CanHandle(string command)
+        public bool CanHandle(string command)
         {
             return command.StartsWith("logout");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             await _botHost.LogOff();
             _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
+            return true;
         }
     }
 }

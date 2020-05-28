@@ -19,12 +19,12 @@ namespace Kahla.SDK.CommandHandlers
         }
 
         public void InjectHost(BotHost<T> instance) { }
-        public  bool CanHandle(string command)
+        public bool CanHandle(string command)
         {
             return command.StartsWith("req");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             await Task.Delay(0);
             foreach (var request in _eventSyncer.Requests)
@@ -39,9 +39,8 @@ namespace Kahla.SDK.CommandHandlers
                 {
                     _botLogger.LogWarning($"\tPending.");
                 }
-
-                _botLogger.LogInfo($"\n");
             }
+            return true;
         }
     }
 }

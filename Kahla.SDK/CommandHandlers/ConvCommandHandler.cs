@@ -15,20 +15,20 @@ namespace Kahla.SDK.CommandHandlers
         public ConvCommandHandler(
             AES aes,
             EventSyncer<T> eventSyncer,
-            BotLogger botLogger) 
+            BotLogger botLogger)
         {
             _aes = aes;
             _eventSyncer = eventSyncer;
             _botLogger = botLogger;
         }
 
-        public void InjectHost(BotHost<T> instance){ }
-        public  bool CanHandle(string command)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
         {
             return command.StartsWith("conv");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             await Task.Delay(0);
             if (int.TryParse(command.Substring(4).Trim(), out int convId))
@@ -49,7 +49,7 @@ namespace Kahla.SDK.CommandHandlers
                         _botLogger.LogInfo($"\t\t\t {_aes.OpenSSLDecrypt(message.Content, conversation.AesKey)}");
                     }
                 }
-                return;
+                return true;
             }
             foreach (var conversation in _eventSyncer.Contacts)
             {
@@ -76,6 +76,7 @@ namespace Kahla.SDK.CommandHandlers
                 }
                 _botLogger.LogInfo($"\n");
             }
+            return true;
         }
     }
 }

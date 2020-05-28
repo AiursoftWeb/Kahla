@@ -26,12 +26,12 @@ namespace Kahla.SDK.CommandHandlers
         }
 
         public void InjectHost(BotHost<T> instance) { }
-        public  bool CanHandle(string command)
+        public bool CanHandle(string command)
         {
             return command.StartsWith("say");
         }
 
-        public async  Task Execute(string command)
+        public async Task<bool> Execute(string command)
         {
             var conversations = await _conversationService.AllAsync();
             _botLogger.LogInfo($"");
@@ -45,17 +45,18 @@ namespace Kahla.SDK.CommandHandlers
             if (target == null)
             {
                 _botLogger.LogDanger($"Can't find conversation with ID: {convId}");
-                return;
+                return true;
             }
             var toSay = _botLogger.ReadLine($"Enter the message you want to send to '{target.DisplayName}':");
             if (string.IsNullOrWhiteSpace(toSay))
             {
                 _botLogger.LogDanger($"Can't send empty content.");
-                return;
+                return true;
             }
             var encrypted = _aes.OpenSSLEncrypt(toSay, _eventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == target.ConversationId)?.AesKey);
             await _conversationService.SendMessageAsync(encrypted, target.ConversationId);
             _botLogger.LogSuccess($"Sent.");
+            return true;
         }
     }
 }
