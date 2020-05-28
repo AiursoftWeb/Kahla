@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Aiursoft.Scanner.Services;
+using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -12,37 +13,22 @@ namespace Kahla.SDK.Abstract
 {
     public class BotCommander<T> : IScopedDependency where T : BotBase
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly CommandFactory<T> _commandFactory;
         private readonly BotLogger _botLogger;
         private BotHost<T> _instance;
 
         public BotCommander(
-            IServiceScopeFactory serviceProvider,
+            CommandFactory<T> commandFactory,
             BotLogger botLogger)
         {
-            _serviceScopeFactory = serviceProvider;
+            _commandFactory = commandFactory;
             _botLogger = botLogger;
         }
 
-        public BotCommander<T> InjectHost(BotHost<T> instance)
+        public BotCommander<T> InjectHost(BotHost<T> botHost)
         {
-            _instance = instance;
+            _commandFactory.InjectHost(botHost);
             return this;
-        }
-
-        private ICommandHandler<T> GetHandler(string command)
-        {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var handlers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICommandHandler<T>>>();
-            foreach (var handler in handlers)
-            {
-                handler.InjectHost(_instance);
-                if (handler.CanHandle(command.ToLower().Trim()))
-                {
-                    return handler;
-                }
-            }
-            return null;
         }
 
         public async Task Command()
@@ -58,7 +44,7 @@ namespace Kahla.SDK.Abstract
                     continue;
                 }
 
-                var handler = GetHandler(command);
+                var handler = _commandFactory.ProduceHandler(command);
                 if (handler == null)
                 {
                     _botLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
@@ -67,5 +53,7 @@ namespace Kahla.SDK.Abstract
                 await handler.Execute(command);
             }
         }
+
+
     }
 }

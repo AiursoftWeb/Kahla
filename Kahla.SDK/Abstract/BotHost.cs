@@ -2,6 +2,7 @@
 using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Data;
 using Kahla.SDK.Events;
+using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using System;
 using System.Collections.Generic;
