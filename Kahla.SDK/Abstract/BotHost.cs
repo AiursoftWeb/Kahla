@@ -1,15 +1,12 @@
 ﻿using Aiursoft.Handler.Exceptions;
-using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Data;
 using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;

@@ -1,9 +1,7 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Kahla.SDK.Abstract;
+﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Data;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Kahla.SDK.Factories
 {

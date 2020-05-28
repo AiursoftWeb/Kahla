@@ -1,5 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Kahla.SDK.Abstract;
+﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Models;

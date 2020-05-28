@@ -1,8 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Kahla.SDK.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Kahla.SDK.Models;
 
 namespace Kahla.SDK.Abstract
 {

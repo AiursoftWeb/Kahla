@@ -1,12 +1,6 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Aiursoft.Scanner.Services;
-using Kahla.SDK.Factories;
+﻿using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
-using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract

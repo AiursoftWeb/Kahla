@@ -1,6 +1,5 @@
 ﻿using Kahla.Bot.Bots;
 using Kahla.SDK.Abstract;
-using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Threading.Tasks;
 

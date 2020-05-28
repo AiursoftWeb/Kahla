@@ -1,11 +1,9 @@
 ﻿using Aiursoft.Scanner;
-using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 
 namespace Kahla.Bot
 {
