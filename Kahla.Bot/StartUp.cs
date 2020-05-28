@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner;
+﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +11,7 @@ namespace Kahla.Bot
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScannedDependencies();
+            services.AddScoped<BingTranslator>();
         }
 
         public void Configure(SettingsService settings)

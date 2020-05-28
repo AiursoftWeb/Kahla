@@ -1,4 +1,5 @@
-﻿using Kahla.SDK.Services;
+﻿using Aiursoft.Scanner;
+using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -13,6 +14,7 @@ namespace Kahla.SDK.Abstract
             var services = new ServiceCollection();
             services.AddHttpClient();
             services.AddBots();
+            services.AddLibraryDependencies();
             starter.ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
             var settings = _serviceProvider.GetService<SettingsService>();

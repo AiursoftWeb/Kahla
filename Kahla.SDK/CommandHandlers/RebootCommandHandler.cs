@@ -20,9 +20,9 @@ namespace Kahla.SDK.CommandHandlers
 
         public async Task<bool> Execute(string command)
         {
-            await Task.Delay(0);
             Console.Clear();
             _botHost.ReleaseMonitorJob();
+            await Task.Delay(2000);
             _botHost.ConnectTask = _botHost.Connect((websocketAddress) =>
             {
                 _botHost.MonitorTask = _botHost.MonitorEvents(websocketAddress);
