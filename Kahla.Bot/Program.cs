@@ -11,7 +11,7 @@ namespace Kahla.Bot
         {
             await CreateBotBuilder()
 #warning select Bot
-                .Build<EchoBot>()
+                .Build<EmptyBot>()
                 .Run(
                     enableCommander: args.FirstOrDefault() != "as-service",
                     autoReconnectMax: 10);
