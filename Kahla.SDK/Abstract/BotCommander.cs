@@ -15,7 +15,6 @@ namespace Kahla.SDK.Abstract
     {
         private readonly CommandFactory<T> _commandFactory;
         private readonly BotLogger _botLogger;
-        private BotHost<T> _instance;
 
         public BotCommander(
             CommandFactory<T> commandFactory,

@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
+using Kahla.SDK.Factories;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
@@ -13,13 +14,14 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Data
 {
-    public class EventSyncer : ISingletonDependency
+    public class EventSyncer<T> : ISingletonDependency where T : BotBase
     {
+        public BotBase BuildBot => _botFactory.ProduceBot();
         private readonly ConversationService _conversationService;
         private readonly FriendshipService _friendshipService;
         private readonly BotLogger _botLogger;
+        private readonly BotFactory<T> _botFactory;
         private readonly AES _aes;
-        private BotBase _bot;
         private List<ContactInfo> _contacts;
         private List<Request> _requests;
         public IEnumerable<ContactInfo> Contacts => _contacts.OrderByDescending(t => t.LatestMessage?.SendTime ?? DateTime.MinValue);
@@ -29,19 +31,19 @@ namespace Kahla.SDK.Data
             ConversationService conversationService,
             FriendshipService friendshipService,
             BotLogger botLogger,
+            BotFactory<T> botFactory,
             AES aes)
         {
             _conversationService = conversationService;
             _friendshipService = friendshipService;
             _botLogger = botLogger;
+            _botFactory = botFactory;
             _aes = aes;
         }
 
         public async Task Init(
-            WebsocketClient client,
-            BotBase bot)
+            WebsocketClient client)
         {
-            _bot = bot;
             await SyncFromServer();
             client.MessageReceived.Subscribe(OnStargateMessage);
         }
@@ -79,7 +81,7 @@ namespace Kahla.SDK.Data
                 case EventType.NewFriendRequestEvent:
                     var newFriendRequestEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
                     PatchFriendRequest(newFriendRequestEvent.Request);
-                    await _bot.OnFriendRequest(newFriendRequestEvent);
+                    await BuildBot.OnFriendRequest(newFriendRequestEvent);
                     break;
                 case EventType.FriendsChangedEvent:
                     var friendsChangedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
@@ -88,21 +90,21 @@ namespace Kahla.SDK.Data
                     {
                         SyncFriendRequestToContacts(friendsChangedEvent.Request, friendsChangedEvent.CreatedConversation);
                     }
-                    await _bot.OnFriendsChangedEvent(friendsChangedEvent);
+                    await BuildBot.OnFriendsChangedEvent(friendsChangedEvent);
                     break;
                 case EventType.FriendDeletedEvent:
                     var friendDeletedEvent = JsonConvert.DeserializeObject<FriendDeletedEvent>(msg.ToString());
                     DeleteConversationIfExist(friendDeletedEvent.ConversationId);
-                    await _bot.OnWasDeleted(friendDeletedEvent);
+                    await BuildBot.OnWasDeleted(friendDeletedEvent);
                     break;
                 case EventType.DissolveEvent:
                     var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString());
                     DeleteConversationIfExist(dissolveEvent.ConversationId);
-                    await _bot.OnGroupDissolve(dissolveEvent);
+                    await BuildBot.OnGroupDissolve(dissolveEvent);
                     break;
                 case EventType.SomeoneLeftEvent:
                     var someoneLeftEvent = JsonConvert.DeserializeObject<SomeoneLeftEvent>(msg.ToString());
-                    if (someoneLeftEvent.LeftUser.Id == _bot.Profile.Id)
+                    if (someoneLeftEvent.LeftUser.Id == BuildBot.Profile.Id)
                     {
                         // you was kicked
                         DeleteConversationIfExist(someoneLeftEvent.ConversationId);
@@ -115,13 +117,13 @@ namespace Kahla.SDK.Data
                 case EventType.GroupJoinedEvent:
                     var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString());
                     SyncGroupToContacts(groupJoinedEvent.CreatedConversation, groupJoinedEvent.MessageCount, groupJoinedEvent.LatestMessage);
-                    await _bot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
+                    await BuildBot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
                     break;
                 default:
                     _botLogger.LogDanger($"Unhandled server event: {inevent.TypeDescription}!");
                     break;
             }
-            await _bot.OnMemoryChanged();
+            await BuildBot.OnMemoryChanged();
         }
 
         protected virtual async Task OnNewMessageEvent(NewMessageEvent typedEvent)
@@ -130,14 +132,14 @@ namespace Kahla.SDK.Data
             _botLogger.LogInfo($"On message from sender `{typedEvent.Message.Sender.NickName}`: {decrypted}");
             if (decrypted.StartsWith("[group]") && int.TryParse(decrypted.Substring(7), out int groupId))
             {
-                await _bot.OnGroupInvitation(groupId, typedEvent);
+                await BuildBot.OnGroupInvitation(groupId, typedEvent);
             }
-            await _bot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
+            await BuildBot.OnMessage(decrypted, typedEvent).ConfigureAwait(false);
         }
 
         private void PatchFriendRequest(Request request)
         {
-            if (request.TargetId == _bot.Profile.Id)
+            if (request.TargetId == BuildBot.Profile.Id)
             {
                 // Sent to me from another user.
                 var inMemory = _requests.SingleOrDefault(t => t.Id == request.Id);
@@ -187,23 +189,23 @@ namespace Kahla.SDK.Data
         {
             _contacts.Add(new ContactInfo
             {
-                DisplayName = request.TargetId == _bot.Profile.Id ?
+                DisplayName = request.TargetId == BuildBot.Profile.Id ?
                     request.Creator.NickName :
                     request.Target.NickName,
-                DisplayImagePath = request.TargetId == _bot.Profile.Id ?
+                DisplayImagePath = request.TargetId == BuildBot.Profile.Id ?
                     request.Creator.IconFilePath :
                     request.Target.IconFilePath,
                 LatestMessage = null,
                 UnReadAmount = 0,
                 ConversationId = createdConversation.Id,
                 Discriminator = createdConversation.Discriminator,
-                UserId = request.TargetId == _bot.Profile.Id ?
+                UserId = request.TargetId == BuildBot.Profile.Id ?
                     request.Creator.Id :
                     request.Target.Id,
                 AesKey = createdConversation.AESKey,
-                Muted = createdConversation.Muted(_bot.Profile.Id),
+                Muted = createdConversation.Muted(BuildBot.Profile.Id),
                 SomeoneAtMe = false,
-                Online = request.TargetId == _bot.Profile.Id ?
+                Online = request.TargetId == BuildBot.Profile.Id ?
                     request.Creator.IsOnline :
                     request.Target.IsOnline
             }); ;

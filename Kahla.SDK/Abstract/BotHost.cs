@@ -29,7 +29,8 @@ namespace Kahla.SDK.Abstract
         private readonly HomeService _homeService;
         private readonly VersionService _versionService;
         private readonly AuthService _authService;
-        private readonly EventSyncer _eventSyncer;
+        private readonly EventSyncer<T> _eventSyncer;
+        private readonly ProfileContainer<T> _profileContainer;
         private readonly BotFactory<T> _botFactory;
         private ManualResetEvent _exitEvent;
 
@@ -42,7 +43,8 @@ namespace Kahla.SDK.Abstract
             HomeService homeService,
             VersionService versionService,
             AuthService authService,
-            EventSyncer eventSyncer,
+            EventSyncer<T> eventSyncer,
+            ProfileContainer<T> profileContainer,
             BotFactory<T> botFactory)
         {
             _botCommander = botCommander.InjectHost(this);
@@ -54,6 +56,7 @@ namespace Kahla.SDK.Abstract
             _versionService = versionService;
             _authService = authService;
             _eventSyncer = eventSyncer;
+            _profileContainer = profileContainer;
             _botFactory = botFactory;
         }
 
@@ -234,7 +237,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.LogInfo($"Getting account profile...");
                 var profile = await _authService.MeAsync();
                 _botLogger.AppendResult(true, 6);
-                BuildBot.Profile = profile.Value;
+                _profileContainer.Profile = profile.Value;
             }
             catch (AiurUnexceptedResponse e)
             {
@@ -275,7 +278,7 @@ namespace Kahla.SDK.Abstract
                     var _ = Connect().ConfigureAwait(false);
                 }
             });
-            await _eventSyncer.Init(client, BuildBot);
+            await _eventSyncer.Init(client);
             await client.Start();
             _botLogger.LogInfo($"Listening to your account channel.");
             _botLogger.LogVerbose(websocketAddress + "\n");

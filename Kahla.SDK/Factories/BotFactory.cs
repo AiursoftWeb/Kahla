@@ -30,9 +30,10 @@ namespace Kahla.SDK.Factories
             var botLogger = scope.ServiceProvider.GetRequiredService<BotLogger>();
             var versionService = scope.ServiceProvider.GetRequiredService<VersionService>();
             var settingsService = scope.ServiceProvider.GetRequiredService<SettingsService>();
-            var eventSyncer = scope.ServiceProvider.GetRequiredService<EventSyncer>();
+            var eventSyncer = scope.ServiceProvider.GetRequiredService<EventSyncer<T>>();
             var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
             var aes = scope.ServiceProvider.GetRequiredService<AES>();
+            var botProfile = scope.ServiceProvider.GetRequiredService<ProfileContainer<T>>();
             var bot = scope.ServiceProvider.GetRequiredService<T>();
             bot.ConversationService = conversationService;
             bot.GroupsService = groupsService;
@@ -43,9 +44,10 @@ namespace Kahla.SDK.Factories
             bot.BotLogger = botLogger;
             bot.VersionService = versionService;
             bot.SettingsService = settingsService;
-            bot.EventSyncer = eventSyncer;
             bot.StorageService = storageService;
             bot.AES = aes;
+            bot.Profile = botProfile.Profile;
+            bot.Contacts = eventSyncer.Contacts;
             return bot;
         }
     }

@@ -9,12 +9,12 @@ namespace Kahla.SDK.CommandHandlers
     public class ConvCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly AES _aes;
-        private readonly EventSyncer _eventSyncer;
+        private readonly EventSyncer<T> _eventSyncer;
         private readonly BotLogger _botLogger;
 
         public ConvCommandHandler(
             AES aes,
-            EventSyncer eventSyncer,
+            EventSyncer<T> eventSyncer,
             BotLogger botLogger) 
         {
             _aes = aes;

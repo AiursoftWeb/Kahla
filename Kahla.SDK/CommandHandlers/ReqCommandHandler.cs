@@ -8,11 +8,11 @@ namespace Kahla.SDK.CommandHandlers
     public class ReqCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly BotLogger _botLogger;
-        private readonly EventSyncer _eventSyncer;
+        private readonly EventSyncer<T> _eventSyncer;
 
         public ReqCommandHandler(
             BotLogger botLogger,
-            EventSyncer eventSyncer)
+            EventSyncer<T> eventSyncer)
         {
             _botLogger = botLogger;
             _eventSyncer = eventSyncer;

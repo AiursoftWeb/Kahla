@@ -1,4 +1,5 @@
-﻿using Kahla.SDK.Factories;
+﻿using Kahla.SDK.Data;
+using Kahla.SDK.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace Kahla.SDK.Abstract
                 }
             }
 
+            services.AddScoped(typeof(EventSyncer<>));
+            services.AddScoped(typeof(ProfileContainer<>));
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));
             services.AddScoped(typeof(BotFactory<>));

@@ -10,6 +10,7 @@ using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -32,11 +33,10 @@ namespace Kahla.SDK.Abstract
         public KahlaLocation KahlaLocation;
         public VersionService VersionService;
         public SettingsService SettingsService;
-        public EventSyncer EventSyncer;
         public StorageService StorageService;
 
-#warning Might be null!
         public KahlaUser Profile { get; set; }
+        public IEnumerable<ContactInfo> Contacts { get; set; }
 
         public virtual Task OnBotStarting()
         {
@@ -122,7 +122,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task SendMessage(string message, int conversationId)
         {
-            var encrypted = AES.OpenSSLEncrypt(message, EventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
+            var encrypted = AES.OpenSSLEncrypt(message, Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 

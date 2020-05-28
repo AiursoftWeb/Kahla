@@ -10,13 +10,13 @@ namespace Kahla.SDK.CommandHandlers
     {
         private readonly ConversationService _conversationService;
         private readonly BotLogger _botLogger;
-        private readonly EventSyncer _eventSyncer;
+        private readonly EventSyncer<T> _eventSyncer;
         private readonly AES _aes;
 
         public SayCommandHandler(
             ConversationService conversationService,
             BotLogger botLogger,
-            EventSyncer eventSyncer,
+            EventSyncer<T> eventSyncer,
             AES aes)
         {
             _conversationService = conversationService;
