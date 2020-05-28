@@ -94,7 +94,7 @@ namespace Kahla.SDK.Abstract
         public async Task Connect(Action<string> callback = null)
         {
             _botLogger.LogWarning("Establishing the connection to Kahla...");
-            ReleaseMonitorJob();
+            await ReleaseMonitorJob();
             var server = AskServerAddress();
             _settingsService["ServerAddress"] = server;
             _kahlaLocation.UseKahlaServer(server);
@@ -282,10 +282,15 @@ namespace Kahla.SDK.Abstract
                 ReconnectTimeout = TimeSpan.FromDays(1)
             };
             client.ReconnectionHappened.Subscribe(type => _botLogger.LogVerbose($"WebSocket: {type.Type}"));
-            client.DisconnectionHappened.Subscribe(t =>
+            Action onDisconnect = () =>
             {
                 _botLogger.LogDanger("Websocket connection dropped!");
-                ReleaseMonitorJob();
+                _exitEvent?.Set();
+                _exitEvent = null;
+            };
+            client.DisconnectionHappened.Subscribe((t) =>
+            {
+                onDisconnect?.Invoke();
             });
             await client.Start();
 
@@ -298,15 +303,21 @@ namespace Kahla.SDK.Abstract
             await _eventSyncer.Init(client);
             await BuildBot.OnBotStarted();
 
+            // Pend.
             _exitEvent?.WaitOne();
+            onDisconnect = null;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");
         }
 
-        public void ReleaseMonitorJob()
+        public async Task ReleaseMonitorJob()
         {
             _exitEvent?.Set();
             _exitEvent = null;
+            while (!MonitorTask.IsCompleted)
+            {
+                await Task.Delay(200);
+            }
         }
 
         public async Task LogOff()

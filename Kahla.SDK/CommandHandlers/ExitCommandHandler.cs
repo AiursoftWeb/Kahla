@@ -14,10 +14,10 @@ namespace Kahla.SDK.CommandHandlers
         {
             return command.StartsWith("exit");
         }
-        public Task<bool> Execute(string command)
+        public async Task<bool> Execute(string command)
         {
-            _botHost.ReleaseMonitorJob();
-            return Task.FromResult(false);
+            await _botHost.ReleaseMonitorJob();
+            return false;
         }
     }
 }

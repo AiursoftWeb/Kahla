@@ -1,5 +1,4 @@
 ﻿using Kahla.SDK.Abstract;
-using System;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
@@ -20,9 +19,7 @@ namespace Kahla.SDK.CommandHandlers
 
         public async Task<bool> Execute(string command)
         {
-            Console.Clear();
-            _botHost.ReleaseMonitorJob();
-            await Task.Delay(2000);
+            await _botHost.ReleaseMonitorJob();
             _botHost.ConnectTask = _botHost.Connect((websocketAddress) =>
             {
                 _botHost.MonitorTask = _botHost.MonitorEvents(websocketAddress);
