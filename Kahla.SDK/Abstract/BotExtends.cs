@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Kahla.SDK.Factories;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,7 @@ namespace Kahla.SDK.Abstract
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));
             services.AddScoped(typeof(BotFactory<>));
+            services.AddScoped(typeof(CommandFactory<>));
             return services;
         }
     }
