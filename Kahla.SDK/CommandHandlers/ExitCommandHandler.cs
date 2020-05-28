@@ -4,17 +4,16 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("exit")]
-    public class ExitCommandHandler : CommandHandlerBase
+    public class ExitCommandHandler : ICommandHandler
     {
-        public ExitCommandHandler(IBotCommander botCommander) : base(botCommander)
+        public  bool CanHandle(string command)
         {
+            return command.StartsWith("exit");
         }
-
-        public async override Task Execute(string command)
+        public  Task Execute(string command)
         {
-            await _botCommander.BotHost.LogOff();
             Environment.Exit(0);
+            return Task.CompletedTask;
         }
     }
 }

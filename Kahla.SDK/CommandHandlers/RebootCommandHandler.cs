@@ -1,21 +1,25 @@
-﻿using Kahla.SDK.Abstract;
-using System;
-using System.Threading.Tasks;
+﻿//using Kahla.SDK.Abstract;
+//using System;
+//using System.Threading.Tasks;
 
-namespace Kahla.SDK.CommandHandlers
-{
-    [CommandHandler("reboot")]
-    public class RebootCommandHandler<T> : CommandHandlerBase<T> where T: BotBase
-    {
-        public RebootCommandHandler(BotCommander<T> botCommander) : base(botCommander)
-        {
-        }
+//namespace Kahla.SDK.CommandHandlers
+//{
+//    public class RebootCommandHandler: CommandHandlerBase
+//    {
+//        public RebootCommandHandler() 
+//        {
+//        }
 
-        public async override Task Execute(string command)
-        {
-            await Task.Delay(0);
-            Console.Clear();
-            var _ = _botCommander.BotHost.Connect().ConfigureAwait(false);
-        }
-    }
-}
+//        public override bool CanHandle(string command)
+//        {
+//            return command.StartsWith("reboot");
+//        }
+
+//        public async override Task Execute(string command)
+//        {
+//            await Task.Delay(0);
+//            Console.Clear();
+//            var _ = _botCommander.BotHost.Connect().ConfigureAwait(false);
+//        }
+//    }
+//}

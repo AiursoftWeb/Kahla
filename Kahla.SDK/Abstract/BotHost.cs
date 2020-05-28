@@ -15,7 +15,7 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotHost<T> : IScopedDependency, IBotHost where T : BotBase
+    public class BotHost<T> : IScopedDependency where T : BotBase
     {
         public BotBase BuildBot => _botFactory.ProduceBot();
         public SemaphoreSlim ConnectingLock { get; set; } = new SemaphoreSlim(1);
@@ -44,7 +44,7 @@ namespace Kahla.SDK.Abstract
             EventSyncer eventSyncer,
             BotFactory<T> botFactory)
         {
-            _botCommander = botCommander.Init(this);
+            _botCommander = botCommander;
             _botLogger = botLogger;
             _settingsService = settingsService;
             _kahlaLocation = kahlaLocation;
@@ -56,12 +56,13 @@ namespace Kahla.SDK.Abstract
             _botFactory = botFactory;
         }
 
-        public async Task Run(bool enableCommander)
+        public async Task Run(bool enableCommander = true)
         {
             await BuildBot.OnBotStarting();
             if (enableCommander)
             {
                 var _ = Connect().ConfigureAwait(false);
+#warning May start without connected!
                 await _botCommander.Command();
             }
             else

@@ -1,19 +1,30 @@
 ﻿using Kahla.SDK.Abstract;
+using Kahla.SDK.Services;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("version")]
-    public class VersionCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class VersionCommandHandler<T>: ICommandHandler where T : BotBase
     {
-        public VersionCommandHandler(BotCommander<T> botCommander) : base(botCommander)
-        {
+        private readonly BotHost<T> _botHost;
+        private readonly KahlaLocation _kahlaLocation;
 
+        public VersionCommandHandler(
+            BotHost<T> botHost,
+            KahlaLocation kahlaLocation)
+        {
+            _botHost = botHost;
+            _kahlaLocation = kahlaLocation;
         }
 
-        public async override Task Execute(string command)
+        public  bool CanHandle(string command)
         {
-            await _botCommander.BotHost.TestKahlaLive(_botCommander._kahlaLocation.ToString());
+            return command.StartsWith("version");
+        }
+
+        public async  Task Execute(string command)
+        {
+            await _botHost.TestKahlaLive(_kahlaLocation.ToString());
         }
     }
 }

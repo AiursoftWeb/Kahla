@@ -2,75 +2,49 @@
 using Aiursoft.Scanner.Services;
 using Kahla.SDK.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander<T> : ITransientDependency, IBotCommander where T : BotBase
+    public class BotCommander<T> : IScopedDependency where T : BotBase
     {
-        public IBotHost BotHost { get; set; }
-        public  ConversationService ConversationService { get; set; }
-        public  BotLogger BotLogger { get; set; }
-        public  KahlaLocation _kahlaLocation { get; set; }
-        public  AES _aes { get; set; }
+        private readonly IEnumerable<ICommandHandler> _handlers;
+        private readonly BotLogger _botLogger;
 
         public BotCommander(
-            ConversationService conversationService,
             BotLogger botLogger,
-            KahlaLocation kahlaLocation,
-            AES aes)
+            IEnumerable<ICommandHandler> handlers)
         {
-            ConversationService = conversationService;
-            BotLogger = botLogger;
-            _kahlaLocation = kahlaLocation;
-            _aes = aes;
+            _botLogger = botLogger;
+            _handlers = handlers;
         }
 
-        public BotCommander<T> Init(BotHost<T> botBase)
+        private ICommandHandler GetHandler(string command)
         {
-            BotHost = botBase;
-            return this;
-        }
-
-        public async Task BlockIfConnecting()
-        {
-            while (BotHost.ConnectingLock.CurrentCount == 0)
+            foreach(var handler in _handlers)
             {
-                await Task.Delay(1000);
+                if(handler.CanHandle(command.ToLower().Trim()))
+                {
+                    return handler;
+                }
             }
-        }
-
-        /// <summary>
-        /// Get a handler which can handle the command.
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns>The handler or null if not found.</returns>
-        private Type GetHandler(string command)
-        {
-            var scannedHandler = new ClassScanner().AllAccessiableClass(false, false)
-                    .Where(t => t.CustomAttributes.Any(a => a.AttributeType == typeof(CommandHandlerAttribute)))
-                    .Where(t => t.IsSubclassOf(typeof(CommandHandlerBase)))
-                    .Where(t =>
-                        t.GetCustomAttributes(typeof(CommandHandlerAttribute), false)
-                        .Any(a => command.ToLower().StartsWith(((CommandHandlerAttribute)a).Command.ToLower())));
-            return scannedHandler.FirstOrDefault();
+            return null;
         }
 
         public void RenderHeader()
         {
-            BotLogger.WriteGrayNewLine($"K:\\Bots\\{BotHost.GetType().Name}\\{BotHost.BuildBot.Profile?.NickName}>");
+            _botLogger.WriteGrayNewLine($"K:\\Bots\\>");
         }
 
         public async Task Command()
         {
-            await BlockIfConnecting();
             await Task.Delay(1000);
             Console.Clear();
             while (true)
             {
-                await BlockIfConnecting();
                 RenderHeader();
                 var command = Console.ReadLine();
                 if (command.Length < 1)
@@ -81,11 +55,10 @@ namespace Kahla.SDK.Abstract
                 var handler = GetHandler(command);
                 if (handler == null)
                 {
-                    BotLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
+                    _botLogger.LogDanger($"Unknown command: {command}. Please try command: 'help' for help.");
                     continue;
                 }
-                var handlerObject = Activator.CreateInstance(handler) as CommandHandlerBase;
-                await handlerObject.Execute(command);
+                await handler.Execute(command);
             }
         }
     }

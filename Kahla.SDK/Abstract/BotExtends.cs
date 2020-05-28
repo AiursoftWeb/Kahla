@@ -17,12 +17,26 @@ namespace Kahla.SDK.Abstract
             return bots;
         }
 
+        private static IEnumerable<Type> ScanHandler()
+        {
+            var handlers = Assembly
+                .GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => !t.IsInterface)
+                .Where(t => t.GetInterfaces().Contains(typeof(ICommandHandler)));
+            return handlers;
+        }
+
         public static IServiceCollection AddBots(this IServiceCollection services)
         {
             // Register the bots.
             foreach (var botType in ScanBots())
             {
                 services.AddScoped(botType);
+            }
+            foreach(var handler in ScanHandler())
+            {
+                services.AddScoped(typeof(ICommandHandler), handler);
             }
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));

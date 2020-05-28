@@ -1,32 +1,45 @@
 ﻿using Kahla.SDK.Abstract;
+using Kahla.SDK.Data;
+using Kahla.SDK.Services;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("req")]
-    public class ReqCommandHandler<T> : CommandHandlerBase<T> where T : BotBase
+    public class ReqCommandHandler: ICommandHandler
     {
-        public ReqCommandHandler(BotCommander<T> botCommander) : base(botCommander)
+        private readonly BotLogger _botLogger;
+        private readonly EventSyncer _eventSyncer;
+
+        public ReqCommandHandler(
+            BotLogger botLogger,
+            EventSyncer eventSyncer)
         {
+            _botLogger = botLogger;
+            _eventSyncer = eventSyncer;
         }
 
-        public async override Task Execute(string command)
+        public  bool CanHandle(string command)
+        {
+            return command.StartsWith("req");
+        }
+
+        public async  Task Execute(string command)
         {
             await Task.Delay(0);
-            foreach (var request in _botCommander.BotHost._bot.EventSyncer.Requests)
+            foreach (var request in _eventSyncer.Requests)
             {
-                _botCommander._botLogger.LogInfo($"Name:\t{request.Creator.NickName}");
-                _botCommander._botLogger.LogInfo($"Time:\t{request.CreateTime}");
+                _botLogger.LogInfo($"Name:\t{request.Creator.NickName}");
+                _botLogger.LogInfo($"Time:\t{request.CreateTime}");
                 if (request.Completed)
                 {
-                    _botCommander._botLogger.LogSuccess($"\tCompleted.");
+                    _botLogger.LogSuccess($"\tCompleted.");
                 }
                 else
                 {
-                    _botCommander._botLogger.LogWarning($"\tPending.");
+                    _botLogger.LogWarning($"\tPending.");
                 }
 
-                _botCommander._botLogger.LogInfo($"\n");
+                _botLogger.LogInfo($"\n");
             }
         }
     }
