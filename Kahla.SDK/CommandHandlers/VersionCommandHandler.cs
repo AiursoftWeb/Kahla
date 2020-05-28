@@ -4,17 +4,20 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class VersionCommandHandler<T>: ICommandHandler where T : BotBase
+    public class VersionCommandHandler<T>: ICommandHandler<T> where T : BotBase
     {
-        private readonly BotHost<T> _botHost;
+        private BotHost<T> _botHost;
         private readonly KahlaLocation _kahlaLocation;
 
         public VersionCommandHandler(
-            BotHost<T> botHost,
             KahlaLocation kahlaLocation)
         {
-            _botHost = botHost;
             _kahlaLocation = kahlaLocation;
+        }
+
+        public void InjectHost(BotHost<T> instance)
+        {
+            _botHost = instance;
         }
 
         public  bool CanHandle(string command)

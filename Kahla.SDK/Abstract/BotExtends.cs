@@ -23,7 +23,7 @@ namespace Kahla.SDK.Abstract
                 .GetExecutingAssembly()
                 .GetTypes()
                 .Where(t => !t.IsInterface)
-                .Where(t => t.GetInterfaces().Contains(typeof(ICommandHandler)));
+                .Where(t => t.GetInterfaces().Any(i => i.Name.StartsWith(nameof(ICommandHandler<BotBase>))));
             return handlers;
         }
 
@@ -33,11 +33,12 @@ namespace Kahla.SDK.Abstract
             foreach (var botType in ScanBots())
             {
                 services.AddScoped(botType);
+                foreach (var handler in ScanHandler())
+                {
+                    services.AddScoped(typeof(ICommandHandler<>).MakeGenericType(botType), handler.MakeGenericType(botType));
+                }
             }
-            foreach(var handler in ScanHandler())
-            {
-                services.AddScoped(typeof(ICommandHandler), handler.MakeGenericType(typeof(BotBase)));
-            }
+
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));
             services.AddScoped(typeof(BotFactory<>));

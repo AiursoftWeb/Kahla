@@ -44,7 +44,7 @@ namespace Kahla.SDK.Abstract
             EventSyncer eventSyncer,
             BotFactory<T> botFactory)
         {
-            _botCommander = botCommander;
+            _botCommander = botCommander.InjectHost(this);
             _botLogger = botLogger;
             _settingsService = settingsService;
             _kahlaLocation = kahlaLocation;

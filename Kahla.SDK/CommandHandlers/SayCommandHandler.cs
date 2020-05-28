@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class SayCommandHandler<T> : ICommandHandler where T : BotBase
+    public class SayCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly ConversationService _conversationService;
         private readonly BotLogger _botLogger;
@@ -25,6 +25,7 @@ namespace Kahla.SDK.CommandHandlers
             _aes = aes;
         }
 
+        public void InjectHost(BotHost<T> instance) { }
         public  bool CanHandle(string command)
         {
             return command.StartsWith("say");

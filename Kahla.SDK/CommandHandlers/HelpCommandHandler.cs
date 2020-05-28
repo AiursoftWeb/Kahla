@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class HelpCommandHandler<T> : ICommandHandler where T : BotBase
+    public class HelpCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly BotLogger _botLogger;
 
@@ -12,7 +12,7 @@ namespace Kahla.SDK.CommandHandlers
         {
             _botLogger = botLogger;
         }
-
+        public void InjectHost(BotHost<T> instance){ }
         public  bool CanHandle(string command)
         {
             return command.StartsWith("help");

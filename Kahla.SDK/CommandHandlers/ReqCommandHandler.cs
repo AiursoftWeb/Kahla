@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class ReqCommandHandler<T> : ICommandHandler where T : BotBase
+    public class ReqCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly BotLogger _botLogger;
         private readonly EventSyncer _eventSyncer;
@@ -18,6 +18,7 @@ namespace Kahla.SDK.CommandHandlers
             _eventSyncer = eventSyncer;
         }
 
+        public void InjectHost(BotHost<T> instance) { }
         public  bool CanHandle(string command)
         {
             return command.StartsWith("req");

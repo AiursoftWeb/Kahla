@@ -14,22 +14,29 @@ namespace Kahla.SDK.Abstract
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly BotLogger _botLogger;
+        private BotHost<T> _instance;
 
         public BotCommander(
             IServiceScopeFactory serviceProvider,
-            BotLogger botLogger
-            )
+            BotLogger botLogger)
         {
             _serviceScopeFactory = serviceProvider;
             _botLogger = botLogger;
         }
 
-        private ICommandHandler GetHandler(string command)
+        public BotCommander<T> InjectHost(BotHost<T> instance)
+        {
+            _instance = instance;
+            return this;
+        }
+
+        private ICommandHandler<T> GetHandler(string command)
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            var handlers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICommandHandler>>();
+            var handlers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICommandHandler<T>>>();
             foreach (var handler in handlers)
             {
+                handler.InjectHost(_instance);
                 if (handler.CanHandle(command.ToLower().Trim()))
                 {
                     return handler;
@@ -38,18 +45,13 @@ namespace Kahla.SDK.Abstract
             return null;
         }
 
-        public void RenderHeader()
-        {
-            _botLogger.WriteGrayNewLine($"K:\\Bots\\>");
-        }
-
         public async Task Command()
         {
             await Task.Delay(1000);
             Console.Clear();
             while (true)
             {
-                RenderHeader();
+                _botLogger.WriteGrayNewLine($"K:\\Bots\\>");
                 var command = Console.ReadLine();
                 if (command.Length < 1)
                 {

@@ -4,17 +4,20 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class LogoutCommandHandler<T> : ICommandHandler where T : BotBase
+    public class LogoutCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly BotLogger _botLogger;
-        private readonly BotHost<T> _botHost;
+        private BotHost<T> _botHost;
 
         public LogoutCommandHandler(
-            BotLogger botLogger,
-            BotHost<T> botHost)
+            BotLogger botLogger)
         {
             _botLogger = botLogger;
-            _botHost = botHost;
+        }
+
+        public void InjectHost(BotHost<T> instance)
+        {
+            _botHost = instance;
         }
 
         public  bool CanHandle(string command)

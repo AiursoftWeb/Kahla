@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    public class ConvCommandHandler<T> : ICommandHandler where T : BotBase
+    public class ConvCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
         private readonly AES _aes;
         private readonly EventSyncer _eventSyncer;
@@ -22,6 +22,7 @@ namespace Kahla.SDK.CommandHandlers
             _botLogger = botLogger;
         }
 
+        public void InjectHost(BotHost<T> instance){ }
         public  bool CanHandle(string command)
         {
             return command.StartsWith("conv");
