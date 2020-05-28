@@ -59,21 +59,35 @@ namespace Kahla.SDK.Abstract
             _botFactory = botFactory;
         }
 
-        public async Task Run(bool enableCommander = true)
+        public async Task Run(bool enableCommander = true, int autoReconnectMax = 10)
         {
-#warning Commander optional
+            int reconnectAttempts = 0;
             await BuildBot.OnBotStarting();
             ConnectTask = Connect((websocketAddress) =>
             {
                 MonitorTask = MonitorEvents(websocketAddress);
-                CommandTask = _botCommander.Command();
+                if (enableCommander)
+                {
+                    CommandTask = _botCommander.Command();
+                }
             });
             while (
                 !CommandTask.IsCompleted ||
                 !MonitorTask.IsCompleted ||
                 !ConnectTask.IsCompleted)
             {
-                await Task.Delay(1000);
+                if (reconnectAttempts < autoReconnectMax
+                    && MonitorTask.IsCompleted
+                    && ConnectTask.IsCompleted)
+                {
+                    reconnectAttempts++;
+                    _botLogger.LogSuccess($"\nTrying to auto reconect! Attempts: {reconnectAttempts}");
+                    ConnectTask = Connect((websocketAddress) =>
+                    {
+                        MonitorTask = MonitorEvents(websocketAddress);
+                    });
+                }
+                await Task.Delay(5000);
             }
         }
 
@@ -254,7 +268,6 @@ namespace Kahla.SDK.Abstract
 
         public async Task MonitorEvents(string websocketAddress)
         {
-            bool orderedToStop = false;
             if (_exitEvent != null)
             {
                 _botLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
@@ -271,16 +284,8 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => _botLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
-                if (orderedToStop)
-                {
-                    return;
-                }
-                _botLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                _botLogger.LogDanger("Websocket connection dropped!");
                 ReleaseMonitorJob();
-                ConnectTask = Connect((websocketAddress) =>
-                {
-                    MonitorTask = MonitorEvents(websocketAddress);
-                });
             });
             await client.Start();
 
@@ -294,7 +299,6 @@ namespace Kahla.SDK.Abstract
             await BuildBot.OnBotStarted();
 
             _exitEvent?.WaitOne();
-            orderedToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");
         }

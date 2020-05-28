@@ -22,6 +22,7 @@ namespace Kahla.SDK.CommandHandlers
         {
             await Task.Delay(0);
             Console.Clear();
+            _botHost.ReleaseMonitorJob();
             _botHost.ConnectTask = _botHost.Connect((websocketAddress) =>
             {
                 _botHost.MonitorTask = _botHost.MonitorEvents(websocketAddress);
