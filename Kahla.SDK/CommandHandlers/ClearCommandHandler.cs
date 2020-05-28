@@ -12,10 +12,10 @@ namespace Kahla.SDK.CommandHandlers
             return command.StartsWith("clear");
         }
 
-        public async Task<bool> Execute(string command)
+        public Task<bool> Execute(string command)
         {
             Console.Clear();
-            return true;
+            return Task.FromResult(true);
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task Run(bool enableCommander = true)
         {
+#warning Commander optional
             await BuildBot.OnBotStarting();
             ConnectTask = Connect((websocketAddress) =>
             {

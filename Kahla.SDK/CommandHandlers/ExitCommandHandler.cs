@@ -11,10 +11,10 @@ namespace Kahla.SDK.CommandHandlers
         {
             return command.StartsWith("exit");
         }
-        public async Task<bool> Execute(string command)
+        public Task<bool> Execute(string command)
         {
             Environment.Exit(0);
-            return false;
+            return Task.FromResult(true);
         }
     }
 }

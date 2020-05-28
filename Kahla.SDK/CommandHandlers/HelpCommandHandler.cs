@@ -18,7 +18,7 @@ namespace Kahla.SDK.CommandHandlers
             return command.StartsWith("help");
         }
 
-        public async Task<bool> Execute(string command)
+        public Task<bool> Execute(string command)
         {
             _botLogger.LogInfo($"Kahla bot commands:");
 
@@ -43,7 +43,7 @@ namespace Kahla.SDK.CommandHandlers
             _botLogger.LogInfo($"\tversion\t\tCheck and show version info.");
             _botLogger.LogInfo($"\texit\t\tQuit bot.");
             _botLogger.LogInfo($"");
-            return true;
+            return Task.FromResult(true);
         }
     }
 }
