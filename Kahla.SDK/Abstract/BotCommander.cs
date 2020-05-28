@@ -24,7 +24,12 @@ namespace Kahla.SDK.Abstract
             return this;
         }
 
-        public async Task Command()
+        public Task Command()
+        {
+            return Task.Run(CommandLoop);
+        }
+
+        private async Task CommandLoop()
         {
             var commanding = true;
             while (commanding)

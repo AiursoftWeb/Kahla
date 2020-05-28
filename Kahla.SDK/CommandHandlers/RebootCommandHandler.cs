@@ -22,7 +22,11 @@ namespace Kahla.SDK.CommandHandlers
         {
             await Task.Delay(0);
             Console.Clear();
-            var _ = _botHost.Connect().ConfigureAwait(false);
+            _botHost.ConnectTask = _botHost.Connect((websocketAddress) =>
+            {
+                _botHost.MonitorTask = _botHost.MonitorEvents(websocketAddress);
+            });
+            await _botHost.ConnectTask;
             return true;
         }
     }

@@ -4,7 +4,6 @@ using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -17,8 +16,6 @@ namespace Kahla.SDK.Abstract
     public class BotHost<T> where T : BotBase
     {
         public BotBase BuildBot => _botFactory.ProduceBot();
-        public SemaphoreSlim ConnectingLock { get; set; } = new SemaphoreSlim(1);
-
         private readonly BotCommander<T> _botCommander;
         private readonly BotLogger _botLogger;
         private readonly SettingsService _settingsService;
@@ -31,7 +28,10 @@ namespace Kahla.SDK.Abstract
         private readonly ProfileContainer<T> _profileContainer;
         private readonly BotFactory<T> _botFactory;
         private ManualResetEvent _exitEvent;
-        private bool _enableCommander;
+
+        public Task ConnectTask = Task.CompletedTask;
+        public Task MonitorTask = Task.CompletedTask;
+        public Task CommandTask = Task.CompletedTask;
 
         public BotHost(
             BotCommander<T> botCommander,
@@ -62,13 +62,22 @@ namespace Kahla.SDK.Abstract
         public async Task Run(bool enableCommander = true)
         {
             await BuildBot.OnBotStarting();
-            _enableCommander = enableCommander;
-            await Connect();
+            ConnectTask = Connect((websocketAddress) =>
+            {
+                MonitorTask = MonitorEvents(websocketAddress);
+                CommandTask = _botCommander.Command();
+            });
+            while (
+                !CommandTask.IsCompleted ||
+                !MonitorTask.IsCompleted ||
+                !ConnectTask.IsCompleted)
+            {
+                await Task.Delay(5000);
+            }
         }
 
-        public async Task Connect()
+        public async Task Connect(Action<string> callback = null)
         {
-            await ConnectingLock.WaitAsync();
             _botLogger.LogWarning("Establishing the connection to Kahla...");
             _exitEvent?.Set();
             _exitEvent = null;
@@ -108,20 +117,7 @@ namespace Kahla.SDK.Abstract
             {
                 await BuildBot.OnGroupConnected(group);
             }
-            ConnectingLock.Release();
-            var monitorTasks = new List<Task>
-            {
-                MonitorEvents(websocketAddress, async () =>
-                {
-                    await BuildBot.OnBotStarted();
-                })
-            };
-            if (_enableCommander)
-            {
-                monitorTasks.Add(_botCommander.Command());
-            }
-            await Task.WhenAll(monitorTasks);
-            return;
+            callback?.Invoke(websocketAddress);
         }
 
         public string AskServerAddress()
@@ -256,15 +252,17 @@ namespace Kahla.SDK.Abstract
             return address.ServerPath;
         }
 
-        public async Task MonitorEvents(string websocketAddress, Func<Task> onConnected)
+        public async Task MonitorEvents(string websocketAddress)
         {
-            bool okToStop = false;
+            bool orderedToStop = false;
             if (_exitEvent != null)
             {
                 _botLogger.LogDanger("Bot is trying to establish a new connection while there is already a connection.");
                 return;
             }
             _exitEvent = new ManualResetEvent(false);
+
+            // Start websocket.
             var url = new Uri(websocketAddress);
             var client = new WebsocketClient(url)
             {
@@ -273,21 +271,31 @@ namespace Kahla.SDK.Abstract
             client.ReconnectionHappened.Subscribe(type => _botLogger.LogVerbose($"WebSocket: {type.Type}"));
             client.DisconnectionHappened.Subscribe(t =>
             {
-                if (!okToStop)
+                if (orderedToStop)
                 {
-                    okToStop = true;
-                    _botLogger.LogDanger("Websocket connection dropped! Auto retry...");
-                    var _ = Connect().ConfigureAwait(false);
+                    return;
                 }
+#warning Auto reconnect!
+                //if (!okToStop)
+                //{
+                //    okToStop = true;
+                //    _botLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                //    var _ = Connect().ConfigureAwait(false);
+                //}
             });
-            await _eventSyncer.Init(client);
             await client.Start();
+
+            // log.
             _botLogger.LogInfo($"Listening to your account channel.");
             _botLogger.LogVerbose(websocketAddress + "\n");
             _botLogger.AppendResult(true, 9);
-            var _ = onConnected();
+
+            // Post connect event.
+            await _eventSyncer.Init(client);
+            await BuildBot.OnBotStarted();
+
             _exitEvent?.WaitOne();
-            okToStop = true;
+            orderedToStop = true;
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");
         }
