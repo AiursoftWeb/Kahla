@@ -73,15 +73,14 @@ namespace Kahla.SDK.Abstract
                 !MonitorTask.IsCompleted ||
                 !ConnectTask.IsCompleted)
             {
-                await Task.Delay(5000);
+                await Task.Delay(1000);
             }
         }
 
         public async Task Connect(Action<string> callback = null)
         {
             _botLogger.LogWarning("Establishing the connection to Kahla...");
-            _exitEvent?.Set();
-            _exitEvent = null;
+            ReleaseMonitorJob();
             var server = AskServerAddress();
             _settingsService["ServerAddress"] = server;
             _kahlaLocation.UseKahlaServer(server);
@@ -276,13 +275,12 @@ namespace Kahla.SDK.Abstract
                 {
                     return;
                 }
-#warning Auto reconnect!
-                //if (!okToStop)
-                //{
-                //    okToStop = true;
-                //    _botLogger.LogDanger("Websocket connection dropped! Auto retry...");
-                //    var _ = Connect().ConfigureAwait(false);
-                //}
+                _botLogger.LogDanger("Websocket connection dropped! Auto retry...");
+                ReleaseMonitorJob();
+                ConnectTask = Connect((websocketAddress) =>
+                {
+                    MonitorTask = MonitorEvents(websocketAddress);
+                });
             });
             await client.Start();
 
@@ -301,10 +299,14 @@ namespace Kahla.SDK.Abstract
             _botLogger.LogVerbose("Websocket connection disconnected.");
         }
 
-        public async Task LogOff()
+        public void ReleaseMonitorJob()
         {
             _exitEvent?.Set();
             _exitEvent = null;
+        }
+
+        public async Task LogOff()
+        {
             await _authService.LogoffAsync();
         }
     }

@@ -27,6 +27,7 @@ namespace Kahla.SDK.CommandHandlers
 
         public async Task<bool> Execute(string command)
         {
+            _botHost.ReleaseMonitorJob();
             await _botHost.LogOff();
             _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
             return true;
