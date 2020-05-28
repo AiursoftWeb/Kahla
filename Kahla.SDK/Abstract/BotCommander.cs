@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotCommander<T> : IScopedDependency where T : BotBase
+    public class BotCommander<T>  where T : BotBase
     {
         private readonly CommandFactory<T> _commandFactory;
         private readonly BotLogger _botLogger;

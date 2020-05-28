@@ -7,7 +7,7 @@ using System;
 
 namespace Kahla.SDK.Factories
 {
-    public class BotFactory<T> : IScopedDependency where T : BotBase
+    public class BotFactory<T>  where T : BotBase
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
@@ -48,6 +48,7 @@ namespace Kahla.SDK.Factories
             bot.AES = aes;
             bot.Profile = botProfile.Profile;
             bot.Contacts = eventSyncer.Contacts;
+            bot.Requests = eventSyncer.Requests;
             return bot;
         }
     }

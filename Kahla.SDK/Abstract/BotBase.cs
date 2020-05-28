@@ -34,9 +34,9 @@ namespace Kahla.SDK.Abstract
         public VersionService VersionService;
         public SettingsService SettingsService;
         public StorageService StorageService;
-
-        public KahlaUser Profile { get; set; }
+        public KahlaUser Profile;
         public IEnumerable<ContactInfo> Contacts { get; set; }
+        public IEnumerable<Request> Requests { get; set; }
 
         public virtual Task OnBotStarting()
         {

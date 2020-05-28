@@ -16,7 +16,7 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Abstract
 {
-    public class BotHost<T> : IScopedDependency where T : BotBase
+    public class BotHost<T> where T : BotBase
     {
         public BotBase BuildBot => _botFactory.ProduceBot();
         public SemaphoreSlim ConnectingLock { get; set; } = new SemaphoreSlim(1);

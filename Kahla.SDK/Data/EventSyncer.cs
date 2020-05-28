@@ -14,7 +14,7 @@ using Websocket.Client;
 
 namespace Kahla.SDK.Data
 {
-    public class EventSyncer<T> : ISingletonDependency where T : BotBase
+    public class EventSyncer<T>  where T : BotBase
     {
         public BotBase BuildBot => _botFactory.ProduceBot();
         private readonly ConversationService _conversationService;
@@ -24,8 +24,8 @@ namespace Kahla.SDK.Data
         private readonly AES _aes;
         private List<ContactInfo> _contacts;
         private List<Request> _requests;
-        public IEnumerable<ContactInfo> Contacts => _contacts.OrderByDescending(t => t.LatestMessage?.SendTime ?? DateTime.MinValue);
-        public IEnumerable<Request> Requests => _requests.OrderByDescending(t => t.CreateTime);
+        public IEnumerable<ContactInfo> Contacts => _contacts?.OrderByDescending(t => t.LatestMessage?.SendTime ?? DateTime.MinValue);
+        public IEnumerable<Request> Requests => _requests?.OrderByDescending(t => t.CreateTime);
 
         public EventSyncer(
             ConversationService conversationService,
@@ -41,8 +41,7 @@ namespace Kahla.SDK.Data
             _aes = aes;
         }
 
-        public async Task Init(
-            WebsocketClient client)
+        public async Task Init(WebsocketClient client)
         {
             await SyncFromServer();
             client.MessageReceived.Subscribe(OnStargateMessage);
@@ -74,7 +73,6 @@ namespace Kahla.SDK.Data
                     await InsertNewMessage(
                         newMessageEvent.ConversationId,
                         newMessageEvent.Message,
-                        newMessageEvent.Mentioned,
                         newMessageEvent.PreviousMessageId);
                     await OnNewMessageEvent(newMessageEvent);
                     break;
@@ -154,7 +152,7 @@ namespace Kahla.SDK.Data
             }
         }
 
-        private async Task InsertNewMessage(int conversationId, Message message, bool mentioned, string previousMessageId)
+        private async Task InsertNewMessage(int conversationId, Message message, string previousMessageId)
         {
             if (!_contacts.Any(t => t.ConversationId == conversationId))
             {

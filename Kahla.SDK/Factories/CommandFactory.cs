@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Kahla.SDK.Factories
 {
-    public class CommandFactory<T> : IScopedDependency where T : BotBase
+    public class CommandFactory<T> where T : BotBase
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private BotHost<T> _instance;

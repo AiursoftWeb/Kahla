@@ -41,8 +41,8 @@ namespace Kahla.SDK.Abstract
                 }
             }
 
-            services.AddScoped(typeof(EventSyncer<>));
-            services.AddScoped(typeof(ProfileContainer<>));
+            services.AddSingleton(typeof(EventSyncer<>));
+            services.AddSingleton(typeof(ProfileContainer<>));
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));
             services.AddScoped(typeof(BotFactory<>));
