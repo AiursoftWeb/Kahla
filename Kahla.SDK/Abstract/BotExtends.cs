@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Kahla.SDK.Data;
+using Kahla.SDK.Factories;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,26 +19,35 @@ namespace Kahla.SDK.Abstract
             return bots;
         }
 
-        public static IServiceProvider AddBots(this IServiceCollection services)
+        private static IEnumerable<Type> ScanHandler()
+        {
+            var handlers = Assembly
+                .GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => !t.IsInterface)
+                .Where(t => t.GetInterfaces().Any(i => i.Name.StartsWith(nameof(ICommandHandler<BotBase>))));
+            return handlers;
+        }
+
+        public static IServiceCollection AddBots(this IServiceCollection services)
         {
             // Register the bots.
             foreach (var botType in ScanBots())
             {
-                services.AddSingleton(botType);
-                services.AddSingleton(typeof(BotBase), botType);
+                services.AddScoped(botType);
+                foreach (var handler in ScanHandler())
+                {
+                    services.AddScoped(typeof(ICommandHandler<>).MakeGenericType(botType), handler.MakeGenericType(botType));
+                }
             }
 
-            // Get a service provider to get bots and factory.
-            var serviceProvider = services.BuildServiceProvider();
-            foreach (var bot in serviceProvider.GetServices<BotBase>())
-            {
-                serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
-            }
-            foreach (var bot in ScanBots().Select(t => serviceProvider.GetService(t) as BotBase))
-            {
-                serviceProvider.GetService<BotFactory>().BuildBotProperties(bot);
-            }
-            return serviceProvider;
+            services.AddSingleton(typeof(EventSyncer<>));
+            services.AddSingleton(typeof(ProfileContainer<>));
+            services.AddScoped(typeof(BotHost<>));
+            services.AddScoped(typeof(BotCommander<>));
+            services.AddScoped(typeof(BotFactory<>));
+            services.AddScoped(typeof(CommandFactory<>));
+            return services;
         }
     }
 }

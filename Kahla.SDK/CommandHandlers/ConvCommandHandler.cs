@@ -1,64 +1,82 @@
 ﻿using Kahla.SDK.Abstract;
+using Kahla.SDK.Data;
+using Kahla.SDK.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("conv")]
-    public class ConvCommandHandler : CommandHandlerBase
+    public class ConvCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public ConvCommandHandler(BotCommander botCommander) : base(botCommander)
+        private readonly AES _aes;
+        private readonly EventSyncer<T> _eventSyncer;
+        private readonly BotLogger _botLogger;
+
+        public ConvCommandHandler(
+            AES aes,
+            EventSyncer<T> eventSyncer,
+            BotLogger botLogger)
         {
+            _aes = aes;
+            _eventSyncer = eventSyncer;
+            _botLogger = botLogger;
         }
 
-        public async override Task Execute(string command)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
+        {
+            return command.StartsWith("conv");
+        }
+
+        public async Task<bool> Execute(string command)
         {
             await Task.Delay(0);
             if (int.TryParse(command.Substring(4).Trim(), out int convId))
             {
-                var conversation = _botCommander._botBase.EventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == convId);
+                var conversation = _eventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == convId);
                 if (conversation == null)
                 {
-                    _botCommander._botLogger.LogDanger($"Conversation with Id '{convId}' was not found!");
+                    _botLogger.LogDanger($"Conversation with Id '{convId}' was not found!");
                 }
                 foreach (var message in conversation.Messages)
                 {
                     if (!message.GroupWithPrevious)
                     {
-                        _botCommander._botLogger.LogInfo($"{message.Sender.NickName} says: \t {_botCommander._aes.OpenSSLDecrypt(message.Content, conversation.AesKey)}");
+                        _botLogger.LogInfo($"{message.Sender.NickName} says: \t {_aes.OpenSSLDecrypt(message.Content, conversation.AesKey)}");
                     }
                     else
                     {
-                        _botCommander._botLogger.LogInfo($"\t\t\t {_botCommander._aes.OpenSSLDecrypt(message.Content, conversation.AesKey)}");
+                        _botLogger.LogInfo($"\t\t\t {_aes.OpenSSLDecrypt(message.Content, conversation.AesKey)}");
                     }
                 }
-                return;
+                return true;
             }
-            foreach (var conversation in _botCommander._botBase.EventSyncer.Contacts)
+            foreach (var conversation in _eventSyncer.Contacts)
             {
                 var online = conversation.Online == true ? "online" :
                              conversation.Online == false ? "offline" : string.Empty;
-                _botCommander._botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
-                _botCommander._botLogger.LogInfo($"ID:\t{conversation.ConversationId}\t{online}\t\t{conversation.Discriminator}");
+                _botLogger.LogInfo($"Name:\t{conversation.DisplayName}");
+                _botLogger.LogInfo($"ID:\t{conversation.ConversationId}\t{online}\t\t{conversation.Discriminator}");
                 if (!string.IsNullOrWhiteSpace(conversation.LatestMessage?.Content))
                 {
-                    _botCommander._botLogger.LogInfo($"Last:\t{_botCommander._aes.OpenSSLDecrypt(conversation.LatestMessage.Content, conversation.AesKey)}");
-                    _botCommander._botLogger.LogInfo($"Time:\t{conversation.LatestMessage.SendTime}");
+                    _botLogger.LogInfo($"Last:\t{_aes.OpenSSLDecrypt(conversation.LatestMessage.Content, conversation.AesKey)}");
+                    _botLogger.LogInfo($"Time:\t{conversation.LatestMessage.SendTime}");
                 }
                 if (conversation.UnReadAmount > 0)
                 {
-                    _botCommander._botLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**");
+                    _botLogger.LogDanger($"Unread:\t**{conversation.UnReadAmount}**");
                 }
                 if (conversation.SomeoneAtMe)
                 {
-                    _botCommander._botLogger.LogWarning($"At!");
+                    _botLogger.LogWarning($"At!");
                 }
                 if (conversation.Messages.Count > 0)
                 {
-                    _botCommander._botLogger.LogVerbose($"Local Messages:\t**{conversation.Messages.Count}**");
+                    _botLogger.LogVerbose($"Local Messages:\t**{conversation.Messages.Count}**");
                 }
-                _botCommander._botLogger.LogInfo($"\n");
+                _botLogger.LogInfo($"\n");
             }
+            return true;
         }
     }
 }

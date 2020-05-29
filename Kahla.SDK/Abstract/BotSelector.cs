@@ -30,7 +30,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.LogWarning("Select your bot:\n");
                 for (int i = 0; i < builtBots.Count; i++)
                 {
-                    _botLogger.LogInfo($"\t{i.ToString()} {builtBots[i].GetType().Name}");
+                    _botLogger.LogInfo($"\t{i} {builtBots[i].GetType().Name}");
                 }
                 while (true)
                 {

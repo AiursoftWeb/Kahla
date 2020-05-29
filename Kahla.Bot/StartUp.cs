@@ -1,23 +1,20 @@
-﻿using Aiursoft.Scanner;
-using Aiursoft.Scanner.Interfaces;
+﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
+using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 
 namespace Kahla.Bot
 {
-    public class StartUp : IScopedDependency
+    public class StartUp : IStartUp
     {
-        public BotBase Bot { get; set; }
-
-        public StartUp(BotSelector botConfigurer)
+        public void ConfigureServices(IServiceCollection services)
         {
-            Bot = botConfigurer.SelectBot();
+            services.AddScoped<BingTranslator>();
         }
 
-        public static IServiceProvider ConfigureServices()
+        public void Configure(SettingsService settings)
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
@@ -25,11 +22,6 @@ namespace Kahla.Bot
                 DateFormatHandling = DateFormatHandling.IsoDateFormat,
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
-
-            return new ServiceCollection()
-                .AddHttpClient()
-                .AddScannedDependencies()
-                .AddBots();
         }
     }
 }

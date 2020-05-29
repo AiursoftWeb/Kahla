@@ -1,20 +1,23 @@
 ﻿using Kahla.SDK.Abstract;
-using System;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("exit")]
-    public class ExitCommandHandler : CommandHandlerBase
+    public class ExitCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public ExitCommandHandler(BotCommander botCommander) : base(botCommander)
+        private BotHost<T> _botHost;
+        public void InjectHost(BotHost<T> instance)
         {
+            _botHost = instance;
         }
-
-        public async override Task Execute(string command)
+        public bool CanHandle(string command)
         {
-            await _botCommander._botBase.LogOff();
-            Environment.Exit(0);
+            return command.StartsWith("exit");
+        }
+        public async Task<bool> Execute(string command)
+        {
+            await _botHost.ReleaseMonitorJob();
+            return false;
         }
     }
 }
