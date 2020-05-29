@@ -8,6 +8,17 @@ namespace Kahla.SDK.Abstract
     public class BotBuilder
     {
         private IServiceProvider _serviceProvider;
+
+        public BotBuilder UseDefaultStartUp()
+        {
+            var services = new ServiceCollection();
+            services.AddHttpClient();
+            services.AddBots();
+            services.AddLibraryDependencies();
+            _serviceProvider = services.BuildServiceProvider();
+            return this;
+        }
+
         public BotBuilder UseStartUp<T>() where T : IStartUp, new()
         {
             var starter = new T();
