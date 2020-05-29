@@ -6,6 +6,7 @@ using Kahla.SDK.Services;
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,12 +81,15 @@ namespace Kahla.SDK.Abstract
                     && MonitorTask.IsCompleted
                     && ConnectTask.IsCompleted)
                 {
-                    reconnectAttempts++;
-                    _botLogger.LogSuccess($"\nTrying to auto reconect! Attempts: {reconnectAttempts}");
-                    ConnectTask = Connect((websocketAddress) =>
+                    if (await SignedIn())
                     {
-                        MonitorTask = MonitorEvents(websocketAddress);
-                    });
+                        reconnectAttempts++;
+                        _botLogger.LogSuccess($"\nTrying to auto reconect! Attempts: {reconnectAttempts}");
+                        ConnectTask = Connect((websocketAddress) =>
+                        {
+                            MonitorTask = MonitorEvents(websocketAddress);
+                        });
+                    }
                 }
                 await Task.Delay(5000);
             }
@@ -188,8 +192,15 @@ namespace Kahla.SDK.Abstract
 
         public async Task<bool> SignedIn()
         {
-            var status = await _authService.SignInStatusAsync();
-            return status.Value;
+            try
+            {
+                var status = await _authService.SignInStatusAsync();
+                return status.Value;
+            }
+            catch (HttpRequestException)
+            {
+                return false;
+            }
         }
 
         public async Task OpenSignIn()
