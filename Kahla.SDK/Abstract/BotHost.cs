@@ -210,7 +210,6 @@ namespace Kahla.SDK.Abstract
             _botLogger.LogWarning($"Please open your browser to view this address: ");
             address = address.Split('&')[0] + "&redirect_uri=https%3A%2F%2Flocalhost%3A5000";
             _botLogger.LogWarning(address);
-            //410969371
         }
 
         public async Task<int> AskCode()
