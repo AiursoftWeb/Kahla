@@ -3,7 +3,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.Pylon.Attributes;
+using Aiursoft.Identity.Attributes;
 using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;

@@ -1,5 +1,5 @@
 ﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.Pylon;
+using Aiursoft.Identity;
 using Aiursoft.SDK;
 using Aiursoft.Stargate.SDK;
 using Kahla.SDK.Models;
@@ -41,8 +41,12 @@ namespace Kahla.Server
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddAiurAPIMvc();
-            services.AddAiurDependenciesWithIdentity<KahlaUser>();
-            services.AddStargateServer();
+            services.AddAiurDependenciesWithIdentity<KahlaUser>(
+                archonEndpoint: _configuration.GetConnectionString("ArchonConnection"),
+                observerEndpoint: _configuration.GetConnectionString("ObserverConnection"),
+                probeEndpoint: _configuration.GetConnectionString("ProbeConnection"),
+                gateyEndpoint: _configuration.GetConnectionString("GatewayConnection"));
+            services.AddStargateServer(_configuration.GetConnectionString("StargateConnection"));
             services.AddScoped<WebPushClient>();
         }
 

@@ -27,11 +27,11 @@ namespace Kahla.Home
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAiurMvc();
-            services.AddArchonServer();
-            services.AddStargateServer();
-            services.AddProbeServer();
-            services.AddGatewayServer();
-            services.AddObserverServer();
+            services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
+            services.AddProbeServer(Configuration.GetConnectionString("ProbeConnection"));
+            services.AddGatewayServer(Configuration.GetConnectionString("GatewayConnection"));
+            services.AddArchonServer(Configuration.GetConnectionString("ArchonConnection"));
+            services.AddObserverServer(Configuration.GetConnectionString("ObserverConnection"));
             services.AddBasic();
         }
 
