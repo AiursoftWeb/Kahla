@@ -1,41 +1,32 @@
 ﻿using Aiursoft.Scanner;
-using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Kahla.SDK.Abstract
 {
     public class BotBuilder
     {
-        private IServiceProvider _serviceProvider;
+        private ServiceCollection _services;
 
-        public BotBuilder UseDefaultStartUp()
+        public BotBuilder()
         {
-            var services = new ServiceCollection();
-            services.AddHttpClient();
-            services.AddBots();
-            services.AddLibraryDependencies();
-            _serviceProvider = services.BuildServiceProvider();
-            return this;
+            _services = new ServiceCollection();
+            _services.AddHttpClient();
+            _services.AddBots();
+            _services.AddLibraryDependencies();
         }
 
         public BotBuilder UseStartUp<T>() where T : IStartUp, new()
         {
             var starter = new T();
-            var services = new ServiceCollection();
-            services.AddHttpClient();
-            services.AddBots();
-            services.AddLibraryDependencies();
-            starter.ConfigureServices(services);
-            _serviceProvider = services.BuildServiceProvider();
-            var settings = _serviceProvider.GetService<SettingsService>();
-            starter.Configure(settings);
+            starter.ConfigureServices(_services);
+            starter.Configure();
             return this;
         }
 
         public BotHost<T> Build<T>() where T : BotBase
         {
-            using var scope = _serviceProvider.CreateScope();
+            var serviceProvider = _services.BuildServiceProvider();
+            using var scope = serviceProvider.CreateScope();
             var botHost = scope.ServiceProvider.GetRequiredService<BotHost<T>>();
             return botHost;
         }

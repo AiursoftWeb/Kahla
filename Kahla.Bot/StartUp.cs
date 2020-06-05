@@ -1,6 +1,5 @@
 ﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
-using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -14,7 +13,7 @@ namespace Kahla.Bot
             services.AddScoped<BingTranslator>();
         }
 
-        public void Configure(SettingsService settings)
+        public void Configure()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
