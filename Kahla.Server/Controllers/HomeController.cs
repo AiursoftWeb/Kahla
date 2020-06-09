@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
+    [APIExpHandler]
     public class HomeController : Controller
     {
         private readonly IWebHostEnvironment _env;
@@ -83,25 +84,6 @@ namespace Kahla.Server.Controllers
                 };
             }
             return Json(model);
-        }
-
-        public async Task<IActionResult> Upgrade()
-        {
-            var users = await _dbContext.Users.ToListAsync();
-            await _appsContainer.AccessToken();
-            foreach (var user in users)
-            {
-                try
-                {
-                    await _authService.OnlyUpdate(user);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                }
-            }
-            return Json("");
         }
     }
 }
