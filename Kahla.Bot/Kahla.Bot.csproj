@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
+    <PackageReference Include="RestSharp" Version="106.11.4" />
   </ItemGroup>
 
 </Project>

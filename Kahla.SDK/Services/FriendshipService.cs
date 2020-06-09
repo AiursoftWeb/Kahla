@@ -35,7 +35,7 @@ namespace Kahla.SDK.Services
             return jsonResult;
         }
 
-        public async Task CompleteRequestAsync(int requestId, bool accept)
+        public async Task<AiurValue<int>> CompleteRequestAsync(int requestId, bool accept)
         {
             var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "CompleteRequest", new { });
             var form = new AiurUrl(string.Empty, new CompleteRequestAddressModel
@@ -44,10 +44,11 @@ namespace Kahla.SDK.Services
                 Accept = accept
             });
             var result = await _http.Post(url, form);
-            var jsonResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+            var jsonResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
             if (jsonResult.Code != ErrorType.Success)
                 throw new AiurUnexceptedResponse(jsonResult);
+            return jsonResult;
         }
 
         public async Task<AiurCollection<Request>> MyRequestsAsync()

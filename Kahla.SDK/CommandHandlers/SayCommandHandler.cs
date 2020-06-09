@@ -1,40 +1,62 @@
 ﻿using Kahla.SDK.Abstract;
+using Kahla.SDK.Data;
+using Kahla.SDK.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("say")]
-    public class SayCommandHandler : CommandHandlerBase
+    public class SayCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public SayCommandHandler(BotCommander botCommander) : base(botCommander)
+        private readonly ConversationService _conversationService;
+        private readonly BotLogger _botLogger;
+        private readonly EventSyncer<T> _eventSyncer;
+        private readonly AES _aes;
+
+        public SayCommandHandler(
+            ConversationService conversationService,
+            BotLogger botLogger,
+            EventSyncer<T> eventSyncer,
+            AES aes)
         {
+            _conversationService = conversationService;
+            _botLogger = botLogger;
+            _eventSyncer = eventSyncer;
+            _aes = aes;
         }
 
-        public async override Task Execute(string command)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
         {
-            var conversations = await _botCommander._conversationService.AllAsync();
-            _botCommander._botLogger.LogInfo($"");
+            return command.StartsWith("say");
+        }
+
+        public async Task<bool> Execute(string command)
+        {
+            var conversations = await _conversationService.AllAsync();
+            _botLogger.LogInfo($"");
             foreach (var conversation in conversations.Items)
             {
-                _botCommander._botLogger.LogInfo($"ID: {conversation.ConversationId}\tName:\t{conversation.DisplayName}");
+                _botLogger.LogInfo($"ID: {conversation.ConversationId}\tName:\t{conversation.DisplayName}");
             }
-            _botCommander._botLogger.LogInfo($"");
-            var convId = _botCommander._botLogger.ReadLine($"Enter conversation ID you want to say:");
+            _botLogger.LogInfo($"");
+            var convId = _botLogger.ReadLine($"Enter conversation ID you want to say:");
             var target = conversations.Items.FirstOrDefault(t => t.ConversationId.ToString() == convId);
             if (target == null)
             {
-                _botCommander._botLogger.LogDanger($"Can't find conversation with ID: {convId}");
-                return;
+                _botLogger.LogDanger($"Can't find conversation with ID: {convId}");
+                return true;
             }
-            var toSay = _botCommander._botLogger.ReadLine($"Enter the message you want to send to '{target.DisplayName}':");
+            var toSay = _botLogger.ReadLine($"Enter the message you want to send to '{target.DisplayName}':");
             if (string.IsNullOrWhiteSpace(toSay))
             {
-                _botCommander._botLogger.LogDanger($"Can't send empty content.");
-                return;
+                _botLogger.LogDanger($"Can't send empty content.");
+                return true;
             }
-            await _botCommander._botBase.SendMessage(toSay, target.ConversationId);
-            _botCommander._botLogger.LogSuccess($"Sent.");
+            var encrypted = _aes.OpenSSLEncrypt(toSay, _eventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == target.ConversationId)?.AesKey);
+            await _conversationService.SendMessageAsync(encrypted, target.ConversationId);
+            _botLogger.LogSuccess($"Sent.");
+            return true;
         }
     }
 }

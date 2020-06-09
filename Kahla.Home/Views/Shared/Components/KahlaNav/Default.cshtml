@@ -1,7 +1,7 @@
 ﻿@model Kahla.Home.Views.Shared.Components.KahlaNav.KahlaNavViewModel
-@using Aiursoft.XelNaga.Models
 @using Aiursoft.Gateway.SDK.Services
 @using Aiursoft.Probe.SDK.Services
+@using Aiursoft.XelNaga.Models
 @inject GatewayLocator GatewayLocator
 @inject ProbeLocator ProbeLocator
 <header>
@@ -20,7 +20,7 @@
                 <a class="d-inline-block m-2" href="https://github.com/AiursoftWeb/Kahla.App/releases">@Localizer["Release notes"]</a>
             </li>
             <li>
-                <a class="d-inline-block m-2" href="@(new AiurUrl(GatewayLocator.Endpoint, "Api", "SetLang", new { Host = $"{Context.Request.Scheme}://{Context.Request.Host}", Path = Context.Request.Path }))">
+                <a class="d-inline-block m-2" data-language-change-link href="@(new AiurUrl(GatewayLocator.Endpoint, "Api", "SetLang", new { }).ToString())">
                     @Localizer["Language"]
                 </a>
             </li>

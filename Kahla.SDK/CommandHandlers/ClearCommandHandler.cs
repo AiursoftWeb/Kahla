@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("clear")]
-    public class ClearCommandHandler : CommandHandlerBase
+    public class ClearCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public ClearCommandHandler(BotCommander botCommander) : base(botCommander)
+        public void InjectHost(BotHost<T> instance) { }
+        public bool CanHandle(string command)
         {
+            return command.StartsWith("clear");
         }
 
-        public async override Task Execute(string command)
+        public Task<bool> Execute(string command)
         {
-            await Task.Delay(0);
             Console.Clear();
+            return Task.FromResult(true);
         }
     }
 }

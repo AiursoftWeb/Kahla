@@ -1,5 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using Kahla.Bot.Services.BingModels;
+﻿using Kahla.Bot.Services.BingModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using RestSharp;
@@ -7,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Kahla.Bot.Services
 {
-    public class BingTranslator : IScopedDependency
+    public class BingTranslator
     {
         private static string _apiKey;
         private readonly BotLogger _logger;

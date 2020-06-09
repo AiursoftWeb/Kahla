@@ -1,20 +1,36 @@
 ﻿using Kahla.SDK.Abstract;
+using Kahla.SDK.Services;
 using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {
-    [CommandHandler("logout")]
-    public class LogoutCommandHandler : CommandHandlerBase
+    public class LogoutCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        public LogoutCommandHandler(BotCommander botCommander) : base(botCommander)
-        {
+        private readonly BotLogger _botLogger;
+        private BotHost<T> _botHost;
 
+        public LogoutCommandHandler(
+            BotLogger botLogger)
+        {
+            _botLogger = botLogger;
         }
 
-        public async override Task Execute(string command)
+        public void InjectHost(BotHost<T> instance)
         {
-            await _botCommander._botBase.LogOff();
-            _botCommander._botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
+            _botHost = instance;
+        }
+
+        public bool CanHandle(string command)
+        {
+            return command.StartsWith("logout");
+        }
+
+        public async Task<bool> Execute(string command)
+        {
+            await _botHost.ReleaseMonitorJob();
+            await _botHost.LogOff();
+            _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
+            return true;
         }
     }
 }
