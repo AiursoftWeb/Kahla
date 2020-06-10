@@ -34,7 +34,6 @@ $ dotnet add package Kahla.SDK
 Create a new file, and name it `FirstBot.cs`. In this C# class, extend the class `BotBase`. Implement all methods in it.
 
 ```csharp
-using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models.ApiViewModels;
@@ -62,27 +61,22 @@ namespace MyBot
 Modify your `Program.cs` to start your bot.
 
 ```csharp
-using Aiursoft.Scanner;
 using Kahla.SDK.Abstract;
-using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyBot
 {
     class Program
     {
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            return new ServiceCollection()
-                .AddHttpClient()              // Add default Http Client
-                .AddScannedDependencies()     // Add all dependencies.
-                .AddBots()                    // Register your bot.
-                .GetService<FirstBot>()       // Get your bot.
-                .Start(enableCommander: true);// Start your bot.
+            await new BotBuilder()
+                .Build<DancerBotCore>()
+                .Run(args.FirstOrDefault() != "as-service");
         }
     }
 }
-
 ```
 
 ### 5. Start your bot
