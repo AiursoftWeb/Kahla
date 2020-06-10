@@ -31,7 +31,7 @@ $ dotnet add package Kahla.SDK
 
 ### 3. Create your bot
 
-Create a new file, and name it `FirstBot.cs`. In this C# class, extend the class `BotBase`. Implement all methods in it.
+Create a new file, and name it `FirstBot.cs`. In this C# class, extend the class `BotBase`. Override the default `OnMessage` method.
 
 ```csharp
 using Kahla.SDK.Abstract;
@@ -100,4 +100,70 @@ That's all! Happy coding!
 
 ### 6. Additional info
 
-For more bot demo, please search `bot.kahla.app` in Kahla. Or [view more demos](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Bot/Bots);
+For dependency injection and advanced start up, Kahla.Bot supports custom start up configure.
+
+Modify your `Program.cs` like this to use advanced start up:
+
+```csharp
+using Kahla.Bot.Bots;
+using Kahla.SDK.Abstract;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Kahla.Bot
+{
+    public class Program
+    {
+        public async static Task Main(string[] args)
+        {
+            await CreateBotBuilder()
+                .Build<EmptyBot>()
+                .Run();
+        }
+
+        public static BotBuilder CreateBotBuilder()
+        {
+            return new BotBuilder()
+                .UseStartUp<StartUp>();
+        }
+    }
+}
+```
+
+And create a new class named: `StartUp`:
+
+```csharp
+using Kahla.Bot.Services;
+using Kahla.SDK.Abstract;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+namespace Kahla.Bot
+{
+    public class StartUp : IStartUp
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add your own services.
+            services.AddTransient<YourTransientService>();
+            services.AddScoped<YourScopedService>();
+            services.AddSingleton<YourSingletonService>();
+        }
+
+        public void Configure()
+        {
+            // This will execute after services are configured. You can edit some global settings here.
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            };
+        }
+    }
+}
+
+```
+
+For more bot demo, please search `bot.kahla.app` in Kahla. Or [view more demos](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Bot);
