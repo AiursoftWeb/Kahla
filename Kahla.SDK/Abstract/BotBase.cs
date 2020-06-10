@@ -86,6 +86,7 @@ namespace Kahla.SDK.Abstract
         public Task SendPhoto(int conversationId, Stream file, string fileName)
         {
             var image = Image.Load(file, out _);
+            file.Seek(0, SeekOrigin.Begin);
             return SendFileWithPattern(conversationId, file, fileName, "[img]{0}|" + $"{image.Width}|{image.Height}");
         }
 
