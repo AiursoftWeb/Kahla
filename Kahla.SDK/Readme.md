@@ -73,7 +73,7 @@ namespace MyBot
         {
             await new BotBuilder()
                 .Build<DancerBotCore>()
-                .Run(args.FirstOrDefault() != "as-service");
+                .Run();
         }
     }
 }
