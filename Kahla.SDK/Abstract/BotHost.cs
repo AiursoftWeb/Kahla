@@ -60,7 +60,7 @@ namespace Kahla.SDK.Abstract
             _botFactory = botFactory;
         }
 
-        public async Task Run(bool enableCommander = true, int autoReconnectMax = 10)
+        public async Task Run(bool enableCommander = true, int autoReconnectMax = int.MaxValue)
         {
             int reconnectAttempts = 0;
             await BuildBot.OnBotStarting();
@@ -95,7 +95,7 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public async Task Connect(Action<string> callback = null)
+        public async Task Connect(Action<string> onGetWebsocket = null)
         {
             _botLogger.LogWarning("Establishing the connection to Kahla...");
             await ReleaseMonitorJob();
@@ -135,7 +135,7 @@ namespace Kahla.SDK.Abstract
             {
                 await BuildBot.OnGroupConnected(group);
             }
-            callback?.Invoke(websocketAddress);
+            onGetWebsocket?.Invoke(websocketAddress);
         }
 
         public string AskServerAddress()
