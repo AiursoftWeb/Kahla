@@ -30,7 +30,6 @@ namespace Kahla.SDK.Models
         public abstract string GetDisplayName(string userId);
         public abstract string GetDisplayImagePath(string userId);
         public abstract int GetUnReadAmount(string userId);
-        public abstract bool WasAted(string userId);
         public abstract bool Muted(string userId);
         public abstract Conversation Build(string userId, OnlineJudger onlineJudger);
         public abstract Message GetLatestMessage();

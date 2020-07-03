@@ -59,14 +59,6 @@ namespace Kahla.SDK.Models
             await Task.WhenAll(taskList);
         }
 
-        public override bool WasAted(string userId)
-        {
-            return Messages
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
-                .Where(t => t.SendTime > Users.SingleOrDefault(p => p.UserId == userId).ReadTimeStamp)
-                .Any(t => t.Ats.Any(p => p.TargetUserId == userId));
-        }
-
         public override bool Muted(string userId)
         {
             return Users.SingleOrDefault(t => t.UserId == userId).Muted;
