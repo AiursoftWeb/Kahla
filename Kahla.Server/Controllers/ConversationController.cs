@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -164,7 +164,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
             }
             // Get last message Id.
-            string lastMessageId = null;
+            string lastMessageId;
             try
             {
                 lastMessageId = _lastSaidJudger.LastMessageId(target.Id);
@@ -177,7 +177,7 @@ namespace Kahla.Server.Controllers
                     .OrderByDescending(t => t.SendTime)
                     .Select(t => t.Id)
                     .FirstOrDefaultAsync();
-                lastMessageId = nullableLastMessageId?.ToString() ?? null;
+                lastMessageId = nullableLastMessageId.Value.ToString();
             }
             // Create message.
             var message = new Message
@@ -190,7 +190,7 @@ namespace Kahla.Server.Controllers
                 SendTime = DateTime.UtcNow,
                 GroupWithPrevious = _lastSaidJudger.ShallBeGroupped(user.Id, target.Id)
             };
-            _dbContext.Messages.Add(message);
+            await _dbContext.Messages.AddAsync(message);
             await _dbContext.SaveChangesAsync();
             _lastSaidJudger.MarkSend(user.Id, target.Id, message.Id);
             // Create at info for this message.
@@ -204,7 +204,7 @@ namespace Kahla.Server.Controllers
                         TargetUserId = atTargetId
                     };
                     message.Ats.Add(at);
-                    _dbContext.Ats.Add(at);
+                    await _dbContext.Ats.AddAsync(at);
                 }
                 else
                 {
@@ -216,7 +216,7 @@ namespace Kahla.Server.Controllers
             // Save the ats.
             await _dbContext.SaveChangesAsync();
             // Set last read time.
-            var lastReadTime = await _dbContext.SetLastRead(target, user.Id);
+            await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
             await target.ForEachUserAsync((eachUser, relation) =>
             {
@@ -290,7 +290,7 @@ namespace Kahla.Server.Controllers
                 .FirstOrDefault();
             if (folder == null)
             {
-                return this.Protocol(ErrorType.RequireAttention, $"No files sent that day.");
+                return this.Protocol(ErrorType.RequireAttention, "No files sent that day.");
             }
             var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
             return Json(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
@@ -336,7 +336,7 @@ namespace Kahla.Server.Controllers
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
-            var taskList = new List<Task>();
+            var taskList = new ConcurrentBag<Task>();
             await target.ForEachUserAsync((eachUser, relation) =>
             {
                 taskList.Add(_pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));

@@ -34,11 +34,11 @@ namespace Kahla.SDK.Abstract
                 }
                 while (true)
                 {
-                    _botLogger.LogInfo($"Select bot:");
+                    _botLogger.LogInfo("Select bot:");
                     var codeString = Console.ReadLine()?.Trim();
                     if (!int.TryParse(codeString, out code) || code >= builtBots.Count)
                     {
-                        _botLogger.LogDanger($"Invalid item!");
+                        _botLogger.LogDanger("Invalid item!");
                         continue;
                     }
                     break;

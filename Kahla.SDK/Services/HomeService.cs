@@ -22,11 +22,11 @@ namespace Kahla.SDK.Services
         {
             var url = new AiurUrl(serverRoot, "Home", "Index", new { });
             var result = await _http.Get(url, false);
-            var JResult = JsonConvert.DeserializeObject<IndexViewModel>(result);
+            var jResult = JsonConvert.DeserializeObject<IndexViewModel>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
     }
 }

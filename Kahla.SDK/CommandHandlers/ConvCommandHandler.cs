@@ -69,13 +69,13 @@ namespace Kahla.SDK.CommandHandlers
                 }
                 if (conversation.SomeoneAtMe)
                 {
-                    _botLogger.LogWarning($"At!");
+                    _botLogger.LogWarning("At!");
                 }
                 if (conversation.Messages.Count > 0)
                 {
                     _botLogger.LogVerbose($"Local Messages:\t**{conversation.Messages.Count}**");
                 }
-                _botLogger.LogInfo($"\n");
+                _botLogger.LogInfo("\n");
             }
             return true;
         }

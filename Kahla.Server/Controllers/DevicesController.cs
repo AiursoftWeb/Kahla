@@ -77,7 +77,7 @@ namespace Kahla.Server.Controllers
                 PushP256DH = model.PushP256DH,
                 IPAddress = HttpContext.Connection.RemoteIpAddress.ToString()
             };
-            _dbContext.Devices.Add(device);
+            await _dbContext.Devices.AddAsync(device);
             await _dbContext.SaveChangesAsync();
             //ErrorType.Success, 
             return Json(new AiurValue<long>(device.Id)
@@ -152,9 +152,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> PushTestMessage()
         {
             var user = await GetKahlaUser();
-            _dbContext.Entry(user)
+            await _dbContext.Entry(user)
                 .Collection(b => b.HisDevices)
-                .Load();
+                .LoadAsync();
             var messageEvent = new NewMessageEvent
             {
                 Message = new Message

@@ -50,17 +50,14 @@ namespace Kahla.Server.Data
                         t.Messages.Count(p => !p.Read && p.SenderId != userId),
 
                     LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
-                    Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(t => t.Sender).FirstOrDefault() : null,
+                    Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Sender).FirstOrDefault() : null,
 
-                    Muted = (t is GroupConversation) ?
-                        ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted : false,
+                    Muted = t is GroupConversation && ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted,
                     AesKey = t.AESKey,
-                    SomeoneAtMe = (t is GroupConversation) ? t.Messages
+                    SomeoneAtMe = (t is GroupConversation) && t.Messages
                         .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
-                        .Any(p => p.Ats.Any(k => k.TargetUserId == userId)) : false,
-                    EnableInvisiable = (t is PrivateConversation) ?
-                        (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.EnableInvisiable : ((PrivateConversation)t).RequestUser.EnableInvisiable) :
-                        false,
+                        .Any(p => p.Ats.Any(k => k.TargetUserId == userId)),
+                    EnableInvisiable = (t is PrivateConversation) && (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.EnableInvisiable : ((PrivateConversation)t).RequestUser.EnableInvisiable),
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
@@ -111,7 +108,7 @@ namespace Kahla.Server.Data
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty
             };
-            GroupConversations.Add(newGroup);
+            await GroupConversations.AddAsync(newGroup);
             await SaveChangesAsync();
             return newGroup;
         }
@@ -150,10 +147,10 @@ namespace Kahla.Server.Data
                         .ForEachAsync(t => t.Read = true);
                 }
             }
-            else if (conversation is GroupConversation)
+            if (conversation is GroupConversation)
             {
                 var relation = await UserGroupRelations
-                        .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
+                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
                 try
                 {
                     return relation.ReadTimeStamp;
@@ -165,7 +162,7 @@ namespace Kahla.Server.Data
             }
             else
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
         }
     }

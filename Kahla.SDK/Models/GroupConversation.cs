@@ -61,7 +61,7 @@ namespace Kahla.SDK.Models
 
         public override bool Muted(string userId)
         {
-            return Users.SingleOrDefault(t => t.UserId == userId).Muted;
+            return Users?.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
         }
 
         public override Conversation Build(string userId, OnlineJudger onlineJudger)

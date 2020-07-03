@@ -118,7 +118,7 @@ namespace Kahla.SDK.Abstract
             }
             else
             {
-                _botLogger.LogSuccess($"\nYou are already signed in! Welcome!");
+                _botLogger.LogSuccess("\nYou are already signed in! Welcome!");
             }
             await RefreshUserProfile();
             var websocketAddress = await GetWsAddress();
@@ -209,9 +209,9 @@ namespace Kahla.SDK.Abstract
 
         public async Task OpenSignIn()
         {
-            _botLogger.LogInfo($"Signing in to Kahla...");
+            _botLogger.LogInfo("Signing in to Kahla...");
             var address = await _authService.OAuthAsync();
-            _botLogger.LogWarning($"Please open your browser to view this address: ");
+            _botLogger.LogWarning("Please open your browser to view this address: ");
             address = address.Split('&')[0] + "&redirect_uri=https%3A%2F%2Flocalhost%3A5000";
             _botLogger.LogWarning(address);
         }
@@ -222,10 +222,10 @@ namespace Kahla.SDK.Abstract
             while (true)
             {
                 await Task.Delay(10);
-                var codeString = _botLogger.ReadLine($"Please enther the `code` in the address bar(after signing in):").Trim();
+                var codeString = _botLogger.ReadLine("Please enther the `code` in the address bar(after signing in):").Trim();
                 if (!int.TryParse(codeString, out code))
                 {
-                    _botLogger.LogDanger($"Invalid code! Code is a number! You can find it in the address bar after you sign in.");
+                    _botLogger.LogDanger("Invalid code! Code is a number! You can find it in the address bar after you sign in.");
                     continue;
                 }
                 break;
@@ -239,7 +239,7 @@ namespace Kahla.SDK.Abstract
             {
                 try
                 {
-                    _botLogger.LogInfo($"Calling sign in API...");
+                    _botLogger.LogInfo("Calling sign in API...");
                     var response = await _authService.SignIn(code);
                     if (!string.IsNullOrWhiteSpace(response))
                     {
@@ -250,7 +250,7 @@ namespace Kahla.SDK.Abstract
                 catch (WebException)
                 {
                     _botLogger.AppendResult(false, 7);
-                    _botLogger.LogDanger($"Invalid code!");
+                    _botLogger.LogDanger("Invalid code!");
                     code = await AskCode();
                 }
             }
@@ -260,7 +260,7 @@ namespace Kahla.SDK.Abstract
         {
             try
             {
-                _botLogger.LogInfo($"Getting account profile...");
+                _botLogger.LogInfo("Getting account profile...");
                 var profile = await _authService.MeAsync();
                 _botLogger.AppendResult(true, 6);
                 _profileContainer.Profile = profile.Value;
@@ -274,7 +274,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task<string> GetWsAddress()
         {
-            _botLogger.LogInfo($"Getting websocket channel...");
+            _botLogger.LogInfo("Getting websocket channel...");
             var address = await _authService.InitPusherAsync();
             _botLogger.AppendResult(true, 6);
             return address.ServerPath;
@@ -305,7 +305,7 @@ namespace Kahla.SDK.Abstract
             await client.Start();
 
             // log.
-            _botLogger.LogInfo($"Listening to your account channel.");
+            _botLogger.LogInfo("Listening to your account channel.");
             _botLogger.LogVerbose(websocketAddress + "\n");
             _botLogger.AppendResult(true, 9);
 

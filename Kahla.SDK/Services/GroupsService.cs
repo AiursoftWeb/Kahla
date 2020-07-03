@@ -30,11 +30,11 @@ namespace Kahla.SDK.Services
                 joinPassword
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
+            var jResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
 
         public async Task<AiurProtocol> SetGroupMutedAsync(string groupName, bool setMuted)
@@ -46,11 +46,11 @@ namespace Kahla.SDK.Services
                 setMuted
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
+            var jResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
 
-            if (JResult.Code != ErrorType.Success && JResult.Code != ErrorType.HasDoneAlready)
-                throw new AiurUnexpectedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success && jResult.Code != ErrorType.HasDoneAlready)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
 
         public async Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)
@@ -60,10 +60,10 @@ namespace Kahla.SDK.Services
                 id = groupId
             });
             var result = await _http.Get(url);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<SearchedGroup>>(result);
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(JResult);
-            return JResult;
+            var jResult = JsonConvert.DeserializeObject<AiurValue<SearchedGroup>>(result);
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
     }
 }

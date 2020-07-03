@@ -7,14 +7,14 @@ namespace Kahla.SDK.Services
 {
     public class SettingsService : ISingletonDependency
     {
-        public Dictionary<string, object> _cached;
+        public Dictionary<string, object> Cached;
         public Dictionary<string, object> ReadAll()
         {
             try
             {
                 var settingString = File.ReadAllText("bot.json");
-                _cached = JsonConvert.DeserializeObject<Dictionary<string, object>>(settingString);
-                return _cached;
+                Cached = JsonConvert.DeserializeObject<Dictionary<string, object>>(settingString);
+                return Cached;
             }
             catch (IOException)
             {

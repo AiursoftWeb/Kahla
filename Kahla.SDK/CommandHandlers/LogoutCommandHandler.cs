@@ -29,7 +29,7 @@ namespace Kahla.SDK.CommandHandlers
         {
             await _botHost.ReleaseMonitorJob();
             await _botHost.LogOff();
-            _botLogger.LogWarning($"Successfully log out. Use command:`reboot` to reconnect.");
+            _botLogger.LogWarning("Successfully log out. Use command:`reboot` to reconnect.");
             return true;
         }
     }

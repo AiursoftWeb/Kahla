@@ -9,20 +9,20 @@ namespace Kahla.Server.Middlewares
 {
     public class HandleKahlaOptionsMiddleware
     {
-        private List<DomainSettings> _appDomain { get; }
+        private List<DomainSettings> AppDomain { get; }
         private readonly RequestDelegate _next;
 
         public HandleKahlaOptionsMiddleware(
             RequestDelegate next,
             IOptions<List<DomainSettings>> optionsAccessor)
         {
-            _appDomain = optionsAccessor.Value;
+            AppDomain = optionsAccessor.Value;
             _next = next;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var settingsRecord = _appDomain.FirstOrDefault(t => t.Server.ToLower().Trim() == context.Request.Host.ToString().ToLower().Trim());
+            var settingsRecord = AppDomain.FirstOrDefault(t => t.Server.ToLower().Trim() == context.Request.Host.ToString().ToLower().Trim());
             context.Response.Headers.Add("Cache-Control", "no-cache");
             context.Response.Headers.Add("Expires", "-1");
             if (settingsRecord != null)

@@ -33,11 +33,11 @@ namespace Kahla.SDK.CommandHandlers
                 _botLogger.LogInfo($"Time:\t{request.CreateTime}");
                 if (request.Completed)
                 {
-                    _botLogger.LogSuccess($"\tCompleted.");
+                    _botLogger.LogSuccess("\tCompleted.");
                 }
                 else
                 {
-                    _botLogger.LogWarning($"\tPending.");
+                    _botLogger.LogWarning("\tPending.");
                 }
             }
             return true;

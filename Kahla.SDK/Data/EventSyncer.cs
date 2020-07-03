@@ -166,7 +166,7 @@ namespace Kahla.SDK.Data
                     conversation.Messages.All(t => t.Id != Guid.Parse(previousMessageId))) // Server side previous message do not exists locally.
                 {
                     // Some message was lost.
-                    _botLogger.LogWarning($"Some message was lost. Trying to sync...");
+                    _botLogger.LogWarning("Some message was lost. Trying to sync...");
                     var missedMessages = await _conversationService.GetMessagesAsync(conversationId, 15, message.Id.ToString());
                     foreach (var missedMessage in missedMessages.Items)
                     {

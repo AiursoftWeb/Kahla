@@ -66,11 +66,11 @@ namespace Kahla.SDK.Services
                 MessageId = Guid.NewGuid().ToString("N")
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
+            var jResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
     }
 }

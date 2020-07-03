@@ -35,7 +35,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
-        private static readonly object _obj = new object();
+        private static readonly object Obj = new object();
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -132,7 +132,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
             Request request;
-            lock (_obj)
+            lock (Obj)
             {
                 var pending = _dbContext.Requests
                     .Where(t =>
@@ -208,14 +208,14 @@ namespace Kahla.Server.Controllers
                     request.Creator,
                     request,
                     model.Accept,
-                    newConversation.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                    newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
                 _pusher.FriendsChangedEvent(
                     request.Target,
                     request,
                     model.Accept,
-                    newConversation.Build(request.TargetId, _onlineJudger) as PrivateConversation)
+                    newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation)
             );
-            return Json(new AiurValue<int>(newConversation.Id)
+            return Json(new AiurValue<int?>(newConversation?.Id)
             {
                 Code = ErrorType.Success,
                 Message = "You have successfully completed this request."
@@ -417,7 +417,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You have already reported the target user!");
             }
             // All check passed. Report him now!
-            _dbContext.Reports.Add(new Report
+            await _dbContext.Reports.AddAsync(new Report
             {
                 TargetId = targetUser.Id,
                 TriggerId = currentUser.Id,
