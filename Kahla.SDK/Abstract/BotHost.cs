@@ -261,7 +261,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.AppendResult(true, 6);
                 _profileContainer.Profile = profile.Value;
             }
-            catch (AiurUnexceptedResponse e)
+            catch (AiurUnexpectedResponse e)
             {
                 _botLogger.AppendResult(false, 6);
                 _botLogger.LogDanger(e.Message);

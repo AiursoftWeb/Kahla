@@ -30,7 +30,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<MineViewModel>(result);
 
             if (jsonResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
 
             return jsonResult;
         }
@@ -47,7 +47,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
             if (jsonResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
             return jsonResult;
         }
 
@@ -58,7 +58,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Request>>(result);
 
             if (jsonResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
 
             return jsonResult;
         }

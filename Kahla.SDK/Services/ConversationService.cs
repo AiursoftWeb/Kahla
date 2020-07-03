@@ -34,7 +34,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurCollection<ContactInfo>>(result);
             if (jsonResult.Code != ErrorType.Success)
             {
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
             }
             return jsonResult;
         }
@@ -51,7 +51,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Message>>(result);
             if (jsonResult.Code != ErrorType.Success)
             {
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
             }
             return jsonResult;
         }
@@ -69,7 +69,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
 
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
     }

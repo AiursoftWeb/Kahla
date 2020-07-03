@@ -129,7 +129,7 @@ namespace Kahla.SDK.Abstract
                 var group = await GroupsService.GroupSummaryAsync(result.Value);
                 await OnGroupConnected(group.Value);
             }
-            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready)
+            catch (AiurUnexpectedResponse e) when (e.Code == ErrorType.HasDoneAlready)
             {
                 // do nothing.
             }

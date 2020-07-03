@@ -34,7 +34,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<InitFileAccessViewModel>(result);
 
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
     }

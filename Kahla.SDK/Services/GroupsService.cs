@@ -33,7 +33,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
 
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
 
@@ -49,7 +49,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
 
             if (JResult.Code != ErrorType.Success && JResult.Code != ErrorType.HasDoneAlready)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
 
@@ -62,7 +62,7 @@ namespace Kahla.SDK.Services
             var result = await _http.Get(url);
             var JResult = JsonConvert.DeserializeObject<AiurValue<SearchedGroup>>(result);
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
     }

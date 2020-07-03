@@ -46,7 +46,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<KahlaUser>>(result);
 
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
 
@@ -57,7 +57,7 @@ namespace Kahla.SDK.Services
             var jresult = JsonConvert.DeserializeObject<InitPusherViewModel>(result);
 
             if (jresult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(jresult);
+                throw new AiurUnexpectedResponse(jresult);
             return jresult;
         }
 
@@ -68,7 +68,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<bool>>(result);
 
             if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
 
@@ -79,7 +79,7 @@ namespace Kahla.SDK.Services
             var JResult = JsonConvert.DeserializeObject<AiurValue<bool>>(result);
 
             if (JResult.Code != ErrorType.Success && JResult.Code != ErrorType.RequireAttention)
-                throw new AiurUnexceptedResponse(JResult);
+                throw new AiurUnexpectedResponse(JResult);
             return JResult;
         }
     }

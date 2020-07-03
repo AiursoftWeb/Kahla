@@ -45,7 +45,7 @@ namespace Kahla.Server
                 archonEndpoint: _configuration.GetConnectionString("ArchonConnection"),
                 observerEndpoint: _configuration.GetConnectionString("ObserverConnection"),
                 probeEndpoint: _configuration.GetConnectionString("ProbeConnection"),
-                gateyEndpoint: _configuration.GetConnectionString("GatewayConnection"));
+                gateEndpoint: _configuration.GetConnectionString("GatewayConnection"));
             services.AddStargateServer(_configuration.GetConnectionString("StargateConnection"));
             services.AddScoped<WebPushClient>();
         }
