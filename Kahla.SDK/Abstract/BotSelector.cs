@@ -35,7 +35,7 @@ namespace Kahla.SDK.Abstract
                 while (true)
                 {
                     _botLogger.LogInfo($"Select bot:");
-                    var codeString = Console.ReadLine().Trim();
+                    var codeString = Console.ReadLine()?.Trim();
                     if (!int.TryParse(codeString, out code) || code >= builtBots.Count)
                     {
                         _botLogger.LogDanger($"Invalid item!");

@@ -19,34 +19,34 @@ namespace Kahla.Server
 {
     public class Startup
     {
-        private IConfiguration _configuration { get; }
+        private IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
             AppsContainer.CurrentAppId = configuration["KahlaAppId"];
             AppsContainer.CurrentAppSecret = configuration["KahlaAppSecret"];
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContextWithCache<KahlaDbContext>(_configuration.GetConnectionString("DatabaseConnection"));
+            services.AddDbContextWithCache<KahlaDbContext>(Configuration.GetConnectionString("DatabaseConnection"));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<List<DomainSettings>>(_configuration.GetSection("AppDomain"));
+            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddAiurAPIMvc();
             services.AddAiurDependenciesWithIdentity<KahlaUser>(
-                archonEndpoint: _configuration.GetConnectionString("ArchonConnection"),
-                observerEndpoint: _configuration.GetConnectionString("ObserverConnection"),
-                probeEndpoint: _configuration.GetConnectionString("ProbeConnection"),
-                gateEndpoint: _configuration.GetConnectionString("GatewayConnection"));
-            services.AddStargateServer(_configuration.GetConnectionString("StargateConnection"));
+                archonEndpoint: Configuration.GetConnectionString("ArchonConnection"),
+                observerEndpoint: Configuration.GetConnectionString("ObserverConnection"),
+                probeEndpoint: Configuration.GetConnectionString("ProbeConnection"),
+                gateEndpoint: Configuration.GetConnectionString("GatewayConnection"));
+            services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
             services.AddScoped<WebPushClient>();
         }
 

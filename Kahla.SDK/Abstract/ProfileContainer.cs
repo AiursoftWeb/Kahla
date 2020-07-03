@@ -2,7 +2,7 @@
 
 namespace Kahla.SDK.Abstract
 {
-    public class ProfileContainer<T>  where T : BotBase
+    public class ProfileContainer
     {
         public KahlaUser Profile { get; set; }
     }

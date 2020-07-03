@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
@@ -26,7 +27,7 @@ namespace Kahla.SDK.Abstract
         private readonly VersionService _versionService;
         private readonly AuthService _authService;
         private readonly EventSyncer<T> _eventSyncer;
-        private readonly ProfileContainer<T> _profileContainer;
+        private readonly ProfileContainer _profileContainer;
         private readonly BotFactory<T> _botFactory;
         private ManualResetEvent _exitEvent;
 
@@ -44,7 +45,7 @@ namespace Kahla.SDK.Abstract
             VersionService versionService,
             AuthService authService,
             EventSyncer<T> eventSyncer,
-            ProfileContainer<T> profileContainer,
+            ProfileContainer profileContainer,
             BotFactory<T> botFactory)
         {
             _botCommander = botCommander.InjectHost(this);
@@ -117,7 +118,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.LogSuccess($"\nYou are already signed in! Welcome!");
             }
             await RefreshUserProfile();
-            var websocketAddress = await GetWSAddress();
+            var websocketAddress = await GetWsAddress();
             // Trigger on request.
             var requests = (await _friendshipService.MyRequestsAsync())
                 .Items
@@ -174,12 +175,12 @@ namespace Kahla.SDK.Abstract
                 _botLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{_versionService.GetSDKVersion()}");
                 if (index.APIVersion != _versionService.GetSDKVersion())
                 {
-                    _botLogger.AppendResult(false, 1);
+                    _botLogger.AppendResult(false);
                     _botLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");
                 }
                 else
                 {
-                    _botLogger.AppendResult(true, 1);
+                    _botLogger.AppendResult(true);
                 }
                 return true;
             }
@@ -268,7 +269,7 @@ namespace Kahla.SDK.Abstract
             }
         }
 
-        public async Task<string> GetWSAddress()
+        public async Task<string> GetWsAddress()
         {
             _botLogger.LogInfo($"Getting websocket channel...");
             var address = await _authService.InitPusherAsync();
@@ -292,15 +293,11 @@ namespace Kahla.SDK.Abstract
                 ReconnectTimeout = TimeSpan.FromDays(1)
             };
             client.ReconnectionHappened.Subscribe(type => _botLogger.LogVerbose($"WebSocket: {type.Type}"));
-            Action onDisconnect = () =>
+            var subscription = client.DisconnectionHappened.Subscribe((t) =>
             {
                 _botLogger.LogDanger("Websocket connection dropped!");
                 _exitEvent?.Set();
                 _exitEvent = null;
-            };
-            client.DisconnectionHappened.Subscribe((t) =>
-            {
-                onDisconnect?.Invoke();
             });
             await client.Start();
 
@@ -315,7 +312,7 @@ namespace Kahla.SDK.Abstract
 
             // Pend.
             _exitEvent?.WaitOne();
-            onDisconnect = null;
+            subscription.Dispose();
             await client.Stop(WebSocketCloseStatus.NormalClosure, string.Empty);
             _botLogger.LogVerbose("Websocket connection disconnected.");
         }

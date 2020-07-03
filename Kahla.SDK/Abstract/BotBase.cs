@@ -17,7 +17,7 @@ namespace Kahla.SDK.Abstract
 {
     public abstract class BotBase
     {
-        public AES AES;
+        public AES Aes;
         public BotLogger BotLogger;
         public GroupsService GroupsService;
         public ConversationService ConversationService;
@@ -117,7 +117,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task SendMessage(string message, int conversationId)
         {
-            var encrypted = AES.OpenSSLEncrypt(message, Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
+            var encrypted = Aes.OpenSSLEncrypt(message, Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 

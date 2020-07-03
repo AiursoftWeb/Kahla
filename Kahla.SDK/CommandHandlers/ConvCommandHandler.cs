@@ -37,6 +37,7 @@ namespace Kahla.SDK.CommandHandlers
                 if (conversation == null)
                 {
                     _botLogger.LogDanger($"Conversation with Id '{convId}' was not found!");
+                    return true;
                 }
                 foreach (var message in conversation.Messages)
                 {

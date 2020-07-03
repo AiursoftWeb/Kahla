@@ -8,8 +8,6 @@ namespace Kahla.SDK.Factories
     public class BotFactory<T>  where T : BotBase
     {
         private readonly IServiceScopeFactory _scopeFactory;
-
-
         public BotFactory(
             IServiceScopeFactory scopeFactory)
         {
@@ -31,7 +29,7 @@ namespace Kahla.SDK.Factories
             var eventSyncer = scope.ServiceProvider.GetRequiredService<EventSyncer<T>>();
             var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
             var aes = scope.ServiceProvider.GetRequiredService<AES>();
-            var botProfile = scope.ServiceProvider.GetRequiredService<ProfileContainer<T>>();
+            var botProfile = scope.ServiceProvider.GetRequiredService<ProfileContainer>();
             var bot = scope.ServiceProvider.GetRequiredService<T>();
             bot.ConversationService = conversationService;
             bot.GroupsService = groupsService;
@@ -43,7 +41,7 @@ namespace Kahla.SDK.Factories
             bot.VersionService = versionService;
             bot.SettingsService = settingsService;
             bot.StorageService = storageService;
-            bot.AES = aes;
+            bot.Aes = aes;
             bot.Profile = botProfile.Profile;
             bot.Contacts = eventSyncer.Contacts;
             bot.Requests = eventSyncer.Requests;

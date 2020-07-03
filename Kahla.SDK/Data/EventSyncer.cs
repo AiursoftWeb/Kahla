@@ -146,24 +146,24 @@ namespace Kahla.SDK.Data
                 }
                 else
                 {
-                    inMemory = request;
+                    _requests.Remove(inMemory);
+                    _requests.Add(request);
                 }
             }
         }
 
         private async Task InsertNewMessage(int conversationId, Message message, string previousMessageId)
         {
-            if (!_contacts.Any(t => t.ConversationId == conversationId))
+            var conversation = _contacts.SingleOrDefault(t => t.ConversationId == conversationId);
+            if (conversation == null)
             {
-                // Can't find the conversation.
-                _botLogger.LogDanger($"Comming new message from conversation: '{conversationId}' but we can't find it in memory.");
+                _botLogger.LogDanger($"Comming new message from unknown conversation: '{conversationId}' but we can't find it in memory.");
                 return;
             }
-            var conversation = _contacts.SingleOrDefault(t => t.ConversationId == conversationId);
             if (Guid.Parse(previousMessageId) != Guid.Empty)  // On server, has previous message.)
             {
                 if (conversation.LatestMessage.Id != Guid.Parse(previousMessageId) || // Local latest message is not latest.
-                   !conversation.Messages.Any(t => t.Id == Guid.Parse(previousMessageId))) // Server side previous message do not exists locally.
+                    conversation.Messages.All(t => t.Id != Guid.Parse(previousMessageId))) // Server side previous message do not exists locally.
                 {
                     // Some message was lost.
                     _botLogger.LogWarning($"Some message was lost. Trying to sync...");
@@ -205,7 +205,7 @@ namespace Kahla.SDK.Data
                 Online = request.TargetId == BuildBot.Profile.Id ?
                     request.Creator.IsOnline :
                     request.Target.IsOnline
-            }); ;
+            });
         }
 
         private void SyncGroupToContacts(GroupConversation createdConversation, int messageCount, Message latestMessage)
