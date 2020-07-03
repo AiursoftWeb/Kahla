@@ -72,7 +72,7 @@ namespace Kahla.SDK.Models
         public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
 
         [JsonProperty]
-        public bool EnableInvisiable { get; set; } = false;
+        public bool EnableInvisiable { get; set; }
         public bool ShouldSerializeEnableInvisiable() => IsMe;
 
         [JsonProperty]

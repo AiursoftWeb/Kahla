@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
@@ -90,6 +89,10 @@ namespace Kahla.SDK.Abstract
                         {
                             MonitorTask = MonitorEvents(websocketAddress);
                         });
+                    }
+                    else
+                    {
+                        _botLogger.LogDanger("Cannot start reconnecting. Because checking sign in status failed.");
                     }
                 }
                 await Task.Delay(5000);

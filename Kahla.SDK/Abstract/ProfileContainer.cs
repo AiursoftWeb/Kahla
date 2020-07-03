@@ -1,8 +1,9 @@
-﻿using Kahla.SDK.Models;
+﻿using Aiursoft.Scanner.Interfaces;
+using Kahla.SDK.Models;
 
 namespace Kahla.SDK.Abstract
 {
-    public class ProfileContainer
+    public class ProfileContainer : ISingletonDependency
     {
         public KahlaUser Profile { get; set; }
     }

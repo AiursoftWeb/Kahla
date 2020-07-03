@@ -5,7 +5,7 @@ namespace Kahla.SDK.Abstract
 {
     public class BotBuilder
     {
-        private ServiceCollection _services;
+        private readonly ServiceCollection _services;
 
         public BotBuilder()
         {
