@@ -169,7 +169,7 @@ namespace Kahla.Server.Controllers
             {
                 lastMessageId = _lastSaidJudger.LastMessageId(target.Id);
             }
-            catch (ArgumentNullException)
+            catch (InvalidOperationException)
             {
                 Guid? nullableLastMessageId = await _dbContext
                     .Messages
