@@ -34,7 +34,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurCollection<ContactInfo>>(result);
             if (jsonResult.Code != ErrorType.Success)
             {
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
             }
             return jsonResult;
         }
@@ -51,7 +51,7 @@ namespace Kahla.SDK.Services
             var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Message>>(result);
             if (jsonResult.Code != ErrorType.Success)
             {
-                throw new AiurUnexceptedResponse(jsonResult);
+                throw new AiurUnexpectedResponse(jsonResult);
             }
             return jsonResult;
         }
@@ -66,11 +66,11 @@ namespace Kahla.SDK.Services
                 MessageId = Guid.NewGuid().ToString("N")
             });
             var result = await _http.Post(url, form);
-            var JResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
+            var jResult = JsonConvert.DeserializeObject<AiurValue<Message>>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
     }
 }

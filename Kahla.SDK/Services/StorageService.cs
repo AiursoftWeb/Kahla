@@ -31,11 +31,11 @@ namespace Kahla.SDK.Services
                 Download = canDownload
             });
             var result = await Http.Get(url);
-            var JResult = JsonConvert.DeserializeObject<InitFileAccessViewModel>(result);
+            var jResult = JsonConvert.DeserializeObject<InitFileAccessViewModel>(result);
 
-            if (JResult.Code != ErrorType.Success)
-                throw new AiurUnexceptedResponse(JResult);
-            return JResult;
+            if (jResult.Code != ErrorType.Success)
+                throw new AiurUnexpectedResponse(jResult);
+            return jResult;
         }
     }
 }

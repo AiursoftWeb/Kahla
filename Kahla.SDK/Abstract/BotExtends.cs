@@ -14,7 +14,7 @@ namespace Kahla.SDK.Abstract
         {
             var bots = Assembly
                 .GetEntryAssembly()
-                .GetTypes()
+                ?.GetTypes()
                 .Where(t => t.IsSubclassOf(typeof(BotBase)));
             return bots;
         }
@@ -42,7 +42,6 @@ namespace Kahla.SDK.Abstract
             }
 
             services.AddSingleton(typeof(EventSyncer<>));
-            services.AddSingleton(typeof(ProfileContainer<>));
             services.AddScoped(typeof(BotHost<>));
             services.AddScoped(typeof(BotCommander<>));
             services.AddScoped(typeof(BotFactory<>));

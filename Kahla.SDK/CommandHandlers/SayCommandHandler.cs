@@ -34,13 +34,13 @@ namespace Kahla.SDK.CommandHandlers
         public async Task<bool> Execute(string command)
         {
             var conversations = await _conversationService.AllAsync();
-            _botLogger.LogInfo($"");
+            _botLogger.LogInfo("");
             foreach (var conversation in conversations.Items)
             {
                 _botLogger.LogInfo($"ID: {conversation.ConversationId}\tName:\t{conversation.DisplayName}");
             }
-            _botLogger.LogInfo($"");
-            var convId = _botLogger.ReadLine($"Enter conversation ID you want to say:");
+            _botLogger.LogInfo("");
+            var convId = _botLogger.ReadLine("Enter conversation ID you want to say:");
             var target = conversations.Items.FirstOrDefault(t => t.ConversationId.ToString() == convId);
             if (target == null)
             {
@@ -50,12 +50,12 @@ namespace Kahla.SDK.CommandHandlers
             var toSay = _botLogger.ReadLine($"Enter the message you want to send to '{target.DisplayName}':");
             if (string.IsNullOrWhiteSpace(toSay))
             {
-                _botLogger.LogDanger($"Can't send empty content.");
+                _botLogger.LogDanger("Can't send empty content.");
                 return true;
             }
             var encrypted = _aes.OpenSSLEncrypt(toSay, _eventSyncer.Contacts.FirstOrDefault(t => t.ConversationId == target.ConversationId)?.AesKey);
             await _conversationService.SendMessageAsync(encrypted, target.ConversationId);
-            _botLogger.LogSuccess($"Sent.");
+            _botLogger.LogSuccess("Sent.");
             return true;
         }
     }

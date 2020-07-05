@@ -10,9 +10,13 @@ namespace Kahla.SDK.Services
             return SDKVersion();
         }
 
-        public static string SDKVersion()
+        private static string SDKVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
+            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString().Split('.');
+            if (version == null)
+            {
+                return null;
+            }
             return $"{version[0]}.{version[1]}.{version[2]}";
         }
     }

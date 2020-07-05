@@ -65,7 +65,7 @@ namespace Kahla.Server.Controllers
             var token = await _tokenService.GetTokenAsync(
                 accessToken,
                 siteName,
-                new string[] { "Upload" },
+                new[] { "Upload" },
                 path);
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
@@ -75,7 +75,7 @@ namespace Kahla.Server.Controllers
             return Json(new AiurValue<string>(address.ToString())
             {
                 Code = ErrorType.Success,
-                Message = $"Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
+                Message = "Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
             });
         }
 
@@ -116,7 +116,7 @@ namespace Kahla.Server.Controllers
             {
                 UploadAddress = address.ToString(),
                 Code = ErrorType.Success,
-                Message = $"Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
+                Message = "Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
             });
         }
 

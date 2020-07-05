@@ -17,7 +17,7 @@ namespace Kahla.SDK.Abstract
 {
     public abstract class BotBase
     {
-        public AES AES;
+        public AES Aes;
         public BotLogger BotLogger;
         public GroupsService GroupsService;
         public ConversationService ConversationService;
@@ -86,6 +86,7 @@ namespace Kahla.SDK.Abstract
         public Task SendPhoto(int conversationId, Stream file, string fileName)
         {
             var image = Image.Load(file, out _);
+            file.Seek(0, SeekOrigin.Begin);
             return SendFileWithPattern(conversationId, file, fileName, "[img]{0}|" + $"{image.Width}|{image.Height}");
         }
 
@@ -116,7 +117,7 @@ namespace Kahla.SDK.Abstract
 
         public async Task SendMessage(string message, int conversationId)
         {
-            var encrypted = AES.OpenSSLEncrypt(message, Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
+            var encrypted = Aes.OpenSSLEncrypt(message, Contacts.FirstOrDefault(t => t.ConversationId == conversationId)?.AesKey);
             await ConversationService.SendMessageAsync(encrypted, conversationId);
         }
 
@@ -128,7 +129,7 @@ namespace Kahla.SDK.Abstract
                 var group = await GroupsService.GroupSummaryAsync(result.Value);
                 await OnGroupConnected(group.Value);
             }
-            catch (AiurUnexceptedResponse e) when (e.Code == ErrorType.HasDoneAlready)
+            catch (AiurUnexpectedResponse e) when (e.Code == ErrorType.HasDoneAlready)
             {
                 // do nothing.
             }

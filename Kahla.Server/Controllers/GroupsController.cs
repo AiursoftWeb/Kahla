@@ -34,7 +34,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
-        private static readonly object _obj = new object();
+        private static readonly object Obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
@@ -82,7 +82,7 @@ namespace Kahla.Server.Controllers
                 GroupId = createdGroup.Id,
                 ReadTimeStamp = DateTime.MinValue
             };
-            _dbContext.UserGroupRelations.Add(newRelationship);
+            await _dbContext.UserGroupRelations.AddAsync(newRelationship);
             await _dbContext.SaveChangesAsync();
             return Json(new AiurValue<int>(createdGroup.Id)
             {
@@ -117,7 +117,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
             GroupConversation group;
-            lock (_obj)
+            lock (Obj)
             {
                 group = _dbContext
                    .GroupConversations

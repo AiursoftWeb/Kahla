@@ -47,11 +47,6 @@ namespace Kahla.SDK.Models
             await Task.WhenAll(taskList);
         }
 
-        public override bool WasAted(string userId)
-        {
-            return false;
-        }
-
         public override bool Muted(string userId)
         {
             return false;

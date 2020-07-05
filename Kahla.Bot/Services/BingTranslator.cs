@@ -44,7 +44,7 @@ namespace Kahla.Bot.Services
             };
             var bingResponse = CallTranslateAPI(JsonConvert.SerializeObject(inputSource), targetLanguage);
             var result = JsonConvert.DeserializeObject<List<BingResponse>>(bingResponse);
-            _logger.LogInfo($"Called Bing translate API.");
+            _logger.LogInfo("Called Bing translate API.");
             return result[0].Translations[0].Text;
         }
     }

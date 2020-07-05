@@ -41,7 +41,7 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> KahlaServerList()
         {
             var serversFileAddress = _configuration["KahlaServerList"];
-            var serversJson = await _cache.GetAndCache($"servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress), false));
+            var serversJson = await _cache.GetAndCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress), false));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new ConcurrentBag<IndexViewModel>();
             await servers.ForEachParallel(async server =>
@@ -54,7 +54,10 @@ namespace Kahla.Home.Controllers
                         serversRendered.Add(serverInfo);
                     }
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             });
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             return Json(serversRendered);

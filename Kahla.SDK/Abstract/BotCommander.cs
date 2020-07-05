@@ -34,8 +34,12 @@ namespace Kahla.SDK.Abstract
             var commanding = true;
             while (commanding)
             {
-                _botLogger.WriteGrayNewLine($"K:\\Bots\\>");
+                _botLogger.WriteGrayNewLine("K:\\Bots\\>");
                 var command = Console.ReadLine();
+                if (command == null)
+                {
+                    continue;
+                }
                 if (command.Length < 1)
                 {
                     continue;

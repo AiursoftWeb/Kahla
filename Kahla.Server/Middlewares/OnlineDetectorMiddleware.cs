@@ -1,8 +1,8 @@
-﻿using Aiursoft.WebTools;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Threading.Tasks;
+using Aiursoft.Identity;
 
 namespace Kahla.Server.Middlewares
 {
@@ -10,7 +10,7 @@ namespace Kahla.Server.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IMemoryCache _memoryCache;
-        public static object _obj = new object();
+        private static object _obj = new object();
 
         public OnlineDetectorMiddleware(
             RequestDelegate next,

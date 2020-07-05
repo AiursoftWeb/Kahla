@@ -107,8 +107,8 @@
 
 @section scripts{
     <script>
-        $('td').each(function () {
-            var model = $(this);
+        window.$('td').each(function () {
+            var model = window.$(this);
             if (model.html().includes("No")) {
                 model.addClass('text-danger');
             } else if (model.html().includes("issue") || model.html().includes("Partial")) {

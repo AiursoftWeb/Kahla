@@ -26,7 +26,7 @@ namespace Kahla.SDK.Services
             {
                 return lastMessageId;
             }
-            throw new ArgumentNullException("Last message is not in memory.");
+            throw new InvalidOperationException("Last message is not in memory.");
         }
 
         public bool ShallBeGroupped(string userId, int conversationId)
