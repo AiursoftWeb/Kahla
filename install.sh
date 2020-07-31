@@ -165,7 +165,7 @@ install_kahla()
     echo 'Building the source code...'
     kahla_path="$(pwd)/apps/kahlaApp"
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
-    echo $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
+    cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
     rm ~/Kahla -rvf
 
     # Configure appsettings.json
