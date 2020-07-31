@@ -20,5 +20,6 @@ rm ~/Kahla -rvf
 rm /etc/caddy -rvf
 
 apt remove caddy -y
+apt remove mssql-server -y
 
 echo "Successfully uninstalled tracer on your machine!"
