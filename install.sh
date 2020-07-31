@@ -90,7 +90,8 @@ add_source()
     # sql server
     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
     add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -r -s)/mssql-server-2019.list)"
-    apt update
+    # node js
+    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 }
 
 update_connection()
@@ -98,11 +99,9 @@ update_connection()
     dbString="$1"
     path="$2"
     dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
-    dbLineNumber=$(grep -n DatabaseConnection $path/appsettings.json | cut -d : -f 1)
+    dbLineNumber=$(grep -n DatabaseConnection $path/appsettings.Production.json | cut -d : -f 1)
     pattern=$(echo $dbLineNumber)s/.*/$dbFixedString/
-    sed  "$pattern" $path/appsettings.Production.json > ./temp.json
-    cat ./temp.json > $path/appsettings.Production.json
-    rm ./temp.json
+    sed -i "$pattern" $path/appsettings.Production.json
 }
 
 update_domain()
@@ -110,11 +109,24 @@ update_domain()
     domainString="$1"
     path="$2"
     domainFixedString=$(echo '      "Server": "'$domainString'",')
-    domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.json | cut -d : -f 1)
+    domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.Production.json | cut -d : -f 1)
     pattern=$(echo $domainLineNumber)s/.*/$domainFixedString/
-    sed  "$pattern" $path/appsettings.Production.json > ./temp.json
-    cat ./temp.json > $path/appsettings.Production.json
-    rm ./temp.json
+    sed -i "$pattern" $path/appsettings.Production.json
+}
+
+update_keys()
+{
+    publicKey="$1"
+    privateKey="$2"
+    path="$3"
+    publicKeyFixedString=$(echo '      "PublicKey": "'$publicKey'",')
+    privateKeyFixedString=$(echo '      "PrivateKey": "'$privateKey'",')
+    publicKeyNumber=$(grep -n '"PublicKey"' $path/appsettings.Production.json | cut -d : -f 1)
+    privateKeyNumber=$(grep -n '"PrivateKey"' $path/appsettings.Production.json | cut -d : -f 1)
+    pattern1=$(echo $publicKeyNumber)s/.*/$publicKeyFixedString/
+    pattern2=$(echo $privateKeyNumber)s/.*/$privateKeyFixedString/
+    sed -i "$pattern1" $path/appsettings.Production.json
+    sed -i "$pattern2" $path/appsettings.Production.json
 }
 
 install_kahla()
@@ -152,7 +164,7 @@ install_kahla()
     # Install basic packages
     echo "Installing packages..."
     add_source
-    apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server
+    apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server nodejs
 
     # Init database password
     MSSQL_SA_PASSWORD=$dbPassword MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
@@ -174,8 +186,13 @@ install_kahla()
 
     # Configure appsettings.json
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
+    npm install web-push -g
+    keys=$(web-push generate-vapid-keys)
+    publicKey=$(echo $keys | sed -n 5p)
+    privateKey=$(echo $keys | sed -n 8p)
     update_connection "$connectionString" $kahla_path
     update_domain "$server" $kahla_path
+    update_keys $publicKey $privateKey $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
