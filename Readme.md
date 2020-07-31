@@ -32,7 +32,13 @@ First, specify a domain name for your Ubuntu 18.04, brand new server.
 And execute the following command in the server:
 
 ```bash
-$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/install.sh | sudo bash -s www.example.com
+$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/dev/install.sh | sudo bash -s www.example.com
+```
+
+To uninstall:
+
+```bash
+$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/dev/uninstall.sh | sudo bash
 ```
 
 ## How to publish Kahla server to production environment

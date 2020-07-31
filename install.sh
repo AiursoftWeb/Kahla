@@ -135,11 +135,11 @@ install_kahla()
     echo 'Building the source code...'
     kahla_path="$(pwd)/apps/kahlaApp"
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
-    rm ~/kahla -rvf
+    rm ~/Kahla -rvf
 
     # Register kahla service
     echo "Registering Kahla service..."
-    register_service "kahla" $port $kahla_path "Kahla"
+    register_service "kahla" $port $kahla_path "Kahla.Server"
 
     # Config caddy
     echo 'Configuring the web proxy...'
