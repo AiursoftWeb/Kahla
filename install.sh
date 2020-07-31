@@ -98,7 +98,7 @@ update_connection()
     dbString="$1"
     path="$2"
     dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
-    dbLineNumber=$(grep -n Database $path/appsettings.json | cut -d : -f 1)
+    dbLineNumber=$(grep -n DatabaseConnection $path/appsettings.json | cut -d : -f 1)
     pattern=$(echo $dbLineNumber)s/.*/$dbFixedString/
     sed  "$pattern" $path/appsettings.Production.json > $path/appsettings.Production.json
 }
