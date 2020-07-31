@@ -158,7 +158,7 @@ install_kahla()
 
     # Configure database connection string
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
-    update_connection $connectionString $kahla_path
+    update_connection "$connectionString" $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
