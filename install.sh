@@ -11,6 +11,12 @@ enable_bbr()
     sysctl net.ipv4.tcp_available_congestion_control | grep -q bbr ||  enable_bbr_force
 }
 
+set_production()
+{
+    cat /etc/environment | grep -q "Production" || echo 'ASPNETCORE_ENVIRONMENT="Production"' | tee -a /etc/environment
+    export ASPNETCORE_ENVIRONMENT="Production"
+}
+
 get_port()
 {
     while true; 
@@ -87,6 +93,15 @@ add_source()
     apt update
 }
 
+update_connection()
+{
+    dbString="$1"
+    path="$2"
+    dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
+    pattern=6s/.*/$dbFixedString/
+    sed  "$pattern" $path/appsettings.json > $path/appsettings.Production.json
+}
+
 install_kahla()
 {
     server="$1"
@@ -108,6 +123,7 @@ install_kahla()
     fi
 
     port=$(get_port)
+    dbPassword=$(uuidgen)
     echo "Using internal port: $port"
 
     cd ~
@@ -115,13 +131,16 @@ install_kahla()
     # Enable BBR
     enable_bbr
 
+    # Set production mode
+    set_production
+
     # Install basic packages
     echo "Installing packages..."
     add_source
     apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server
 
     # Config database
-    MSSQL_SA_PASSWORD='SAPassword@1234' MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
+    MSSQL_SA_PASSWORD=$dbPassword MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
     systemctl restart mssql-server
 
     echo "SQL Server installed!"
@@ -136,6 +155,10 @@ install_kahla()
     kahla_path="$(pwd)/apps/kahlaApp"
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
     rm ~/Kahla -rvf
+
+    # Configure database connection string
+    connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
+    update_connection $connectionString $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
