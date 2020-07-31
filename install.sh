@@ -100,7 +100,9 @@ update_connection()
     dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
     dbLineNumber=$(grep -n DatabaseConnection $path/appsettings.json | cut -d : -f 1)
     pattern=$(echo $dbLineNumber)s/.*/$dbFixedString/
-    sed  "$pattern" $path/appsettings.Production.json > $path/appsettings.Production.json
+    sed  "$pattern" $path/appsettings.Production.json > ./temp.json
+    cat ./temp.json > $path/appsettings.Production.json
+    rm ./temp.json
 }
 
 update_domain()
@@ -110,7 +112,9 @@ update_domain()
     domainFixedString=$(echo '      "Server": "'$domainString'",')
     domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.json | cut -d : -f 1)
     pattern=$(echo $domainLineNumber)s/.*/$domainFixedString/
-    sed  "$pattern" $path/appsettings.Production.json > $path/appsettings.Production.json
+    sed  "$pattern" $path/appsettings.Production.json > ./temp.json
+    cat ./temp.json > $path/appsettings.Production.json
+    rm ./temp.json
 }
 
 install_kahla()
