@@ -99,8 +99,18 @@ update_connection()
     path="$2"
     dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
     dbLineNumber=$(grep -n Database $path/appsettings.json | cut -d : -f 1)
-    pattern=6s/.*/$dbFixedString/
-    sed  "$pattern" $path/appsettings.json > $path/appsettings.Production.json
+    pattern=$(echo $dbLineNumber)s/.*/$dbFixedString/
+    sed  "$pattern" $path/appsettings.Production.json > $path/appsettings.Production.json
+}
+
+update_domain()
+{
+    domainString="$1"
+    path="$2"
+    domainFixedString=$(echo '      "Server": "'$domainString'",')
+    domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.json | cut -d : -f 1)
+    pattern=$(echo $domainLineNumber)s/.*/$domainFixedString/
+    sed  "$pattern" $path/appsettings.Production.json > $path/appsettings.Production.json
 }
 
 install_kahla()
@@ -140,7 +150,7 @@ install_kahla()
     add_source
     apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server
 
-    # Config database
+    # Init database password
     MSSQL_SA_PASSWORD=$dbPassword MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
     systemctl restart mssql-server
 
@@ -155,11 +165,13 @@ install_kahla()
     echo 'Building the source code...'
     kahla_path="$(pwd)/apps/kahlaApp"
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
+    echo $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
     rm ~/Kahla -rvf
 
-    # Configure database connection string
+    # Configure appsettings.json
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
     update_connection "$connectionString" $kahla_path
+    update_domain "$server" $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
@@ -176,8 +188,15 @@ install_kahla()
 
     # Finish the installation
     echo "Successfully installed Kahla as a service in your machine! Please open https://$server to try it now!"
-    echo "Strongly suggest run 'sudo apt upgrade' on machine!"
-    echo "Strongly suggest to reboot the machine!"
+    echo "Successfully installed mssql as a service in your machine! The port is not opened so you can't connect!"
+    echo "Successfully installed caddy as a service in your machine!"
+    echo "You can connect to your server from a Kahla.App. Open https://www.kahla.app"
+    echo "You can open your database via: sudo ufw allow 1433/tcp"
+    echo "You can access your database via: $server:1433 with username: sa and password: $dbPassword"
+    echo "Your database data file is located at: /var/opt/mssql/"
+    echo "Your web data file is located at: $kahla_path"
+    echo "Your web server config file is located at: /etc/caddy/Caddyfile"
+    echo "Strongly suggest run 'sudo apt upgrade' and reboot when convience!"
 }
 
 install_kahla "$@"
