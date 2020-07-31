@@ -187,9 +187,10 @@ install_kahla()
     # Configure appsettings.json
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
     npm install web-push -g
-    keys=$(web-push generate-vapid-keys)
-    publicKey=$(echo $keys | sed -n 5p)
-    privateKey=$(echo $keys | sed -n 8p)
+    web-push generate-vapid-keys > ./temp.txt
+    publicKey=$(cat ./temp.txt | sed -n 5p)
+    privateKey=$(cat ./temp.txt | sed -n 8p)
+    rm ./temp.txt
     update_connection "$connectionString" $kahla_path
     update_domain "$server" $kahla_path
     update_keys $publicKey $privateKey $kahla_path
