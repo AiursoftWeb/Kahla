@@ -148,7 +148,7 @@ install_kahla()
     # Download the source code
     echo 'Downloading the source code...'
     ls | grep -q Kahla && rm ./Kahla -rf
-    git clone https://github.com/AiursoftWeb/Kahla.git
+    git clone -b master https://github.com/AiursoftWeb/Kahla.git
 
     # Build the code
     echo 'Building the source code...'
