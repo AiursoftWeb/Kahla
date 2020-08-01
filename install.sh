@@ -151,6 +151,21 @@ update_app()
     sed -i "$pattern2" $path/appsettings.Production.json
 }
 
+update_storage()
+{
+    path="$1"
+    appid=$(uuidgen)
+    appsecret=$(uuidgen)
+    idFixedString=$(echo '  "UserIconsSiteName": "'$appid'",')
+    seFixedString=$(echo '  "UserFilesSiteName": "'$appsecret'",')
+    idNumber=$(grep -n '"UserIconsSiteName"' $path/appsettings.Production.json | cut -d : -f 1)
+    seNumber=$(grep -n '"UserFilesSiteName"' $path/appsettings.Production.json | cut -d : -f 1)
+    pattern1=$(echo $idNumber)s/.*/$idFixedString/
+    pattern2=$(echo $seNumber)s/.*/$seFixedString/
+    sed -i "$pattern1" $path/appsettings.Production.json
+    sed -i "$pattern2" $path/appsettings.Production.json
+}
+
 install_kahla()
 {
     server="$1"
@@ -167,9 +182,9 @@ install_kahla()
 
     if [[ $(ifconfig) == *"$ip"* ]]; 
     then
-        echo "The ip result from domian $server is: $ip and it is your current machine IP!"
+        echo "$server resolves $ip and it is a valid current machine IP."
     else
-        echo "The ip result from domian $server is: $ip and it seems not to be your current machine IP!"
+        echo "The ip result from domian $server is: $ip and it seems not to be your current machine's IP!"
         return 9
     fi
 
@@ -185,7 +200,7 @@ install_kahla()
 
     port=$(get_port)
     dbPassword=$(uuidgen)
-    echo "Using internal port: $port"
+    echo "Using internal port: 127.0.0.1:$port to run the internal service."
 
     cd ~
 
@@ -226,19 +241,24 @@ install_kahla()
     update_connection "$connectionString" $kahla_path
     update_domain "$server" $kahla_path
     update_keys $publicKey $privateKey $kahla_path
+    update_storage $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
     register_service "kahla" $port $kahla_path "Kahla.Server"
+    sleep 2
 
     # Config caddy
     echo 'Configuring the web proxy...'
     add_caddy_proxy $server $port
+    sleep 2
 
     # Config firewall
+    echo 'Configuring the firewall...'
     open_port 443
     open_port 80
     enable_firewall
+    sleep 2
 
     # Finish the installation
     echo "Successfully installed Kahla as a service in your machine! Please open https://$server to try it now!"
