@@ -155,7 +155,7 @@ install_kahla()
 
     # Valid app is required
     archonResponse=$(curl https://archon.aiursoft.com/API/AccessToken?appId=$appId\&appSecret=$appSecret)
-    if [[ $(archonResponse) == *":0"* ]]; 
+    if [[ $archonResponse == *":0"* ]]; 
     then
         echo "AppId and AppSecret for Aiursoft Developer Center is correct!"
     else
