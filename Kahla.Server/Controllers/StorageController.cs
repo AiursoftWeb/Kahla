@@ -66,7 +66,8 @@ namespace Kahla.Server.Controllers
                 accessToken,
                 siteName,
                 new[] { "Upload" },
-                path);
+                path,
+                TimeSpan.FromMinutes(10));
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
                 Token = token,
@@ -106,7 +107,8 @@ namespace Kahla.Server.Controllers
                 accessToken,
                 siteName,
                 permissions.ToArray(),
-                path);
+                path,
+                TimeSpan.FromMinutes(60));
             var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
             {
                 Token = token,

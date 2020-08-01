@@ -25,6 +25,22 @@ Requirements about how to run:
 2. Execute `dotnet run` to run the app
 3. Use your browser to view [http://localhost:5000](http://localhost:5000)
 
+## Run in Ubuntu 18.04
+
+First, specify a domain name for your Ubuntu 18.04, brand new server.
+
+And execute the following command in the server:
+
+```bash
+$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/install.sh | sudo bash -s www.example.com
+```
+
+To uninstall:
+
+```bash
+$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/uninstall.sh | sudo bash
+```
+
 ## How to publish Kahla server to production environment
 
 This guide explains setting up a production-ready Kahla environment on an Ubuntu 16.04 server. These instructions likely work with newer versions of Ubuntu, but the instructions haven't been tested with newer versions.
