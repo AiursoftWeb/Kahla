@@ -264,12 +264,14 @@ install_kahla()
     echo "Successfully installed Kahla as a service in your machine! Please open https://$server to try it now!"
     echo "Successfully installed mssql as a service in your machine! The port is not opened so you can't connect!"
     echo "Successfully installed caddy as a service in your machine!"
-    echo "You can connect to your server from a Kahla.App. Open https://www.kahla.app"
-    echo "You can open your database via: sudo ufw allow 1433/tcp"
+    sleep 1
+    echo "You can connect to your server from a Kahla.App. Download the client at: https://www.kahla.app"
+    echo "You can open your database to public via: sudo ufw allow 1433/tcp"
     echo "You can access your database via: $server:1433 with username: sa and password: $dbPassword"
-    echo "Your database data file is located at: /var/opt/mssql/"
+    echo "Your database data file is located at: /var/opt/mssql/. Please back up them regularly."
     echo "Your web data file is located at: $kahla_path"
     echo "Your web server config file is located at: /etc/caddy/Caddyfile"
+    echo "Strongly maintain your own configuration at $kahla_path/appsettings.Production.json"
     echo "Strongly suggest run 'sudo apt upgrade' and reboot when convience!"
 }
 
