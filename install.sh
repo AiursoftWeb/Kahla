@@ -42,6 +42,8 @@ enable_firewall()
 {
     open_port 22
     echo "y" | ufw enable
+    echo "Firewall enabled!"
+    ufw status
 }
 
 add_caddy_proxy()
@@ -163,17 +165,14 @@ install_kahla()
 
     # Install basic packages
     echo "Installing packages..."
-    add_source
-    apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server nodejs
+    _=$(add_source)
+    _=$(apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server nodejs)
 
     # Init database password
     MSSQL_SA_PASSWORD=$dbPassword MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
     systemctl restart mssql-server
 
-    echo "SQL Server installed!"
-
     # Download the source code
-    echo 'Downloading the source code...'
     ls | grep -q Kahla && rm ./Kahla -rf
     git clone -b master https://github.com/AiursoftWeb/Kahla.git
 
@@ -181,8 +180,8 @@ install_kahla()
     echo 'Building the source code...'
     kahla_path="$(pwd)/apps/kahlaApp"
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
+    rm ~/Kahla -rf
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
-    rm ~/Kahla -rvf
 
     # Configure appsettings.json
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
@@ -204,9 +203,9 @@ install_kahla()
     add_caddy_proxy $server $port
 
     # Config firewall
-    enable_firewall
     open_port 443
     open_port 80
+    enable_firewall
 
     # Finish the installation
     echo "Successfully installed Kahla as a service in your machine! Please open https://$server to try it now!"
