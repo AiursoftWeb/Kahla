@@ -131,6 +131,21 @@ update_keys()
     sed -i "$pattern2" $path/appsettings.Production.json
 }
 
+update_app()
+{
+    appid="$1"
+    appsecret="$2"
+    path="$3"
+    idFixedString=$(echo '  "KahlaAppId": "'$appid'",')
+    seFixedString=$(echo '  "KahlaAppSecret": "'$appsecret'",')
+    idNumber=$(grep -n '"KahlaAppId"' $path/appsettings.Production.json | cut -d : -f 1)
+    seNumber=$(grep -n '"KahlaAppSecret"' $path/appsettings.Production.json | cut -d : -f 1)
+    pattern1=$(echo $idNumber)s/.*/$idFixedString/
+    pattern2=$(echo $seNumber)s/.*/$seFixedString/
+    sed -i "$pattern1" $path/appsettings.Production.json
+    sed -i "$pattern2" $path/appsettings.Production.json
+}
+
 install_kahla()
 {
     server="$1"
@@ -202,6 +217,7 @@ install_kahla()
     publicKey=$(cat ./temp.txt | sed -n 5p)
     privateKey=$(cat ./temp.txt | sed -n 8p)
     rm ./temp.txt
+    update_app "$appId" "$appSecret" $kahla_path
     update_connection "$connectionString" $kahla_path
     update_domain "$server" $kahla_path
     update_keys $publicKey $privateKey $kahla_path
