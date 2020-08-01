@@ -134,6 +134,8 @@ update_keys()
 install_kahla()
 {
     server="$1"
+    appId="$2"
+    appSecret="$3"
     echo "Installing Kahla to domain $server..."
 
     # Valid domain is required
@@ -148,6 +150,16 @@ install_kahla()
         echo "The ip result from domian $server is: $ip and it is your current machine IP!"
     else
         echo "The ip result from domian $server is: $ip and it seems not to be your current machine IP!"
+        return 9
+    fi
+
+    # Valid app is required
+    archonResponse=$(curl https://archon.aiursoft.com/API/AccessToken?appId=$appId\&appSecret=$appSecret)
+    if [[ $(archonResponse) == *":0"* ]]; 
+    then
+        echo "AppId and AppSecret for Aiursoft Developer Center is correct!"
+    else
+        echo "AppId and AppSecret for Aiursoft Developer Center is not valid! Please register an valid app at https://developer.aiursoft.com"
         return 9
     fi
 
