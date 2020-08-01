@@ -101,12 +101,13 @@ add_source()
     curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 }
 
-update_connection()
+update_settings()
 {
-    dbString="$1"
-    path="$2"
-    dbFixedString=$(echo '    "DatabaseConnection": "'$dbString'",')
-    dbLineNumber=$(grep -n DatabaseConnection $path/appsettings.Production.json | cut -d : -f 1)
+    key="$1"
+    value="$2"
+    path="$3"
+    dbFixedString=$(echo "\"$key\": \"$value\",")
+    dbLineNumber=$(grep -n $key $path/appsettings.Production.json | cut -d : -f 1)
     pattern=$(echo $dbLineNumber)s/.*/$dbFixedString/
     sed -i "$pattern" $path/appsettings.Production.json
 }
@@ -119,51 +120,6 @@ update_domain()
     domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.Production.json | cut -d : -f 1)
     pattern=$(echo $domainLineNumber)s/.*/$domainFixedString/
     sed -i "$pattern" $path/appsettings.Production.json
-}
-
-update_keys()
-{
-    publicKey="$1"
-    privateKey="$2"
-    path="$3"
-    publicKeyFixedString=$(echo '      "PublicKey": "'$publicKey'",')
-    privateKeyFixedString=$(echo '      "PrivateKey": "'$privateKey'",')
-    publicKeyNumber=$(grep -n '"PublicKey"' $path/appsettings.Production.json | cut -d : -f 1)
-    privateKeyNumber=$(grep -n '"PrivateKey"' $path/appsettings.Production.json | cut -d : -f 1)
-    pattern1=$(echo $publicKeyNumber)s/.*/$publicKeyFixedString/
-    pattern2=$(echo $privateKeyNumber)s/.*/$privateKeyFixedString/
-    sed -i "$pattern1" $path/appsettings.Production.json
-    sed -i "$pattern2" $path/appsettings.Production.json
-}
-
-update_app()
-{
-    appid="$1"
-    appsecret="$2"
-    path="$3"
-    idFixedString=$(echo '  "KahlaAppId": "'$appid'",')
-    seFixedString=$(echo '  "KahlaAppSecret": "'$appsecret'",')
-    idNumber=$(grep -n '"KahlaAppId"' $path/appsettings.Production.json | cut -d : -f 1)
-    seNumber=$(grep -n '"KahlaAppSecret"' $path/appsettings.Production.json | cut -d : -f 1)
-    pattern1=$(echo $idNumber)s/.*/$idFixedString/
-    pattern2=$(echo $seNumber)s/.*/$seFixedString/
-    sed -i "$pattern1" $path/appsettings.Production.json
-    sed -i "$pattern2" $path/appsettings.Production.json
-}
-
-update_storage()
-{
-    path="$1"
-    appid=$(uuidgen)
-    appsecret=$(uuidgen)
-    idFixedString=$(echo '  "UserIconsSiteName": "'$appid'",')
-    seFixedString=$(echo '  "UserFilesSiteName": "'$appsecret'",')
-    idNumber=$(grep -n '"UserIconsSiteName"' $path/appsettings.Production.json | cut -d : -f 1)
-    seNumber=$(grep -n '"UserFilesSiteName"' $path/appsettings.Production.json | cut -d : -f 1)
-    pattern1=$(echo $idNumber)s/.*/$idFixedString/
-    pattern2=$(echo $seNumber)s/.*/$seFixedString/
-    sed -i "$pattern1" $path/appsettings.Production.json
-    sed -i "$pattern2" $path/appsettings.Production.json
 }
 
 install_kahla()
@@ -237,10 +193,16 @@ install_kahla()
     publicKey=$(cat ./temp.txt | sed -n 5p)
     privateKey=$(cat ./temp.txt | sed -n 8p)
     rm ./temp.txt
-    update_app "$appId" "$appSecret" $kahla_path
-    update_connection "$connectionString" $kahla_path
+    #
+    update_settings "KahlaAppSecret" "$appSecret" $kahla_path
+    update_settings "KahlaAppId" "$appId" $kahla_path
+    update_settings "DatabaseConnection" "$connectionString" $kahla_path
+    update_settings "PublicKey" "$publicKey" $kahla_path
+    update_settings "PrivateKey" "$privateKey" $kahla_path
+    update_settings "UserIconsSiteName" "$(uuidgen)" $kahla_path
+    update_settings "UserFilesSiteName" "$(uuidgen)" $kahla_path
     update_domain "$server" $kahla_path
-    update_keys $publicKey $privateKey $kahla_path
+
     update_storage $kahla_path
 
     # Register kahla service
