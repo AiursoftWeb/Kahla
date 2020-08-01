@@ -13,8 +13,12 @@ enable_bbr()
 
 set_production()
 {
-    cat /etc/environment | grep -q "Production" || echo 'ASPNETCORE_ENVIRONMENT="Production"' | tee -a /etc/environment
+    cat /etc/environment | grep -q "ASPNETCORE_ENVIRONMENT" || echo 'ASPNETCORE_ENVIRONMENT="Production"' | tee -a /etc/environment
+    cat /etc/environment | grep -q "DOTNET_CLI_TELEMETRY_OPTOUT" || echo 'DOTNET_CLI_TELEMETRY_OPTOUT="1"' | tee -a /etc/environment
+    cat /etc/environment | grep -q "DOTNET_PRINT_TELEMETRY_MESSAGE" || echo 'DOTNET_PRINT_TELEMETRY_MESSAGE="false"' | tee -a /etc/environment
+    export DOTNET_PRINT_TELEMETRY_MESSAGE="false"
     export ASPNETCORE_ENVIRONMENT="Production"
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
 }
 
 get_port()
@@ -73,8 +77,9 @@ register_service()
     Type=simple
     ExecStart=/usr/bin/dotnet $run_path/$dll.dll --urls=http://localhost:$local_port/
     WorkingDirectory=$run_path
-    Restart=on-failure
-    RestartPreventExitStatus=10
+    Restart=always
+    RestartSec=10
+    KillSignal=SIGINT
 
     [Install]
     WantedBy=multi-user.target" > /etc/systemd/system/$service_name.service
@@ -90,7 +95,7 @@ add_source()
     # caddy
     cat /etc/apt/sources.list.d/caddy-fury.list | grep -q caddy || echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | tee -a /etc/apt/sources.list.d/caddy-fury.list
     # sql server
-    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+    curl -s https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
     add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -r -s)/mssql-server-2019.list)"
     # node js
     curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
@@ -169,7 +174,7 @@ install_kahla()
     fi
 
     # Valid app is required
-    archonResponse=$(curl https://archon.aiursoft.com/API/AccessToken?appId=$appId\&appSecret=$appSecret)
+    archonResponse=$(curl -s https://archon.aiursoft.com/API/AccessToken?appId=$appId\&appSecret=$appSecret)
     if [[ $archonResponse == *":0"* ]]; 
     then
         echo "AppId and AppSecret for Aiursoft Developer Center is correct!"
@@ -191,9 +196,9 @@ install_kahla()
     set_production
 
     # Install basic packages
-    echo "Installing packages..."
-    _=$(add_source)
-    _=$(apt install -y apt-transport-https curl git vim dotnet-sdk-3.1 caddy mssql-server nodejs)
+    echo "Installing git vim dotnet-sdk caddy mssql-server nodejs ufw..."
+    add_source > /dev/null
+    apt install -y apt-transport-https git vim dotnet-sdk-3.1 caddy mssql-server nodejs ufw > /dev/null
 
     # Init database password
     MSSQL_SA_PASSWORD=$dbPassword MSSQL_PID='express' /opt/mssql/bin/mssql-conf -n setup accept-eula
