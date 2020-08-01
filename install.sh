@@ -187,23 +187,25 @@ install_kahla()
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
 
     # Configure appsettings.json
+    echo 'Generating default configuration file...'
+    update_domain "$server" $kahla_path
+
     connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
+    update_settings "DatabaseConnection" "$connectionString" $kahla_path
+
     npm install web-push -g
     web-push generate-vapid-keys > ./temp.txt
     publicKey=$(cat ./temp.txt | sed -n 5p)
     privateKey=$(cat ./temp.txt | sed -n 8p)
     rm ./temp.txt
-    #
-    update_settings "KahlaAppSecret" "$appSecret" $kahla_path
-    update_settings "KahlaAppId" "$appId" $kahla_path
-    update_settings "DatabaseConnection" "$connectionString" $kahla_path
     update_settings "PublicKey" "$publicKey" $kahla_path
     update_settings "PrivateKey" "$privateKey" $kahla_path
+    
+    update_settings "KahlaAppSecret" "$appSecret" $kahla_path
+    update_settings "KahlaAppId" "$appId" $kahla_path
+    
     update_settings "UserIconsSiteName" "$(uuidgen)" $kahla_path
     update_settings "UserFilesSiteName" "$(uuidgen)" $kahla_path
-    update_domain "$server" $kahla_path
-
-    update_storage $kahla_path
 
     # Register kahla service
     echo "Registering Kahla service..."
