@@ -15,7 +15,7 @@ If you are writting bots and extends for Kahla, view SDK document [here](./Kahla
 * Get a domain name. (Like kahla.example.com)
 * Get a server.
 * Create an app at [Aiursoft Developer Center](https://developer.aiursoft.com).
-* Point your domian name to your server's IP.
+* Config your app.
 * Install on your server.
 
 ### Get a server
