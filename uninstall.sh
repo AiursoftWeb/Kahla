@@ -16,7 +16,7 @@ delete_service "mssql-server.service"
 delete_service "caddy.service"
 delete_service "kahla.service"
 
-rm ~/apps -rvf
+rm ~/apps/kahlaApp -rvf
 rm ~/Kahla -rvf
 rm /etc/caddy -rvf
 rm /var/opt/mssql/ -rvf
@@ -24,4 +24,4 @@ rm /var/opt/mssql/ -rvf
 apt remove caddy -y
 apt remove mssql-server -y
 
-echo "Successfully uninstalled tracer on your machine!"
+echo "Successfully uninstalled Kahla on your machine!"
