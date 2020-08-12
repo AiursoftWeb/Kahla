@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Kahla.Server.Controllers
 {
@@ -35,7 +36,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
-        private static readonly object Obj = new object();
+        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -132,13 +133,14 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
             Request request;
-            lock (Obj)
+            await semaphoreSlim.WaitAsync();
+            try
             {
-                var pending = _dbContext.Requests
+                var pending = await _dbContext.Requests
                     .Where(t =>
                         t.CreatorId == user.Id && t.TargetId == target.Id ||
                         t.CreatorId == target.Id && t.TargetId == user.Id)
-                    .Any(t => !t.Completed);
+                    .AnyAsync(t => !t.Completed);
                 if (pending)
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
@@ -149,8 +151,12 @@ namespace Kahla.Server.Controllers
                     Creator = user,
                     TargetId = id,
                 };
-                _dbContext.Requests.Add(request);
-                _dbContext.SaveChanges();
+                await _dbContext.Requests.AddAsync(request);
+                await _dbContext.SaveChangesAsync();
+            }
+            finally
+            {
+                semaphoreSlim.Release();
             }
             await Task.WhenAll(
                 _pusher.NewFriendRequestEvent(target, request),
@@ -191,13 +197,21 @@ namespace Kahla.Server.Controllers
             PrivateConversation newConversation = null;
             if (model.Accept)
             {
-                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                await semaphoreSlim.WaitAsync();
+                try
                 {
+                    if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                    {
+                        await _dbContext.SaveChangesAsync();
+                        return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
+                    }
+                    newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                     await _dbContext.SaveChangesAsync();
-                    return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
                 }
-                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
-                await _dbContext.SaveChangesAsync();
+                finally
+                {
+                    semaphoreSlim.Release();
+                }
             }
             else
             {
