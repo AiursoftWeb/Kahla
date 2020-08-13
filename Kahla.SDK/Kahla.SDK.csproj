@@ -23,11 +23,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="Aiursoft.Gateway.SDK" Version="3.2.5" />
-    <PackageReference Include="Aiursoft.Stargate.SDK" Version="3.2.5" />
-    <PackageReference Include="Aiursoft.Probe.SDK" Version="3.2.5" />
-    <PackageReference Include="Aiursoft.Scanner" Version="3.2.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0" />
+    <PackageReference Include="Aiursoft.Gateway.SDK" Version="3.2.6" />
+    <PackageReference Include="Aiursoft.Stargate.SDK" Version="3.2.6" />
+    <PackageReference Include="Aiursoft.Probe.SDK" Version="3.2.6" />
+    <PackageReference Include="Aiursoft.Scanner" Version="3.2.6" />
     <PackageReference Include="Websocket.Client" Version="4.3.21" />
   </ItemGroup>
 </Project>
