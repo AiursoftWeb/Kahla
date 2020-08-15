@@ -54,8 +54,8 @@ install_kahla()
     rm ./temp.txt
     aiur text/edit_json "PublicKey" "$publicKey" $kahla_path
     aiur text/edit_json "PrivateKey" "$privateKey" $kahla_path
-    aiur text/edit_json "KahlaAppSecret" "$appSecret" $kahla_path
-    aiur text/edit_json "KahlaAppId" "$appId" $kahla_path
+    aiur text/edit_json "KahlaAppSecret" "$3" $kahla_path
+    aiur text/edit_json "KahlaAppId" "$2" $kahla_path
     aiur text/edit_json "UserIconsSiteName" "$(uuidgen)" $kahla_path
     aiur text/edit_json "UserFilesSiteName" "$(uuidgen)" $kahla_path
     aiur services/register_aspnet_service "kahla" $port $kahla_path "Kahla.Server"
