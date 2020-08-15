@@ -25,6 +25,7 @@ install_kahla()
 
     if [[ $(curl -s https://archon.aiursoft.com/API/AccessToken?appId=$2\&appSecret=$3) == *":0"* ]]; 
     then
+        echo "App test passed."
     else
         echo "AppId and AppSecret for Aiursoft Developer Center is not valid! Please register an valid app at https://developer.aiursoft.com"
         return 9
