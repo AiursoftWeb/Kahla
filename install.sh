@@ -30,6 +30,7 @@ install_kahla()
     aiur install/caddy
     aiur install/dotnet
     aiur install/node
+    aiur install/jq
     aiur install/sql_server
     aiur mssql/config_password $dbPassword
     aiur git/clone_to AiursoftWeb/Kahla ./Kahla
