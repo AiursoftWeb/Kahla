@@ -1,5 +1,8 @@
 aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://github.com/AiursoftWeb/AiurScript/raw/master/$1.sh | sudo bash -s $arg; }
+
 kahla_path="/opt/apps/KahlaServer"
+dbPassword=$(uuidgen)
+port=$(aiur network/get_port)
 
 update_domain()
 {
@@ -31,13 +34,12 @@ install_kahla()
         return 9
     fi
 
-    port=$(aiur network/get_port) && echo "Using internal port: $port"
-    dbPassword=$(uuidgen)
     aiur network/enable_bbr
     aiur system/set_aspnet_prod
     aiur install/caddy
     aiur install/dotnet
     aiur install/node
+    aiur install/sql_server
     aiur mssql/config_password $dbPassword
     aiur git/clone_to AiursoftWeb/Kahla ./Kahla
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj && rm ./Kahla -rf
