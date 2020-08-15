@@ -7,8 +7,6 @@ connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;Password=$dbPa
 
 install_kahla()
 {
-    server="$1"
-
     if [[ $(curl -sL ifconfig.me) == "$(dig +short $1)" ]]; 
     then
         echo "IP is correct."
