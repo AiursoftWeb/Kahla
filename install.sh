@@ -3,7 +3,7 @@ aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://github.com/Aiu
 kahla_path="/opt/apps/KahlaServer"
 dbPassword=$(uuidgen)
 port=$(aiur network/get_port)
-connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;Password=$dbPassword;MultipleActiveResultSets=True;ConnectTimeout=30;"
+connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;Password=$dbPassword;MultipleActiveResultSets=True;"
 
 install_kahla()
 {
