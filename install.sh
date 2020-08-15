@@ -3,16 +3,7 @@ aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://github.com/Aiu
 kahla_path="/opt/apps/KahlaServer"
 dbPassword=$(uuidgen)
 port=$(aiur network/get_port)
-
-update_domain()
-{
-    domainString="$1"
-    path="$2"
-    domainFixedString=$(echo '      "Server": "'$domainString'",')
-    domainLineNumber=$(grep -n '"server.kahla.app"' $path/appsettings.Production.json | cut -d : -f 1)
-    pattern=$(echo $domainLineNumber)s/.*/$domainFixedString/
-    sed -i "$pattern" $path/appsettings.Production.json
-}
+connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;pid=$dbPassword;MultipleActiveResultSets=True;ConnectTimeout=30;"
 
 install_kahla()
 {
@@ -44,20 +35,21 @@ install_kahla()
     aiur git/clone_to AiursoftWeb/Kahla ./Kahla
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj && rm ./Kahla -rf
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
-    update_domain "$1" $kahla_path
-    connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;pid=$dbPassword;MultipleActiveResultSets=True;ConnectTimeout=30;"
-    aiur text/edit_json "DatabaseConnection" "$connectionString" $kahla_path
+
     npm install web-push -g
     web-push generate-vapid-keys > ./temp.txt
     publicKey=$(cat ./temp.txt | sed -n 5p)
     privateKey=$(cat ./temp.txt | sed -n 8p)
     rm ./temp.txt
-    aiur text/edit_json "PublicKey" "$publicKey" $kahla_path
-    aiur text/edit_json "PrivateKey" "$privateKey" $kahla_path
-    aiur text/edit_json "KahlaAppSecret" "$3" $kahla_path
-    aiur text/edit_json "KahlaAppId" "$2" $kahla_path
-    aiur text/edit_json "UserIconsSiteName" "$(uuidgen)" $kahla_path
-    aiur text/edit_json "UserFilesSiteName" "$(uuidgen)" $kahla_path
+
+    aiur text/edit_json "VapidKeys.PublicKey" "$publicKey" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "VapidKeys.PrivateKey" "$privateKey" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "ConnectionStrings.DatabaseConnection" "$connectionString" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "AppDomain[2].Server" "$1" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "KahlaAppId" "$2" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "KahlaAppSecret" "$3" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "UserIconsSiteName" "$(uuidgen)" $kahla_path/appsettings.Production.json
+    aiur text/edit_json "UserFilesSiteName" "$(uuidgen)" $kahla_path/appsettings.Production.json
     aiur services/register_aspnet_service "kahla" $port $kahla_path "Kahla.Server"
     aiur caddy/add_proxy $1 $port
     aiur firewall/enable_firewall
