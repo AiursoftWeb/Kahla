@@ -53,12 +53,6 @@ Execute the following command on the server:
 $ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/install.sh | sudo bash -s kahla.example.com yourappid yourappsecret
 ```
 
-To uninstall:
-
-```bash
-$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/uninstall.sh | sudo bash
-```
-
 ## How to contribute
 
 There are many ways to contribute to the project: logging bugs, submitting pull requests, reporting issues, and creating suggestions.
