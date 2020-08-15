@@ -32,7 +32,7 @@ install_kahla()
     aiur install/sql_server
     aiur mssql/config_password $dbPassword
     aiur git/clone_to AiursoftWeb/Kahla ./Kahla
-    dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj && rm ./Kahla -rf
+    aiur dotnet/publish $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
 
     npm install web-push -g
@@ -63,6 +63,7 @@ install_kahla()
     echo ""
     echo "Your database data file is located at: /var/opt/mssql/. Please back up them regularly."
     echo "Your web data file is located at: $kahla_path"
+    rm ./Kahla -rf
 }
 
 install_kahla "$@"
