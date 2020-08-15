@@ -45,7 +45,7 @@ install_kahla()
     dotnet publish -c Release -o $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj && rm ./Kahla -rf
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
     update_domain "$1" $kahla_path
-    connectionString="Server=tcp:127.0.0.1,1433;Initial Catalog=Kahla;Persist Security Info=False;User ID=sa;Password=$dbPassword;MultipleActiveResultSets=True;Connection Timeout=30;"
+    connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;pid=$dbPassword;MultipleActiveResultSets=True;ConnectTimeout=30;"
     aiur text/edit_json "DatabaseConnection" "$connectionString" $kahla_path
     npm install web-push -g
     web-push generate-vapid-keys > ./temp.txt
