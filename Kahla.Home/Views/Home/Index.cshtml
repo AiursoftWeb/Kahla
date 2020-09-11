@@ -69,7 +69,7 @@
             <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple d-md-none" href="@Html.Raw(Model.KahlaWebPath)">@Localizer["Open in browser"]</a>
             <p>
                 @Localizer["By downloading, you agree to the"]
-                <a href="@(Values.Footer["Terms"])">@Localizer["license agreement"]</a>@Localizer["."]
+                <a href="@($"{ServiceLocation.WWW}{Values.TermsAfterWWW}")">@Localizer["license agreement"]</a>@Localizer["."]
             </p>
         }
         <div class="d-block d-md-none width-fit mx-auto mt-6 mb-6">
