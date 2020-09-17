@@ -72,7 +72,7 @@ namespace MyBot
         public static async Task Main(string[] args)
         {
             await new BotBuilder()
-                .Build<DancerBotCore>()
+                .Build<FirstBot>()
                 .Run();
         }
     }
