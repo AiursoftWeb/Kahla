@@ -24,4 +24,4 @@ If you plan to use, develop, deploy, and contribute to Kahla, please visit the f
 * [Open Kahla production servers list](https://www.kahla.app/servers)
 * [Run Kahla.App from source code](https://github.com/AiursoftWeb/Kahla.App)
 * [Run Kahla.Server from source code](https://github.com/AiursoftWeb/Kahla)
-* [View API document](./servers.md)
+* [View API document](./Design.md)
