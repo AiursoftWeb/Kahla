@@ -1,62 +1,27 @@
-# Aiursoft Kahla Backend
+# Khala
 
-[![Build status](https://aiursoft.visualstudio.com/Star/_apis/build/status/Kahla%20Server%20Build)](https://aiursoft.visualstudio.com/Star/_build/latest?definitionId=6)
-[![NuGet version (Kahla.SDK)](https://img.shields.io/nuget/v/Kahla.SDK.svg?style=flat-square)](https://www.nuget.org/packages/Kahla.SDK/)
-[![Issues](https://img.shields.io/github/issues/AiursoftWeb/Kahla.svg)](https://github.com/AiursoftWeb/Kahla/issues)
+>"For we are bound by the Khala, the sacred union of our every thought and emotion."
+>——Hierarch Artanis, StarCraft II: Legacy of the Void
 
-Kahla is a cross-platform business messaging app. This is the server side code repo for Kahla.
+In Starcraft, Protoss society is shown in the background of the series to have been tribal with a strong warrior culture until a planet-wide civil war allowed a mystic, Khas, to access a natural psionic link shared by all Protoss. Khas' discovery and teachings, labelled the Khala, are then used as the principle underlying a new caste-based society.  
 
-If you are writting bots and extends for Kahla, view SDK document [here](./Kahla.SDK/Readme.md).
+## Kahla App
 
-## How to install
+As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.
 
-### Brief steps:
+## Kahla and Aiursoft
 
-* Get a domain name. (Like kahla.example.com)
-* Get a server.
-* Create an app at [Aiursoft Developer Center](https://developer.aiursoft.com).
-* Config your app.
-* Install on your server.
+Kahla exists as a sub-service in the Aiursoft microservices system. Enjoy all the rights to all of Aiursoft's high-level applications.
 
-### Get a server
+Kahla relies on [Aiursoft Stargate](../Stargate/What%20is%20Stargate.md) to implement message push. Rely on [Aiursoft Probe](../Integrated%20Website/Getting%20Started.md) to store images and files sent between users.
 
-Get a brand new Ubuntu 18.04 server.
+## Continue
 
-  * Server must be Ubuntu 18.04. (20.04 and 16.04 is not supported)
-  * Server must have a public IP address. (No local VM)
-  * Server must have access to the global Internet. (Not Chinese network)
+If you plan to use, develop, deploy, and contribute to Kahla, please visit the following link:
 
-Vultr or DigitalOcean is suggested. [Get it from Vultr](https://www.vultr.com/?ref=7274488).
-
-### Create an app
-
-Go to [Aiursoft Developer Center](https://developer.aiursoft.com). Sign in your account. And then create an app.
-
-Enable the following permissions:
-
-* View user's basic identity info
-* View user's phone number
-* Change user's phone number
-* Change user's Email confirmation status
-* Change user's basic info like nickname and bio
-* Change the user's password based on source password
-
-Enable OAuth. Set your domain name.
-
-Grab your `appId` and `appSecret`.
-
-### Install on server
-
-Execute the following command on the server:
-
-```bash
-$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/install.sh | sudo bash -s kahla.example.com yourappid yourappsecret
-```
-
-## How to contribute
-
-There are many ways to contribute to the project: logging bugs, submitting pull requests, reporting issues, and creating suggestions.
-
-Even if you have push rights on the repository, you should create a personal fork and create feature branches there when you need them. This keeps the main repository clean and your personal workflow cruft out of sight.
-
-We're also interested in your feedback for the future of this project. You can submit a suggestion or feature request through the issue tracker. To make this process more effective, we're asking that these include more information to help define them more clearly.
+* [Open official website of Kahla](https://www.kahla.app)
+* [Open Kahla web edition](https://web.kahla.app)
+* [Open Kahla production servers list](https://www.kahla.app/servers)
+* [Run Kahla.App from source code](https://github.com/AiursoftWeb/Kahla.App)
+* [Run Kahla.Server from source code](https://github.com/AiursoftWeb/Kahla)
+* [View API document](./servers.md)
