@@ -11,8 +11,8 @@ As a cross-platform business messaging app, Kahla can encrypt communications at 
 
 Kahla contains several sub-projects.
 
-* [Kahla.App](https://github.com/AiursoftWeb/Kahla.App) (Client side application)
-* [Kahla.Server](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Server) (Server side application)
+* [Kahla.App](https://github.com/AiursoftWeb/Kahla.App) (Client side application based on Angular)
+* [Kahla.Server](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Server) (Server side application for messages forwarding and store)
 * [Kahla.Home](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Home) (Servers provider, version provider and homepage)
 * [Kahla.SDK](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.SDK) (The SDK for building bots and for third-party connections)
 * [Kahla.Bot](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Bot) (Some demo bots)
