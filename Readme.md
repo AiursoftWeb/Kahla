@@ -9,6 +9,15 @@ In Starcraft, Protoss society is shown in the background of the series to have b
 
 As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.
 
+Kahla contains several sub-projects.
+
+* Kahla.App (Client side application)
+* Kahla.Server (Server side application)
+* Kahla.Home (Servers provider, version provider and homepage)
+* Kahla.SDK (The SDK for building bots and for third-party connections)
+* Kahla.Bot (Some demo bots)
+* Kahla.CLI (CLI version of Kahla)
+
 ## Kahla and Aiursoft
 
 Kahla exists as a sub-service in the Aiursoft microservices system. Enjoy all the rights to all of Aiursoft's high-level applications.
@@ -23,5 +32,5 @@ If you plan to use, develop, deploy, and contribute to Kahla, please visit the f
 * [Open Kahla web edition](https://web.kahla.app)
 * [Open Kahla production servers list](https://www.kahla.app/servers)
 * [Run Kahla.App from source code](https://github.com/AiursoftWeb/Kahla.App)
-* [Run Kahla.Server from source code](https://github.com/AiursoftWeb/Kahla)
+* [Run Kahla.Server from source code](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Server)
 * [View API document](./Design.md)
