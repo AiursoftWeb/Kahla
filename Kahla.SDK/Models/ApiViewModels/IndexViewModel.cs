@@ -15,5 +15,6 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string Mode { get; set; }
         public DomainSettings Domain { get; set; }
         public ProbeLocator Probe { get; set; }
+        public bool AutoAcceptRequests { get; set; }
     }
 }

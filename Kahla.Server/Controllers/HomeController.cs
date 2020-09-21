@@ -58,7 +58,8 @@ namespace Kahla.Server.Controllers
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
                 ServerName = _configuration["ServerName"],
                 Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[0] == Request.Host.Host),
-                Probe = _probeLocator
+                Probe = _probeLocator,
+                AutoAcceptRequests = _configuration["AutoAcceptRequests"] == true.ToString().ToLower()
             };
             // This part of code is not beautiful. Try to resolve it in the future.
             if (model.Domain != null)

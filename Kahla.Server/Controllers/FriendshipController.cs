@@ -20,6 +20,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using Kahla.SDK.Events;
+using Aiursoft.Handler.Exceptions;
 
 namespace Kahla.Server.Controllers
 {
@@ -162,6 +164,10 @@ namespace Kahla.Server.Controllers
                 _pusher.NewFriendRequestEvent(target, request),
                 _pusher.NewFriendRequestEvent(user, request)
             );
+            if (_configuration["AutoAcceptRequests"] == true.ToString().ToLower())
+            {
+                await AcceptRequest(request);
+            }
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -197,21 +203,7 @@ namespace Kahla.Server.Controllers
             PrivateConversation newConversation = null;
             if (model.Accept)
             {
-                await semaphoreSlim.WaitAsync();
-                try
-                {
-                    if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
-                    {
-                        await _dbContext.SaveChangesAsync();
-                        return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
-                    }
-                    newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
-                    await _dbContext.SaveChangesAsync();
-                }
-                finally
-                {
-                    semaphoreSlim.Release();
-                }
+                newConversation = await AcceptRequest(request);
             }
             else
             {
@@ -442,5 +434,25 @@ namespace Kahla.Server.Controllers
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
+
+        private async Task<PrivateConversation> AcceptRequest(Request request)
+        {
+            await semaphoreSlim.WaitAsync();
+            try
+            {
+                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                {
+                    await _dbContext.SaveChangesAsync();
+                    throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
+                }
+                var newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                await _dbContext.SaveChangesAsync();
+                return newConversation;
+            }
+            finally
+            {
+                semaphoreSlim.Release();
+            }
+        }
     }
 }
