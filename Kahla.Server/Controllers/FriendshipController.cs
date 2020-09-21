@@ -434,17 +434,20 @@ namespace Kahla.Server.Controllers
             {
                 semaphoreSlim.Release();
             }
-            await Task.WhenAll(
-                    _pusher.FriendsChangedEvent(
-                        request.Creator,
-                        request,
-                        accept,
-                        newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
-                    _pusher.FriendsChangedEvent(
-                        request.Target,
-                        request,
-                        accept,
-                        newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation));
+            var _ = Task.Run(async () =>
+            {
+                await Task.WhenAll(
+                        _pusher.FriendsChangedEvent(
+                            request.Creator,
+                            request,
+                            accept,
+                            newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                        _pusher.FriendsChangedEvent(
+                            request.Target,
+                            request,
+                            accept,
+                            newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation));
+            }).ConfigureAwait(false);
             return newConversation;
         }
     }

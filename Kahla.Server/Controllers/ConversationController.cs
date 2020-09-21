@@ -218,7 +218,7 @@ namespace Kahla.Server.Controllers
             // Set last read time.
             await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
-            await target.ForEachUserAsync((eachUser, relation) =>
+            var _ = target.ForEachUserAsync((eachUser, relation) =>
             {
                 var mentioned = model.At.Contains(eachUser.Id);
                 return _pusher.NewMessageEvent(
@@ -230,7 +230,7 @@ namespace Kahla.Server.Controllers
                                 pushAlert: eachUser.Id != user.Id && (mentioned || !(relation?.Muted ?? false)),
                                 mentioned: mentioned
                                 );
-            });
+            }).ConfigureAwait(false);
             return Json(new AiurValue<Message>(message)
             {
                 Code = ErrorType.Success,
