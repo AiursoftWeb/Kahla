@@ -166,7 +166,7 @@ namespace Kahla.Server.Controllers
             );
             if (_configuration["AutoAcceptRequests"] == true.ToString().ToLower())
             {
-                await AcceptRequest(request);
+                await AcceptRequest(request, true);
             }
             return Json(new AiurValue<int>(request.Id)
             {
@@ -201,26 +201,7 @@ namespace Kahla.Server.Controllers
             }
             request.Completed = true;
             PrivateConversation newConversation = null;
-            if (model.Accept)
-            {
-                newConversation = await AcceptRequest(request);
-            }
-            else
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            await Task.WhenAll(
-                _pusher.FriendsChangedEvent(
-                    request.Creator,
-                    request,
-                    model.Accept,
-                    newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
-                _pusher.FriendsChangedEvent(
-                    request.Target,
-                    request,
-                    model.Accept,
-                    newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation)
-            );
+            newConversation = await AcceptRequest(request, model.Accept);
             return Json(new AiurValue<int?>(newConversation?.Id)
             {
                 Code = ErrorType.Success,
@@ -435,8 +416,9 @@ namespace Kahla.Server.Controllers
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
 
-        private async Task<PrivateConversation> AcceptRequest(Request request)
+        private async Task<PrivateConversation> AcceptRequest(Request request, bool accept)
         {
+            PrivateConversation newConversation = null;
             await semaphoreSlim.WaitAsync();
             try
             {
@@ -445,14 +427,25 @@ namespace Kahla.Server.Controllers
                     await _dbContext.SaveChangesAsync();
                     throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
                 }
-                var newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
-                return newConversation;
             }
             finally
             {
                 semaphoreSlim.Release();
             }
+            await Task.WhenAll(
+                    _pusher.FriendsChangedEvent(
+                        request.Creator,
+                        request,
+                        accept,
+                        newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                    _pusher.FriendsChangedEvent(
+                        request.Target,
+                        request,
+                        accept,
+                        newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation));
+            return newConversation;
         }
     }
 }
