@@ -199,7 +199,6 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
-            request.Completed = true;
             PrivateConversation newConversation = null;
             newConversation = await AcceptRequest(request, model.Accept);
             return Json(new AiurValue<int?>(newConversation?.Id)
@@ -419,6 +418,7 @@ namespace Kahla.Server.Controllers
         private async Task<PrivateConversation> AcceptRequest(Request request, bool accept)
         {
             PrivateConversation newConversation = null;
+            request.Completed = true;
             await semaphoreSlim.WaitAsync();
             try
             {
