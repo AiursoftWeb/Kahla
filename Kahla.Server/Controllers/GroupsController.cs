@@ -220,7 +220,10 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             var token = await _appsContainer.AccessToken();
             var siteName = _configuration["UserFilesSiteName"];
-            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
+            if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{group.Id}"))
+            {
+                await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
+            }
             return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
         }
 
