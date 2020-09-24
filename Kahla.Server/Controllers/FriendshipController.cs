@@ -108,7 +108,10 @@ namespace Kahla.Server.Controllers
             );
             var token = await _appsContainer.AccessToken();
             var siteName = _configuration["UserFilesSiteName"];
-            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
+            if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{deletedConversationId}"))
+            {
+                await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
+            }
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 
