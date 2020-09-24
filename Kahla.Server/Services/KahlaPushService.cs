@@ -5,6 +5,7 @@ using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace Kahla.Server.Services
                 Message = message,
                 PreviousMessageId = lastMessageId
             };
-            var pushTasks = new List<Task>();
+            var pushTasks = new ConcurrentBag<Task>();
             if (stargateChannel != -1)
             {
                 pushTasks.Add(_stargatePushService.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(newMessageEvent), true));

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebPush;
@@ -38,7 +39,7 @@ namespace Kahla.Server.Services
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
             // Push to all devices.
 
-            var pushTasks = new List<Task>();
+            var pushTasks = new ConcurrentBag<Task>();
             foreach (var device in devices)
             {
                 async Task PushToDevice()

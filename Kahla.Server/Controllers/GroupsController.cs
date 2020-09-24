@@ -84,6 +84,7 @@ namespace Kahla.Server.Controllers
             };
             await _dbContext.UserGroupRelations.AddAsync(newRelationship);
             await _dbContext.SaveChangesAsync();
+            await _pusher.GroupJoinedEvent(user, createdGroup, null, 0);
             return Json(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
