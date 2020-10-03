@@ -4,6 +4,8 @@ using Kahla.Server.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace Kahla.Server.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task PushAsync(IEnumerable<Device> devices, string triggerEmail, string payload)
+        public async Task PushAsync(IEnumerable<Device> devices, object payload, string triggerEmail = "postermaster@aiursoft.com")
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
@@ -48,13 +50,18 @@ namespace Kahla.Server.Services
                     {
                         var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
                         var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
-                        await _webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
+                        var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+                        {
+                            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                        });
+                        await _webPushClient.SendNotificationAsync(pushSubscription, payloadToken, vapidDetails);
                     }
                     catch (WebPushException e)
                     {
                         dbContext.Devices.Remove(device);
                         await dbContext.SaveChangesAsync();
-                        _logger.LogCritical(e, "A WebPush error occured while calling WebPush API: " + e.Message);
+                        _logger.LogCritical(e, "An WebPush error occured while calling WebPush API: " + e.Message);
                         _logger.LogCritical(e, e.Message);
                     }
                     catch (Exception e)

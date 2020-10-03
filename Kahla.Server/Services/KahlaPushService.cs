@@ -46,13 +46,13 @@ namespace Kahla.Server.Services
                 Message = message,
                 PreviousMessageId = lastMessageId
             };
-            if (stargateChannel != -1)
+            if (stargateChannel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(newMessageEvent), true));
             }
             if (pushAlert)
             {
-                _cannonService.FireAsync<ThirdPartyPushService>(s =>s.PushAsync(devices, message.Sender.Email, JsonConvert.SerializeObject(newMessageEvent)));
+                _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, newMessageEvent, message.Sender.Email));
             }
         }
 
@@ -63,11 +63,11 @@ namespace Kahla.Server.Services
             {
                 Request = request
             };
-            if (target.CurrentChannel != -1)
+            if (target.CurrentChannel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, JsonConvert.SerializeObject(newFriendRequestEvent), true));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s =>s.PushAsync(target.HisDevices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(newFriendRequestEvent)));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, newFriendRequestEvent));
         }
 
         public async Task FriendsChangedEvent(KahlaUser target, Request request, bool result, PrivateConversation conversation)
@@ -79,11 +79,11 @@ namespace Kahla.Server.Services
                 Result = result,
                 CreatedConversation = conversation
             };
-            if (target.CurrentChannel != -1)
+            if (target.CurrentChannel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, JsonConvert.SerializeObject(friendAcceptedEvent), true));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendAcceptedEvent)));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, friendAcceptedEvent));
         }
 
         public async Task FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
@@ -94,11 +94,11 @@ namespace Kahla.Server.Services
                 Trigger = trigger,
                 ConversationId = deletedConversationId
             };
-            if (stargateChannel != -1)
+            if (stargateChannel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendDeletedEvent), true));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, "postermaster@aiursoft.com", JsonConvert.SerializeObject(friendDeletedEvent)));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, friendDeletedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
@@ -110,7 +110,7 @@ namespace Kahla.Server.Services
                 NewTimer = newTimer,
                 ConversationId = conversationId
             };
-            if (channel != -1)
+            if (channel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(timerUpdatedEvent), true));
             }
@@ -125,7 +125,7 @@ namespace Kahla.Server.Services
                 NewMember = newMember,
                 ConversationId = conversationId
             };
-            if (channel != -1)
+            if (channel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newMemberEvent), true));
             }
@@ -140,7 +140,7 @@ namespace Kahla.Server.Services
                 LeftUser = leftMember,
                 ConversationId = conversationId
             };
-            if (channel != -1)
+            if (channel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(someoneLeftEvent), true));
             }
@@ -155,7 +155,7 @@ namespace Kahla.Server.Services
                 ConversationId = conversationId
             };
 
-            if (channel != -1)
+            if (channel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(dissolvevent), true));
             }
@@ -172,7 +172,7 @@ namespace Kahla.Server.Services
                 MessageCount = messageCount
             };
 
-            if (channel != -1)
+            if (channel > 0)
             {
                 _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(groupJoinedEvent), true));
             }

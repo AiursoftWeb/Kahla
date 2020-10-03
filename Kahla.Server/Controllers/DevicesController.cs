@@ -176,7 +176,7 @@ namespace Kahla.Server.Controllers
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             var token = await _appsContainer.AccessToken();
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, "postermaster@aiursoft.com", payload));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
             _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, payload));
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
