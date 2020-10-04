@@ -36,7 +36,6 @@ Create a new file, and name it `FirstBot.cs`. In this C# class, extend the class
 ```csharp
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
-using Kahla.SDK.Models.ApiViewModels;
 using System.Threading.Tasks;
 
 namespace MyBot
@@ -62,7 +61,6 @@ Modify your `Program.cs` to start your bot.
 
 ```csharp
 using Kahla.SDK.Abstract;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyBot
@@ -72,7 +70,7 @@ namespace MyBot
         public static async Task Main(string[] args)
         {
             await new BotBuilder()
-                .Build<DancerBotCore>()
+                .Build<FirstBot>()
                 .Run();
         }
     }
@@ -110,14 +108,14 @@ using Kahla.SDK.Abstract;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Kahla.Bot
+namespace MyBot
 {
     public class Program
     {
         public async static Task Main(string[] args)
         {
             await CreateBotBuilder()
-                .Build<EmptyBot>()
+                .Build<FirstBot>()
                 .Run();
         }
 
@@ -133,13 +131,12 @@ namespace Kahla.Bot
 And create a new class named: `StartUp`:
 
 ```csharp
-using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Kahla.Bot
+namespace MyBot
 {
     public class StartUp : IStartUp
     {
@@ -163,7 +160,6 @@ namespace Kahla.Bot
         }
     }
 }
-
 ```
 
 For more bot demo, please search `bot.kahla.app` in Kahla. Or [view more demos](https://github.com/AiursoftWeb/Kahla/tree/dev/Kahla.Bot);

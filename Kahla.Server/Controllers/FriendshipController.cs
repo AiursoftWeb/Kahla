@@ -1,9 +1,10 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
+using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
-using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Identity.Attributes;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
@@ -35,7 +37,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
-        private static readonly object Obj = new object();
+        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
@@ -105,7 +107,10 @@ namespace Kahla.Server.Controllers
             );
             var token = await _appsContainer.AccessToken();
             var siteName = _configuration["UserFilesSiteName"];
-            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
+            if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{deletedConversationId}"))
+            {
+                await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
+            }
             return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
         }
 
@@ -132,13 +137,14 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
             }
             Request request;
-            lock (Obj)
+            await semaphoreSlim.WaitAsync();
+            try
             {
-                var pending = _dbContext.Requests
+                var pending = await _dbContext.Requests
                     .Where(t =>
                         t.CreatorId == user.Id && t.TargetId == target.Id ||
                         t.CreatorId == target.Id && t.TargetId == user.Id)
-                    .Any(t => !t.Completed);
+                    .AnyAsync(t => !t.Completed);
                 if (pending)
                 {
                     return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
@@ -149,13 +155,21 @@ namespace Kahla.Server.Controllers
                     Creator = user,
                     TargetId = id,
                 };
-                _dbContext.Requests.Add(request);
-                _dbContext.SaveChanges();
+                await _dbContext.Requests.AddAsync(request);
+                await _dbContext.SaveChangesAsync();
+            }
+            finally
+            {
+                semaphoreSlim.Release();
             }
             await Task.WhenAll(
                 _pusher.NewFriendRequestEvent(target, request),
                 _pusher.NewFriendRequestEvent(user, request)
             );
+            if (_configuration["AutoAcceptRequests"] == true.ToString().ToLower())
+            {
+                await AcceptRequest(request, true);
+            }
             return Json(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
@@ -187,34 +201,8 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
-            request.Completed = true;
             PrivateConversation newConversation = null;
-            if (model.Accept)
-            {
-                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
-                {
-                    await _dbContext.SaveChangesAsync();
-                    return this.Protocol(ErrorType.RequireAttention, "You two are already friends.");
-                }
-                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
-                await _dbContext.SaveChangesAsync();
-            }
-            else
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            await Task.WhenAll(
-                _pusher.FriendsChangedEvent(
-                    request.Creator,
-                    request,
-                    model.Accept,
-                    newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
-                _pusher.FriendsChangedEvent(
-                    request.Target,
-                    request,
-                    model.Accept,
-                    newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation)
-            );
+            newConversation = await AcceptRequest(request, model.Accept);
             return Json(new AiurValue<int?>(newConversation?.Id)
             {
                 Code = ErrorType.Success,
@@ -428,5 +416,38 @@ namespace Kahla.Server.Controllers
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
+
+        private async Task<PrivateConversation> AcceptRequest(Request request, bool accept)
+        {
+            PrivateConversation newConversation = null;
+            request.Completed = true;
+            await semaphoreSlim.WaitAsync();
+            try
+            {
+                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                {
+                    await _dbContext.SaveChangesAsync();
+                    throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
+                }
+                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
+                await _dbContext.SaveChangesAsync();
+            }
+            finally
+            {
+                semaphoreSlim.Release();
+            }
+            await Task.WhenAll(
+                    _pusher.FriendsChangedEvent(
+                        request.Creator,
+                        request,
+                        accept,
+                        newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
+                    _pusher.FriendsChangedEvent(
+                        request.Target,
+                        request,
+                        accept,
+                        newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation));
+            return newConversation;
+        }
     }
 }

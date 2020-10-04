@@ -5,6 +5,7 @@ using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Aiursoft.WebTools;
+using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -13,8 +14,6 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,23 +27,20 @@ namespace Kahla.Server.Controllers
     public class DevicesController : Controller
     {
         private readonly KahlaDbContext _dbContext;
-        private readonly ThirdPartyPushService _thirdPartyPushService;
         private readonly UserManager<KahlaUser> _userManager;
-        private readonly PushMessageService _stargatePushService;
         private readonly AppsContainer _appsContainer;
+        private readonly CannonService _cannonService;
 
         public DevicesController(
             KahlaDbContext dbContext,
-            ThirdPartyPushService thirdPartyPushService,
             UserManager<KahlaUser> userManager,
-            PushMessageService stargatePushService,
-            AppsContainer appsContainer)
+            AppsContainer appsContainer,
+            CannonService cannonService)
         {
             _dbContext = dbContext;
-            _thirdPartyPushService = thirdPartyPushService;
             _userManager = userManager;
-            _stargatePushService = stargatePushService;
             _appsContainer = appsContainer;
+            _cannonService = cannonService;
         }
 
         [HttpPost]
@@ -173,14 +169,9 @@ namespace Kahla.Server.Controllers
                 Muted = false,
                 Mentioned = false
             };
-            var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
-            await Task.WhenAll(
-                _thirdPartyPushService.PushAsync(user.HisDevices, "postermaster@aiursoft.com", payload),
-                _stargatePushService.PushMessageAsync(await _appsContainer.AccessToken(), user.CurrentChannel, payload)
-            );
+            var token = await _appsContainer.AccessToken();
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
+            _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
 

@@ -2,8 +2,8 @@
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
-using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Identity.Attributes;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -84,6 +84,7 @@ namespace Kahla.Server.Controllers
             };
             await _dbContext.UserGroupRelations.AddAsync(newRelationship);
             await _dbContext.SaveChangesAsync();
+            await _pusher.GroupJoinedEvent(user, createdGroup, null, 0);
             return Json(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
@@ -219,7 +220,10 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             var token = await _appsContainer.AccessToken();
             var siteName = _configuration["UserFilesSiteName"];
-            await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
+            if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{group.Id}"))
+            {
+                await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
+            }
             return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
         }
 

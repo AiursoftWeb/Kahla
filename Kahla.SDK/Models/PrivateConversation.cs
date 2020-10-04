@@ -1,6 +1,6 @@
 ﻿using Kahla.SDK.Services;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +36,7 @@ namespace Kahla.SDK.Models
 
         public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
         {
-            var taskList = new List<Task>
+            var taskList = new ConcurrentBag<Task>
             {
                 function(RequestUser, null)
             };
