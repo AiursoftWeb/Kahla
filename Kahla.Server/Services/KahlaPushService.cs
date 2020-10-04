@@ -5,8 +5,6 @@ using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
-using Newtonsoft.Json;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
