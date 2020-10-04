@@ -48,7 +48,7 @@ namespace Kahla.Server.Services
             };
             if (stargateChannel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(newMessageEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, newMessageEvent));
             }
             if (pushAlert)
             {
@@ -65,7 +65,7 @@ namespace Kahla.Server.Services
             };
             if (target.CurrentChannel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, JsonConvert.SerializeObject(newFriendRequestEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, newFriendRequestEvent));
             }
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, newFriendRequestEvent));
         }
@@ -81,7 +81,7 @@ namespace Kahla.Server.Services
             };
             if (target.CurrentChannel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, JsonConvert.SerializeObject(friendAcceptedEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, target.CurrentChannel, friendAcceptedEvent));
             }
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, friendAcceptedEvent));
         }
@@ -96,7 +96,7 @@ namespace Kahla.Server.Services
             };
             if (stargateChannel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, JsonConvert.SerializeObject(friendDeletedEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, stargateChannel, friendDeletedEvent));
             }
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, friendDeletedEvent));
         }
@@ -112,7 +112,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(timerUpdatedEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, timerUpdatedEvent));
             }
         }
 
@@ -127,7 +127,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(newMemberEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, newMemberEvent));
             }
         }
 
@@ -142,7 +142,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(someoneLeftEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, someoneLeftEvent));
             }
         }
 
@@ -157,7 +157,7 @@ namespace Kahla.Server.Services
 
             if (channel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(dissolvevent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, dissolvevent));
             }
         }
 
@@ -174,7 +174,7 @@ namespace Kahla.Server.Services
 
             if (channel > 0)
             {
-                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, JsonConvert.SerializeObject(groupJoinedEvent), true));
+                _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, channel, groupJoinedEvent));
             }
         }
     }

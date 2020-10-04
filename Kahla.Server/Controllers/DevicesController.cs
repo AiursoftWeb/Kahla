@@ -171,13 +171,9 @@ namespace Kahla.Server.Controllers
                 Muted = false,
                 Mentioned = false
             };
-            var payload = JsonConvert.SerializeObject(messageEvent, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
             var token = await _appsContainer.AccessToken();
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
-            _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, payload));
+            _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
         }
 
