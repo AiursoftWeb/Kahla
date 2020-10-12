@@ -201,8 +201,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
             }
-            PrivateConversation newConversation = null;
-            newConversation = await AcceptRequest(request, model.Accept);
+            var newConversation = await AcceptRequest(request, model.Accept);
             return Json(new AiurValue<int?>(newConversation?.Id)
             {
                 Code = ErrorType.Success,
