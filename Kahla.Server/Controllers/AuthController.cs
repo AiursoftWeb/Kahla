@@ -133,7 +133,7 @@ namespace Kahla.Server.Controllers
             catch (WebException e)
             {
                 var accessToken = await _appsContainer.AccessToken();
-                await _eventService.LogAsync(accessToken, e.Message, e.StackTrace, EventLevel.Warning, HttpContext.Request.Path);
+                await _eventService.LogExceptionAsync(accessToken, e, HttpContext.Request.Path);
             }
             return Json(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
             {
