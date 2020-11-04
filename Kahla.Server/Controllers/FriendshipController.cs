@@ -423,12 +423,15 @@ namespace Kahla.Server.Controllers
             await semaphoreSlim.WaitAsync();
             try
             {
-                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                if (accept)
                 {
-                    await _dbContext.SaveChangesAsync();
-                    throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
+                    if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                    {
+                        await _dbContext.SaveChangesAsync();
+                        throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
+                    }
+                    newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 }
-                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
             }
             finally
