@@ -32,7 +32,7 @@ namespace Kahla.Home
             services.AddGatewayServer(Configuration.GetConnectionString("GatewayConnection"));
             services.AddArchonServer(Configuration.GetConnectionString("ArchonConnection"));
             services.AddObserverServer(Configuration.GetConnectionString("ObserverConnection"));
-            services.AddBasic();
+            services.AddAiursoftSDK();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

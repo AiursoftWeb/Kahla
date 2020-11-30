@@ -15,3 +15,4 @@ appsettings.Production.json
 appsettings.Development.json
 *.log
 *.pubxml
+TestResults
