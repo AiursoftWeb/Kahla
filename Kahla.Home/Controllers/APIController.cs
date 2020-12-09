@@ -44,7 +44,7 @@ namespace Kahla.Home.Controllers
             var serversJson = await _cache.GetAndCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress), false));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new ConcurrentBag<IndexViewModel>();
-            await servers.ForEachParallel(async server =>
+            await servers.ForEachInThreadsPool(async server =>
             {
                 try
                 {

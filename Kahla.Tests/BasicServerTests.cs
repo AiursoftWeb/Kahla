@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using static Aiursoft.WebTools.Extends;
@@ -20,7 +22,7 @@ namespace Aiursoft.Archon.Tests
     public class BasicServerTests
     {
         private readonly string _endpointUrl;
-        private readonly int _port ;
+        private readonly int _port;
         private IHost _server;
         private HttpClient _http;
         private ServiceCollection _services;
@@ -72,6 +74,24 @@ namespace Aiursoft.Archon.Tests
             var result = await home.IndexAsync(_endpointUrl);
             Assert.AreEqual(ErrorType.Success, result.Code);
 
+        }
+
+        [TestMethod]
+        public async Task UnauthorizedCall()
+        {
+            var auth = _serviceProvider.GetRequiredService<AuthService>();
+            var status = await auth.SignInStatusAsync();
+            Assert.AreEqual(false, status.Value);
+
+            try
+            {
+                await auth.MeAsync();
+                Assert.Fail("Unauthorized call should not success.");
+            }
+            catch (WebException e)
+            {
+                Assert.IsTrue(e.Message.Contains("Unauthorized"));
+            }
         }
     }
 }
