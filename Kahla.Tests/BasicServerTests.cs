@@ -5,6 +5,7 @@ using Kahla.SDK.Abstract;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server;
+using Kahla.Tests.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,12 +19,18 @@ namespace Aiursoft.Archon.Tests
     [TestClass]
     public class BasicServerTests
     {
-        private readonly string _endpointUrl = $"http://localhost:{_port}";
-        private const int _port = 15999;
+        private readonly string _endpointUrl;
+        private readonly int _port ;
         private IHost _server;
         private HttpClient _http;
         private ServiceCollection _services;
         private ServiceProvider _serviceProvider;
+
+        public BasicServerTests()
+        {
+            _port = Network.GetAvailablePort();
+            _endpointUrl = $"http://localhost:{_port}";
+        }
 
         [TestInitialize]
         public async Task CreateServer()
