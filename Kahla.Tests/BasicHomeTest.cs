@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Scanner;
+using Aiursoft.XelNaga.Tools;
 using AngleSharp.Html.Dom;
 using Kahla.Home;
 using Kahla.SDK.Services;

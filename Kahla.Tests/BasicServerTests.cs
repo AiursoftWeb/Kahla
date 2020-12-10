@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
 using Aiursoft.Scanner;
+using Aiursoft.XelNaga.Tools;
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
