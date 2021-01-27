@@ -27,7 +27,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class StorageController : Controller
+    public class StorageController : ControllerBase
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;

@@ -25,7 +25,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(true)]
-    public class GroupsController : Controller
+    public class GroupsController : ControllerBase
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;

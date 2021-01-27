@@ -24,7 +24,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class DevicesController : Controller
+    public class DevicesController : ControllerBase
     {
         private readonly KahlaDbContext _dbContext;
         private readonly UserManager<KahlaUser> _userManager;

@@ -19,7 +19,7 @@ namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
     [APIExpHandler]
-    public class HomeController : Controller
+    public class HomeController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
         private readonly ServiceLocation _serviceLocation;

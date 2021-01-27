@@ -35,7 +35,7 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
-    public class AuthController : Controller
+    public class AuthController : ControllerBase
     {
         private readonly StargateLocator _stargateLocator;
         private readonly AuthService<KahlaUser> _authService;

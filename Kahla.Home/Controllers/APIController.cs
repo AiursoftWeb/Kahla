@@ -16,7 +16,7 @@ namespace Kahla.Home.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
-    public class APIController : Controller
+    public class APIController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly HomeService _homeService;
