@@ -75,7 +75,7 @@ namespace Kahla.Server.Controllers
                 contact.Online = contact.Discriminator == nameof(PrivateConversation) ?
                     _onlineJudger.IsOnline(contact.UserId, !contact.EnableInvisiable) : null;
             }
-            return Json(new AiurCollection<ContactInfo>(contacts)
+            return this.Protocol(new AiurCollection<ContactInfo>(contacts)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your friends."
@@ -127,7 +127,7 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             allMessages.ForEach(t => t.Read = t.SendTime <= lastReadTime);
             allMessages.ForEach(t => t.Sender.Build(_onlineJudger));
-            return Json(new AiurCollection<Message>(allMessages)
+            return this.Protocol(new AiurCollection<Message>(allMessages)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your messages."
@@ -231,7 +231,7 @@ namespace Kahla.Server.Controllers
                                 mentioned: mentioned
                                 );
             });
-            return Json(new AiurValue<Message>(message)
+            return this.Protocol(new AiurValue<Message>(message)
             {
                 Code = ErrorType.Success,
                 Message = "Your message has been sent."
@@ -258,7 +258,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
-            return Json(new AiurValue<Conversation>(target.Build(user.Id, _onlineJudger))
+            return this.Protocol(new AiurValue<Conversation>(target.Build(user.Id, _onlineJudger))
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get target conversation."
@@ -293,7 +293,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Gone, "No files sent that day.");
             }
             var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
-            return Json(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
+            return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
             {
                 Code = ErrorType.Success,
                 ShowingDateUTC = folder.FolderName,

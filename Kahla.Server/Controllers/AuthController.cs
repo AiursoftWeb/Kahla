@@ -112,7 +112,7 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var signedIn = user != null;
-            return Json(new AiurValue<bool>(signedIn)
+            return this.Protocol(new AiurValue<bool>(signedIn)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your signin status."
@@ -135,7 +135,7 @@ namespace Kahla.Server.Controllers
                 var accessToken = await _appsContainer.AccessToken();
                 await _eventService.LogExceptionAsync(accessToken, e, HttpContext.Request.Path);
             }
-            return Json(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
+            return this.Protocol(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your information."
@@ -204,7 +204,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var token = await _appsContainer.AccessToken();
             var result = await _userService.SendConfirmationEmailAsync(token, user.Id, email);
-            return Json(result);
+            return this.Protocol(result);
         }
 
         [AiurForceAuth(directlyReject: true)]
@@ -231,7 +231,7 @@ namespace Kahla.Server.Controllers
                     Key = user.ConnectKey
                 }).ToString()
             };
-            return Json(model);
+            return this.Protocol(model);
         }
 
         public async Task<IActionResult> LogOff(LogOffAddressModel model)

@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Handler.Attributes;
+using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
 using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models.ApiViewModels;
@@ -60,7 +61,8 @@ namespace Kahla.Home.Controllers
                 }
             });
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            return Json(serversRendered);
+#warning Use Protocol!
+            return Ok(serversRendered);
         }
 
         [Route("version")]
@@ -68,7 +70,7 @@ namespace Kahla.Home.Controllers
         {
             var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            return Json(new VersionViewModel
+            return this.Protocol(new VersionViewModel
             {
                 LatestVersion = appVersion,
                 LatestCLIVersion = cliVersion,

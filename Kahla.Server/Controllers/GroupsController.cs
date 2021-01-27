@@ -85,7 +85,7 @@ namespace Kahla.Server.Controllers
             await _dbContext.UserGroupRelations.AddAsync(newRelationship);
             await _dbContext.SaveChangesAsync();
             await _pusher.GroupJoinedEvent(user, createdGroup, null, 0);
-            return Json(new AiurValue<int>(createdGroup.Id)
+            return this.Protocol(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
                 Message = "You have successfully created a new group and joined it!"
@@ -101,7 +101,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find a group with id: {id}!");
             }
             var view = new SearchedGroup(group);
-            return Json(new AiurValue<SearchedGroup>(view)
+            return this.Protocol(new AiurValue<SearchedGroup>(view)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your group result."
@@ -165,7 +165,7 @@ namespace Kahla.Server.Controllers
                 _pusher.GroupJoinedEvent(user, group, latestMessage, messagesCount),
                 group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id))
             );
-            return Json(new AiurValue<int>(group.Id)
+            return this.Protocol(new AiurValue<int>(group.Id)
             {
                 Code = ErrorType.Success,
                 Message = $"You have successfully joint the group: {groupName}!"
