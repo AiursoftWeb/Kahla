@@ -81,13 +81,13 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth("", "", justTry: false, register: false)]
         public IActionResult OAuth()
         {
-            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+            return this.Protocol(ErrorType.HasSuccessAlready, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         [AiurForceAuth("", "", justTry: false, register: true)]
         public IActionResult GoRegister()
         {
-            return this.Protocol(ErrorType.RequireAttention, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+            return this.Protocol(ErrorType.HasSuccessAlready, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
@@ -246,7 +246,7 @@ namespace Kahla.Server.Controllers
                 await _signInManager.SignOutAsync();
                 if (device == null)
                 {
-                    return this.Protocol(ErrorType.RequireAttention, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+                    return this.Protocol(ErrorType.Success, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
                 }
                 else
                 {
@@ -257,7 +257,7 @@ namespace Kahla.Server.Controllers
             }
             else
             {
-                return this.Protocol(ErrorType.RequireAttention, "You are not authorized at all. But you can still call this API.");
+                return this.Protocol(ErrorType.HasSuccessAlready, "You are not authorized at all. But you can still call this API.");
             }
         }
 

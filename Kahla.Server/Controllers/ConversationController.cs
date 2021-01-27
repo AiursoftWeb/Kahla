@@ -290,7 +290,7 @@ namespace Kahla.Server.Controllers
                 .FirstOrDefault();
             if (folder == null)
             {
-                return this.Protocol(ErrorType.RequireAttention, "No files sent that day.");
+                return this.Protocol(ErrorType.Gone, "No files sent that day.");
             }
             var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
             return Json(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())

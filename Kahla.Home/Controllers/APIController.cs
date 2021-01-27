@@ -19,14 +19,14 @@ namespace Kahla.Home.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly HomeService _homeService;
-        private readonly HTTPService _httpService;
+        private readonly HttpService _httpService;
         private readonly AiurCache _cache;
         private readonly VersionChecker _version;
 
         public APIController(
             IConfiguration configuration,
             HomeService homeService,
-            HTTPService httpService,
+            HttpService httpService,
             AiurCache cache,
             VersionChecker version)
         {
@@ -41,7 +41,7 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> KahlaServerList()
         {
             var serversFileAddress = _configuration["KahlaServerList"];
-            var serversJson = await _cache.GetAndCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress), false));
+            var serversJson = await _cache.GetAndCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress)));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new ConcurrentBag<IndexViewModel>();
             await servers.ForEachInThreadsPool(async server =>

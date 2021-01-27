@@ -53,7 +53,7 @@ namespace Kahla.Server.Controllers
             {
                 return Json(new AiurValue<long>(existingDevice.Id)
                 {
-                    Code = ErrorType.HasDoneAlready,
+                    Code = ErrorType.Conflict,
                     Message = "There is already a device with the same `PushP256DH`. Please check the value in the response."
                 });
             }

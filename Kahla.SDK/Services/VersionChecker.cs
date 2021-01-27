@@ -11,12 +11,12 @@ namespace Kahla.SDK.Services
 {
     public class VersionChecker : IScopedDependency
     {
-        private readonly HTTPService _http;
+        private readonly HttpService _http;
         private readonly IConfiguration _configuration;
         private readonly VersionService _versionService;
 
         public VersionChecker(
-            HTTPService http,
+            HttpService http,
             IConfiguration configuration,
             VersionService versionService)
         {
@@ -28,7 +28,7 @@ namespace Kahla.SDK.Services
         public async Task<(string appVersion, string cliVersion)> CheckKahla()
         {
             var url = new AiurUrl(_configuration["KahlaMasterPackageJson"], new { });
-            var response = await _http.Get(url, false);
+            var response = await _http.Get(url);
             var result = JsonConvert.DeserializeObject<NodePackageJson>(response);
 
             if (result.Name.ToLower() == "kahla")

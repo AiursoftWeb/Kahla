@@ -63,7 +63,7 @@ namespace Kahla.Server.Controllers
             var exists = _dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.GroupName.ToLower());
             if (exists)
             {
-                return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: {model.GroupName} was already exists!");
+                return this.Protocol(ErrorType.Conflict, $"A group with name: {model.GroupName} was already exists!");
             }
             var limitedDate = DateTime.UtcNow - new TimeSpan(1, 0, 0, 0);
             var todayCreated = await _dbContext
@@ -73,7 +73,7 @@ namespace Kahla.Server.Controllers
                 .CountAsync();
             if (todayCreated > 4)
             {
-                return this.Protocol(ErrorType.NotEnoughResources, "You have created too many groups today. Try it tomorrow!");
+                return this.Protocol(ErrorType.TooManyRequests, "You have created too many groups today. Try it tomorrow!");
             }
             var createdGroup = await _dbContext.CreateGroup(model.GroupName, _configuration["GroupImagePath"], user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
@@ -137,7 +137,7 @@ namespace Kahla.Server.Controllers
                 var joined = group.Users.Any(t => t.UserId == user.Id);
                 if (joined)
                 {
-                    return this.Protocol(ErrorType.HasDoneAlready, $"You have already joined the group: {groupName}!");
+                    return this.Protocol(ErrorType.HasSuccessAlready, $"You have already joined the group: {groupName}!");
                 }
                 // All checked and able to join him.
                 // Warning: Currently we do not have invitation system for invitation control is too complicated.
@@ -185,7 +185,7 @@ namespace Kahla.Server.Controllers
             }
             if (group.OwnerId == targetUserId)
             {
-                return this.Protocol(ErrorType.RequireAttention, $"Caution! You are already the owner of the group '{groupName}'.");
+                return this.Protocol(ErrorType.HasSuccessAlready, $"Caution! You are already the owner of the group '{groupName}'.");
             }
             group.OwnerId = targetUserId;
             await _dbContext.SaveChangesAsync();
@@ -239,11 +239,11 @@ namespace Kahla.Server.Controllers
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You did not joined the group: '{groupName}' at all!");
+                return this.Protocol(ErrorType.HasSuccessAlready, $"You did not joined the group: '{groupName}' at all!");
             }
             if (group.OwnerId == user.Id)
             {
-                return this.Protocol(ErrorType.NotEnoughResources, $"You are the owner of this group: '{groupName}' and you can't leave it!");
+                return this.Protocol(ErrorType.InsufficientPermissions, $"You are the owner of this group: '{groupName}' and you can't leave it!");
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
@@ -274,7 +274,7 @@ namespace Kahla.Server.Controllers
             }
             if (joined.Muted == setMuted)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
+                return this.Protocol(ErrorType.HasSuccessAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
             }
             joined.Muted = setMuted;
             await _dbContext.SaveChangesAsync();
@@ -293,7 +293,7 @@ namespace Kahla.Server.Controllers
                 {
                     if (_dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.NewName.ToLower()))
                     {
-                        return this.Protocol(ErrorType.NotEnoughResources, $"A group with name: '{model.NewName}' already exists!");
+                        return this.Protocol(ErrorType.Conflict, $"A group with name: '{model.NewName}' already exists!");
                     }
                     group.GroupName = model.NewName;
                 }
