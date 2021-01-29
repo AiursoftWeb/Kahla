@@ -35,7 +35,7 @@ namespace Kahla.Server.Controllers
     [LimitPerMin(40)]
     [APIExpHandler]
     [APIModelStateChecker]
-    public class AuthController : ControllerBase
+    public class AuthController : Controller
     {
         private readonly StargateLocator _stargateLocator;
         private readonly AuthService<KahlaUser> _authService;
@@ -119,7 +119,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [AiurForceAuth(directlyReject: true)]
+        [AiurForceAuthX(directlyReject: true)]
         [APIProduces(typeof(AiurValue<KahlaUser>))]
         public async Task<IActionResult> Me()
         {
