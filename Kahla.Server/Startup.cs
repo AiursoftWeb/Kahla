@@ -41,7 +41,7 @@ namespace Kahla.Server
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
             services.AddAiurAPIMvc();
-            services.AddAiurDependenciesWithIdentity<KahlaUser>(
+            services.AddAiursoftIdentity<KahlaUser>(
                 archonEndpoint: Configuration.GetConnectionString("ArchonConnection"),
                 observerEndpoint: Configuration.GetConnectionString("ObserverConnection"),
                 probeEndpoint: Configuration.GetConnectionString("ProbeConnection"),

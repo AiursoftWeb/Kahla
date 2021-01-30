@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Identity.Services;
 using Aiursoft.Observer.SDK.Models;
-using Aiursoft.Observer.SDK.Services.ToStatusServer;
+using Aiursoft.Observer.SDK.Services.ToObserverServer;
 using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
@@ -90,7 +90,7 @@ namespace Kahla.Server.Services
                     using var scope = _scopeFactory.CreateScope();
                     var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
                     var accessToken = await _appsContainer.AccessToken();
-                    await eventService.LogAsync(accessToken, ex.Message, ex.StackTrace, EventLevel.Exception, string.Empty);
+                    await eventService.LogExceptionAsync(accessToken, ex, "Email Notifier");
                 }
                 catch
                 {

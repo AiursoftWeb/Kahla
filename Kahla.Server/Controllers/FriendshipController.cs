@@ -28,7 +28,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class FriendshipController : Controller
+    public class FriendshipController : ControllerBase
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
@@ -74,7 +74,7 @@ namespace Kahla.Server.Controllers
                 .OrderBy(t => t.GroupName)
                 .ToListAsync();
             var searched = SearchedGroup.Map(groups);
-            return Json(new MineViewModel
+            return this.Protocol(new MineViewModel
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your groups and friends.",
@@ -97,7 +97,7 @@ namespace Kahla.Server.Controllers
             }
             if (!await _dbContext.AreFriends(user.Id, target.Id))
             {
-                return this.Protocol(ErrorType.NotEnoughResources, "He is not your friend at all.");
+                return this.Protocol(ErrorType.NotFound, "He is not your friend at all.");
             }
             var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
@@ -129,12 +129,12 @@ namespace Kahla.Server.Controllers
             }
             if (target.Id == user.Id)
             {
-                return this.Protocol(ErrorType.RequireAttention, "You can't request yourself!");
+                return this.Protocol(ErrorType.Conflict, "You can't request yourself!");
             }
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "You two are already friends!");
+                return this.Protocol(ErrorType.Conflict, "You two are already friends!");
             }
             Request request;
             await semaphoreSlim.WaitAsync();
@@ -147,7 +147,7 @@ namespace Kahla.Server.Controllers
                     .AnyAsync(t => !t.Completed);
                 if (pending)
                 {
-                    return this.Protocol(ErrorType.HasDoneAlready, "There are some pending request hasn't been completed!");
+                    return this.Protocol(ErrorType.Conflict, "There are some pending request hasn't been completed!");
                 }
                 request = new Request
                 {
@@ -170,7 +170,7 @@ namespace Kahla.Server.Controllers
             {
                 await AcceptRequest(request, true);
             }
-            return Json(new AiurValue<int>(request.Id)
+            return this.Protocol(new AiurValue<int>(request.Id)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully created your request!"
@@ -199,11 +199,10 @@ namespace Kahla.Server.Controllers
             }
             if (request.Completed)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "The target request is already completed.");
+                return this.Protocol(ErrorType.HasSuccessAlready, "The target request is already completed.");
             }
-            PrivateConversation newConversation = null;
-            newConversation = await AcceptRequest(request, model.Accept);
-            return Json(new AiurValue<int?>(newConversation?.Id)
+            var newConversation = await AcceptRequest(request, model.Accept);
+            return this.Protocol(new AiurValue<int?>(newConversation?.Id)
             {
                 Code = ErrorType.Success,
                 Message = "You have successfully completed this request."
@@ -221,7 +220,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.TargetId == user.Id)
                 .OrderByDescending(t => t.CreateTime)
                 .ToListAsync();
-            return Json(new AiurCollection<Request>(requests)
+            return this.Protocol(new AiurCollection<Request>(requests)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your requests list."
@@ -248,7 +247,7 @@ namespace Kahla.Server.Controllers
 
             var searched = SearchedGroup.Map(await groups.ToListAsync());
 
-            return Json(new SearchEverythingViewModel
+            return this.Protocol(new SearchEverythingViewModel
             {
                 UsersCount = await users.CountAsync(),
                 GroupsCount = await groups.CountAsync(),
@@ -341,7 +340,7 @@ namespace Kahla.Server.Controllers
                 .ThenBy(t => t.CommonGroups)
                 .Take(take)
                 .ToList();
-            return Json(new AiurCollection<FriendDiscovery>(ordered)
+            return this.Protocol(new AiurCollection<FriendDiscovery>(ordered)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get your suggested friends."
@@ -358,7 +357,7 @@ namespace Kahla.Server.Controllers
             {
                 model.Message = "We can not find target user.";
                 model.Code = ErrorType.NotFound;
-                return Json(model);
+                return this.Protocol(model);
             }
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
             if (conversation != null)
@@ -381,7 +380,7 @@ namespace Kahla.Server.Controllers
             model.SentRequest = model.PendingRequest != null;
             model.Message = "Found that user.";
             model.Code = ErrorType.Success;
-            return Json(model);
+            return this.Protocol(model);
         }
 
         [HttpPost]
@@ -395,14 +394,14 @@ namespace Kahla.Server.Controllers
             }
             if (currentUser.Id == targetUser.Id)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "You can not report yourself!");
+                return this.Protocol(ErrorType.Conflict, "You can not report yourself!");
             }
             var exists = await _dbContext
                 .Reports
                 .AnyAsync((t) => t.TriggerId == currentUser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
             if (exists)
             {
-                return this.Protocol(ErrorType.HasDoneAlready, "You have already reported the target user!");
+                return this.Protocol(ErrorType.HasSuccessAlready, "You have already reported the target user!");
             }
             // All check passed. Report him now!
             await _dbContext.Reports.AddAsync(new Report
@@ -424,12 +423,15 @@ namespace Kahla.Server.Controllers
             await semaphoreSlim.WaitAsync();
             try
             {
-                if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                if (accept)
                 {
-                    await _dbContext.SaveChangesAsync();
-                    throw new AiurAPIModelException(ErrorType.RequireAttention, "You two are already friends.");
+                    if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
+                    {
+                        await _dbContext.SaveChangesAsync();
+                        throw new AiurAPIModelException(ErrorType.HasSuccessAlready, "You two are already friends.");
+                    }
+                    newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 }
-                newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 await _dbContext.SaveChangesAsync();
             }
             finally

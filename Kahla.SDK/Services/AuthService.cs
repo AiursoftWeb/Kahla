@@ -78,7 +78,7 @@ namespace Kahla.SDK.Services
             var result = await _http.Get(url);
             var jResult = JsonConvert.DeserializeObject<AiurValue<bool>>(result);
 
-            if (jResult.Code != ErrorType.Success && jResult.Code != ErrorType.RequireAttention)
+            if (jResult.Code != ErrorType.Success && jResult.Code != ErrorType.HasSuccessAlready)
                 throw new AiurUnexpectedResponse(jResult);
             return jResult;
         }

@@ -4,6 +4,7 @@ using Aiursoft.SDK;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using static Aiursoft.WebTools.Extends;
 
 namespace Kahla.Server
 {
@@ -11,18 +12,17 @@ namespace Kahla.Server
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args)
-                .Build()
-                .MigrateDbContext<KahlaDbContext>()
+            App<Startup>(args)
+                .Update<KahlaDbContext>()
                 .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.AccessToken())
                 .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.AccessToken())
                 .Run();
         }
 
+        // For EF
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+            return BareApp<Startup>(args);
         }
     }
 }

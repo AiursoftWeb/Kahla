@@ -3,6 +3,7 @@ using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.SDK.Services;
+using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
@@ -18,7 +19,7 @@ namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
     [APIExpHandler]
-    public class HomeController : Controller
+    public class HomeController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
         private readonly ServiceLocation _serviceLocation;
@@ -70,7 +71,7 @@ namespace Kahla.Server.Controllers
                     Client = model.Domain.Client
                 };
             }
-            return Json(model);
+            return this.Protocol(model);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class StorageController : Controller
+    public class StorageController : ControllerBase
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
@@ -73,7 +73,7 @@ namespace Kahla.Server.Controllers
                 Token = token,
                 RecursiveCreate = true
             });
-            return Json(new AiurValue<string>(address.ToString())
+            return this.Protocol(new AiurValue<string>(address.ToString())
             {
                 Code = ErrorType.Success,
                 Message = "Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
@@ -114,7 +114,7 @@ namespace Kahla.Server.Controllers
                 Token = token,
                 RecursiveCreate = true
             });
-            return Json(new InitFileAccessViewModel(token)
+            return this.Protocol(new InitFileAccessViewModel(token)
             {
                 UploadAddress = address.ToString(),
                 Code = ErrorType.Success,
@@ -159,7 +159,7 @@ namespace Kahla.Server.Controllers
                 folderNames: $"conversation-{sourceConversation.Id}/{model.SourceFilePath}",
                 targetSiteName: siteName,
                 targetFolderNames: $"conversation-{targetConversation.Id}/{DateTime.UtcNow:yyyy-MM-dd}");
-            return Json(response);
+            return this.Protocol(response);
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);

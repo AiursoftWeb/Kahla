@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace Kahla.SDK.Services
 {
@@ -109,10 +110,10 @@ namespace Kahla.SDK.Services
             }
         }
 
-        private void Save(CookieContainer cookieContainer)
+        private static void Save(CookieContainer cookieContainer)
         {
             using MemoryStream stream = new MemoryStream();
-            new BinaryFormatter().Serialize(stream, cookieContainer);
+            new XmlSerializer(typeof(CookieContainer)).Serialize(stream, cookieContainer);
             var bytes = new byte[stream.Length];
             stream.Position = 0;
             stream.Read(bytes, 0, bytes.Length);
@@ -120,14 +121,14 @@ namespace Kahla.SDK.Services
             File.WriteAllText("cookies.dat", base64);
         }
 
-        private CookieContainer Load()
+        private static CookieContainer Load()
         {
             try
             {
                 var base64 = File.ReadAllText("cookies.dat");
                 var bytes = base64.Base64ToBytes();
                 using MemoryStream stream = new MemoryStream(bytes);
-                return (CookieContainer)new BinaryFormatter().Deserialize(stream);
+                return (CookieContainer)new XmlSerializer(typeof(CookieContainer)).Deserialize(stream);
             }
             catch
             {

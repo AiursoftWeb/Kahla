@@ -1,6 +1,8 @@
 ﻿using Aiursoft.Archon.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Scanner.Interfaces;
+using Aiursoft.XelNaga.Tools;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,21 +20,29 @@ namespace Kahla.Server.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
         public FilesCleaner(
             ILogger<FilesCleaner> logger,
             IServiceScopeFactory scopeFactory,
             AppsContainer appsContainer,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IWebHostEnvironment env)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
             _appsContainer = appsContainer;
             _configuration = configuration;
+            _env = env;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            if (_env.IsDevelopment() || !EntryExtends.IsProgramEntry())
+            {
+                _logger.LogInformation("Skip cleaner in development environment.");
+                return Task.CompletedTask;
+            }
             _logger.LogInformation("Timed Background Service is starting.");
             _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(10));
             return Task.CompletedTask;

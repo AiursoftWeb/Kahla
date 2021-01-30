@@ -1,5 +1,10 @@
 # Khala
 
+[![Build status](https://aiursoft.visualstudio.com/Star/_apis/build/status/Kahla%20Server%20Build)](https://aiursoft.visualstudio.com/Star/_build/latest?definitionId=6)
+[![NuGet version (Kahla.SDK)](https://img.shields.io/nuget/v/Kahla.SDK.svg?style=flat-square)](https://www.nuget.org/packages/Kahla.SDK/)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fwww.kahla.app)
+![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/aiursoft/Star/6)
+
 >"For we are bound by the Khala, the sacred union of our every thought and emotion."
 >——Hierarch Artanis, StarCraft II: Legacy of the Void
 

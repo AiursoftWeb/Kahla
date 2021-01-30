@@ -24,7 +24,7 @@ namespace Kahla.Server.Controllers
     [APIExpHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
-    public class DevicesController : Controller
+    public class DevicesController : ControllerBase
     {
         private readonly KahlaDbContext _dbContext;
         private readonly UserManager<KahlaUser> _userManager;
@@ -51,9 +51,9 @@ namespace Kahla.Server.Controllers
             var existingDevice = await _dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256DH == model.PushP256DH);
             if (existingDevice != null)
             {
-                return Json(new AiurValue<long>(existingDevice.Id)
+                return this.Protocol(new AiurValue<long>(existingDevice.Id)
                 {
-                    Code = ErrorType.HasDoneAlready,
+                    Code = ErrorType.Conflict,
                     Message = "There is already a device with the same `PushP256DH`. Please check the value in the response."
                 });
             }
@@ -76,7 +76,7 @@ namespace Kahla.Server.Controllers
             await _dbContext.Devices.AddAsync(device);
             await _dbContext.SaveChangesAsync();
             //ErrorType.Success, 
-            return Json(new AiurValue<long>(device.Id)
+            return this.Protocol(new AiurValue<long>(device.Id)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully created your new device with id: " + device.Id
@@ -103,7 +103,7 @@ namespace Kahla.Server.Controllers
             _dbContext.Devices.Update(device);
             await _dbContext.SaveChangesAsync();
             //ErrorType.Success, 
-            return Json(new AiurValue<Device>(device)
+            return this.Protocol(new AiurValue<Device>(device)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully updated your new device with id: " + device.Id
@@ -120,7 +120,7 @@ namespace Kahla.Server.Controllers
                 .Where(t => t.UserId == user.Id)
                 .OrderByDescending(t => t.AddTime)
                 .ToListAsync();
-            return Json(new AiurCollection<Device>(devices)
+            return this.Protocol(new AiurCollection<Device>(devices)
             {
                 Code = ErrorType.Success,
                 Message = "Successfully get all your devices."
