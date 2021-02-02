@@ -46,6 +46,8 @@ namespace Aiursoft.Archon.Tests
             _services.AddHttpClient();
             _services.AddLibraryDependencies();
             _serviceProvider = _services.BuildServiceProvider();
+            var kahlaLocation = _serviceProvider.GetRequiredService<KahlaLocation>();
+            kahlaLocation.UseKahlaServer(_endpointUrl);
         }
 
         [TestCleanup]
@@ -93,6 +95,14 @@ namespace Aiursoft.Archon.Tests
             {
                 Assert.IsTrue(e.Message.Contains("Unauthorized"));
             }
+        }
+
+        [TestMethod]
+        public async Task OAuthTest()
+        {
+            var auth = _serviceProvider.GetRequiredService<AuthService>();
+            var redirect = await auth.OAuthAsync();
+            Assert.IsTrue(redirect.Contains(@"/oauth/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A"));
         }
     }
 }
