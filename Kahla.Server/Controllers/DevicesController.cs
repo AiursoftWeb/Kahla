@@ -51,11 +51,8 @@ namespace Kahla.Server.Controllers
             var existingDevice = await _dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256DH == model.PushP256DH);
             if (existingDevice != null)
             {
-                return this.Protocol(new AiurValue<long>(existingDevice.Id)
-                {
-                    Code = ErrorType.Conflict,
-                    Message = "There is already a device with the same `PushP256DH`. Please check the value in the response."
-                });
+                _dbContext.Devices.Remove(existingDevice);
+                await _dbContext.SaveChangesAsync();
             }
             var devicesExists = await _dbContext.Devices.Where(t => t.UserId == user.Id).ToListAsync();
             if (devicesExists.Count >= 10)
