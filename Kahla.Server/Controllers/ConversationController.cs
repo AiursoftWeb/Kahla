@@ -221,6 +221,9 @@ namespace Kahla.Server.Controllers
             await _dbContext.SaveChangesAsync();
             target.ForEachUser((eachUser, relation) =>
             {
+                var mentioned = model.At.Contains(eachUser.Id);
+                var muted = relation?.Muted ?? false;
+                var isSentByMe = eachUser.Id == user.Id;
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => 
                 {
                     return pusher.NewMessageEvent(
@@ -229,8 +232,8 @@ namespace Kahla.Server.Controllers
                         conversation: target,
                         message: message,
                         lastMessageId: lastMessageId,
-                        pushAlert: eachUser.Id != user.Id && (model.At.Contains(eachUser.Id) || !(relation?.Muted ?? false)),
-                        mentioned: model.At.Contains(eachUser.Id));
+                        pushAlert: !isSentByMe && (mentioned || !muted),
+                        mentioned: mentioned);
                 });
             });
             return this.Protocol(new AiurValue<Message>(message)

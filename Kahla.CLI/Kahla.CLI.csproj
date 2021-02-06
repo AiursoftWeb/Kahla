@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net5.0</TargetFramework>
+		<PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
-		<PackageReference Include="RestSharp" Version="106.11.7" />
 	</ItemGroup>
 
 </Project>
