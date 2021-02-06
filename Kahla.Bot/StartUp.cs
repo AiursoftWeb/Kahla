@@ -1,6 +1,7 @@
 ﻿using Kahla.Bot.Services;
 using Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -10,6 +11,7 @@ namespace Kahla.Bot
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IHostedService, BackgroundTaskSample>();
             services.AddScoped<BingTranslator>();
         }
 

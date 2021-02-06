@@ -199,7 +199,20 @@ namespace Kahla.Server.Controllers
             }
             if (request.Completed)
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, "The target request is already completed.");
+                var conversation = _dbContext.FindConversationAsync(request.TargetId, request.CreatorId);
+                if (conversation != null)
+                {
+                    return this.Protocol(new AiurValue<int?>(conversation.Id)
+                    {
+                        Code = ErrorType.HasSuccessAlready,
+                        Message = $"You have already completed this request and the conversation with ID: '{conversation.Id}' still exists."
+                    });
+                }
+                return this.Protocol(new AiurValue<int?>(null)
+                {
+                    Code = ErrorType.HasSuccessAlready,
+                    Message = "You have already completed this request. Created conversation was deleted."
+                });
             }
             var newConversation = await AcceptRequest(request, model.Accept);
             return this.Protocol(new AiurValue<int?>(newConversation?.Id)

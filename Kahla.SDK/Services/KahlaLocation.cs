@@ -1,19 +1,57 @@
 ﻿using Aiursoft.Scanner.Interfaces;
+using Kahla.SDK.Models.ApiViewModels;
+using System;
+using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
 {
     public class KahlaLocation : ISingletonDependency
     {
+        private readonly BotLogger _botLogger;
+        private readonly HomeService _homeService;
+        private readonly VersionService _versionService;
         private string _kahlaRoot = "https://server.kahla.app";
+        public IndexViewModel ServerIndex { get; private set; }
+
+        public KahlaLocation(
+            BotLogger botLogger,
+            HomeService homeService,
+            VersionService versionService)
+        {
+            this._botLogger = botLogger;
+            this._homeService = homeService;
+            this._versionService = versionService;
+        }
 
         public override string ToString()
         {
             return _kahlaRoot;
         }
 
-        public void UseKahlaServer(string kahlaServerRootPath)
+        public async Task RefreshServerConfig()
+        {
+            _botLogger.LogInfo($"Using Kahla Server: {_kahlaRoot}");
+            _botLogger.LogInfo("Testing Kahla server connection...");
+            ServerIndex = await _homeService.IndexAsync(_kahlaRoot);
+            _botLogger.AppendResult(true, 5);
+            //_botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
+            _botLogger.LogInfo($"Server time: \t{ServerIndex.UTCTime}\tServer version: \t{ServerIndex.APIVersion}");
+            _botLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{_versionService.GetSDKVersion()}");
+            if (ServerIndex.APIVersion != _versionService.GetSDKVersion())
+            {
+                _botLogger.AppendResult(false);
+                _botLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");
+            }
+            else
+            {
+                _botLogger.AppendResult(true);
+            }
+        }
+
+        public async Task UseKahlaServerAsync(string kahlaServerRootPath)
         {
             _kahlaRoot = kahlaServerRootPath;
+            await RefreshServerConfig();
         }
     }
 }

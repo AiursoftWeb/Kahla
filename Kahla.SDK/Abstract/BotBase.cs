@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
+using Aiursoft.XelNaga.Services;
 using Aiursoft.XelNaga.Tools;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
@@ -8,6 +9,7 @@ using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,6 +31,7 @@ namespace Kahla.SDK.Abstract
         public SettingsService SettingsService;
         public StorageService StorageService;
         public KahlaUser Profile;
+        public IndexViewModel Server;
         public IEnumerable<ContactInfo> Contacts { get; set; }
         public IEnumerable<Request> Requests { get; set; }
 
@@ -60,7 +63,7 @@ namespace Kahla.SDK.Abstract
 
         public virtual Task OnMemoryChanged() => Task.CompletedTask;
 
-        public async Task<int> CompleteRequest(int requestId, bool accept)
+        public async Task<int?> CompleteRequest(int requestId, bool accept)
         {
             var text = accept ? "accepted" : "rejected";
             BotLogger.LogWarning($"Friend request with id '{requestId}' was {text}.");
@@ -113,6 +116,12 @@ namespace Kahla.SDK.Abstract
         public Task SendUserCard(int conversationId, string userId)
         {
             return SendMessage($"[user]{userId}", conversationId);
+        }
+
+        public Task BroadcastMessage(string message, Func<ContactInfo, bool> filter)
+        {
+            var conversations = Contacts.Where(filter).ToList();
+            return conversations.ForEachInThreadsPool(contact => SendMessage(message, contact.ConversationId));
         }
 
         public async Task SendMessage(string message, int conversationId)

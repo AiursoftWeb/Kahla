@@ -1,5 +1,6 @@
 ﻿using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
+using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using System.Threading.Tasks;
 
@@ -7,9 +8,9 @@ namespace Kahla.Bot.Bots
 {
     public class EchoBot : BotBase
     {
-        public override Task OnFriendRequest(NewFriendRequestEvent arg)
+        public override Task OnFriendRequest(NewFriendRequestEvent context)
         {
-            return CompleteRequest(arg.Request.Id, true);
+            return CompleteRequest(context.Request.Id, true);
         }
 
         public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
@@ -47,6 +48,11 @@ namespace Kahla.Bot.Bots
             }
             await Task.Delay(700);
             await SendMessage(replaced, eventContext.ConversationId);
+        }
+
+        public async Task BroadcastAsync(string message)
+        {
+            await BroadcastMessage(message, c => c.Discriminator == nameof(PrivateConversation));
         }
     }
 }
