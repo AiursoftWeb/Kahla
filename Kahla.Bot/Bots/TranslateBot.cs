@@ -28,9 +28,9 @@ namespace Kahla.Bot.Bots
             return Task.CompletedTask;
         }
 
-        public override Task OnFriendRequest(NewFriendRequestEvent arg)
+        public override Task OnFriendRequest(NewFriendRequestEvent context)
         {
-            return CompleteRequest(arg.Request.Id, true);
+            return CompleteRequest(context.Request.Id, true);
         }
 
         public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)

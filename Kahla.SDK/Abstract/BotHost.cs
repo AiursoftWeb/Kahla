@@ -3,7 +3,9 @@ using Kahla.SDK.Data;
 using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
+using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -22,12 +24,11 @@ namespace Kahla.SDK.Abstract
         private readonly SettingsService _settingsService;
         private readonly KahlaLocation _kahlaLocation;
         private readonly FriendshipService _friendshipService;
-        private readonly HomeService _homeService;
-        private readonly VersionService _versionService;
         private readonly AuthService _authService;
         private readonly EventSyncer<T> _eventSyncer;
         private readonly ProfileContainer _profileContainer;
         private readonly BotFactory<T> _botFactory;
+        private readonly IEnumerable<IHostedService> _backgroundJobs;
         private ManualResetEvent _exitEvent;
 
         public Task ConnectTask = Task.CompletedTask;
@@ -40,24 +41,22 @@ namespace Kahla.SDK.Abstract
             SettingsService settingsService,
             KahlaLocation kahlaLocation,
             FriendshipService friendshipService,
-            HomeService homeService,
-            VersionService versionService,
             AuthService authService,
             EventSyncer<T> eventSyncer,
             ProfileContainer profileContainer,
-            BotFactory<T> botFactory)
+            BotFactory<T> botFactory,
+            IEnumerable<IHostedService> backgroundJobs)
         {
             _botCommander = botCommander.InjectHost(this);
             _botLogger = botLogger;
             _settingsService = settingsService;
             _kahlaLocation = kahlaLocation;
             _friendshipService = friendshipService;
-            _homeService = homeService;
-            _versionService = versionService;
             _authService = authService;
             _eventSyncer = eventSyncer;
             _profileContainer = profileContainer;
             _botFactory = botFactory;
+            _backgroundJobs = backgroundJobs;
         }
 
         public async Task Run(bool enableCommander = true, int autoReconnectMax = int.MaxValue)
@@ -105,9 +104,13 @@ namespace Kahla.SDK.Abstract
             await ReleaseMonitorJob();
             var server = AskServerAddress();
             _settingsService["ServerAddress"] = server;
-            _kahlaLocation.UseKahlaServer(server);
-            if (!await TestKahlaLive(server))
+            try
             {
+                await _kahlaLocation.UseKahlaServerAsync(server);
+            }
+            catch (Exception e)
+            {
+                _botLogger.LogDanger(e.Message);
                 return;
             }
             if (!await SignedIn())
@@ -140,6 +143,8 @@ namespace Kahla.SDK.Abstract
                 await BuildBot.OnGroupConnected(group);
             }
             onGetWebsocket?.Invoke(websocketAddress);
+            await Task.WhenAll(_backgroundJobs.Select(t => t.StopAsync(CancellationToken.None)));
+            await Task.WhenAll(_backgroundJobs.Select(t => t.StartAsync(CancellationToken.None)));
         }
 
         public string AskServerAddress()
@@ -162,35 +167,6 @@ namespace Kahla.SDK.Abstract
             else
             {
                 return result;
-            }
-        }
-
-        public async Task<bool> TestKahlaLive(string server)
-        {
-            try
-            {
-                _botLogger.LogInfo($"Using Kahla Server: {_kahlaLocation}");
-                _botLogger.LogInfo("Testing Kahla server connection...");
-                var index = await _homeService.IndexAsync(server);
-                _botLogger.AppendResult(true, 5);
-                //_botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
-                _botLogger.LogInfo($"Server time: \t{index.UTCTime}\tServer version: \t{index.APIVersion}");
-                _botLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{_versionService.GetSDKVersion()}");
-                if (index.APIVersion != _versionService.GetSDKVersion())
-                {
-                    _botLogger.AppendResult(false);
-                    _botLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");
-                }
-                else
-                {
-                    _botLogger.AppendResult(true);
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                _botLogger.LogDanger(e.Message);
-                return false;
             }
         }
 

@@ -47,7 +47,7 @@ namespace Aiursoft.Archon.Tests
             _services.AddLibraryDependencies();
             _serviceProvider = _services.BuildServiceProvider();
             var kahlaLocation = _serviceProvider.GetRequiredService<KahlaLocation>();
-            kahlaLocation.UseKahlaServer(_endpointUrl);
+            await kahlaLocation.UseKahlaServerAsync(_endpointUrl);
         }
 
         [TestCleanup]

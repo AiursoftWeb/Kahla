@@ -5,6 +5,7 @@ using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.WebTools;
+using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -29,29 +30,29 @@ namespace Kahla.Server.Controllers
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
-        private readonly KahlaPushService _pusher;
         private readonly OwnerChecker _ownerChecker;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
+        private readonly CannonQueue _cannonQueue;
         private static readonly object Obj = new object();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pusher,
             OwnerChecker ownerChecker,
             IConfiguration configuration,
             FoldersService foldersService,
-            AppsContainer appsContainer)
+            AppsContainer appsContainer,
+            CannonQueue cannonQueue)
         {
             _userManager = userManager;
             _dbContext = dbContext;
-            _pusher = pusher;
             _ownerChecker = ownerChecker;
             _configuration = configuration;
             _foldersService = foldersService;
             _appsContainer = appsContainer;
+            _cannonQueue = cannonQueue;
         }
 
         [HttpPost]
@@ -84,7 +85,8 @@ namespace Kahla.Server.Controllers
             };
             await _dbContext.UserGroupRelations.AddAsync(newRelationship);
             await _dbContext.SaveChangesAsync();
-            await _pusher.GroupJoinedEvent(user, createdGroup, null, 0);
+            _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => 
+                pusher.GroupJoinedEvent(user, createdGroup, null, 0));
             return this.Protocol(new AiurValue<int>(createdGroup.Id)
             {
                 Code = ErrorType.Success,
@@ -161,10 +163,14 @@ namespace Kahla.Server.Controllers
                 .Include(t => t.Sender)
                 .OrderByDescending(t => t.SendTime)
                 .FirstOrDefaultAsync();
-            await Task.WhenAll(
-                _pusher.GroupJoinedEvent(user, group, latestMessage, messagesCount),
-                group.ForEachUserAsync((eachUser, relation) => _pusher.NewMemberEvent(eachUser, user, group.Id))
-            );
+
+            group.ForEachUser((eachUser, relation) =>
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
+                    pusher.NewMemberEvent(eachUser, user, group.Id)));
+
+            _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
+                pusher.GroupJoinedEvent(user, group, latestMessage, messagesCount));
+
             return this.Protocol(new AiurValue<int>(group.Id)
             {
                 Code = ErrorType.Success,
@@ -205,7 +211,9 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetuser);
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id));
+            group.ForEachUser((eachUser, relation) =>
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
+                    pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id)));
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
         }
@@ -215,7 +223,11 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.DissolveEvent(eachUser, group.Id));
+
+            group.ForEachUser((eachUser, relation) =>
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
+                    pusher.DissolveEvent(eachUser, group.Id)));
+
             _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
             var token = await _appsContainer.AccessToken();
@@ -247,8 +259,12 @@ namespace Kahla.Server.Controllers
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
+
+            group.ForEachUser((eachUser, relation) =>
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
+                    pusher.SomeoneLeftEvent(eachUser, user, group.Id)));
+
             // Remove the group if no user in it.
-            await group.ForEachUserAsync((eachUser, relation) => _pusher.SomeoneLeftEvent(eachUser, user, group.Id));
             var any = _dbContext.UserGroupRelations.Any(t => t.GroupId == group.Id);
             if (!any)
             {

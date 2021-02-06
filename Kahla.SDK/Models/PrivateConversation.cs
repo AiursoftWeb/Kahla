@@ -34,17 +34,13 @@ namespace Kahla.SDK.Models
                 .FirstOrDefault();
         }
 
-        public override async Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function)
+        public override void ForEachUser(Action<KahlaUser, UserGroupRelation> function)
         {
-            var taskList = new ConcurrentBag<Task>
-            {
-                function(RequestUser, null)
-            };
+            function(RequestUser, null);
             if (RequesterId != TargetId)
             {
-                taskList.Add(function(TargetUser, null));
+                function(TargetUser, null);
             }
-            await Task.WhenAll(taskList);
         }
 
         public override bool Muted(string userId)

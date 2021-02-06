@@ -43,6 +43,7 @@ namespace Kahla.SDK.Factories
             bot.StorageService = storageService;
             bot.Aes = aes;
             bot.Profile = botProfile.Profile;
+            bot.Server = kahlaLocation.ServerIndex;
             bot.Contacts = eventSyncer.Contacts;
             bot.Requests = eventSyncer.Requests;
             return bot;
