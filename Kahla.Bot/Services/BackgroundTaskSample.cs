@@ -37,9 +37,12 @@ namespace Kahla.Bot.Services
             {
                 _logger.LogInfo("Task started!");
                 using var scope = _scopeFactory.CreateScope();
-                var factory = scope.ServiceProvider.GetRequiredService<BotFactory<EchoBot>>();
-                var bot = factory.ProduceBot();
-                await bot.BroadcastAsync("Broadcast.");
+                var factory = scope.ServiceProvider.GetService<BotFactory<EchoBot>>();
+                if (factory != null)
+                {
+                    var echoBot = factory.ProduceBot();
+                    await echoBot.BroadcastAsync("Broadcast.");
+                }
             }
             catch (Exception e)
             {
