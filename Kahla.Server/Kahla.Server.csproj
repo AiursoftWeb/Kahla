@@ -7,7 +7,6 @@
     <Product>AiursoftWeb</Product>
     <Authors>Anduin</Authors>
     <Description>The server side application for Kahla app.</Description>
-    <UserSecretsId>2a73831c-c214-499f-b8b6-f18d511cd596</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/fede90ca-9005-45b0-9d74-c6d6ab4dc168/resourcegroups/Kahla/providers/Microsoft.Insights/components/Kahla.Insights</ApplicationInsightsResourceId>
   </PropertyGroup>
 
