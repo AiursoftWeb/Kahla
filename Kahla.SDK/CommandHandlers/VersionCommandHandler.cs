@@ -6,7 +6,6 @@ namespace Kahla.SDK.CommandHandlers
 {
     public class VersionCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {
-        private BotHost<T> _botHost;
         private readonly KahlaLocation _kahlaLocation;
 
         public VersionCommandHandler(
@@ -17,7 +16,6 @@ namespace Kahla.SDK.CommandHandlers
 
         public void InjectHost(BotHost<T> instance)
         {
-            _botHost = instance;
         }
 
         public bool CanHandle(string command)
@@ -27,7 +25,7 @@ namespace Kahla.SDK.CommandHandlers
 
         public async Task<bool> Execute(string command)
         {
-            await _botHost.TestKahlaLive(_kahlaLocation.ToString());
+            await _kahlaLocation.RefreshServerConfig();
             return true;
         }
     }

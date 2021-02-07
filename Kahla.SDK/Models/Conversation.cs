@@ -33,7 +33,7 @@ namespace Kahla.SDK.Models
         public abstract bool Muted(string userId);
         public abstract Conversation Build(string userId, OnlineJudger onlineJudger);
         public abstract Message GetLatestMessage();
-        public abstract Task ForEachUserAsync(Func<KahlaUser, UserGroupRelation, Task> function);
+        public abstract void ForEachUser(Action<KahlaUser, UserGroupRelation> function);
         public abstract bool HasUser(string userId);
     }
 

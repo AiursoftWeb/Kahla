@@ -7,6 +7,7 @@ using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.SDKTools.Attributes;
 using Aiursoft.WebTools;
+using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -33,34 +34,34 @@ namespace Kahla.Server.Controllers
     {
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
-        private readonly KahlaPushService _pusher;
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
         private readonly ProbeLocator _probeLocator;
+        private readonly CannonQueue _cannonQueue;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
-            KahlaPushService pushService,
             FoldersService foldersService,
             AppsContainer appsContainer,
             IConfiguration configuration,
             OnlineJudger onlineJudger,
             LastSaidJudger lastSaidJudger,
-            ProbeLocator probeLocator)
+            ProbeLocator probeLocator,
+            CannonQueue cannonQueue)
         {
             _userManager = userManager;
             _dbContext = dbContext;
-            _pusher = pushService;
             _foldersService = foldersService;
             _appsContainer = appsContainer;
             _configuration = configuration;
             _onlineJudger = onlineJudger;
             _lastSaidJudger = lastSaidJudger;
             _probeLocator = probeLocator;
+            _cannonQueue = cannonQueue;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -218,18 +219,22 @@ namespace Kahla.Server.Controllers
             // Set last read time.
             await _dbContext.SetLastRead(target, user.Id);
             await _dbContext.SaveChangesAsync();
-            await target.ForEachUserAsync((eachUser, relation) =>
+            target.ForEachUser((eachUser, relation) =>
             {
                 var mentioned = model.At.Contains(eachUser.Id);
-                return _pusher.NewMessageEvent(
-                                stargateChannel: eachUser.CurrentChannel,
-                                devices: eachUser.HisDevices,
-                                conversation: target,
-                                message: message,
-                                lastMessageId: lastMessageId,
-                                pushAlert: eachUser.Id != user.Id && (mentioned || !(relation?.Muted ?? false)),
-                                mentioned: mentioned
-                                );
+                var muted = relation?.Muted ?? false;
+                var isSentByMe = eachUser.Id == user.Id;
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => 
+                {
+                    return pusher.NewMessageEvent(
+                        stargateChannel: eachUser.CurrentChannel,
+                        devices: eachUser.HisDevices,
+                        conversation: target,
+                        message: message,
+                        lastMessageId: lastMessageId,
+                        pushAlert: !isSentByMe && (mentioned || !muted),
+                        mentioned: mentioned);
+                });
             });
             return this.Protocol(new AiurValue<Message>(message)
             {
@@ -337,10 +342,9 @@ namespace Kahla.Server.Controllers
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
             var taskList = new ConcurrentBag<Task>();
-            await target.ForEachUserAsync((eachUser, relation) =>
+            target.ForEachUser((eachUser, relation) =>
             {
-                taskList.Add(_pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
-                return Task.CompletedTask;
+                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
             });
             await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
