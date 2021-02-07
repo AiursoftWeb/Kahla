@@ -48,6 +48,7 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly EventService _eventService;
         private readonly OnlineJudger _onlineJudger;
+        private readonly StargatePushService _stargatePushService;
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
@@ -62,7 +63,8 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
             EventService eventService,
-            OnlineJudger onlineJudger)
+            OnlineJudger onlineJudger,
+            StargatePushService stargatePushService)
         {
             _stargateLocator = serviceLocation;
             _authService = authService;
@@ -75,6 +77,7 @@ namespace Kahla.Server.Controllers
             _dbContext = dbContext;
             _eventService = eventService;
             _onlineJudger = onlineJudger;
+            _stargatePushService = stargatePushService;
             _appDomains = optionsAccessor.Value;
         }
 
@@ -214,7 +217,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != ErrorType.Success)
             {
-                var channel = await _pusher.ReCreateStargateChannel(user.Id);
+                var channel = await _stargatePushService.ReCreateStargateChannel(user.Id);
                 user.CurrentChannel = channel.ChannelId;
                 user.ConnectKey = channel.ConnectKey;
                 await _userManager.UpdateAsync(user);

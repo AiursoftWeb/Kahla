@@ -40,7 +40,8 @@ namespace Kahla.Server.Controllers
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
         private readonly ProbeLocator _probeLocator;
-        private readonly CannonQueue _cannonQueue;
+        //private readonly CannonQueue _cannonQueue;
+        private readonly KahlaPushService _kahlaPushService;
 
         public ConversationController(
             UserManager<KahlaUser> userManager,
@@ -51,7 +52,8 @@ namespace Kahla.Server.Controllers
             OnlineJudger onlineJudger,
             LastSaidJudger lastSaidJudger,
             ProbeLocator probeLocator,
-            CannonQueue cannonQueue)
+            CannonQueue cannonQueue,
+            KahlaPushService kahlaPushService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -61,7 +63,8 @@ namespace Kahla.Server.Controllers
             _onlineJudger = onlineJudger;
             _lastSaidJudger = lastSaidJudger;
             _probeLocator = probeLocator;
-            _cannonQueue = cannonQueue;
+            //_cannonQueue = cannonQueue;
+            _kahlaPushService = kahlaPushService;
         }
 
         [APIProduces(typeof(AiurCollection<ContactInfo>))]
@@ -139,8 +142,6 @@ namespace Kahla.Server.Controllers
         [APIProduces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
-            // Ensure everything is safe.
-            model.At ??= new string[0];
             var user = await GetKahlaUser();
             var target = await _dbContext
                 .Conversations
@@ -224,17 +225,14 @@ namespace Kahla.Server.Controllers
                 var mentioned = model.At.Contains(eachUser.Id);
                 var muted = relation?.Muted ?? false;
                 var isSentByMe = eachUser.Id == user.Id;
-                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => 
-                {
-                    return pusher.NewMessageEvent(
-                        stargateChannel: eachUser.CurrentChannel,
-                        devices: eachUser.HisDevices,
-                        conversation: target,
-                        message: message,
-                        lastMessageId: lastMessageId,
-                        pushAlert: !isSentByMe && (mentioned || !muted),
-                        mentioned: mentioned);
-                });
+                _kahlaPushService.NewMessageEvent(
+                    stargateChannel: eachUser.CurrentChannel,
+                    devices: eachUser.HisDevices,
+                    conversation: target,
+                    message: message,
+                    lastMessageId: lastMessageId,
+                    pushAlert: !isSentByMe && (mentioned || !muted),
+                    mentioned: mentioned).Wait();
             });
             return this.Protocol(new AiurValue<Message>(message)
             {
@@ -344,7 +342,7 @@ namespace Kahla.Server.Controllers
             var taskList = new ConcurrentBag<Task>();
             target.ForEachUser((eachUser, relation) =>
             {
-                _cannonQueue.QueueWithDependency<KahlaPushService>(pusher => pusher.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id));
+                _kahlaPushService.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id).Wait();
             });
             await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
