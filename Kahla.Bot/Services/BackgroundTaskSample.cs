@@ -41,7 +41,7 @@ namespace Kahla.Bot.Services
                 if (factory != null)
                 {
                     var echoBot = factory.ProduceBot();
-                    await echoBot.BroadcastAsync("Broadcast.");
+                    //await echoBot.BroadcastAsync("Broadcast.");
                 }
             }
             catch (Exception e)

@@ -10,10 +10,10 @@ namespace Kahla.Bot
         public async static Task Main(string[] args)
         {
             await CreateBotBuilder()
-                .Build<EmptyBot>()
+                .Build<EchoBot>()
                 .Run(
                     enableCommander: args.FirstOrDefault() != "as-service",
-                    autoReconnectMax: 10);
+                    autoReconnectMax: int.MaxValue);
         }
 
         public static BotBuilder CreateBotBuilder()
