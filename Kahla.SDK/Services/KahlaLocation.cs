@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Scanner.Interfaces;
 using Kahla.SDK.Models.ApiViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
@@ -8,19 +9,19 @@ namespace Kahla.SDK.Services
     public class KahlaLocation : ISingletonDependency
     {
         private readonly BotLogger _botLogger;
-        private readonly HomeService _homeService;
+        private readonly IServiceScopeFactory _factory;
         private readonly VersionService _versionService;
         private string _kahlaRoot = "https://server.kahla.app";
         public IndexViewModel ServerIndex { get; private set; }
 
         public KahlaLocation(
             BotLogger botLogger,
-            HomeService homeService,
+            IServiceScopeFactory factory,
             VersionService versionService)
         {
-            this._botLogger = botLogger;
-            this._homeService = homeService;
-            this._versionService = versionService;
+            _botLogger = botLogger;
+            _factory = factory;
+            _versionService = versionService;
         }
 
         public override string ToString()
@@ -32,7 +33,9 @@ namespace Kahla.SDK.Services
         {
             _botLogger.LogInfo($"Using Kahla Server: {_kahlaRoot}");
             _botLogger.LogInfo("Testing Kahla server connection...");
-            ServerIndex = await _homeService.IndexAsync(_kahlaRoot);
+            using var scope = _factory.CreateScope();
+            var home = scope.ServiceProvider.GetRequiredService<HomeService>();
+            ServerIndex = await home.IndexAsync(_kahlaRoot);
             _botLogger.AppendResult(true, 5);
             //_botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
             _botLogger.LogInfo($"Server time: \t{ServerIndex.UTCTime}\tServer version: \t{ServerIndex.APIVersion}");
