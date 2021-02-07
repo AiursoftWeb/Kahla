@@ -1,4 +1,5 @@
 ﻿using Aiursoft.SDKTools.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kahla.SDK.Models.ApiAddressModels
@@ -14,7 +15,7 @@ namespace Kahla.SDK.Models.ApiAddressModels
         [MaxLength(2500)]
         public string Content { get; set; }
 
-        public string[] At { get; set; }
+        public string[] At { get; set; } = Array.Empty<string>();
         /// <summary>
         /// Guid. For example: 8fe1dd34-7430-4650-8b0a-8587d39dd412
         /// </summary>

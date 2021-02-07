@@ -18,25 +18,23 @@ namespace Kahla.Server.Services
     {
         private readonly IConfiguration _configuration;
         private readonly WebPushClient _webPushClient;
+        private readonly KahlaDbContext _dbContext;
         private readonly ILogger _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
 
         public ThirdPartyPushService(
             IConfiguration configuration,
             WebPushClient webPushClient,
             ILogger<ThirdPartyPushService> logger,
-            IServiceScopeFactory scopeFactory)
+            KahlaDbContext dbContext)
         {
             _configuration = configuration;
             _webPushClient = webPushClient;
+            _dbContext = dbContext;
             _logger = logger;
-            _scopeFactory = scopeFactory;
         }
 
-        public async Task PushAsync(IEnumerable<Device> devices, object payload, string triggerEmail = "postermaster@aiursoft.com")
+        public Task PushAsync(IEnumerable<Device> devices, object payload, string triggerEmail = "postermaster@aiursoft.com")
         {
-            using var scope = _scopeFactory.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
             string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
             string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
             // Push to all devices.
@@ -59,8 +57,8 @@ namespace Kahla.Server.Services
                     }
                     catch (WebPushException e)
                     {
-                        dbContext.Devices.Remove(device);
-                        await dbContext.SaveChangesAsync();
+                        _dbContext.Devices.Remove(device);
+                        await _dbContext.SaveChangesAsync();
                         _logger.LogCritical(e, "An WebPush error occured while calling WebPush API: " + e.Message);
                         _logger.LogCritical(e, e.Message);
                     }
@@ -71,9 +69,7 @@ namespace Kahla.Server.Services
                 }
                 pushTasks.Add(PushToDevice());
             }
-            await Task.WhenAny(
-                Task.WhenAll(pushTasks),
-                Task.Delay(2000));
+            return Task.WhenAll(pushTasks);
         }
     }
 }
