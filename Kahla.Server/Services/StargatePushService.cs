@@ -28,10 +28,11 @@ namespace Kahla.Server.Services
             _pushMessageService = pushMessageService;
             _kahlaDbContext = kahlaDbContext;
         }
-        public async Task<CreateChannelViewModel> ReCreateStargateChannel(string userId)
+
+        public async Task<CreateChannelViewModel> ReCreateStargateChannel()
         {
             var token = await _appsContainer.AccessToken();
-            var channel = await _channelService.CreateChannelAsync(token, $"Kahla User Channel for Id: {userId}");
+            var channel = await _channelService.CreateChannelAsync(token, $"Kahla User Channel");
             return channel;
         }
 
