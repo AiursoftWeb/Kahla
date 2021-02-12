@@ -46,7 +46,7 @@ namespace Kahla.Server.Services
                 var referenced = _kahlaDbContext.Users.Where(t => t.CurrentChannel == channelId);
                 foreach (var user in referenced)
                 {
-                    user.CurrentChannel = 0;
+                    user.CurrentChannel = -1;
                     _kahlaDbContext.Users.Update(user);
                 }
                 await _kahlaDbContext.SaveChangesAsync();
