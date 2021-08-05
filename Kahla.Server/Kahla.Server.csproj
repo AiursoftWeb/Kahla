@@ -11,9 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="5.0.5" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.16.0" />
-    <PackageReference Include="WebPush" Version="1.0.11" />
+    <PackageReference Include="Aiursoft.Identity" Version="5.0.9" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
 
   <ItemGroup>
