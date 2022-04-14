@@ -7,11 +7,13 @@
     <Product>AiursoftWeb</Product>
     <Authors>Anduin</Authors>
     <Description>The server side application for Kahla app.</Description>
+    <ApplicationInsightsResourceId>/subscriptions/fede90ca-9005-45b0-9d74-c6d6ab4dc168/resourcegroups/Kahla/providers/Microsoft.Insights/components/Kahla.Insights</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="5.0.4" />
-    <PackageReference Include="WebPush" Version="1.0.11" />
+    <PackageReference Include="Aiursoft.Identity" Version="5.0.9" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
+    <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,7 +24,6 @@ install_kahla()
     fi
 
     aiur network/enable_bbr
-    aiur system/set_aspnet_prod
     aiur install/caddy
     aiur install/dotnet
     aiur install/node

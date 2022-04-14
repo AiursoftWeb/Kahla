@@ -30,6 +30,7 @@ namespace Kahla.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS:CONNECTIONSTRING"]);
             services.AddDbContextWithCache<KahlaDbContext>(Configuration.GetConnectionString("DatabaseConnection"));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
