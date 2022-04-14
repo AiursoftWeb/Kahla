@@ -23,7 +23,6 @@ namespace Kahla.Bot.Bots
                 BotLogger.LogWarning("Please enter your bing API key:");
                 key = Console.ReadLine();
             }
-            _bingTranslator.Init(key);
             SettingsService["BingTranslateAPIKey"] = key;
             return Task.CompletedTask;
         }
