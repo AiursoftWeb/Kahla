@@ -3,7 +3,7 @@ using Aiursoft.XelNaga.Tools;
 using AngleSharp.Html.Dom;
 using Kahla.Home;
 using Kahla.SDK.Services;
-using Kahla.Tests.Tools;
+using Kahla.Home.Tests.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using static Aiursoft.WebTools.Extends;
 
-namespace Kahla.Tests
+namespace Kahla.Home.Tests
 {
     [TestClass]
     public class BasicHomeTests

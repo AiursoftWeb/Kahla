@@ -5,13 +5,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AngleSharp" Version="0.16.1" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.9" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.2.9" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Kahla.Server\Kahla.Server.csproj" />
+		<ProjectReference Include="..\Kahla.Home\Kahla.Home.csproj" />
 	</ItemGroup>
 
 </Project>

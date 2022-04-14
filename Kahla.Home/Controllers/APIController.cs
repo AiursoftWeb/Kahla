@@ -61,7 +61,6 @@ namespace Kahla.Home.Controllers
                 }
             });
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-#warning Use Protocol!
             return Ok(serversRendered);
         }
 
