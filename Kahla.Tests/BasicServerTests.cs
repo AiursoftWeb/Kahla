@@ -6,7 +6,6 @@ using Kahla.SDK.Abstract;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server;
-using Kahla.Tests.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -102,7 +101,7 @@ namespace Aiursoft.Archon.Tests
         {
             var auth = _serviceProvider.GetRequiredService<AuthService>();
             var redirect = await auth.OAuthAsync();
-            Assert.IsTrue(redirect.Contains(@"/oauth/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A"));
+            Assert.IsTrue(redirect.Contains(@"https://gateway.aiursoft.com/oauth/authorize"));
         }
     }
 }

@@ -6,7 +6,7 @@ using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Io;
 
-namespace Kahla.Tests.Tools
+namespace Kahla.Home.Tests.Tools
 {
     public class HtmlHelpers
     {

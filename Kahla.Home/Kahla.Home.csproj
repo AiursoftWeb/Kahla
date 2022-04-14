@@ -13,8 +13,4 @@
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services" />
-  </ItemGroup>
-
 </Project>
