@@ -2,12 +2,11 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
-		<PackageReference Include="RestSharp" Version="106.12.0" />
 	</ItemGroup>
 
 </Project>

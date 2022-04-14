@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>4.3.5</Version>
-    <TargetFramework>net5.0</TargetFramework>
+    <Version>4.4.0</Version>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Company>Aiursoft</Company>
     <Product>AiursoftWeb</Product>
@@ -23,11 +23,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="Aiursoft.Gateway.SDK" Version="5.0.9" />
-    <PackageReference Include="Aiursoft.Stargate.SDK" Version="5.0.9" />
-    <PackageReference Include="Aiursoft.Probe.SDK" Version="5.0.9" />
-    <PackageReference Include="Aiursoft.Scanner" Version="5.0.9" />
-    <PackageReference Include="Websocket.Client" Version="4.3.35" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
+    <PackageReference Include="Aiursoft.Gateway.SDK" Version="6.0.0" />
+    <PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.0" />
+    <PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.0" />
+    <PackageReference Include="Aiursoft.Scanner" Version="6.0.0" />
+    <PackageReference Include="Websocket.Client" Version="4.4.43" />
   </ItemGroup>
 </Project>
