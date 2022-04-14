@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Kahla - Connect everyone's thoughts - As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.</Description>
   </PropertyGroup>
 
