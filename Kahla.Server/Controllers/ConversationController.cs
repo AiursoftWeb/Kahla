@@ -296,7 +296,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Gone, "No files sent that day.");
             }
             var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
-            return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.ToList())
+            return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.OrderByDescending(f=>f.UploadTime).ToList())
             {
                 Code = ErrorType.Success,
                 ShowingDateUTC = folder.FolderName,
