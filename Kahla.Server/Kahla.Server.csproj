@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="6.0.6" />
+    <PackageReference Include="Aiursoft.Identity" Version="6.0.7" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
 
