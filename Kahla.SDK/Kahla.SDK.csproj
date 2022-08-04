@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Version>4.5.0</Version>
@@ -18,16 +18,16 @@
   
   
   <ItemGroup>
-    <None Include="kahla.png" Pack="true" PackagePath="\" />
-    <None Include="LICENSE" Pack="true" PackagePath="\" />
+    <None Include="kahla.png" Pack="true" PackagePath="\"></None>
+    <None Include="LICENSE" Pack="true" PackagePath="\"></None>
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.1" />
-    <PackageReference Include="Aiursoft.Gateway.SDK" Version="6.0.5" />
-    <PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.5" />
-    <PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.5" />
-    <PackageReference Include="Aiursoft.Scanner" Version="6.0.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+    <PackageReference Include="Aiursoft.Gateway.SDK" Version="6.0.6" />
+    <PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.6" />
+    <PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.6" />
+    <PackageReference Include="Aiursoft.Scanner" Version="6.0.6" />
     <PackageReference Include="Websocket.Client" Version="4.4.43" />
   </ItemGroup>
 </Project>
