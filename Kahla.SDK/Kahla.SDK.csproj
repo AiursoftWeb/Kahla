@@ -14,12 +14,13 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AiursoftWeb/Kahla.git</RepositoryUrl>
-  </PropertyGroup>
+  <OutputType>Library</OutputType>
+    </PropertyGroup>
   
   
   <ItemGroup>
-    <None Include="kahla.png" Pack="true" PackagePath="\"></None>
-    <None Include="LICENSE" Pack="true" PackagePath="\"></None>
+    <None Include="kahla.png" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
   
   <ItemGroup>
