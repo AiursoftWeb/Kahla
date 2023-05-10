@@ -1,0 +1,89 @@
+stages:
+  - Building
+  - Linting
+  - Testing
+  - Publishing
+
+before_script:
+  - 'export DOTNET_CLI_TELEMETRY_OPTOUT=1'
+  - 'export PATH=$PATH:$HOME/.dotnet/tools'
+  - 'dotnet tool install JetBrains.ReSharper.GlobalTools --global || echo "JB already installed."'
+  - 'dotnet tool install dotnet-reportgenerator-globaltool --global || echo "DRG already installed."'
+  - 'cat /etc/lsb-release && uname -a && pwd && ls -ashl'
+  - 'echo "Hostname: $(hostname)"'
+  - 'echo "Uptime: $(uptime -p)"'
+  - 'echo "Memory: $(free -h | awk "/^Mem:/{print \$2}")"'
+  - 'echo "CPU Cores: $(nproc)"'
+  - 'echo "Available Disk Space: $(df -h --output=avail / | tail -1)"'
+  - 'echo "IP Address: $(hostname -I)"'
+  - 'dotnet --info'
+
+restore:
+  stage: Building
+  script:
+    - dotnet restore --configfile nuget.config
+
+build:
+  stage: Building
+  needs: 
+    - restore
+  script:
+    - dotnet build --no-self-contained
+
+lint:
+  stage: Linting
+  needs: 
+    - build
+  script:
+    - jb inspectcode ./*.sln --output=analyze_output.xml --build
+    - grep 'WARNING' analyze_output.xml && cat analyze_output.xml && exit 1 || echo "No warning found"
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - ./analyze_output.xml
+
+test:
+  stage: Testing
+  needs: 
+    - build
+  coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
+  script:
+    - dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+    - reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"." -reporttypes:"cobertura"
+    - COVERAGE_VALUE=$(grep -oPm 1 'line-rate="\K([0-9.]+)' "./Cobertura.xml")
+    - COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE_VALUE * 100" | bc)
+    - 'echo "TOTAL_COVERAGE=$COVERAGE_PERCENTAGE%"'
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - ./**/TestResults.xml
+      - ./Cobertura.xml
+    reports:
+      junit:
+        - ./**/TestResults.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ./Cobertura.xml
+
+publish:
+  stage: Publishing
+  needs: 
+    - lint
+    - test
+  script:
+    - dotnet publish --configuration Release --runtime linux-x64 --no-self-contained *.sln
+
+pack:
+  stage: Publishing
+  needs: 
+    - lint
+    - test
+  script:
+    - dotnet build --configuration Release --no-self-contained *.sln
+    - dotnet pack --configuration Release *.sln || echo "Some packaging failed!"
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - '**/*.nupkg'
