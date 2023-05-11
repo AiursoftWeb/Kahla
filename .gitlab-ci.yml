@@ -99,7 +99,7 @@ upload_to_nuget:
   script:
     - |
       for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" || exit 1;
+        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
       done
   only:
     - master
@@ -114,7 +114,7 @@ upload_to_local_nuget:
   script:
     - |
       for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.cn/v3/index.json" || exit 1;
+        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.cn/v3/index.json" --skip-duplicate || exit 1;
       done
   only:
     - master
