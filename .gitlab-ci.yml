@@ -1,8 +1,9 @@
 stages:
-  - Building
-  - Linting
-  - Testing
-  - Publishing
+  - build
+  - lint
+  - test
+  - publish
+  - deploy
 
 before_script:
   - 'export DOTNET_CLI_TELEMETRY_OPTOUT=1'
@@ -19,19 +20,19 @@ before_script:
   - 'dotnet --info'
 
 restore:
-  stage: Building
+  stage: build
   script:
     - dotnet restore --configfile nuget.config
 
 build:
-  stage: Building
+  stage: build
   needs: 
     - restore
   script:
     - dotnet build --no-self-contained
 
 lint:
-  stage: Linting
+  stage: lint
   needs: 
     - build
   script:
@@ -44,7 +45,7 @@ lint:
       - ./analyze_output.xml
 
 test:
-  stage: Testing
+  stage: test
   needs: 
     - build
   coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
@@ -68,7 +69,7 @@ test:
         path: ./Cobertura.xml
 
 publish:
-  stage: Publishing
+  stage: publish
   needs: 
     - lint
     - test
@@ -76,7 +77,7 @@ publish:
     - dotnet publish --configuration Release --runtime linux-x64 --no-self-contained *.sln
 
 pack:
-  stage: Publishing
+  stage: publish
   needs: 
     - lint
     - test
@@ -87,3 +88,33 @@ pack:
     expire_in: 1 week
     paths:
       - '**/*.nupkg'
+
+upload_to_nuget:
+  stage: deploy
+  environment: production
+  needs:
+    - pack
+  dependencies:
+    - pack
+  script:
+    - |
+      for file in $(find . -name "*.nupkg"); do
+        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" || exit 1;
+      done
+  only:
+    - master
+
+upload_to_local_nuget:
+  stage: deploy
+  environment: production
+  needs:
+    - pack
+  dependencies:
+    - pack
+  script:
+    - |
+      for file in $(find . -name "*.nupkg"); do
+        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.cn/v3/index.json" || exit 1;
+      done
+  only:
+    - master
