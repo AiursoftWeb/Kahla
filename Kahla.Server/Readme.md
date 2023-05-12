@@ -46,7 +46,7 @@ Grab your `appId` and `appSecret`.
 Execute the following command on the server:
 
 ```bash
-$ curl -sL https://github.com/AiursoftWeb/Kahla/raw/master/install.sh | sudo bash -s kahla.example.com yourappid yourappsecret
+curl -sL https://gitlab.aiuirsoft.cn/aiursoft/Kahla/-/raw/master/install.sh | sudo bash -s kahla.example.com yourappid yourappsecret
 ```
 
 ## How to contribute

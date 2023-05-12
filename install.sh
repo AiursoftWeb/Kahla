@@ -1,4 +1,4 @@
-aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://github.com/AiursoftWeb/AiurScript/raw/master/$1.sh | sudo bash -s $arg; }
+aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://gitlab.aiursoft.cn/aiursoft/aiurscript/-/raw/master/$1.sh | sudo bash -s $arg; }
 
 kahla_path="/opt/apps/KahlaServer"
 dbPassword=$(uuidgen)
@@ -30,7 +30,7 @@ install_kahla()
     aiur install/jq
     aiur install/sql_server
     aiur mssql/config_password $dbPassword
-    aiur git/clone_to AiursoftWeb/Kahla ./Kahla
+    aiur git/clone_to https://gitlab.aiursoft.cn/aiursoft/Kahla ./Kahla
     aiur dotnet/publish $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
 

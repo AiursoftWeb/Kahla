@@ -16,9 +16,9 @@ Download .NET Core SDK [here](http://dot.net).
 Open your terminal and type the following command to create a new console app.
 
 ```bash
-$ mkdir MyBot
-$ cd MyBot
-$ dotnet new console
+mkdir MyBot
+cd MyBot
+dotnet new console
 ```
 
 ### 2. Add dependency for Kahla.SDK
@@ -26,7 +26,7 @@ $ dotnet new console
 Execute the following command to add Kahla.SDK as a dependency.
 
 ```bash
-$ dotnet add package Kahla.SDK
+dotnet add package Kahla.SDK
 ```
 
 ### 3. Create your bot
@@ -82,7 +82,7 @@ namespace MyBot
 Execute the following command to start your bot.
 
 ```bash
-$ dotnet run
+dotnet run
 ```
 
 ![demo](https://github.com/AiursoftWeb/Kahla/raw/dev/Kahla.SDK/Pics/rundemo.png)
