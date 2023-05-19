@@ -1,8 +1,7 @@
-﻿using Aiursoft.Archon.SDK.Services;
+﻿using Aiursoft.Gateway.SDK.Services;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
 using Kahla.Server.Data;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using static Aiursoft.WebTools.Extends;
 
@@ -14,8 +13,8 @@ namespace Kahla.Server
         {
             App<Startup>(args)
                 .Update<KahlaDbContext>()
-                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.AccessToken())
-                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.AccessToken())
+                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.AccessTokenAsync())
+                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.AccessTokenAsync())
                 .Run();
         }
 

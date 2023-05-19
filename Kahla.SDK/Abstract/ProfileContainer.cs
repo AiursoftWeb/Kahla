@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Models;
 
 namespace Kahla.SDK.Abstract

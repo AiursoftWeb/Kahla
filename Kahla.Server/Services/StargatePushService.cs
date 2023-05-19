@@ -1,12 +1,12 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.Handler.Exceptions;
+﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
-using Aiursoft.Scanner.Interfaces;
+using Aiursoft.Scanner.Abstract;
 using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Kahla.Server.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -31,7 +31,7 @@ namespace Kahla.Server.Services
 
         public async Task<CreateChannelViewModel> ReCreateStargateChannel()
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = await _channelService.CreateChannelAsync(token, $"Kahla User Channel");
             return channel;
         }

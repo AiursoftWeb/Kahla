@@ -1,5 +1,4 @@
 ﻿using Kahla.SDK.Abstract;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kahla.CLI

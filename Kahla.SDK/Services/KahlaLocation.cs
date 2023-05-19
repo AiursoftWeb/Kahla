@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Models.ApiViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;

@@ -1,6 +1,4 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
@@ -21,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -57,7 +56,7 @@ namespace Kahla.Server.Controllers
             _foldersService = foldersService;
         }
 
-        [APIProduces(typeof(MineViewModel))]
+        [Produces(typeof(MineViewModel))]
         public async Task<IActionResult> Mine()
         {
             var user = await GetKahlaUser();
@@ -105,7 +104,7 @@ namespace Kahla.Server.Controllers
                 _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
                 _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
             );
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{deletedConversationId}"))
             {
@@ -115,7 +114,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [Produces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CreateRequest([Required] string id)
         {
             var user = await GetKahlaUser();
@@ -178,7 +177,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [Produces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CompleteRequest(CompleteRequestAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -222,7 +221,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurCollection<Request>))]
+        [Produces(typeof(AiurCollection<Request>))]
         public async Task<IActionResult> MyRequests()
         {
             var user = await GetKahlaUser();
@@ -240,7 +239,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(SearchEverythingViewModel))]
+        [Produces(typeof(SearchEverythingViewModel))]
         public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
         {
             var users = _dbContext
@@ -271,7 +270,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurCollection<FriendDiscovery>))]
+        [Produces(typeof(AiurCollection<FriendDiscovery>))]
         public async Task<IActionResult> DiscoverFriends(int take = 15)
         {
             // Load everything to memory and even functions.
@@ -360,7 +359,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(UserDetailViewModel))]
+        [Produces(typeof(UserDetailViewModel))]
         public async Task<IActionResult> UserDetail([Required] string id)
         {
             var user = await GetKahlaUser();

@@ -1,8 +1,6 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.Identity.Services;
-using Aiursoft.Observer.SDK.Models;
+﻿using Aiursoft.Identity.Services;
 using Aiursoft.Observer.SDK.Services.ToObserverServer;
-using Aiursoft.Scanner.Interfaces;
+using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -89,7 +88,7 @@ namespace Kahla.Server.Services
                     _logger.LogCritical(ex, ex.Message);
                     using var scope = _scopeFactory.CreateScope();
                     var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
-                    var accessToken = await _appsContainer.AccessToken();
+                    var accessToken = await _appsContainer.AccessTokenAsync();
                     await eventService.LogExceptionAsync(accessToken, ex, "Email Notifier");
                 }
                 catch

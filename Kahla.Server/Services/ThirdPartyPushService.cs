@@ -1,8 +1,7 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

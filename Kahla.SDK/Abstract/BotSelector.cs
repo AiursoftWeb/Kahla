@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Services;
 using System;
 using System.Collections.Generic;

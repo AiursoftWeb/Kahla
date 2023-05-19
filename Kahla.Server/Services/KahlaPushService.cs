@@ -1,12 +1,12 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.Observer.SDK.Services.ToObserverServer;
-using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Observer.SDK.Services.ToObserverServer;
+using Aiursoft.Scanner.Abstract;
 using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -28,12 +28,12 @@ namespace Kahla.Server.Services
 
         public async Task HandleError(Exception e)
         {
-            await _eventService.LogExceptionAsync(await _appsContainer.AccessToken(), e, nameof(KahlaPushService));
+            await _eventService.LogExceptionAsync(await _appsContainer.AccessTokenAsync(), e, nameof(KahlaPushService));
         }
 
         public async Task NewMessageEvent(int stargateChannel, IEnumerable<Device> devices, Conversation conversation, Message message, string lastMessageId, bool pushAlert, bool mentioned)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var newMessageEvent = new NewMessageEvent
             {
                 AESKey = conversation.AESKey,
@@ -54,7 +54,7 @@ namespace Kahla.Server.Services
 
         public async Task NewFriendRequestEvent(KahlaUser target, Request request)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var newFriendRequestEvent = new NewFriendRequestEvent
             {
                 Request = request
@@ -68,7 +68,7 @@ namespace Kahla.Server.Services
 
         public async Task FriendsChangedEvent(KahlaUser target, Request request, bool result, PrivateConversation conversation)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var friendAcceptedEvent = new FriendsChangedEvent
             {
                 Request = request,
@@ -84,7 +84,7 @@ namespace Kahla.Server.Services
 
         public async Task FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var friendDeletedEvent = new FriendDeletedEvent
             {
                 Trigger = trigger,
@@ -99,7 +99,7 @@ namespace Kahla.Server.Services
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = receiver.CurrentChannel;
             var timerUpdatedEvent = new TimerUpdatedEvent
             {
@@ -114,7 +114,7 @@ namespace Kahla.Server.Services
 
         public async Task NewMemberEvent(KahlaUser receiver, KahlaUser newMember, int conversationId)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = receiver.CurrentChannel;
             var newMemberEvent = new NewMemberEvent
             {
@@ -129,7 +129,7 @@ namespace Kahla.Server.Services
 
         public async Task SomeoneLeftEvent(KahlaUser receiver, KahlaUser leftMember, int conversationId)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = receiver.CurrentChannel;
             var someoneLeftEvent = new SomeoneLeftEvent
             {
@@ -144,7 +144,7 @@ namespace Kahla.Server.Services
 
         public async Task DissolveEvent(KahlaUser receiver, int conversationId)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = receiver.CurrentChannel;
             var dissolvevent = new DissolveEvent
             {
@@ -159,7 +159,7 @@ namespace Kahla.Server.Services
 
         public async Task GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation, Message latestMessage, int messageCount)
         {
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var channel = receiver.CurrentChannel;
             var groupJoinedEvent = new GroupJoinedEvent
             {

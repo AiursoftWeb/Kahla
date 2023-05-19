@@ -1,13 +1,10 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.SDKTools.Attributes;
 using Aiursoft.WebTools;
-using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -19,10 +16,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -40,7 +37,6 @@ namespace Kahla.Server.Controllers
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
         private readonly ProbeLocator _probeLocator;
-        //private readonly CannonQueue _cannonQueue;
         private readonly KahlaPushService _kahlaPushService;
 
         public ConversationController(
@@ -52,7 +48,6 @@ namespace Kahla.Server.Controllers
             OnlineJudger onlineJudger,
             LastSaidJudger lastSaidJudger,
             ProbeLocator probeLocator,
-            CannonQueue cannonQueue,
             KahlaPushService kahlaPushService)
         {
             _userManager = userManager;
@@ -63,11 +58,10 @@ namespace Kahla.Server.Controllers
             _onlineJudger = onlineJudger;
             _lastSaidJudger = lastSaidJudger;
             _probeLocator = probeLocator;
-            //_cannonQueue = cannonQueue;
             _kahlaPushService = kahlaPushService;
         }
 
-        [APIProduces(typeof(AiurCollection<ContactInfo>))]
+        [Produces(typeof(AiurCollection<ContactInfo>))]
         public async Task<IActionResult> All()
         {
             var user = await GetKahlaUser();
@@ -86,7 +80,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurCollection<Message>))]
+        [Produces(typeof(AiurCollection<Message>))]
         public async Task<IActionResult> GetMessage([Required] int id, int take = 15, [IsGuidOrEmpty] string skipFrom = "")
         {
             var user = await GetKahlaUser();
@@ -139,7 +133,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<Message>))]
+        [Produces(typeof(AiurValue<Message>))]
         public async Task<IActionResult> SendMessage(SendMessageAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -241,8 +235,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurValue<PrivateConversation>))]
-        [APIProduces(typeof(AiurValue<GroupConversation>))]
+        [Produces(typeof(AiurValue<GroupConversation>))]
         public async Task<IActionResult> ConversationDetail([Required] int id)
         {
             var user = await GetKahlaUser();
@@ -268,7 +261,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(FileHistoryViewModel))]
+        [Produces(typeof(FileHistoryViewModel))]
         public async Task<IActionResult> FileHistory([Required] int id, [Required] int skipDates)
         {
             var user = await GetKahlaUser();
@@ -285,7 +278,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var folders = await _foldersService
-                .ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
+                .ViewContentAsync(await _appsContainer.AccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
             var folder = folders.Value
                 .SubFolders
                 .OrderByDescending(t => DateTime.Parse(t.FolderName))
@@ -295,7 +288,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Gone, "No files sent that day.");
             }
-            var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessToken(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
+            var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
             return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.OrderByDescending(f=>f.UploadTime).ToList())
             {
                 Code = ErrorType.Success,
@@ -339,12 +332,10 @@ namespace Kahla.Server.Controllers
             // Update current.
             target.MaxLiveSeconds = model.NewLifeTime;
             await _dbContext.SaveChangesAsync();
-            var taskList = new ConcurrentBag<Task>();
-            target.ForEachUser((eachUser, relation) =>
+            target.ForEachUser((eachUser, _) =>
             {
                 _kahlaPushService.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id).Wait();
             });
-            await Task.WhenAll(taskList);
             return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }

@@ -1,6 +1,5 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Probe.SDK.Services.ToProbeServer;
+using Aiursoft.Scanner.Abstract;
 using Aiursoft.XelNaga.Tools;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -69,7 +69,7 @@ namespace Kahla.Server.Services
             {
                 var deadline = DateTime.UtcNow - TimeSpan.FromDays(100);
                 var publicSite = _configuration["UserFilesSiteName"];
-                var accessToken = await _appsContainer.AccessToken();
+                var accessToken = await _appsContainer.AccessTokenAsync();
                 var rootFolders = await foldersService.ViewContentAsync(accessToken, publicSite, string.Empty);
                 foreach (var conversation in rootFolders.Value.SubFolders)
                 {

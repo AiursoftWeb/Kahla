@@ -1,5 +1,4 @@
-﻿using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.SDK.Services;
@@ -44,7 +43,7 @@ namespace Kahla.Server.Controllers
             _appDomain = optionsAccessor.Value;
         }
 
-        [APIProduces(typeof(IndexViewModel))]
+        [Produces(typeof(IndexViewModel))]
         public IActionResult Index()
         {
             var model = new IndexViewModel

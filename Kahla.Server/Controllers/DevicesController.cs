@@ -1,6 +1,4 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
@@ -17,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -44,7 +43,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [Produces(typeof(AiurValue<int>))]
         public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -81,7 +80,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<Device>))]
+        [Produces(typeof(AiurValue<Device>))]
         public async Task<IActionResult> UpdateDevice(UpdateDeviceAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -107,7 +106,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurCollection<Device>))]
+        [Produces(typeof(AiurCollection<Device>))]
         public async Task<IActionResult> MyDevices()
         {
             var user = await GetKahlaUser();
@@ -166,7 +165,7 @@ namespace Kahla.Server.Controllers
                 Muted = false,
                 Mentioned = false
             };
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
             _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");

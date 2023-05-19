@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;

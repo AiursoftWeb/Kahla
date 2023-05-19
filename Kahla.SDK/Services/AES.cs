@@ -1,11 +1,12 @@
-﻿using Aiursoft.Scanner.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Aiursoft.Scanner.Abstract;
 
 #pragma warning disable SYSLIB0022 // Type or member is obsolete
+#pragma warning disable SYSLIB0023
 namespace Kahla.SDK.Services
 {
     public class AES : ITransientDependency
@@ -129,3 +130,4 @@ namespace Kahla.SDK.Services
     }
 }
 #pragma warning restore SYSLIB0022 // Type or member is obsolete
+#pragma warning restore SYSLIB0023

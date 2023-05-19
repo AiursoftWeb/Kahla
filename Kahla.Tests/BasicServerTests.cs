@@ -1,8 +1,6 @@
-﻿using Aiursoft.Handler.Exceptions;
-using Aiursoft.Handler.Models;
+﻿using Aiursoft.Handler.Models;
 using Aiursoft.Scanner;
 using Aiursoft.XelNaga.Tools;
-using Kahla.SDK.Abstract;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server;
@@ -10,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;

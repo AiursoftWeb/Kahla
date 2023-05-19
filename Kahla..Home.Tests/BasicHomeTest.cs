@@ -1,13 +1,8 @@
-﻿using Aiursoft.Scanner;
-using Aiursoft.XelNaga.Tools;
+﻿using Aiursoft.XelNaga.Tools;
 using AngleSharp.Html.Dom;
-using Kahla.Home;
-using Kahla.SDK.Services;
 using Kahla.Home.Tests.Tools;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 using static Aiursoft.WebTools.Extends;

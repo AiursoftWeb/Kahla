@@ -1,6 +1,4 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Models.FilesAddressModels;
@@ -20,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -56,10 +55,10 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpGet]
-        [APIProduces(typeof(AiurValue<string>))]
+        [Produces(typeof(AiurValue<string>))]
         public async Task<IActionResult> InitIconUpload()
         {
-            var accessToken = await _appsContainer.AccessToken();
+            var accessToken = await _appsContainer.AccessTokenAsync();
             var siteName = _configuration["UserIconsSiteName"];
             var path = DateTime.UtcNow.ToString("yyyy-MM-dd");
             var token = await _tokenService.GetTokenAsync(
@@ -81,7 +80,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpGet]
-        [APIProduces(typeof(InitFileAccessViewModel))]
+        [Produces(typeof(InitFileAccessViewModel))]
         public async Task<IActionResult> InitFileAccess(InitFileAccessAddressModel model)
         {
             var conversation = await _dbContext
@@ -97,7 +96,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
-            var accessToken = await _appsContainer.AccessToken();
+            var accessToken = await _appsContainer.AccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             var path = $"conversation-{conversation.Id}";
             var permissions = new List<string>();
@@ -123,7 +122,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(UploadFileViewModel))]
+        [Produces(typeof(UploadFileViewModel))]
         public async Task<IActionResult> ForwardMedia(ForwardMediaAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -151,7 +150,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {targetConversation.Id}!");
             }
-            var accessToken = await _appsContainer.AccessToken();
+            var accessToken = await _appsContainer.AccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             var response = await _probeFileService.CopyFileAsync(
                 accessToken: accessToken,

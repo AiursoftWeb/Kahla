@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.Bot.Bots;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;

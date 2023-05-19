@@ -1,4 +1,4 @@
-﻿using Aiursoft.Scanner.Interfaces;
+﻿using Aiursoft.Scanner.Abstract;
 using Aiursoft.XelNaga.Tools;
 using Kahla.Server.Data;
 using Microsoft.AspNetCore.Hosting;

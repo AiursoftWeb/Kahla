@@ -1,6 +1,4 @@
-﻿using Aiursoft.Archon.SDK.Services;
-using Aiursoft.DocGenerator.Attributes;
-using Aiursoft.Handler.Attributes;
+﻿using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
@@ -19,6 +17,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Gateway.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -56,7 +55,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [Produces(typeof(AiurValue<int>))]
         public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationAddressModel model)
         {
             var user = await GetKahlaUser();
@@ -94,7 +93,7 @@ namespace Kahla.Server.Controllers
             });
         }
 
-        [APIProduces(typeof(AiurValue<SearchedGroup>))]
+        [Produces(typeof(AiurValue<SearchedGroup>))]
         public async Task<IActionResult> GroupSummary([Required]int id)
         {
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.Id == id);
@@ -111,7 +110,7 @@ namespace Kahla.Server.Controllers
         }
 
         [HttpPost]
-        [APIProduces(typeof(AiurValue<int>))]
+        [Produces(typeof(AiurValue<int>))]
         public async Task<IActionResult> JoinGroup([Required]string groupName, string joinPassword)
         {
             var user = await GetKahlaUser();
@@ -230,7 +229,7 @@ namespace Kahla.Server.Controllers
 
             _dbContext.GroupConversations.Remove(group);
             await _dbContext.SaveChangesAsync();
-            var token = await _appsContainer.AccessToken();
+            var token = await _appsContainer.AccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{group.Id}"))
             {
