@@ -24,8 +24,6 @@ namespace Kahla.Server
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            AppsContainer.CurrentAppId = configuration["KahlaAppId"];
-            AppsContainer.CurrentAppSecret = configuration["KahlaAppSecret"];
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -42,7 +40,6 @@ namespace Kahla.Server
 
             services.AddAiurAPIMvc();
             services.AddAiursoftIdentity<KahlaUser>(
-                archonEndpoint: Configuration.GetConnectionString("ArchonConnection"),
                 observerEndpoint: Configuration.GetConnectionString("ObserverConnection"),
                 probeEndpoint: Configuration.GetConnectionString("ProbeConnection"),
                 gateEndpoint: Configuration.GetConnectionString("GatewayConnection"));

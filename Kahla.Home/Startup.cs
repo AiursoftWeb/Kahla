@@ -20,8 +20,6 @@ namespace Kahla.Home
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            AppsContainer.CurrentAppId = configuration["KahlaHomeAppId"];
-            AppsContainer.CurrentAppSecret = configuration["KahlaHomeAppSecret"];
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -30,7 +28,6 @@ namespace Kahla.Home
             services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
             services.AddProbeServer(Configuration.GetConnectionString("ProbeConnection"));
             services.AddGatewayServer(Configuration.GetConnectionString("GatewayConnection"));
-            services.AddArchonServer(Configuration.GetConnectionString("ArchonConnection"));
             services.AddObserverServer(Configuration.GetConnectionString("ObserverConnection"));
             services.AddAiursoftSDK();
         }
