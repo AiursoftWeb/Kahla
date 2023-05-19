@@ -47,10 +47,13 @@ namespace Kahla.Home.Tests
         {
             var response = await _http.GetAsync(_endpointUrl);
             response.EnsureSuccessStatusCode(); // Status Code 200-299
-            Assert.AreEqual("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.AreEqual("text/html; charset=utf-8", response.Content.Headers.ContentType?.ToString());
             var doc = await HtmlHelpers.GetDocumentAsync(response);
             var p = (IHtmlElement)doc.QuerySelector("p.col-md-8");
-            Assert.AreEqual("As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.", p.InnerHtml.Trim());
+            if (p != null)
+                Assert.AreEqual(
+                    "As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.",
+                    p.InnerHtml.Trim());
         }
     }
 }

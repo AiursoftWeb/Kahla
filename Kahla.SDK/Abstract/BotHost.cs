@@ -272,7 +272,7 @@ namespace Kahla.SDK.Abstract
                 ReconnectTimeout = TimeSpan.FromDays(1)
             };
             client.ReconnectionHappened.Subscribe(type => _botLogger.LogVerbose($"WebSocket: {type.Type}"));
-            var subscription = client.DisconnectionHappened.Subscribe((t) =>
+            var subscription = client.DisconnectionHappened.Subscribe((_) =>
             {
                 _botLogger.LogDanger("Websocket connection dropped!");
                 _exitEvent?.Set();

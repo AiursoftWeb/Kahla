@@ -42,6 +42,7 @@ namespace Kahla.Bot.Services
                 {
                     var echoBot = factory.ProduceBot();
                     //await echoBot.BroadcastAsync("Broadcast.");
+                    echoBot.BotLogger.LogInfo($"Sample bot background service started!");
                 }
             }
             catch (Exception e)

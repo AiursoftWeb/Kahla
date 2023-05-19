@@ -22,7 +22,7 @@ namespace Kahla.Server.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.User.Identity.IsAuthenticated)
+            if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
             {
                 var userId = context.User.GetUserId();
                 if (!string.IsNullOrWhiteSpace(userId))

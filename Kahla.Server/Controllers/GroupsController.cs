@@ -163,7 +163,7 @@ namespace Kahla.Server.Controllers
                 .OrderByDescending(t => t.SendTime)
                 .FirstOrDefaultAsync();
 
-            group.ForEachUser((eachUser, relation) =>
+            group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
                     pusher.NewMemberEvent(eachUser, user, group.Id)));
 
@@ -210,7 +210,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetuser);
-            group.ForEachUser((eachUser, relation) =>
+            group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
                     pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id)));
             await _dbContext.SaveChangesAsync();
@@ -223,7 +223,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
 
-            group.ForEachUser((eachUser, relation) =>
+            group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
                     pusher.DissolveEvent(eachUser, group.Id)));
 
@@ -259,7 +259,7 @@ namespace Kahla.Server.Controllers
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
 
-            group.ForEachUser((eachUser, relation) =>
+            group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
                     pusher.SomeoneLeftEvent(eachUser, user, group.Id)));
 

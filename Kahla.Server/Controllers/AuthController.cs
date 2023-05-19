@@ -233,7 +233,7 @@ namespace Kahla.Server.Controllers
 
         public async Task<IActionResult> LogOff(LogOffAddressModel model)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var user = await GetKahlaUser();
                 var device = await _dbContext

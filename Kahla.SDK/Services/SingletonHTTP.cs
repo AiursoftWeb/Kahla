@@ -37,7 +37,7 @@ namespace Kahla.SDK.Services
             if (response.StatusCode == HttpStatusCode.Redirect)
             {
                 Save(_cookieContainer);
-                return response.Headers.Location.OriginalString;
+                return response.Headers.Location?.OriginalString;
             }
             else
             {
@@ -115,7 +115,7 @@ namespace Kahla.SDK.Services
             new XmlSerializer(typeof(CookieContainer)).Serialize(stream, cookieContainer);
             var bytes = new byte[stream.Length];
             stream.Position = 0;
-            stream.Read(bytes, 0, bytes.Length);
+            _ = stream.Read(bytes, 0, bytes.Length);
             var base64 = bytes.BytesToBase64();
             File.WriteAllText("cookies.dat", base64);
         }

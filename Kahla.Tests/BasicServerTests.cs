@@ -61,7 +61,7 @@ namespace Aiursoft.Archon.Tests
         {
             var response = await _http.GetAsync(_endpointUrl);
             response.EnsureSuccessStatusCode(); // Status Code 200-299
-            Assert.AreEqual("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.AreEqual("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
 
             var content = await response.Content.ReadAsStringAsync();
             var contentObject = JsonConvert.DeserializeObject<IndexViewModel>(content);

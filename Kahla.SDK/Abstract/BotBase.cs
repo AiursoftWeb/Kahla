@@ -86,11 +86,11 @@ namespace Kahla.SDK.Abstract
             await SendMessage(string.Format(pattern, fileResponseObject.FilePath), conversationId);
         }
 
-        public Task SendPhoto(int conversationId, Stream file, string fileName)
+        public async Task SendPhoto(int conversationId, Stream file, string fileName)
         {
-            var image = Image.Load(file, out _);
+            var image = await Image.LoadAsync(file);
             file.Seek(0, SeekOrigin.Begin);
-            return SendFileWithPattern(conversationId, file, fileName, "[img]{0}|" + $"{image.Width}|{image.Height}");
+            await SendFileWithPattern(conversationId, file, fileName, "[img]{0}|" + $"{image.Width}|{image.Height}");
         }
 
         public Task SendFile(int conversationId, Stream file, string fileName)
