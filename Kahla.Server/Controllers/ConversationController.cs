@@ -293,7 +293,7 @@ namespace Kahla.Server.Controllers
             {
                 Code = ErrorType.Success,
                 ShowingDateUTC = folder.FolderName,
-                Message = $"Successfully get all files that day in your conversation. Please download with pattern: '{_probeLocator.OpenFormat}'.",
+                Message = $"Successfully get all files that day in your conversation. Please download with pattern: '{(await _probeLocator.GetServerConfig()).OpenPattern}'.",
                 SiteName = _configuration["UserFilesSiteName"],
                 RootPath = $"conversation-{conversation.Id}"
             });
