@@ -5,7 +5,7 @@ root = true
 resharper_unknown_css_class_highlighting=none
 
 # Some JS Resharper doesn't know how to load.
-resharper_undeclared_global_variable_using_highlighting=none
+resharper_undeclared_global_variable_using_highlighting=suggesting
 
 # Some HTML reference Resharper doesn't know how to load.
 resharper_html_path_error_highlighting=none
@@ -25,8 +25,11 @@ resharper_inconsistent_naming_highlighting=suggestion
 # Allow unused auto property get.
 resharper_unused_auto_property_accessor_global_highlighting=suggestion
 
-# Suppress Null reference warning
-resharper_possible_null_reference_exception_highlighting=suggestion
+# Allow view render global var.
+resharper_access_to_modified_closure_highlighting=suggestion
 
 # Suppress id not resolved because resharper can't understand
 resharper_html_id_not_resolved_highlighting=suggestion
+
+# Allow all cllass in the same namepsace.
+resharper_check_namespace_highlighting=none

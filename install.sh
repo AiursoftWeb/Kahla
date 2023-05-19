@@ -7,22 +7,6 @@ connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;Password=$dbPa
 
 install_kahla()
 {
-    if [[ $(curl -sL ifconfig.me) == "$(dig +short $1)" ]]; 
-    then
-        echo "IP is correct."
-    else
-        echo "$1 is not your current machine IP!"
-        return 9
-    fi
-
-    if [[ $(curl -s https://archon.aiursoft.com/API/AccessToken?appId=$2\&appSecret=$3) == *":0"* ]]; 
-    then
-        echo "App test passed."
-    else
-        echo "AppId and AppSecret for Aiursoft Developer Center is not valid! Please register an valid app at https://developer.aiursoft.com"
-        return 9
-    fi
-
     aiur network/enable_bbr
     aiur install/caddy
     aiur install/dotnet
@@ -50,9 +34,6 @@ install_kahla()
     aiur text/edit_json "UserFilesSiteName" "$(uuidgen)" $kahla_path/appsettings.Production.json
     aiur services/register_aspnet_service "kahla" $port $kahla_path "Kahla.Server"
     aiur caddy/add_proxy $1 $port
-    aiur firewall/enable_firewall
-    aiur firewall/open_port 443
-    aiur firewall/open_port 80
 
     # Finish the installation
     echo "Successfully installed Kahla as a service in your machine! Please open https://$1 to try it now!"
