@@ -10,9 +10,9 @@ namespace Kahla.SDK.Models.ApiAddressModels
         public int ConversationId { get; set; }
 
         [FromQuery(Name = "upload")]
-        public bool Upload { get; set; } = false;
+        public bool Upload { get; set; }
 
         [FromQuery(Name = "download")]
-        public bool Download { get; set; } = false;
+        public bool Download { get; set; }
     }
 }
