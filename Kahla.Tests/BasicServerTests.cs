@@ -35,10 +35,10 @@ namespace Aiursoft.Archon.Tests
         public async Task CreateServer()
         {
             _server = App<Startup>(port: _port);
+            await _server.StartAsync();
+
             _http = new HttpClient();
             _services = new ServiceCollection();
-            _services.AddHttpClient();
-            await _server.StartAsync();
             _services.AddHttpClient();
             _services.AddLibraryDependencies();
             _serviceProvider = _services.BuildServiceProvider();
