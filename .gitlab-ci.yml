@@ -22,7 +22,7 @@ before_script:
 restore:
   stage: build
   script:
-    - dotnet restore --configfile nuget.config
+    - dotnet restore --no-cache --configfile nuget.config
 
 build:
   stage: build
