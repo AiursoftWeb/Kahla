@@ -3,7 +3,6 @@ using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Models.FilesAddressModels;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
-using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
@@ -18,7 +17,9 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Probe.SDK.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Kahla.Server.Controllers
 {
@@ -33,7 +34,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly TokenService _tokenService;
         private readonly AppsContainer _appsContainer;
-        private readonly ProbeLocator _probeLocator;
+        private readonly ProbeConfiguration _probeLocator;
         private readonly FilesService _probeFileService;
 
         public StorageController(
@@ -42,7 +43,7 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             TokenService tokenService,
             AppsContainer appsContainer,
-            ProbeLocator probeLocator,
+            IOptions<ProbeConfiguration> probeLocator,
             FilesService probeFileService)
         {
             _userManager = userManager;
@@ -50,7 +51,7 @@ namespace Kahla.Server.Controllers
             _configuration = configuration;
             _tokenService = tokenService;
             _appsContainer = appsContainer;
-            _probeLocator = probeLocator;
+            _probeLocator = probeLocator.Value;
             _probeFileService = probeFileService;
         }
 
@@ -58,7 +59,7 @@ namespace Kahla.Server.Controllers
         [Produces(typeof(AiurValue<string>))]
         public async Task<IActionResult> InitIconUpload()
         {
-            var accessToken = await _appsContainer.AccessTokenAsync();
+            var accessToken = await _appsContainer.GetAccessTokenAsync();
             var siteName = _configuration["UserIconsSiteName"];
             var path = DateTime.UtcNow.ToString("yyyy-MM-dd");
             var token = await _tokenService.GetTokenAsync(
@@ -67,7 +68,7 @@ namespace Kahla.Server.Controllers
                 new[] { "Upload" },
                 path,
                 TimeSpan.FromMinutes(10));
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
+            var address = new AiurUrl(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
                 Token = token,
                 RecursiveCreate = true
@@ -96,7 +97,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
-            var accessToken = await _appsContainer.AccessTokenAsync();
+            var accessToken = await _appsContainer.GetAccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             var path = $"conversation-{conversation.Id}";
             var permissions = new List<string>();
@@ -108,7 +109,7 @@ namespace Kahla.Server.Controllers
                 permissions.ToArray(),
                 path,
                 TimeSpan.FromMinutes(60));
-            var address = new AiurUrl(_probeLocator.Endpoint, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
+            var address = new AiurUrl(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
             {
                 Token = token,
                 RecursiveCreate = true
@@ -150,7 +151,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {targetConversation.Id}!");
             }
-            var accessToken = await _appsContainer.AccessTokenAsync();
+            var accessToken = await _appsContainer.GetAccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
             var response = await _probeFileService.CopyFileAsync(
                 accessToken: accessToken,

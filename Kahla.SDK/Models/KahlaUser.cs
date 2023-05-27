@@ -1,4 +1,4 @@
-﻿using Aiursoft.Gateway.SDK.Models;
+﻿using Aiursoft.Directory.SDK.Models;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using System;

@@ -1,4 +1,4 @@
-﻿using Aiursoft.Gateway.SDK.Services;
+﻿using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
 using Kahla.Server.Data;
@@ -13,8 +13,8 @@ namespace Kahla.Server
         {
             App<Startup>(args)
                 .Update<KahlaDbContext>()
-                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.AccessTokenAsync())
-                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.AccessTokenAsync())
+                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.GetAccessTokenAsync())
+                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.GetAccessTokenAsync())
                 .Run();
         }
 

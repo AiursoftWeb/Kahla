@@ -1,4 +1,4 @@
-﻿using Aiursoft.Gateway.SDK.Models.ForApps.AddressModels;
+﻿using Aiursoft.Directory.SDK.Models.ForApps.AddressModels;
 using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
 using Aiursoft.Scanner.Abstract;

@@ -19,7 +19,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -36,7 +36,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
-        private readonly ProbeLocator _probeLocator;
+        private readonly ProbeSettingsFetcher _probeLocator;
         private readonly KahlaPushService _kahlaPushService;
 
         public ConversationController(
@@ -47,7 +47,7 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             OnlineJudger onlineJudger,
             LastSaidJudger lastSaidJudger,
-            ProbeLocator probeLocator,
+            ProbeSettingsFetcher probeLocator,
             KahlaPushService kahlaPushService)
         {
             _userManager = userManager;
@@ -278,7 +278,7 @@ namespace Kahla.Server.Controllers
                 return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var folders = await _foldersService
-                .ViewContentAsync(await _appsContainer.AccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
+                .ViewContentAsync(await _appsContainer.GetAccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
             var folder = folders.Value
                 .SubFolders
                 .OrderByDescending(t => DateTime.Parse(t.FolderName))
@@ -288,7 +288,7 @@ namespace Kahla.Server.Controllers
             {
                 return this.Protocol(ErrorType.Gone, "No files sent that day.");
             }
-            var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.AccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
+            var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.GetAccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
             return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.OrderByDescending(f=>f.UploadTime).ToList())
             {
                 Code = ErrorType.Success,

@@ -37,11 +37,11 @@ namespace Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
 
-            services.AddAiurAPIMvc();
+            services.AddAiurMvc();
             services.AddAiursoftIdentity<KahlaUser>(
-                observerEndpoint: Configuration.GetConnectionString("ObserverConnection"),
-                probeEndpoint: Configuration.GetConnectionString("ProbeConnection"),
-                gateEndpoint: Configuration.GetConnectionString("GatewayConnection"));
+                probeConfig: Configuration.GetSection("AiursoftProbe"),
+                authenticationConfig: Configuration.GetSection("AiursoftAuthentication"),
+                observerConfig: Configuration.GetSection("AiursoftObserver"));
             services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
             services.AddScoped<WebPushClient>();
         }

@@ -1,4 +1,4 @@
-﻿using Aiursoft.Gateway.SDK;
+﻿using Aiursoft.Directory.SDK;
 using Aiursoft.Observer.SDK;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
@@ -24,9 +24,10 @@ namespace Kahla.Home
         {
             services.AddAiurMvc();
             services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
-            services.AddProbeServer(Configuration.GetConnectionString("ProbeConnection"));
-            services.AddGatewayServer(Configuration.GetConnectionString("GatewayConnection"));
-            services.AddObserverServer(Configuration.GetConnectionString("ObserverConnection"));
+
+            services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storaging.
+            services.AddAiursoftObserver(Configuration.GetSection("AiursoftObserver")); // For error reporting.
+            services.AddAiursoftAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
             services.AddAiursoftSDK();
         }
 

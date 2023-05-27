@@ -1,5 +1,4 @@
-﻿using Aiursoft.Gateway.SDK.Models.ForApps.AddressModels;
-using Aiursoft.Gateway.SDK.Services.ToGatewayServer;
+﻿using Aiursoft.Directory.SDK.Models.ForApps.AddressModels;
 using Aiursoft.Handler.Attributes;
 using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
@@ -25,7 +24,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Directory.SDK.Services.ToDirectoryServer;
 
 namespace Kahla.Server.Controllers
 {
@@ -42,7 +42,7 @@ namespace Kahla.Server.Controllers
         private readonly AppsContainer _appsContainer;
         private readonly ChannelService _channelService;
         private readonly KahlaDbContext _dbContext;
-        private readonly EventService _eventService;
+        private readonly ObserverService _eventService;
         private readonly OnlineJudger _onlineJudger;
         private readonly StargatePushService _stargatePushService;
         private readonly List<DomainSettings> _appDomains;
@@ -57,7 +57,7 @@ namespace Kahla.Server.Controllers
             ChannelService channelService,
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
-            EventService eventService,
+            ObserverService eventService,
             OnlineJudger onlineJudger,
             StargatePushService stargatePushService)
         {
@@ -129,7 +129,7 @@ namespace Kahla.Server.Controllers
             }
             catch (WebException e)
             {
-                var accessToken = await _appsContainer.AccessTokenAsync();
+                var accessToken = await _appsContainer.GetAccessTokenAsync();
                 await _eventService.LogExceptionAsync(accessToken, e, HttpContext.Request.Path);
             }
             return this.Protocol(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
@@ -147,7 +147,7 @@ namespace Kahla.Server.Controllers
             currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
-            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.AccessTokenAsync(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
+            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
         }
@@ -190,7 +190,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
         {
             var currentUser = await GetKahlaUser();
-            await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.AccessTokenAsync(), model.OldPassword, model.NewPassword);
+            await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), model.OldPassword, model.NewPassword);
             return this.Protocol(ErrorType.Success, "Successfully changed your password!");
         }
 
@@ -199,7 +199,7 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> SendEmail([EmailAddress][Required] string email)
         {
             var user = await GetKahlaUser();
-            var token = await _appsContainer.AccessTokenAsync();
+            var token = await _appsContainer.GetAccessTokenAsync();
             var result = await _userService.SendConfirmationEmailAsync(token, user.Id, email);
             return this.Protocol(result);
         }

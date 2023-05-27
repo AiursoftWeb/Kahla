@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
@@ -165,7 +165,7 @@ namespace Kahla.Server.Controllers
                 Muted = false,
                 Mentioned = false
             };
-            var token = await _appsContainer.AccessTokenAsync();
+            var token = await _appsContainer.GetAccessTokenAsync();
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
             _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
             return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");

@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Handler.Models;
-using Aiursoft.Probe.SDK.Services;
 using System;
+using Aiursoft.Probe.SDK.Models.HomeViewModels;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
@@ -14,7 +14,7 @@ namespace Kahla.SDK.Models.ApiViewModels
         public string ServerName { get; set; }
         public string Mode { get; set; }
         public DomainSettings Domain { get; set; }
-        public ProbeLocator Probe { get; set; }
+        public ProbeDownloadPatternConfig Probe { get; set; }
         public bool AutoAcceptRequests { get; set; }
     }
 }

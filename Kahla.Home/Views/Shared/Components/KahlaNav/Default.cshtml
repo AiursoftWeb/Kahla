@@ -1,9 +1,10 @@
 ﻿@model Kahla.Home.Views.Shared.Components.KahlaNav.KahlaNavViewModel
-@using Aiursoft.Gateway.SDK.Services
 @using Aiursoft.Probe.SDK.Services
 @using Aiursoft.XelNaga.Models
-@inject GatewayLocator GatewayLocator
-@inject ProbeLocator ProbeLocator
+@using Microsoft.Extensions.Options
+@using Aiursoft.Directory.SDK.Configuration
+@inject IOptions<DirectoryConfiguration> GatewayLocator
+@inject ProbeSettingsFetcher ProbeLocator
 <header>
     <div class="container-new py-6 px-3 text-center">
         <a href="/">
@@ -20,7 +21,7 @@
                 <a class="d-inline-block m-2" href="https://github.com/AiursoftWeb/Kahla.App/releases">@Localizer["Release notes"]</a>
             </li>
             <li>
-                <a class="d-inline-block m-2" data-language-change-link href="@(new AiurUrl(GatewayLocator.Endpoint, "Api", "SetLang", new { }).ToString())">
+                <a class="d-inline-block m-2" data-language-change-link href="@(new AiurUrl(GatewayLocator.Value.Instance, "Api", "SetLang", new { }).ToString())">
                     @Localizer["Language"]
                 </a>
             </li>

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -69,7 +69,7 @@ namespace Kahla.Server.Services
             {
                 var deadline = DateTime.UtcNow - TimeSpan.FromDays(100);
                 var publicSite = _configuration["UserFilesSiteName"];
-                var accessToken = await _appsContainer.AccessTokenAsync();
+                var accessToken = await _appsContainer.GetAccessTokenAsync();
                 var rootFolders = await foldersService.ViewContentAsync(accessToken, publicSite, string.Empty);
                 foreach (var conversation in rootFolders.Value.SubFolders)
                 {

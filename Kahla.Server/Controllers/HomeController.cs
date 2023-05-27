@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kahla.Server.Controllers
 {
@@ -24,7 +25,7 @@ namespace Kahla.Server.Controllers
         private readonly ServiceLocation _serviceLocation;
         private readonly VersionService _sdkVersion;
         private readonly IConfiguration _configuration;
-        private readonly ProbeLocator _probeLocator;
+        private readonly ProbeSettingsFetcher _probeLocator;
         private readonly List<DomainSettings> _appDomain;
 
         public HomeController(
@@ -33,7 +34,7 @@ namespace Kahla.Server.Controllers
             VersionService sdkVersion,
             IOptions<List<DomainSettings>> optionsAccessor,
             IConfiguration configuration,
-            ProbeLocator probeLocator)
+            ProbeSettingsFetcher probeLocator)
         {
             _env = env;
             _serviceLocation = serviceLocation;
@@ -44,7 +45,7 @@ namespace Kahla.Server.Controllers
         }
 
         [Produces(typeof(IndexViewModel))]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new IndexViewModel
             {
@@ -58,7 +59,7 @@ namespace Kahla.Server.Controllers
                 VapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"],
                 ServerName = _configuration["ServerName"],
                 Domain = _appDomain.SingleOrDefault(t => t.Server.Split(':')[0] == Request.Host.Host),
-                Probe = _probeLocator,
+                Probe = await _probeLocator.GetServerConfig(),
                 AutoAcceptRequests = _configuration["AutoAcceptRequests"] == true.ToString().ToLower()
             };
             // This part of code is not beautiful. Try to resolve it in the future.

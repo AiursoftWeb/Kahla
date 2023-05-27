@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Aiursoft.Gateway.SDK.Services;
+using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Services
 {
@@ -87,8 +87,8 @@ namespace Kahla.Server.Services
                 {
                     _logger.LogCritical(ex, ex.Message);
                     using var scope = _scopeFactory.CreateScope();
-                    var eventService = scope.ServiceProvider.GetRequiredService<EventService>();
-                    var accessToken = await _appsContainer.AccessTokenAsync();
+                    var eventService = scope.ServiceProvider.GetRequiredService<ObserverService>();
+                    var accessToken = await _appsContainer.GetAccessTokenAsync();
                     await eventService.LogExceptionAsync(accessToken, ex, "Email Notifier");
                 }
                 catch
