@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aiursoft.SDK" Version="6.0.18" />
+    <PackageReference Include="Aiursoft.SDK" Version="6.0.19" />
   </ItemGroup>
 
   <ItemGroup>
