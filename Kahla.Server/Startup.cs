@@ -42,7 +42,7 @@ namespace Kahla.Server
                 probeConfig: Configuration.GetSection("AiursoftProbe"),
                 authenticationConfig: Configuration.GetSection("AiursoftAuthentication"),
                 observerConfig: Configuration.GetSection("AiursoftObserver"));
-            services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
+            services.AddAiursoftStargate(Configuration.GetSection("AiursoftStargate"));
             services.AddScoped<WebPushClient>();
         }
 

@@ -5,7 +5,6 @@ using Aiursoft.Identity.Attributes;
 using Aiursoft.Identity.Services;
 using Aiursoft.Observer.SDK.Services.ToObserverServer;
 using Aiursoft.Stargate.SDK.Models.ListenAddressModels;
-using Aiursoft.Stargate.SDK.Services;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Aiursoft.WebTools;
 using Aiursoft.XelNaga.Models;
@@ -26,6 +25,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Directory.SDK.Services.ToDirectoryServer;
+using Aiursoft.Stargate.SDK.Configuration;
 
 namespace Kahla.Server.Controllers
 {
@@ -34,7 +34,7 @@ namespace Kahla.Server.Controllers
     [APIModelStateChecker]
     public class AuthController : ControllerBase
     {
-        private readonly StargateLocator _stargateLocator;
+        private readonly StargateConfiguration _stargateLocator;
         private readonly AuthService<KahlaUser> _authService;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
@@ -48,7 +48,7 @@ namespace Kahla.Server.Controllers
         private readonly List<DomainSettings> _appDomains;
 
         public AuthController(
-            StargateLocator serviceLocation,
+            IOptions<StargateConfiguration> serviceLocation,
             AuthService<KahlaUser> authService,
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
@@ -61,7 +61,7 @@ namespace Kahla.Server.Controllers
             OnlineJudger onlineJudger,
             StargatePushService stargatePushService)
         {
-            _stargateLocator = serviceLocation;
+            _stargateLocator = serviceLocation.Value;
             _authService = authService;
             _userManager = userManager;
             _signInManager = signInManager;
@@ -222,7 +222,7 @@ namespace Kahla.Server.Controllers
                 Message = "Successfully get your channel.",
                 ChannelId = user.CurrentChannel,
                 ConnectKey = user.ConnectKey,
-                ServerPath = new AiurUrl(_stargateLocator.ListenEndpoint, "Listen", "Channel", new ChannelAddressModel
+                ServerPath = new AiurUrl(_stargateLocator.GetListenEndpoint(), "Listen", "Channel", new ChannelAddressModel
                 {
                     Id = user.CurrentChannel,
                     Key = user.ConnectKey

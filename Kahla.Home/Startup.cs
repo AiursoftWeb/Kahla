@@ -2,7 +2,6 @@
 using Aiursoft.Observer.SDK;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
-using Aiursoft.Stargate.SDK;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,11 +22,10 @@ namespace Kahla.Home
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAiurMvc();
-            services.AddStargateServer(Configuration.GetConnectionString("StargateConnection"));
 
-            services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storaging.
+            services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storage.
             services.AddAiursoftObserver(Configuration.GetSection("AiursoftObserver")); // For error reporting.
-            services.AddAiursoftAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
+            services.AddAiursoftAppAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
             services.AddAiursoftSDK();
         }
 

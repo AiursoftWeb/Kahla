@@ -101,7 +101,7 @@ namespace Aiursoft.Archon.Tests
         {
             var auth = _serviceProvider.GetRequiredService<AuthService>();
             var redirect = await auth.OAuthAsync();
-            Assert.IsTrue(redirect.Contains(@"https://gateway.aiursoft.com/oauth/authorize"));
+            Assert.IsTrue(redirect.Contains(@"https://directory.aiursoft.com/oauth/authorize"));
         }
     }
 }

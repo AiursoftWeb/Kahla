@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>Kahla.Server</AssemblyName>
-    <PackageId>Kahla.Server</PackageId>
-    <Company>Aiursoft</Company>
-    <Product>AiursoftWeb</Product>
-    <Authors>Anduin</Authors>
-    <Description>The server side application for Kahla app.</Description>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>Kahla.Server</AssemblyName>
+		<PackageId>Kahla.Server</PackageId>
+		<Company>Aiursoft</Company>
+		<Product>AiursoftWeb</Product>
+		<Authors>Anduin</Authors>
+		<Description>The server side application for Kahla app.</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="6.0.15" />
-    <PackageReference Include="WebPush" Version="1.0.12" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aiursoft.Identity" Version="6.0.18" />
+		<PackageReference Include="WebPush" Version="1.0.12" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
+	</ItemGroup>
 
 </Project>
