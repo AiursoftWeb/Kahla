@@ -34,7 +34,7 @@ namespace Kahla.Server.Controllers
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
         private readonly CannonQueue _cannonQueue;
-        private static readonly object Obj = new object();
+        private static readonly object Obj = new();
 
         public GroupsController(
             UserManager<KahlaUser> userManager,
@@ -194,7 +194,7 @@ namespace Kahla.Server.Controllers
             }
             group.OwnerId = targetUserId;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully transfered your group '{groupName}' ownership!");
+            return this.Protocol(ErrorType.Success, $"Successfully transferred your group '{groupName}' ownership!");
         }
 
         [HttpPost]
@@ -202,17 +202,17 @@ namespace Kahla.Server.Controllers
         {
             var user = await GetKahlaUser();
             var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
-            var targetuser = await _dbContext
+            var targetUser = await _dbContext
                 .UserGroupRelations
                 .SingleOrDefaultAsync(t => t.GroupId == group.Id && t.UserId == targetUserId);
-            if (targetuser == null)
+            if (targetUser == null)
             {
                 return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
-            _dbContext.UserGroupRelations.Remove(targetuser);
+            _dbContext.UserGroupRelations.Remove(targetUser);
             group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
-                    pusher.SomeoneLeftEvent(eachUser, targetuser.User, group.Id)));
+                    pusher.SomeoneLeftEvent(eachUser, targetUser.User, group.Id)));
             await _dbContext.SaveChangesAsync();
             return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
         }
