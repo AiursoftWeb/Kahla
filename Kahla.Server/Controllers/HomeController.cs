@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
-    [APIExpHandler]
+    [APIRemoteExceptionHandler]
     public class HomeController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;

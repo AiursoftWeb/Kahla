@@ -30,7 +30,7 @@ using Aiursoft.Stargate.SDK.Configuration;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
-    [APIExpHandler]
+    [APIRemoteExceptionHandler]
     [APIModelStateChecker]
     public class AuthController : ControllerBase
     {

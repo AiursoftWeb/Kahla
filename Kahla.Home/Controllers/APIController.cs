@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Kahla.Home.Controllers
 {
     [LimitPerMin(40)]
-    [APIExpHandler]
+    [APIRemoteExceptionHandler]
     [APIModelStateChecker]
     public class APIController : ControllerBase
     {

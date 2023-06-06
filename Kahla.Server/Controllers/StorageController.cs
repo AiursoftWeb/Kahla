@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
-    [APIExpHandler]
+    [APIRemoteExceptionHandler]
     [APIModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
     public class StorageController : ControllerBase

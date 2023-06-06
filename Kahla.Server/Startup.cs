@@ -49,8 +49,8 @@ namespace Kahla.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
-            app.UseAiurAPIHandler(env.IsDevelopment(), allowCors: false);
-            app.UseAiursoftDefault(t => t.UseMiddleware<OnlineDetectorMiddleware>());
+            app.UseAiuroftHandler(env.IsDevelopment(), allowCors: false);
+            app.UseAiursoftAPIAppRouters(true, t => t.UseMiddleware<OnlineDetectorMiddleware>());
         }
     }
 }

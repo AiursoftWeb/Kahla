@@ -22,7 +22,7 @@ using Aiursoft.Directory.SDK.Services;
 namespace Kahla.Server.Controllers
 {
     [LimitPerMin(40)]
-    [APIExpHandler]
+    [APIRemoteExceptionHandler]
     [APIModelStateChecker]
     [AiurForceAuth(true)]
     public class GroupsController : ControllerBase
