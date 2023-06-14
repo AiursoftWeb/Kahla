@@ -31,7 +31,7 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> Index()
         {
             var (appVersion, cliVersion) = await _cache.GetAndCache("Version.Cache", () => _version.CheckKahla());
-            var downloadSite = await _serviceLocation.TryGetCDNDomain("https://download.kahla.app");
+            var downloadSite = await _serviceLocation.TryGetCdnDomain("https://download.kahla.app");
             var mode = Request.Host.ToString().ToLower().Contains("staging") ?
                 "staging" : "production";
             var isProduction = mode == "production";

@@ -1,4 +1,5 @@
-﻿using Aiursoft.Directory.SDK.Services;
+﻿using System.Threading.Tasks;
+using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
 using Kahla.Server.Data;
@@ -9,13 +10,13 @@ namespace Kahla.Server
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            App<Startup>(args)
+            await (await (await App<Startup>(args)
                 .Update<KahlaDbContext>()
-                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.GetAccessTokenAsync())
-                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.GetAccessTokenAsync())
-                .Run();
+                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.GetAccessTokenAsync()))
+                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.GetAccessTokenAsync()))
+                .RunAsync();
         }
 
         // For EF

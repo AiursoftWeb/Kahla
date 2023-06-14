@@ -3,7 +3,6 @@ using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.WebTools;
-using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -17,6 +16,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
@@ -33,7 +33,7 @@ namespace Kahla.Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
         private readonly AppsContainer _appsContainer;
-        private readonly CannonQueue _cannonQueue;
+        private readonly CanonQueue _cannonQueue;
         private static readonly object Obj = new();
 
         public GroupsController(
@@ -43,7 +43,7 @@ namespace Kahla.Server.Controllers
             IConfiguration configuration,
             FoldersService foldersService,
             AppsContainer appsContainer,
-            CannonQueue cannonQueue)
+            CanonQueue cannonQueue)
         {
             _userManager = userManager;
             _dbContext = dbContext;

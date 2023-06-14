@@ -1,11 +1,10 @@
 ﻿using Aiursoft.Observer.SDK.Services.ToObserverServer;
 using Aiursoft.Scanner.Abstract;
-using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Services
@@ -13,22 +12,14 @@ namespace Kahla.Server.Services
     public class KahlaPushService : IScopedDependency
     {
         private readonly AppsContainer _appsContainer;
-        private readonly CannonService _cannonService;
-        private readonly ObserverService _eventService;
+        private readonly CanonService _cannonService;
 
         public KahlaPushService(
             AppsContainer appsContainer,
-            CannonService cannonService,
-            ObserverService eventService)
+            CanonService cannonService)
         {
             _appsContainer = appsContainer;
             _cannonService = cannonService;
-            _eventService = eventService;
-        }
-
-        public void HandleError(Exception e)
-        {
-            _eventService.LogExceptionAsync(_appsContainer.GetAccessTokenAsync().Result, e, nameof(KahlaPushService)).Wait();
         }
 
         public async Task NewMessageEvent(int stargateChannel, IEnumerable<Device> devices, Conversation conversation, Message message, string lastMessageId, bool pushAlert, bool mentioned)
@@ -44,11 +35,11 @@ namespace Kahla.Server.Services
             };
             if (stargateChannel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, stargateChannel, newMessageEvent),  e => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, stargateChannel, newMessageEvent));
             }
             if (pushAlert)
             {
-                _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, newMessageEvent, message.Sender.Email), (e) => HandleError(e));
+                _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, newMessageEvent, message.Sender.Email));
             }
         }
 
@@ -61,9 +52,9 @@ namespace Kahla.Server.Services
             };
             if (target.CurrentChannel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, target.CurrentChannel, newFriendRequestEvent),  (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, target.CurrentChannel, newFriendRequestEvent));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, newFriendRequestEvent),  (e) => HandleError(e));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, newFriendRequestEvent));
         }
 
         public async Task FriendsChangedEvent(KahlaUser target, Request request, bool result, PrivateConversation conversation)
@@ -77,9 +68,9 @@ namespace Kahla.Server.Services
             };
             if (target.CurrentChannel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, target.CurrentChannel, friendAcceptedEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, target.CurrentChannel, friendAcceptedEvent));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, friendAcceptedEvent), (e) => HandleError(e));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(target.HisDevices, friendAcceptedEvent));
         }
 
         public async Task FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger, int deletedConversationId)
@@ -92,9 +83,9 @@ namespace Kahla.Server.Services
             };
             if (stargateChannel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, stargateChannel, friendDeletedEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, stargateChannel, friendDeletedEvent));
             }
-            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, friendDeletedEvent), (e) => HandleError(e));
+            _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(devices, friendDeletedEvent));
         }
 
         public async Task TimerUpdatedEvent(KahlaUser receiver, int newTimer, int conversationId)
@@ -108,7 +99,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, timerUpdatedEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, timerUpdatedEvent));
             }
         }
 
@@ -123,7 +114,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, newMemberEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, newMemberEvent));
             }
         }
 
@@ -138,7 +129,7 @@ namespace Kahla.Server.Services
             };
             if (channel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, someoneLeftEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, someoneLeftEvent));
             }
         }
 
@@ -153,7 +144,7 @@ namespace Kahla.Server.Services
 
             if (channel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, dissolvevent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, dissolvevent));
             }
         }
 
@@ -170,7 +161,7 @@ namespace Kahla.Server.Services
 
             if (channel > 0)
             {
-                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, groupJoinedEvent), (e) => HandleError(e));
+                _cannonService.FireAsync<StargatePushService>(s => s.PushMessageAsync(token, channel, groupJoinedEvent));
             }
         }
     }

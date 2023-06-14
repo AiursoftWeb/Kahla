@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using Aiursoft.Canon;
 using WebPush;
 
 namespace Kahla.Server
@@ -36,7 +37,7 @@ namespace Kahla.Server
             services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
-
+            services.AddTaskCanon();
             services.AddAiurMvc();
             services.AddAiursoftIdentity<KahlaUser>(
                 probeConfig: Configuration.GetSection("AiursoftProbe"),
@@ -49,7 +50,7 @@ namespace Kahla.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
-            app.UseAiuroftHandler(env.IsDevelopment(), allowCors: false);
+            app.UseAiursoftHandler(env.IsDevelopment(), allowCors: false);
             app.UseAiursoftAPIAppRouters(true, t => t.UseMiddleware<OnlineDetectorMiddleware>());
         }
     }

@@ -25,9 +25,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-		<PackageReference Include="Aiursoft.Directory.SDK" Version="6.0.20" />
-		<PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.20" />
-		<PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.20" />
+		<PackageReference Include="Aiursoft.Directory.SDK" Version="6.0.21" />
+		<PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.21" />
+		<PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.21" />
 		<PackageReference Include="Websocket.Client" Version="4.6.1" />
 	</ItemGroup>
 </Project>

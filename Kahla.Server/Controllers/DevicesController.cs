@@ -3,7 +3,6 @@ using Aiursoft.Handler.Models;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Aiursoft.WebTools;
-using Aiursoft.XelNaga.Services;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -15,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
@@ -28,13 +28,13 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly UserManager<KahlaUser> _userManager;
         private readonly AppsContainer _appsContainer;
-        private readonly CannonService _cannonService;
+        private readonly CanonService _cannonService;
 
         public DevicesController(
             KahlaDbContext dbContext,
             UserManager<KahlaUser> userManager,
             AppsContainer appsContainer,
-            CannonService cannonService)
+            CanonService cannonService)
         {
             _dbContext = dbContext;
             _userManager = userManager;

@@ -1,4 +1,5 @@
-﻿using Aiursoft.Directory.SDK;
+﻿using Aiursoft.Canon;
+using Aiursoft.Directory.SDK;
 using Aiursoft.Observer.SDK;
 using Aiursoft.Probe.SDK;
 using Aiursoft.SDK;
@@ -22,7 +23,7 @@ namespace Kahla.Home
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAiurMvc();
-
+            services.AddTaskCanon();
             services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storage.
             services.AddAiursoftObserver(Configuration.GetSection("AiursoftObserver")); // For error reporting.
             services.AddAiursoftAppAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
@@ -31,7 +32,7 @@ namespace Kahla.Home
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseAiuroftHandler(env.IsDevelopment());
+            app.UseAiursoftHandler(env.IsDevelopment());
             app.UseAiursoftAppRouters();
         }
     }
