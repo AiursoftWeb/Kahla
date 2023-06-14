@@ -1,5 +1,4 @@
-﻿using Aiursoft.Observer.SDK.Services.ToObserverServer;
-using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using System.Collections.Generic;
