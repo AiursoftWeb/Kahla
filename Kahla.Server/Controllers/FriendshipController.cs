@@ -33,7 +33,7 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly KahlaPushService _pusher;
         private readonly OnlineJudger _onlineJudger;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
         private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
@@ -43,7 +43,7 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             KahlaPushService pushService,
             OnlineJudger onlineJudger,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             IConfiguration configuration,
             FoldersService foldersService)
         {

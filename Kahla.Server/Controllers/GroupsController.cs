@@ -32,7 +32,7 @@ namespace Kahla.Server.Controllers
         private readonly OwnerChecker _ownerChecker;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly CanonQueue _cannonQueue;
         private static readonly object Obj = new();
 
@@ -42,7 +42,7 @@ namespace Kahla.Server.Controllers
             OwnerChecker ownerChecker,
             IConfiguration configuration,
             FoldersService foldersService,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             CanonQueue cannonQueue)
         {
             _userManager = userManager;

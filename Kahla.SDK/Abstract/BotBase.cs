@@ -118,10 +118,13 @@ namespace Kahla.SDK.Abstract
             return SendMessage($"[user]{userId}", conversationId);
         }
 
-        public Task BroadcastMessage(string message, Func<ContactInfo, bool> filter)
+        public async Task BroadcastMessage(string message, Func<ContactInfo, bool> filter)
         {
             var conversations = Contacts.Where(filter).ToList();
-            return conversations.ForEachInThreadsPool(contact => SendMessage(message, contact.ConversationId));
+            foreach (var conversation in conversations)
+            {
+                await SendMessage(message, conversation.ConversationId);
+            }
         }
 
         public async Task SendMessage(string message, int conversationId)

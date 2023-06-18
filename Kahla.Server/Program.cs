@@ -12,17 +12,13 @@ namespace Kahla.Server
     {
         public static async Task Main(string[] args)
         {
-            await (await (await App<Startup>(args)
-                .Update<KahlaDbContext>()
-                .InitSite<AppsContainer>(c => c["UserIconsSiteName"], a => a.GetAccessTokenAsync()))
-                .InitSite<AppsContainer>(c => c["UserFilesSiteName"], a => a.GetAccessTokenAsync()))
-                .RunAsync();
-        }
-
-        // For EF
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return BareApp<Startup>(args);
+            var app = App<Startup>(args);
+            await app.UpdateDbAsync<KahlaDbContext>();
+            await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserIconsSiteName"],
+                a => a.GetAccessTokenAsync());
+            await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserFilesSiteName"],
+                a => a.GetAccessTokenAsync());
+            await app.RunAsync();
         }
     }
 }

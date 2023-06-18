@@ -39,7 +39,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly SignInManager<KahlaUser> _signInManager;
         private readonly UserService _userService;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly ChannelService _channelService;
         private readonly KahlaDbContext _dbContext;
         private readonly ObserverService _eventService;
@@ -53,7 +53,7 @@ namespace Kahla.Server.Controllers
             UserManager<KahlaUser> userManager,
             SignInManager<KahlaUser> signInManager,
             UserService userService,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             ChannelService channelService,
             KahlaDbContext dbContext,
             IOptions<List<DomainSettings>> optionsAccessor,
@@ -125,7 +125,7 @@ namespace Kahla.Server.Controllers
             user.IsMe = true;
             try
             {
-                user = await _authService.OnlyUpdate(user);
+                user = await _authService.Fetch(user);
             }
             catch (WebException e)
             {

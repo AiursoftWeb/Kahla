@@ -27,13 +27,13 @@ namespace Kahla.Server.Controllers
     {
         private readonly KahlaDbContext _dbContext;
         private readonly UserManager<KahlaUser> _userManager;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly CanonService _cannonService;
 
         public DevicesController(
             KahlaDbContext dbContext,
             UserManager<KahlaUser> userManager,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             CanonService cannonService)
         {
             _dbContext = dbContext;

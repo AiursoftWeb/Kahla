@@ -13,13 +13,13 @@ namespace Kahla.Server.Services
     public class StargatePushService : IScopedDependency
     {
         private readonly ChannelService _channelService;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly PushMessageService _pushMessageService;
         private readonly KahlaDbContext _kahlaDbContext;
 
         public StargatePushService(
             ChannelService channelService,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             PushMessageService pushMessageService,
             KahlaDbContext kahlaDbContext)
         {

@@ -10,11 +10,11 @@ namespace Kahla.Server.Services
 {
     public class KahlaPushService : IScopedDependency
     {
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly CanonService _cannonService;
 
         public KahlaPushService(
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             CanonService cannonService)
         {
             _appsContainer = appsContainer;

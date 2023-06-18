@@ -37,7 +37,7 @@ namespace Kahla.Server
             services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
-            services.AddTaskCanon();
+            
             services.AddAiurMvc();
             services.AddAiursoftIdentity<KahlaUser>(
                 probeConfig: Configuration.GetSection("AiursoftProbe"),

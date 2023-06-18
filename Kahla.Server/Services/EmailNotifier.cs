@@ -23,12 +23,12 @@ namespace Kahla.Server.Services
         private Timer _timer;
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
             IServiceScopeFactory scopeFactory,
-            AppsContainer appsContainer)
+            DirectoryAppTokenService appsContainer)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;

@@ -27,7 +27,7 @@ namespace Kahla.Home
             services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storage.
             services.AddAiursoftObserver(Configuration.GetSection("AiursoftObserver")); // For error reporting.
             services.AddAiursoftAppAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
-            services.AddAiursoftSDK();
+            services.AddAiursoftSdk();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

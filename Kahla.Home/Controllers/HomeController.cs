@@ -5,6 +5,7 @@ using Kahla.Home.Models.HomeViewModels;
 using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Aiursoft.Canon;
 
 namespace Kahla.Home.Controllers
 {
@@ -14,13 +15,13 @@ namespace Kahla.Home.Controllers
         private readonly VersionChecker _version;
         private readonly VersionService _versionService;
         private readonly ServiceLocation _serviceLocation;
-        private readonly AiurCache _cache;
+        private readonly CacheService _cache;
 
         public HomeController(
             VersionChecker version,
             VersionService versionService,
             ServiceLocation serviceLocation,
-            AiurCache cache)
+            CacheService cache)
         {
             _version = version;
             _versionService = versionService;
@@ -30,8 +31,10 @@ namespace Kahla.Home.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var (appVersion, cliVersion) = await _cache.GetAndCache("Version.Cache", () => _version.CheckKahla());
-            var downloadSite = await _serviceLocation.TryGetCdnDomain("https://download.kahla.app");
+            var (appVersion, cliVersion) = await _cache.RunWithCache("Version.Cache", () => _version.CheckKahla());
+            
+            // TODO: Avoid hard code.
+            var downloadSite = "https://download.kahla.app";
             var mode = Request.Host.ToString().ToLower().Contains("staging") ?
                 "staging" : "production";
             var isProduction = mode == "production";

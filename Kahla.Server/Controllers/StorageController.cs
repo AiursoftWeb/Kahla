@@ -33,7 +33,7 @@ namespace Kahla.Server.Controllers
         private readonly KahlaDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly TokenService _tokenService;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly ProbeConfiguration _probeLocator;
         private readonly FilesService _probeFileService;
 
@@ -42,7 +42,7 @@ namespace Kahla.Server.Controllers
             KahlaDbContext dbContext,
             IConfiguration configuration,
             TokenService tokenService,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             IOptions<ProbeConfiguration> probeLocator,
             FilesService probeFileService)
         {

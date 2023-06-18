@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Aiursoft.Canon;
 
 namespace Kahla.Home.Controllers
 {
@@ -21,20 +22,23 @@ namespace Kahla.Home.Controllers
         private readonly IConfiguration _configuration;
         private readonly HomeService _homeService;
         private readonly HttpService _httpService;
-        private readonly AiurCache _cache;
+        private readonly CacheService _cache;
+        private readonly CanonPool _pool;
         private readonly VersionChecker _version;
 
         public APIController(
             IConfiguration configuration,
             HomeService homeService,
             HttpService httpService,
-            AiurCache cache,
+            CacheService cache,
+            CanonPool pool,
             VersionChecker version)
         {
             _configuration = configuration;
             _homeService = homeService;
             _httpService = httpService;
             _cache = cache;
+            _pool = pool;
             _version = version;
         }
 
@@ -42,24 +46,21 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> KahlaServerList()
         {
             var serversFileAddress = _configuration["KahlaServerList"];
-            var serversJson = await _cache.GetAndCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress)));
+            var serversJson = await _cache.RunWithCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress)));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new ConcurrentBag<IndexViewModel>();
-            await servers.ForEachInThreadsPool(async server =>
+            foreach (var server in servers)
             {
-                try
+                _pool.RegisterNewTaskToPool(async () =>
                 {
-                    var serverInfo = await _cache.GetAndCache($"server-detail-{server}", () => _homeService.IndexAsync(server));
+                    var serverInfo = await _cache.RunWithCache($"server-detail-{server}", () => _homeService.IndexAsync(server));
                     if (serverInfo != null)
                     {
                         serversRendered.Add(serverInfo);
                     }
-                }
-                catch
-                {
-                    // ignored
-                }
-            });
+                });
+            }
+            await _pool.RunAllTasksInPoolAsync();
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             return Ok(serversRendered);
         }
@@ -67,7 +68,7 @@ namespace Kahla.Home.Controllers
         [Route("version")]
         public async Task<IActionResult> Version()
         {
-            var (appVersion, cliVersion) = await _cache.GetAndCache(nameof(Version), () => _version.CheckKahla());
+            var (appVersion, cliVersion) = await _cache.RunWithCache(nameof(Version), () => _version.CheckKahla());
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             return this.Protocol(new VersionViewModel
             {

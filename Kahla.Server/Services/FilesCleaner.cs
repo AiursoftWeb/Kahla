@@ -18,14 +18,14 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
 
         public FilesCleaner(
             ILogger<FilesCleaner> logger,
             IServiceScopeFactory scopeFactory,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             IConfiguration configuration,
             IWebHostEnvironment env)
         {

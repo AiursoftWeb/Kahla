@@ -9,11 +9,5 @@ namespace Kahla.Home
         {
             App<Startup>(args).Run();
         }
-
-        // For EF
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return BareApp<Startup>(args);
-        }
     }
 }

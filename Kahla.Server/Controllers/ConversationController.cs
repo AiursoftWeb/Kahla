@@ -32,7 +32,7 @@ namespace Kahla.Server.Controllers
         private readonly UserManager<KahlaUser> _userManager;
         private readonly KahlaDbContext _dbContext;
         private readonly FoldersService _foldersService;
-        private readonly AppsContainer _appsContainer;
+        private readonly DirectoryAppTokenService _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly OnlineJudger _onlineJudger;
         private readonly LastSaidJudger _lastSaidJudger;
@@ -43,7 +43,7 @@ namespace Kahla.Server.Controllers
             UserManager<KahlaUser> userManager,
             KahlaDbContext dbContext,
             FoldersService foldersService,
-            AppsContainer appsContainer,
+            DirectoryAppTokenService appsContainer,
             IConfiguration configuration,
             OnlineJudger onlineJudger,
             LastSaidJudger lastSaidJudger,
