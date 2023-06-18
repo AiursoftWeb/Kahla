@@ -34,10 +34,10 @@ namespace Kahla.Server.Services
         {
             if (_env.IsDevelopment() || !EntryExtends.IsProgramEntry())
             {
-                _logger.LogInformation("Skip cleaner in development environment.");
+                _logger.LogInformation("Skip cleaner in development environment");
                 return Task.CompletedTask;
             }
-            _logger.LogInformation("Timed Background Service is starting.");
+            _logger.LogInformation("Timed Background Service is starting");
             _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(15));
             return Task.CompletedTask;
         }
@@ -69,13 +69,13 @@ namespace Kahla.Server.Services
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, e.Message);
+                _logger.LogCritical(e, "Failed to clean up obsolete messages");
             }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Timed Background Service is stopping.");
+            _logger.LogInformation("Timed Background Service is stopping");
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }

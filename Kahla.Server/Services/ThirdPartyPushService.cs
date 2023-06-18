@@ -58,12 +58,11 @@ namespace Kahla.Server.Services
                     {
                         _dbContext.Devices.Remove(device);
                         await _dbContext.SaveChangesAsync();
-                        _logger.LogCritical(e, "An WebPush error occured while calling WebPush API: " + e.Message);
-                        _logger.LogCritical(e, e.Message);
+                        _logger.LogCritical(e, "An WebPush error occured while calling WebPush API: {EMessage}", e.Message);
                     }
                     catch (Exception e)
                     {
-                        _logger.LogCritical(e, "An error occured while calling WebPush API: " + e.Message);
+                        _logger.LogCritical(e, "An error occured while calling WebPush API: {EMessage}", e.Message);
                     }
                 }
                 pushTasks.Add(PushToDevice());

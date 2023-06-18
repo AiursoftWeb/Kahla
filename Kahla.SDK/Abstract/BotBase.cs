@@ -1,7 +1,6 @@
 ﻿using Aiursoft.Handler.Exceptions;
 using Aiursoft.Handler.Models;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
-using Aiursoft.XelNaga.Services;
 using Aiursoft.XelNaga.Tools;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;

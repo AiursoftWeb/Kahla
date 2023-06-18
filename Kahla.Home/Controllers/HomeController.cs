@@ -1,6 +1,4 @@
 ﻿using Aiursoft.Handler.Attributes;
-using Aiursoft.SDK.Services;
-using Aiursoft.XelNaga.Services;
 using Kahla.Home.Models.HomeViewModels;
 using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,18 +12,15 @@ namespace Kahla.Home.Controllers
     {
         private readonly VersionChecker _version;
         private readonly VersionService _versionService;
-        private readonly ServiceLocation _serviceLocation;
         private readonly CacheService _cache;
 
         public HomeController(
             VersionChecker version,
             VersionService versionService,
-            ServiceLocation serviceLocation,
             CacheService cache)
         {
             _version = version;
             _versionService = versionService;
-            _serviceLocation = serviceLocation;
             _cache = cache;
         }
 

@@ -61,19 +61,19 @@ namespace Kahla.Server.Services
                                 .ToListAsync();
                 foreach (var user in users)
                 {
-                    _logger.LogInformation($"Building email for user: {user.NickName}...");
+                    _logger.LogInformation("Building email for user: {UserNickName}...", user.NickName);
                     var (emailMessage, reason) = await BuildEmail(user, dbContext, configuration["EmailAppDomain"]);
                     if (string.IsNullOrWhiteSpace(emailMessage))
                     {
-                        _logger.LogInformation($"User: {user.NickName}'s Email is empty. Skip.");
+                        _logger.LogInformation("User: {UserNickName}\'s Email is empty. Skip", user.NickName);
                         continue;
                     }
                     if (user.EmailReasonInJson == JsonConvert.SerializeObject(reason))
                     {
-                        _logger.LogInformation($"User: {user.NickName}'s Email has the same send reason with the previous one. Skip.");
+                        _logger.LogInformation("User: {UserNickName}\'s Email has the same send reason with the previous one. Skip", user.NickName);
                         continue;
                     }
-                    _logger.LogInformation($"Sending email to user: {user.NickName}.");
+                    _logger.LogInformation("Sending email to user: {UserNickName}", user.NickName);
                     await emailSender.SendEmail("Kahla Notification", user.Email, "New notifications in Kahla", emailMessage);
                     user.LastEmailHimTime = DateTime.UtcNow;
                     user.EmailReasonInJson = JsonConvert.SerializeObject(reason);
@@ -85,7 +85,7 @@ namespace Kahla.Server.Services
             {
                 try
                 {
-                    _logger.LogCritical(ex, ex.Message);
+                    _logger.LogCritical(ex, "Failed to send an email for user");
                     using var scope = _scopeFactory.CreateScope();
                     var eventService = scope.ServiceProvider.GetRequiredService<ObserverService>();
                     var accessToken = await _appsContainer.GetAccessTokenAsync();
@@ -173,7 +173,7 @@ namespace Kahla.Server.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Email notifier service is stopping.");
+            _logger.LogInformation("Email notifier service is stopping");
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
