@@ -10,7 +10,7 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="JunitXml.TestLogger" Version="3.0.124" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
 		<PackageReference Include="MSTest.TestAdapter" Version="3.0.4" />
 		<PackageReference Include="MSTest.TestFramework" Version="3.0.4" />
 	</ItemGroup>
