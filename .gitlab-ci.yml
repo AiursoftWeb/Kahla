@@ -29,7 +29,7 @@ build:
   needs: 
     - restore
   script:
-    - dotnet build --no-self-contained
+    - dotnet build -maxcpucount:1 --no-self-contained
 
 lint:
   stage: lint
@@ -74,7 +74,7 @@ publish:
     - lint
     - test
   script:
-    - dotnet publish --configuration Release --runtime linux-x64 --no-self-contained *.sln
+    - dotnet publish -maxcpucount:1 --configuration Release --runtime linux-x64 --no-self-contained *.sln
 
 pack:
   stage: publish
@@ -82,8 +82,8 @@ pack:
     - lint
     - test
   script:
-    - dotnet build --configuration Release --no-self-contained *.sln
-    - dotnet pack --configuration Release *.sln || echo "Some packaging failed!"
+    - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
+    - dotnet pack -maxcpucount:1 --configuration Release *.sln || echo "Some packaging failed!"
   artifacts:
     expire_in: 1 week
     paths:
