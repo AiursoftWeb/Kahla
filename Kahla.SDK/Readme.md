@@ -9,7 +9,9 @@ Kahla.SDK is a library for writting bots and extends for Kahla.
 
 This will introduce how to write a bot for Kahla. Before starting, make sure you have `.NET Core SDK` installed.
 
-Download .NET Core SDK [here](http://dot.net).
+Download:
+
+1. [.NET 7 SDK](http://dot.net/)
 
 ### 1. Create a new console .NET Core app
 
