@@ -1,5 +1,5 @@
-using Aiursoft.SDKTools.Attributes;
 using System.ComponentModel.DataAnnotations;
+using Aiursoft.CSTools.Attributes;
 
 namespace Kahla.SDK.Models.ApiAddressModels
 {

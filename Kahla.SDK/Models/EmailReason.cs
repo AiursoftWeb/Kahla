@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Kahla.SDK.Models
+﻿namespace Kahla.SDK.Models
 {
     public class EmailReason
     {

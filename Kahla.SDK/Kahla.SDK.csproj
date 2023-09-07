@@ -1,33 +1,36 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<Version>4.5.0</Version>
-		<TargetFramework>net6.0</TargetFramework>
-		<LangVersion>latest</LangVersion>
-		<Company>Aiursoft</Company>
-		<Product>AiursoftWeb</Product>
-		<Authors>Anduin</Authors>
-		<Description>The base class, interfaces, services and bot framework for Aiursoft Kahla.</Description>
-		<PackageTags>base-class shared-component aiursoft kahla</PackageTags>
-		<PackageIcon>kahla.png</PackageIcon>
-		<PackageProjectUrl>https://github.com/AiursoftWeb/Kahla</PackageProjectUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/AiursoftWeb/Kahla.git</RepositoryUrl>
-		<OutputType>Library</OutputType>
-	</PropertyGroup>
-
-
-	<ItemGroup>
-		<None Include="kahla.png" Pack="true" PackagePath="\" />
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-		<PackageReference Include="Aiursoft.Directory.SDK" Version="6.0.22" />
-		<PackageReference Include="Aiursoft.Stargate.SDK" Version="6.0.22" />
-		<PackageReference Include="Aiursoft.Probe.SDK" Version="6.0.22" />
-		<PackageReference Include="Websocket.Client" Version="4.6.1" />
-	</ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <Version>7.0.0</Version>
+        <TargetFramework>net7.0</TargetFramework>
+        <AssemblyName>Kahla.SDK</AssemblyName>
+        <RootNamespace>Kahla.SDK</RootNamespace>
+        <IsTestProject>false</IsTestProject>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IsPackable>true</IsPackable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Company>Aiursoft</Company>
+        <Product>AiursoftWeb</Product>
+        <Authors>Anduin</Authors>
+        <Description>The base class, interfaces, services and bot framework for Aiursoft Kahla.</Description>
+        <PackageId>Kahla.SDK</PackageId>
+        <PackageTags>base-class shared-component aiursoft kahla</PackageTags>
+        <PackageProjectUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla.git</RepositoryUrl>
+        <LangVersion>latest</LangVersion>
+        <PackageIcon>kahla.png</PackageIcon>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="kahla.png" Pack="true" PackagePath="\" />
+        <None Include="LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+        <PackageReference Include="Aiursoft.Directory.SDK" Version="7.0.2" />
+        <PackageReference Include="Aiursoft.Stargate.SDK" Version="7.0.2" />
+        <PackageReference Include="Aiursoft.Probe.SDK" Version="7.0.2" />
+        <PackageReference Include="Websocket.Client" Version="4.7.0" />
+    </ItemGroup>
 </Project>

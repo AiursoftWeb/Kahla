@@ -1,10 +1,6 @@
-﻿using Aiursoft.Handler.Attributes;
-using Aiursoft.Handler.Models;
-using Aiursoft.Identity.Attributes;
+﻿using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.SDKTools.Attributes;
-using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -14,11 +10,10 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Server;
+using Aiursoft.CSTools.Attributes;
 using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
@@ -230,7 +225,7 @@ namespace Kahla.Server.Controllers
             });
             return this.Protocol(new AiurValue<Message>(message)
             {
-                Code = ErrorType.Success,
+                Code = Code.Success,
                 Message = "Your message has been sent."
             });
         }
@@ -248,15 +243,15 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+                return this.Protocol(Code.NotFound, $"Can not find conversation with id: {id}.");
             }
             if (!target.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(Code.Unauthorized, "You don't have any relationship with that conversation.");
             }
             return this.Protocol(new AiurValue<Conversation>(target.Build(user.Id, _onlineJudger))
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get target conversation."
             });
         }

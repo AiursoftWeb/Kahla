@@ -1,8 +1,5 @@
-﻿using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Kahla.SDK.Abstract
 {

@@ -1,10 +1,8 @@
-﻿using Aiursoft.Scanner.Abstract;
-using Kahla.SDK.Events;
+﻿using Kahla.SDK.Events;
 using Kahla.SDK.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Scanner.Abstractions;
 
 namespace Kahla.Server.Services
 {

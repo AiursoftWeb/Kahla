@@ -1,11 +1,6 @@
-﻿using Aiursoft.Handler.Exceptions;
-using Aiursoft.Handler.Models;
-using Aiursoft.Scanner.Abstract;
-using Aiursoft.XelNaga.Models;
-using Aiursoft.XelNaga.Services;
+﻿using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
 {

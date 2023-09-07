@@ -1,16 +1,11 @@
-﻿using Aiursoft.Handler.Models;
-using Aiursoft.Scanner;
-using Aiursoft.XelNaga.Tools;
+﻿using Aiursoft.Scanner;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Aiursoft.CSTools.Tools;
 using static Aiursoft.WebTools.Extends;
 
 namespace Aiursoft.Archon.Tests

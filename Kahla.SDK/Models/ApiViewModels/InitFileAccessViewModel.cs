@@ -1,4 +1,4 @@
-﻿using Aiursoft.Handler.Models;
+﻿using Aiursoft.AiurProtocol;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {

@@ -1,12 +1,7 @@
-﻿using Aiursoft.Scanner.Abstract;
-using Aiursoft.XelNaga.Models;
-using Aiursoft.XelNaga.Tools;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
 using System.Xml.Serialization;
+using Aiursoft.CSTools.Tools;
+using Aiursoft.Scanner.Abstractions;
 
 namespace Kahla.SDK.Services
 {

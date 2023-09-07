@@ -1,8 +1,5 @@
-﻿using Aiursoft.Handler.Attributes;
-using Aiursoft.Handler.Models;
-using Aiursoft.Identity.Attributes;
+﻿using Aiursoft.Identity.Attributes;
 using Aiursoft.Probe.SDK.Services.ToProbeServer;
-using Aiursoft.WebTools;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
@@ -11,11 +8,9 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
 
@@ -116,7 +111,7 @@ namespace Kahla.Server.Controllers
             var user = await GetKahlaUser();
             if (!user.EmailConfirmed)
             {
-                return this.Protocol(ErrorType.Unauthorized, "You are not allowed to join groups without confirming your email!");
+                return this.Protocol(Code.Unauthorized, "You are not allowed to join groups without confirming your email!");
             }
             GroupConversation group;
             lock (Obj)
@@ -128,17 +123,17 @@ namespace Kahla.Server.Controllers
                    .SingleOrDefault(t => t.GroupName == groupName);
                 if (group == null)
                 {
-                    return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                    return this.Protocol(Code.NotFound, $"We can not find a group with name: {groupName}!");
                 }
                 if (group.HasPassword && group.JoinPassword != joinPassword?.Trim())
                 {
-                    return this.Protocol(ErrorType.WrongKey, "The group requires password and your password was not correct!");
+                    return this.Protocol(Code.WrongKey, "The group requires password and your password was not correct!");
                 }
 
                 var joined = group.Users.Any(t => t.UserId == user.Id);
                 if (joined)
                 {
-                    return this.Protocol(ErrorType.HasSuccessAlready, $"You have already joined the group: {groupName}!");
+                    return this.Protocol(Code.NoActionTaken, $"You have already joined the group: {groupName}!");
                 }
                 // All checked and able to join him.
                 // Warning: Currently we do not have invitation system for invitation control is too complicated.

@@ -1,9 +1,6 @@
 ﻿using Kahla.SDK.Services;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 
 namespace Kahla.SDK.Models
 {

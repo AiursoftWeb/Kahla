@@ -1,7 +1,5 @@
-﻿using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Kahla.SDK.Services
 {

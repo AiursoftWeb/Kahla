@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using Aiursoft.Scanner.Abstract;
+using Aiursoft.Scanner.Abstractions;
 
 #pragma warning disable SYSLIB0022 // Type or member is obsolete
 #pragma warning disable SYSLIB0023

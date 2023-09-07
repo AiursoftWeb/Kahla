@@ -1,15 +1,7 @@
-﻿using Aiursoft.Scanner.Abstract;
-using Aiursoft.XelNaga.Tools;
+﻿using Aiursoft.CSTools.Tools;
+using Aiursoft.Scanner.Abstractions;
 using Kahla.Server.Data;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {

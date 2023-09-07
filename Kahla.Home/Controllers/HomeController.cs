@@ -1,8 +1,6 @@
-﻿using Aiursoft.Handler.Attributes;
-using Kahla.Home.Models.HomeViewModels;
+﻿using Kahla.Home.Models.HomeViewModels;
 using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Aiursoft.Canon;
 
 namespace Kahla.Home.Controllers

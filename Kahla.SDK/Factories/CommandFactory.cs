@@ -1,6 +1,5 @@
 ﻿using Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
 
 namespace Kahla.SDK.Factories
 {

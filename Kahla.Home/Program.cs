@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using static Aiursoft.WebTools.Extends;
+﻿using static Aiursoft.WebTools.Extends;
 
 namespace Kahla.Home
 {

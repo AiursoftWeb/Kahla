@@ -1,5 +1,5 @@
-﻿using Aiursoft.Scanner.Abstract;
-using System.Reflection;
+﻿using System.Reflection;
+using Aiursoft.Scanner.Abstractions;
 
 namespace Kahla.SDK.Services
 {

@@ -1,20 +1,12 @@
 ﻿using Aiursoft.Identity.Services;
 using Aiursoft.Observer.SDK.Services.ToObserverServer;
-using Aiursoft.Scanner.Abstract;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Scanner.Abstractions;
 
 namespace Kahla.Server.Services
 {

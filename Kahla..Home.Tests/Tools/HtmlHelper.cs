@@ -1,7 +1,4 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Headers;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Io;

@@ -1,8 +1,5 @@
 ﻿using Aiursoft.Identity;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Middlewares
 {

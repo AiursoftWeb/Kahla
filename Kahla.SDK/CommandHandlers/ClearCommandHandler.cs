@@ -1,6 +1,4 @@
 ﻿using Kahla.SDK.Abstract;
-using System;
-using System.Threading.Tasks;
 
 namespace Kahla.SDK.CommandHandlers
 {

@@ -1,7 +1,5 @@
 ﻿using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
-using System;
-using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {

@@ -1,8 +1,7 @@
-﻿using Aiursoft.Handler.Attributes;
-using Aiursoft.Handler.Models;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Identity.Attributes;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
-using Aiursoft.WebTools;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
@@ -11,9 +10,6 @@ using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
 

@@ -1,18 +1,11 @@
-﻿using Aiursoft.Handler.Exceptions;
-using Aiursoft.Handler.Models;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.CSTools.Tools;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
-using Aiursoft.XelNaga.Tools;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
-using SixLabors.ImageSharp;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.SDK.Abstract
 {
@@ -134,16 +127,9 @@ namespace Kahla.SDK.Abstract
 
         public async Task JoinGroup(string groupName, string password)
         {
-            try
-            {
-                var result = await GroupsService.JoinGroupAsync(groupName, password);
-                var group = await GroupsService.GroupSummaryAsync(result.Value);
-                await OnGroupConnected(group.Value);
-            }
-            catch (AiurUnexpectedResponse e) when (e.Code == ErrorType.HasSuccessAlready)
-            {
-                // do nothing.
-            }
+            var result = await GroupsService.JoinGroupAsync(groupName, password);
+            var group = await GroupsService.GroupSummaryAsync(result.Value);
+            await OnGroupConnected(group.Value);
         }
 
         protected string RemoveMentionMe(string sourceMessage)

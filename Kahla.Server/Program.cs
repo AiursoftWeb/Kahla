@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using Aiursoft.DbTools;
 using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Probe.SDK;
-using Aiursoft.SDK;
 using Kahla.Server.Data;
-using Microsoft.Extensions.Hosting;
 using static Aiursoft.WebTools.Extends;
 
 namespace Kahla.Server

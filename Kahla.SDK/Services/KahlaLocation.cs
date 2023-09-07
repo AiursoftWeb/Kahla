@@ -1,8 +1,6 @@
-﻿using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models.ApiViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 
 namespace Kahla.SDK.Services
 {

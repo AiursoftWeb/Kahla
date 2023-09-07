@@ -1,14 +1,9 @@
-﻿using Aiursoft.Scanner.Abstract;
-using Kahla.SDK.Models;
+﻿using Kahla.SDK.Models;
 using Kahla.Server.Data;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Aiursoft.Scanner.Abstractions;
 using WebPush;
 
 namespace Kahla.Server.Services

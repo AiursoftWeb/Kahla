@@ -1,12 +1,9 @@
-﻿using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Kahla.Bot.Bots;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Kahla.Bot.Services
 {

@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kahla.SDK.Models

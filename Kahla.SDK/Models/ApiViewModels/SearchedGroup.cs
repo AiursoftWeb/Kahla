@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Kahla.SDK.Models.ApiViewModels
+﻿namespace Kahla.SDK.Models.ApiViewModels
 {
     public class SearchedGroup
     {

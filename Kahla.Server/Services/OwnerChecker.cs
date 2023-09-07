@@ -1,10 +1,7 @@
-﻿using Aiursoft.Handler.Exceptions;
-using Aiursoft.Handler.Models;
-using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Services
 {

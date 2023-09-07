@@ -1,6 +1,5 @@
-﻿using Aiursoft.Scanner.Abstract;
+﻿using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
-using System;
 
 namespace Kahla.SDK.Services
 {

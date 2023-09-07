@@ -1,5 +1,3 @@
-using Aiursoft.Handler.Models;
-
 namespace Kahla.SDK.Models.ApiViewModels
 {
     public class UserDetailViewModel : AiurProtocol

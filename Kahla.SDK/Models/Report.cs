@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kahla.SDK.Models
+﻿namespace Kahla.SDK.Models
 {
     public enum ReportStatus
     {

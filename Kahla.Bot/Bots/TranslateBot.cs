@@ -2,8 +2,6 @@
 using Kahla.SDK.Abstract;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models.ApiViewModels;
-using System;
-using System.Threading.Tasks;
 
 namespace Kahla.Bot.Bots
 {

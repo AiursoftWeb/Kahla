@@ -2,9 +2,6 @@
 using Kahla.SDK.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kahla.Server.Data
 {

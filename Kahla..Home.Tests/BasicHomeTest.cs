@@ -1,10 +1,7 @@
-﻿using Aiursoft.XelNaga.Tools;
+﻿using Aiursoft.CSTools.Tools;
 using AngleSharp.Html.Dom;
 using Kahla.Home.Tests.Tools;
-using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net.Http;
-using System.Threading.Tasks;
 using static Aiursoft.WebTools.Extends;
 
 namespace Kahla.Home.Tests

@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Kahla.SDK.Abstract
 {
     public interface ICommandHandler<T> where T : BotBase
