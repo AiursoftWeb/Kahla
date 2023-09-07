@@ -25,9 +25,8 @@ using Aiursoft.Stargate.SDK.Configuration;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiExceptionHandler]
+    [ApiModelStateChecker]
     public class AuthController : ControllerBase
     {
         private readonly StargateConfiguration _stargateLocator;
@@ -74,13 +73,13 @@ namespace Kahla.Server.Controllers
         [AiurForceAuth("", "", justTry: false, register: false)]
         public IActionResult OAuth()
         {
-            return this.Protocol(ErrorType.HasSuccessAlready, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+            return this.Protocol(Code.NoActionTaken, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         [AiurForceAuth("", "", justTry: false, register: true)]
         public IActionResult GoRegister()
         {
-            return this.Protocol(ErrorType.HasSuccessAlready, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
+            return this.Protocol(Code.NoActionTaken, "You are already signed in. But you are still trying to call OAuth action. Just use Kahla directly!");
         }
 
         public async Task<IActionResult> AuthResult(AuthResultAddressModel model)
@@ -107,7 +106,7 @@ namespace Kahla.Server.Controllers
             var signedIn = user != null;
             return this.Protocol(new AiurValue<bool>(signedIn)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your signin status."
             });
         }
@@ -130,7 +129,7 @@ namespace Kahla.Server.Controllers
             }
             return this.Protocol(new AiurValue<KahlaUser>(user.Build(_onlineJudger))
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your information."
             });
         }
@@ -145,7 +144,7 @@ namespace Kahla.Server.Controllers
             currentUser.Bio = model.Bio;
             await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
-            return this.Protocol(ErrorType.Success, "Successfully set your personal info.");
+            return this.Protocol(Code.ResultShown, "Successfully set your personal info.");
         }
 
         [HttpPost]
@@ -178,7 +177,7 @@ namespace Kahla.Server.Controllers
                 currentUser.ListInSearchResult = model.ListInSearchResult == true;
             }
             await _userManager.UpdateAsync(currentUser);
-            return this.Protocol(ErrorType.Success, "Successfully update your client setting.");
+            return this.Protocol(Code.JobDone, "Successfully update your client setting.");
         }
 
         [HttpPost]
@@ -187,7 +186,7 @@ namespace Kahla.Server.Controllers
         {
             var currentUser = await GetKahlaUser();
             await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), model.OldPassword, model.NewPassword);
-            return this.Protocol(ErrorType.Success, "Successfully changed your password!");
+            return this.Protocol(Code.JobDone, "Successfully changed your password!");
         }
 
         [HttpPost]
@@ -205,7 +204,9 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> InitPusher()
         {
             var user = await GetKahlaUser();
-            if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != ErrorType.Success)
+
+            // TODO: ValidateChannelAsync may throw an exception when not found!
+            if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != Code.ResultShown)
             {
                 var channel = await _stargatePushService.ReCreateStargateChannel();
                 user.CurrentChannel = channel.ChannelId;
@@ -214,11 +215,11 @@ namespace Kahla.Server.Controllers
             }
             var model = new InitPusherViewModel
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your channel.",
                 ChannelId = user.CurrentChannel,
                 ConnectKey = user.ConnectKey,
-                ServerPath = new AiurUrl(_stargateLocator.GetListenEndpoint(), "Listen", "Channel", new ChannelAddressModel
+                ServerPath = new AiurApiEndpoint(_stargateLocator.GetListenEndpoint(), "Listen", "Channel", new ChannelAddressModel
                 {
                     Id = user.CurrentChannel,
                     Key = user.ConnectKey
@@ -239,18 +240,18 @@ namespace Kahla.Server.Controllers
                 await _signInManager.SignOutAsync();
                 if (device == null)
                 {
-                    return this.Protocol(ErrorType.Success, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+                    return this.Protocol(Code.JobDone, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
                 }
                 else
                 {
                     _dbContext.Devices.Remove(device);
                     await _dbContext.SaveChangesAsync();
-                    return this.Protocol(ErrorType.Success, "Success.");
+                    return this.Protocol(Code.JobDone, "Success.");
                 }
             }
             else
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, "You are not authorized at all. But you can still call this API.");
+                return this.Protocol(Code.NoActionTaken, "You are not authorized at all. But you can still call this API.");
             }
         }
 

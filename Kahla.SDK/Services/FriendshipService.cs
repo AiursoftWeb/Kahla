@@ -10,56 +10,39 @@ namespace Kahla.SDK.Services
     public class FriendshipService : IScopedDependency
     {
         private readonly KahlaLocation _kahlaLocation;
-        private readonly SingletonHTTP _http;
+        private readonly AiurProtocolClient _http;
 
         public FriendshipService(
             KahlaLocation kahlaLocation,
-            SingletonHTTP http)
+            AiurProtocolClient http)
         {
             _kahlaLocation = kahlaLocation;
             _http = http;
         }
 
-        public async Task<MineViewModel> MineAsync()
+        public Task<MineViewModel> MineAsync()
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "Mine", new { });
-            var result = await _http.Get(url);
-            var jsonResult = JsonConvert.DeserializeObject<MineViewModel>(result);
-
-            if (jsonResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(jsonResult);
-
-            return jsonResult;
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "Mine", new { });
+            return _http.Get<MineViewModel>(url);
         }
 
         public async Task<AiurValue<int>> CompleteRequestAsync(int requestId, bool accept)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "CompleteRequest", new { });
-            var form = new AiurUrl(string.Empty, new CompleteRequestAddressModel
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "CompleteRequest", new { });
+            var form = new AiurApiPayload(new CompleteRequestAddressModel
             {
                 Id = requestId,
                 Accept = accept
             });
-            var result = await _http.Post(url, form);
-            var jsonResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
-
-            if (jsonResult.Code != ErrorType.Success && jsonResult.Code != ErrorType.HasSuccessAlready)
-            {
-                throw new AiurUnexpectedResponse(jsonResult);
-            }
-            return jsonResult;
+            var result = await _http.Post<AiurValue<int>>(url, form);
+            return result;
         }
 
         public async Task<AiurCollection<Request>> MyRequestsAsync()
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Friendship", "MyRequests", new { });
-            var result = await _http.Get(url);
-            var jsonResult = JsonConvert.DeserializeObject<AiurCollection<Request>>(result);
-
-            if (jsonResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(jsonResult);
-
-            return jsonResult;
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "MyRequests", new { });
+            var result = await _http.Get<AiurCollection<Request>>(url);
+            return result;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Kahla.SDK.Data;
+﻿using Aiursoft.AiurProtocol;
+using Kahla.SDK.Data;
 using Kahla.SDK.Events;
 using Kahla.SDK.Factories;
 using Kahla.SDK.Services;
@@ -234,7 +235,7 @@ namespace Kahla.SDK.Abstract
                 _botLogger.AppendResult(true, 6);
                 _profileContainer.Profile = profile.Value;
             }
-            catch (AiurUnexpectedResponse e)
+            catch (AiurUnexpectedServerResponseException e)
             {
                 _botLogger.AppendResult(false, 6);
                 _botLogger.LogDanger(e.Message);

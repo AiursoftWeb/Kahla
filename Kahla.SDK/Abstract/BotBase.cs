@@ -24,6 +24,8 @@ namespace Kahla.SDK.Abstract
         public StorageService StorageService;
         public KahlaUser Profile;
         public IndexViewModel Server;
+        public PersistentHttpClient PersistentHttpClient;
+
         public IEnumerable<ContactInfo> Contacts { get; set; }
         public IEnumerable<Request> Requests { get; set; }
 
@@ -73,7 +75,7 @@ namespace Kahla.SDK.Abstract
         private async Task SendFileWithPattern(int conversationId, Stream file, string fileName, string pattern)
         {
             var token = await StorageService.InitFileAccessAsync(conversationId, true, false);
-            var fileResponse = await StorageService.Http.PostWithFile(token.UploadAddress, file, fileName);
+            var fileResponse = await PersistentHttpClient.PostWithFile(token.UploadAddress, file, fileName);
             var fileResponseObject = JsonConvert.DeserializeObject<UploadFileViewModel>(fileResponse);
             await SendMessage(string.Format(pattern, fileResponseObject.FilePath), conversationId);
         }

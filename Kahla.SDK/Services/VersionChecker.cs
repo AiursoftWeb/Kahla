@@ -1,4 +1,5 @@
-﻿using Aiursoft.Scanner.Abstractions;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -6,12 +7,12 @@ namespace Kahla.SDK.Services
 {
     public class VersionChecker : IScopedDependency
     {
-        private readonly HttpService _http;
+        private readonly HttpClient _http;
         private readonly IConfiguration _configuration;
         private readonly VersionService _versionService;
 
         public VersionChecker(
-            HttpService http,
+            HttpClient http,
             IConfiguration configuration,
             VersionService versionService)
         {
@@ -22,21 +23,15 @@ namespace Kahla.SDK.Services
 
         public async Task<(string appVersion, string cliVersion)> CheckKahla()
         {
-            var url = new AiurUrl(_configuration["KahlaMasterPackageJson"], new { });
-            var response = await _http.Get(url);
+            var response = await _http.GetStringAsync(_configuration["KahlaMasterPackageJson"]);
             var result = JsonConvert.DeserializeObject<NodePackageJson>(response);
-
             if (result.Name.ToLower() == "kahla")
             {
                 return (result.Version, _versionService.GetSDKVersion());
             }
             else
             {
-                throw new AiurUnexpectedResponse(new AiurProtocol()
-                {
-                    Code = ErrorType.NotFound,
-                    Message = "GitHub Json response is not related with Kahla!"
-                });
+                throw new AiurServerException(Code.Conflict, "GitHub Json response is not related with Kahla!");
             }
         }
     }

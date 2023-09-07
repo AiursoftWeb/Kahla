@@ -15,9 +15,8 @@ using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiModelStateChecker]
+    [ApiExceptionHandler]
     [AiurForceAuth(directlyReject: true)]
     public class DevicesController : ControllerBase
     {
@@ -70,7 +69,7 @@ namespace Kahla.Server.Controllers
             //ErrorType.Success, 
             return this.Protocol(new AiurValue<long>(device.Id)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = "Successfully created your new device with id: " + device.Id
             });
         }
@@ -86,7 +85,7 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
             if (device == null)
             {
-                return this.Protocol(ErrorType.NotFound, "Can not find a device with ID: " + model.DeviceId);
+                return this.Protocol(Code.NotFound, "Can not find a device with ID: " + model.DeviceId);
             }
             device.Name = model.Name;
             device.PushAuth = model.PushAuth;
@@ -97,7 +96,7 @@ namespace Kahla.Server.Controllers
             //ErrorType.Success, 
             return this.Protocol(new AiurValue<Device>(device)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = "Successfully updated your new device with id: " + device.Id
             });
         }
@@ -114,7 +113,7 @@ namespace Kahla.Server.Controllers
                 .ToListAsync();
             return this.Protocol(new AiurCollection<Device>(devices)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get all your devices."
             });
         }
@@ -129,11 +128,11 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (device == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can't find your device with id: '{id}'.");
+                return this.Protocol(Code.NotFound, $"Can't find your device with id: '{id}'.");
             }
             _dbContext.Devices.Remove(device);
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully dropped your device with id: '{id}'.");
+            return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
         }
 
         [HttpPost]
@@ -164,7 +163,7 @@ namespace Kahla.Server.Controllers
             var token = await _appsContainer.GetAccessTokenAsync();
             _cannonService.FireAsync<ThirdPartyPushService>(s => s.PushAsync(user.HisDevices, messageEvent));
             _cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
-            return this.Protocol(ErrorType.Success, "Successfully sent you a test message to all your devices.");
+            return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);

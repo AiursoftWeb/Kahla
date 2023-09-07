@@ -45,7 +45,7 @@ namespace Kahla.SDK.Data
         public async Task SyncFromServer()
         {
             var allResponse = await _conversationService.AllAsync();
-            _contacts = allResponse.Items;
+            _contacts = allResponse.Items.ToList();
             foreach (var contact in _contacts)
             {
                 if (contact.LatestMessage != null)
@@ -55,7 +55,7 @@ namespace Kahla.SDK.Data
             }
 
             var requestsResponse = await _friendshipService.MyRequestsAsync();
-            _requests = requestsResponse.Items;
+            _requests = requestsResponse.Items.ToList();
         }
 
         public async void OnStargateMessage(ResponseMessage msg)

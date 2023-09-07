@@ -5,12 +5,12 @@ using Aiursoft.Scanner.Abstractions;
 
 namespace Kahla.SDK.Services
 {
-    public class SingletonHTTP : ISingletonDependency
+    public class PersistentHttpClient : ISingletonDependency
     {
         private readonly HttpClient _client;
         private readonly CookieContainer _cookieContainer;
 
-        public SingletonHTTP()
+        public PersistentHttpClient()
         {
             _cookieContainer = Load();
             _client = new HttpClient(new HttpClientHandler()
@@ -37,46 +37,6 @@ namespace Kahla.SDK.Services
             else
             {
                 throw new WebException(response.ReasonPhrase);
-            }
-        }
-
-        public async Task<string> Get(AiurUrl url)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, url.ToString())
-            {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>())
-            };
-
-            request.Headers.Add("accept", "application/json");
-
-            var response = await _client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                Save(_cookieContainer);
-                return await response.Content.ReadAsStringAsync();
-            }
-            else
-            {
-                throw new WebException($"The remote server returned unexpected status code: {response.StatusCode} - {response.ReasonPhrase}.");
-            }
-        }
-
-        public async Task<string> Post(AiurUrl url, AiurUrl postDataStr)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, url.Address)
-            {
-                Content = new FormUrlEncodedContent(postDataStr.Params)
-            };
-            request.Headers.Add("accept", "application/json");
-            var response = await _client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                Save(_cookieContainer);
-                return await response.Content.ReadAsStringAsync();
-            }
-            else
-            {
-                throw new WebException($"The remote server returned unexpected status code: {response.StatusCode} - {response.ReasonPhrase}.");
             }
         }
 

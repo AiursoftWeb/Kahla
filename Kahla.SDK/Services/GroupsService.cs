@@ -42,17 +42,13 @@ namespace Kahla.SDK.Services
             return result;
         }
 
-        public async Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)
+        public Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "GroupSummary", new
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Groups", "GroupSummary", new
             {
                 id = groupId
             });
-            var result = await _http.Get(url);
-            var jResult = JsonConvert.DeserializeObject<AiurValue<SearchedGroup>>(result);
-            if (jResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(jResult);
-            return jResult;
+            return _http.Get<AiurValue<SearchedGroup>>(url);
         }
     }
 }

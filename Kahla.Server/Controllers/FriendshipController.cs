@@ -16,9 +16,8 @@ using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiModelStateChecker]
+    [ApiExceptionHandler]
     [AiurForceAuth(directlyReject: true)]
     public class FriendshipController : ControllerBase
     {
@@ -68,7 +67,7 @@ namespace Kahla.Server.Controllers
             var searched = SearchedGroup.Map(groups);
             return this.Protocol(new MineViewModel
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get all your groups and friends.",
                 Users = personalRelations,
                 Groups = searched,
@@ -85,11 +84,11 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, "We can not find target user.");
+                return this.Protocol(Code.NotFound, "We can not find target user.");
             }
             if (!await _dbContext.AreFriends(user.Id, target.Id))
             {
-                return this.Protocol(ErrorType.NotFound, "He is not your friend at all.");
+                return this.Protocol(Code.NotFound, "He is not your friend at all.");
             }
             var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
             await _dbContext.SaveChangesAsync();
@@ -103,7 +102,7 @@ namespace Kahla.Server.Controllers
             {
                 await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
             }
-            return this.Protocol(ErrorType.Success, "Successfully deleted your friend relationship.");
+            return this.Protocol(Code.JobDone, "Successfully deleted your friend relationship.");
         }
 
         [HttpPost]
@@ -117,16 +116,16 @@ namespace Kahla.Server.Controllers
             var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, "We can not find your target user!");
+                return this.Protocol(Code.NotFound, "We can not find your target user!");
             }
             if (target.Id == user.Id)
             {
-                return this.Protocol(ErrorType.Conflict, "You can't request yourself!");
+                return this.Protocol(Code.Conflict, "You can't request yourself!");
             }
             var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
             if (areFriends)
             {
-                return this.Protocol(ErrorType.Conflict, "You two are already friends!");
+                return this.Protocol(Code.Conflict, "You two are already friends!");
             }
             Request request;
             await semaphoreSlim.WaitAsync();
@@ -139,7 +138,7 @@ namespace Kahla.Server.Controllers
                     .AnyAsync(t => !t.Completed);
                 if (pending)
                 {
-                    return this.Protocol(ErrorType.Conflict, "There are some pending request hasn't been completed!");
+                    return this.Protocol(Code.Conflict, "There are some pending request hasn't been completed!");
                 }
                 request = new Request
                 {
@@ -164,7 +163,7 @@ namespace Kahla.Server.Controllers
             }
             return this.Protocol(new AiurValue<int>(request.Id)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = "Successfully created your request!"
             });
         }
@@ -183,11 +182,11 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (request == null)
             {
-                return this.Protocol(ErrorType.NotFound, "We can not find target request.");
+                return this.Protocol(Code.NotFound, "We can not find target request.");
             }
             if (request.TargetId != user.Id)
             {
-                return this.Protocol(ErrorType.Unauthorized, "The target user of this request is not you.");
+                return this.Protocol(Code.Unauthorized, "The target user of this request is not you.");
             }
             if (request.Completed)
             {
@@ -196,20 +195,20 @@ namespace Kahla.Server.Controllers
                 {
                     return this.Protocol(new AiurValue<int?>(conversation.Id)
                     {
-                        Code = ErrorType.HasSuccessAlready,
+                        Code = Code.NoActionTaken,
                         Message = $"You have already completed this request and the conversation with ID: '{conversation.Id}' still exists."
                     });
                 }
                 return this.Protocol(new AiurValue<int?>(null)
                 {
-                    Code = ErrorType.HasSuccessAlready,
+                    Code = Code.NoActionTaken,
                     Message = "You have already completed this request. Created conversation was deleted."
                 });
             }
             var newConversation = await AcceptRequest(request, model.Accept);
             return this.Protocol(new AiurValue<int?>(newConversation?.Id)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = "You have successfully completed this request."
             });
         }
@@ -227,7 +226,7 @@ namespace Kahla.Server.Controllers
                 .ToListAsync();
             return this.Protocol(new AiurCollection<Request>(requests)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your requests list."
             });
         }
@@ -258,7 +257,7 @@ namespace Kahla.Server.Controllers
                 GroupsCount = await groups.CountAsync(),
                 Users = await users.Take(model.Take).ToListAsync(),
                 Groups = searched,
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Search result is shown."
             });
         }
@@ -347,7 +346,7 @@ namespace Kahla.Server.Controllers
                 .ToList();
             return this.Protocol(new AiurCollection<FriendDiscovery>(ordered)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your suggested friends."
             });
         }
@@ -361,7 +360,7 @@ namespace Kahla.Server.Controllers
             if (target == null)
             {
                 model.Message = "We can not find target user.";
-                model.Code = ErrorType.NotFound;
+                model.Code = Code.NotFound;
                 return this.Protocol(model);
             }
             var conversation = await _dbContext.FindConversationAsync(user.Id, target.Id);
@@ -384,7 +383,7 @@ namespace Kahla.Server.Controllers
                 .FirstOrDefaultAsync(t => !t.Completed);
             model.SentRequest = model.PendingRequest != null;
             model.Message = "Found that user.";
-            model.Code = ErrorType.Success;
+            model.Code = Code.ResultShown;
             return this.Protocol(model);
         }
 
@@ -395,18 +394,18 @@ namespace Kahla.Server.Controllers
             var targetUser = await _dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
             if (targetUser == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
+                return this.Protocol(Code.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
             }
             if (currentUser.Id == targetUser.Id)
             {
-                return this.Protocol(ErrorType.Conflict, "You can not report yourself!");
+                return this.Protocol(Code.Conflict, "You can not report yourself!");
             }
             var exists = await _dbContext
                 .Reports
                 .AnyAsync((t) => t.TriggerId == currentUser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
             if (exists)
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, "You have already reported the target user!");
+                return this.Protocol(Code.NoActionTaken, "You have already reported the target user!");
             }
             // All check passed. Report him now!
             await _dbContext.Reports.AddAsync(new Report
@@ -416,7 +415,7 @@ namespace Kahla.Server.Controllers
                 Reason = model.Reason
             });
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, "Successfully reported target user!");
+            return this.Protocol(Code.JobDone, "Successfully reported target user!");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
@@ -433,7 +432,7 @@ namespace Kahla.Server.Controllers
                     if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
                     {
                         await _dbContext.SaveChangesAsync();
-                        throw new AiurAPIModelException(ErrorType.HasSuccessAlready, "You two are already friends.");
+                        throw new AiurServerException(Code.NoActionTaken, "You two are already friends.");
                     }
                     newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
                 }
