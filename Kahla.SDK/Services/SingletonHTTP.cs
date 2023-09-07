@@ -57,7 +57,7 @@ namespace Kahla.SDK.Services
             }
             else
             {
-                throw new WebException($"The remote server returned unexpcted status code: {response.StatusCode} - {response.ReasonPhrase}.");
+                throw new WebException($"The remote server returned unexpected status code: {response.StatusCode} - {response.ReasonPhrase}.");
             }
         }
 
@@ -76,7 +76,7 @@ namespace Kahla.SDK.Services
             }
             else
             {
-                throw new WebException($"The remote server returned unexpcted status code: {response.StatusCode} - {response.ReasonPhrase}.");
+                throw new WebException($"The remote server returned unexpected status code: {response.StatusCode} - {response.ReasonPhrase}.");
             }
         }
 
@@ -100,7 +100,7 @@ namespace Kahla.SDK.Services
             }
             else
             {
-                throw new WebException($"The remote server returned unexpcted status code: {response.StatusCode} - {response.ReasonPhrase}.");
+                throw new WebException($"The remote server returned unexpected status code: {response.StatusCode} - {response.ReasonPhrase}.");
             }
         }
 

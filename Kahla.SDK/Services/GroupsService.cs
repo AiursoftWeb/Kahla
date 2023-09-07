@@ -7,11 +7,11 @@ namespace Kahla.SDK.Services
 {
     public class GroupsService : IScopedDependency
     {
-        private readonly SingletonHTTP _http;
+        private readonly AiurProtocolClient _http;
         private readonly KahlaLocation _kahlaLocation;
 
         public GroupsService(
-            SingletonHTTP http,
+            AiurProtocolClient http,
             KahlaLocation kahlaLocation)
         {
             _http = http;
@@ -20,34 +20,26 @@ namespace Kahla.SDK.Services
 
         public async Task<AiurValue<int>> JoinGroupAsync(string groupName, string joinPassword)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "JoinGroup", new { });
-            var form = new AiurUrl(string.Empty, new
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Groups", "JoinGroup", new { });
+            var form = new AiurApiPayload(new
             {
                 groupName,
                 joinPassword
             });
-            var result = await _http.Post(url, form);
-            var jResult = JsonConvert.DeserializeObject<AiurValue<int>>(result);
-
-            if (jResult.Code != ErrorType.Success)
-                throw new AiurUnexpectedResponse(jResult);
-            return jResult;
+            var result = await _http.Post<AiurValue<int>>(url, form);
+            return result;
         }
 
-        public async Task<AiurProtocol> SetGroupMutedAsync(string groupName, bool setMuted)
+        public async Task<AiurResponse> SetGroupMutedAsync(string groupName, bool setMuted)
         {
-            var url = new AiurUrl(_kahlaLocation.ToString(), "Groups", "SetGroupMuted", new { });
-            var form = new AiurUrl(string.Empty, new
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Groups", "SetGroupMuted", new { });
+            var form = new AiurApiPayload(new
             {
                 groupName,
                 setMuted
             });
-            var result = await _http.Post(url, form);
-            var jResult = JsonConvert.DeserializeObject<AiurValue<AiurProtocol>>(result);
-
-            if (jResult.Code != ErrorType.Success && jResult.Code != ErrorType.HasSuccessAlready)
-                throw new AiurUnexpectedResponse(jResult);
-            return jResult;
+            var result = await _http.Post<AiurResponse>(url, form);
+            return result;
         }
 
         public async Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)

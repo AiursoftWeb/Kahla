@@ -230,7 +230,7 @@ namespace Kahla.Server.Controllers
             {
                 await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{group.Id}");
             }
-            return this.Protocol(ErrorType.Success, $"Successfully dissolved the group '{groupName}'!");
+            return this.Protocol(Code.JobDone, $"Successfully dissolved the group '{groupName}'!");
         }
 
         [HttpPost]
@@ -240,16 +240,16 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
+                return this.Protocol(Code.NotFound, $"We can not find a group with name: '{groupName}'!");
             }
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, $"You did not joined the group: '{groupName}' at all!");
+                return this.Protocol(Code.NoActionTaken, $"You did not joined the group: '{groupName}' at all!");
             }
             if (group.OwnerId == user.Id)
             {
-                return this.Protocol(ErrorType.InsufficientPermissions, $"You are the owner of this group: '{groupName}' and you can't leave it!");
+                return this.Protocol(Code.Conflict, $"You are the owner of this group: '{groupName}' and you can't leave it!");
             }
             _dbContext.UserGroupRelations.Remove(joined);
             await _dbContext.SaveChangesAsync();
@@ -265,7 +265,7 @@ namespace Kahla.Server.Controllers
                 _dbContext.GroupConversations.Remove(group);
                 await _dbContext.SaveChangesAsync();
             }
-            return this.Protocol(ErrorType.Success, $"You have successfully left the group: {groupName}!");
+            return this.Protocol(Code.JobDone, $"You have successfully left the group: {groupName}!");
         }
 
         [HttpPost]
@@ -275,20 +275,20 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with name: {groupName}!");
+                return this.Protocol(Code.NotFound, $"We can not find a group with name: {groupName}!");
             }
             var joined = await _dbContext.GetRelationFromGroup(user.Id, group.Id);
             if (joined == null)
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You did not joined the group: {groupName} at all!");
+                return this.Protocol(Code.Unauthorized, $"You did not joined the group: {groupName} at all!");
             }
             if (joined.Muted == setMuted)
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, $"You have already {(joined.Muted ? "muted" : "unmuted")} the group: {groupName}!");
+                return this.Protocol(Code.NoActionTaken, $"You have already {(joined.Muted ? "muted" : "un-muted")} the group: {groupName}!");
             }
             joined.Muted = setMuted;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully {(setMuted ? "muted" : "unmuted")} the group '{groupName}'!");
+            return this.Protocol(Code.JobDone, $"Successfully {(setMuted ? "muted" : "un-muted")} the group '{groupName}'!");
         }
 
         [HttpPost]

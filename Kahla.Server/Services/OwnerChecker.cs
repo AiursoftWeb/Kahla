@@ -1,4 +1,5 @@
-﻿using Aiursoft.Scanner.Abstractions;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +24,11 @@ namespace Kahla.Server.Services
                 .SingleOrDefaultAsync(t => t.GroupName == groupName);
             if (group == null)
             {
-                throw new AiurAPIModelException(ErrorType.NotFound, $"We can not find a group with name: '{groupName}'!");
+                throw new AiurServerException(Code.NotFound, $"We can not find a group with name: '{groupName}'!");
             }
             if (group.OwnerId != userId)
             {
-                throw new AiurAPIModelException(ErrorType.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
+                throw new AiurServerException(Code.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
             }
             return group;
         }
