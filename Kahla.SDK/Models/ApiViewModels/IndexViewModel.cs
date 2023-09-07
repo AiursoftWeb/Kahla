@@ -1,8 +1,9 @@
-﻿using Aiursoft.Probe.SDK.Models.HomeViewModels;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Probe.SDK.Models.HomeViewModels;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
-    public class IndexViewModel : AiurProtocol
+    public class IndexViewModel : AiurResponse
     {
         public string WikiPath { get; set; }
         public DateTime ServerTime { get; set; }

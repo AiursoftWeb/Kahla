@@ -18,9 +18,8 @@ using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiExceptionHandler]
+    [ApiModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
     public class ConversationController : ControllerBase
     {
@@ -70,7 +69,7 @@ namespace Kahla.Server.Controllers
             }
             return this.Protocol(new AiurCollection<ContactInfo>(contacts)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get all your friends."
             });
         }
@@ -85,11 +84,11 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+                return this.Protocol(Code.NotFound, $"Can not find conversation with id: {id}.");
             }
             if (!target.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(Code.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var timeLimit = DateTime.UtcNow - TimeSpan.FromSeconds(target.MaxLiveSeconds);
             DateTime? skipStart = null;
@@ -122,7 +121,7 @@ namespace Kahla.Server.Controllers
             allMessages.ForEach(t => t.Sender.Build(_onlineJudger));
             return this.Protocol(new AiurCollection<Message>(allMessages)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get all your messages."
             });
         }
@@ -144,15 +143,15 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
+                return this.Protocol(Code.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
             if (!target.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(Code.Unauthorized, "You don't have any relationship with that conversation.");
             }
             if (model.Content.Trim().Length == 0)
             {
-                return this.Protocol(ErrorType.InvalidInput, "Can not send empty message.");
+                return this.Protocol(Code.InvalidInput, "Can not send empty message.");
             }
             // Get last message Id.
             string lastMessageId;
@@ -201,7 +200,7 @@ namespace Kahla.Server.Controllers
                 {
                     _dbContext.Messages.Remove(message);
                     await _dbContext.SaveChangesAsync();
-                    return this.Protocol(ErrorType.InvalidInput, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
+                    return this.Protocol(Code.Conflict, $"Can not at person with Id: '{atTargetId}' because he is not in this conversation.");
                 }
             }
             // Save the ats.
@@ -225,7 +224,7 @@ namespace Kahla.Server.Controllers
             });
             return this.Protocol(new AiurValue<Message>(message)
             {
-                Code = Code.Success,
+                Code = Code.JobDone,
                 Message = "Your message has been sent."
             });
         }
@@ -266,11 +265,11 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == id);
             if (conversation == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {id}.");
+                return this.Protocol(Code.NotFound, $"Can not find conversation with id: {id}.");
             }
             if (!conversation.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(Code.Unauthorized, "You don't have any relationship with that conversation.");
             }
             var folders = await _foldersService
                 .ViewContentAsync(await _appsContainer.GetAccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}");
@@ -281,12 +280,12 @@ namespace Kahla.Server.Controllers
                 .FirstOrDefault();
             if (folder == null)
             {
-                return this.Protocol(ErrorType.Gone, "No files sent that day.");
+                return this.Protocol(Code.NotFound, "No files sent that day.");
             }
             var filesInSubfolder = await _foldersService.ViewContentAsync(await _appsContainer.GetAccessTokenAsync(), _configuration["UserFilesSiteName"], $"conversation-{conversation.Id}/{folder.FolderName}");
             return this.Protocol(new FileHistoryViewModel(filesInSubfolder.Value.Files.OrderByDescending(f=>f.UploadTime).ToList())
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 ShowingDateUTC = folder.FolderName,
                 Message = $"Successfully get all files that day in your conversation. Please download with pattern: '{(await _probeLocator.GetServerConfig()).OpenPattern}'.",
                 SiteName = _configuration["UserFilesSiteName"],
@@ -305,15 +304,15 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.Id);
             if (target == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Can not find conversation with id: {model.Id}.");
+                return this.Protocol(Code.NotFound, $"Can not find conversation with id: {model.Id}.");
             }
             if (!target.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, "You don't have any relationship with that conversation.");
+                return this.Protocol(Code.Unauthorized, "You don't have any relationship with that conversation.");
             }
             if (target is GroupConversation g && g.OwnerId != user.Id)
             {
-                return this.Protocol(ErrorType.Unauthorized, "You are not the owner of that group.");
+                return this.Protocol(Code.Unauthorized, "You are not the owner of that group.");
             }
             var oldestAliveTime = DateTime.UtcNow - TimeSpan.FromSeconds(Math.Min(target.MaxLiveSeconds, model.NewLifeTime));
             // Delete outdated for current.
@@ -331,7 +330,7 @@ namespace Kahla.Server.Controllers
             {
                 _kahlaPushService.TimerUpdatedEvent(eachUser, model.NewLifeTime, target.Id).Wait();
             });
-            return this.Protocol(ErrorType.Success, "Successfully updated your life time. Your current message life time is: " +
+            return this.Protocol(Code.JobDone, "Successfully updated your life time. Your current message life time is: " +
                 TimeSpan.FromSeconds(target.MaxLiveSeconds));
         }
 

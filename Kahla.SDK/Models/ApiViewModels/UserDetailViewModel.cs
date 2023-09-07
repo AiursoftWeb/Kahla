@@ -1,6 +1,8 @@
+using Aiursoft.AiurProtocol;
+
 namespace Kahla.SDK.Models.ApiViewModels
 {
-    public class UserDetailViewModel : AiurProtocol
+    public class UserDetailViewModel : AiurResponse
     {
         public KahlaUser User { get; set; }
         public bool AreFriends { get; set; }

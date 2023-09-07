@@ -9,9 +9,8 @@ using Aiursoft.SDK.Services;
 
 namespace Kahla.Home.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiExceptionHandler]
+    [ApiModelStateChecker]
     public class APIController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -41,7 +40,7 @@ namespace Kahla.Home.Controllers
         public async Task<IActionResult> KahlaServerList()
         {
             var serversFileAddress = _configuration["KahlaServerList"];
-            var serversJson = await _cache.RunWithCache("servers-list", () => _httpService.Get(new AiurUrl(serversFileAddress)));
+            var serversJson = await _cache.RunWithCache("servers-list", () => _httpService.Get(serversFileAddress));
             var servers = JsonConvert.DeserializeObject<List<string>>(serversJson);
             var serversRendered = new ConcurrentBag<IndexViewModel>();
             foreach (var server in servers)

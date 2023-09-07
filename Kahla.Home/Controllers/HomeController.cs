@@ -5,7 +5,6 @@ using Aiursoft.Canon;
 
 namespace Kahla.Home.Controllers
 {
-    [LimitPerMin(20)]
     public class HomeController : Controller
     {
         private readonly VersionChecker _version;

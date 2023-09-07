@@ -21,9 +21,9 @@ namespace Kahla.SDK.Services
             });
         }
 
-        public async Task<string> Track(AiurUrl url)
+        public async Task<string> Track(string url)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, url.ToString())
+            var request = new HttpRequestMessage(HttpMethod.Get, url)
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>())
             };

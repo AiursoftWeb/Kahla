@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Aiursoft.AiurProtocol;
+﻿using Aiursoft.AiurProtocol;
 
 namespace Kahla.SDK.Models.ApiViewModels
 {
@@ -8,7 +7,7 @@ namespace Kahla.SDK.Models.ApiViewModels
         [Obsolete("This method is only for framework", true)]
         public FileHistoryViewModel() { }
 
-        public FileHistoryViewModel(List<WebRequestMethods.File> folders) : base(folders) { }
+        public FileHistoryViewModel(List<Aiursoft.Probe.SDK.Models.File> folders) : base(folders) { }
         public string ShowingDateUTC { get; set; }
         public string SiteName { get; set; }
         public string RootPath { get; set; }

@@ -1,6 +1,8 @@
-﻿namespace Kahla.SDK.Models.ApiViewModels
+﻿using Aiursoft.AiurProtocol;
+
+namespace Kahla.SDK.Models.ApiViewModels
 {
-    public class SearchEverythingViewModel : AiurProtocol
+    public class SearchEverythingViewModel : AiurResponse
     {
         public int UsersCount { get; set; }
         public int GroupsCount { get; set; }
