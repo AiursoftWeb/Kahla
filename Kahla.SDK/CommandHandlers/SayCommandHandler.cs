@@ -33,7 +33,7 @@ namespace Kahla.SDK.CommandHandlers
         {
             var conversations = await _conversationService.AllAsync();
             _botLogger.LogInfo("");
-            foreach (var conversation in conversations.Items)
+            foreach (var conversation in conversations.Items!)
             {
                 _botLogger.LogInfo($"ID: {conversation.ConversationId}\tName:\t{conversation.DisplayName}");
             }

@@ -33,13 +33,13 @@ namespace Kahla.Bot.Bots
         public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
         {
             var group = await GroupsService.GroupSummaryAsync(groupId);
-            if (!group.Value.HasPassword)
+            if (!group.Value!.HasPassword)
             {
                 await JoinGroup(group.Value.Name, string.Empty);
             }
         }
 
-        public async override Task OnGroupConnected(SearchedGroup group)
+        public override async Task OnGroupConnected(SearchedGroup group)
         {
             await MuteGroup(group.Name, true);
         }

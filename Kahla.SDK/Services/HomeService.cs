@@ -1,7 +1,6 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 
 namespace Kahla.SDK.Services
 {

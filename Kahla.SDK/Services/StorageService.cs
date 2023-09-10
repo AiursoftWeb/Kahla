@@ -2,7 +2,6 @@
 using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 
 namespace Kahla.SDK.Services
 {
@@ -21,7 +20,7 @@ namespace Kahla.SDK.Services
 
         public async Task<InitFileAccessViewModel> InitFileAccessAsync(int conversationId, bool canUpload, bool canDownload)
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Storage", "InitFileAccess", new InitFileAccessAddressModel
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Storage", "InitFileAccess", new InitFileAccessAddressModel
             {
                 ConversationId = conversationId,
                 Upload = canUpload,

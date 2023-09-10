@@ -45,7 +45,7 @@ namespace Kahla.SDK.Data
         public async Task SyncFromServer()
         {
             var allResponse = await _conversationService.AllAsync();
-            _contacts = allResponse.Items.ToList();
+            _contacts = allResponse.Items!.ToList();
             foreach (var contact in _contacts)
             {
                 if (contact.LatestMessage != null)
@@ -55,16 +55,16 @@ namespace Kahla.SDK.Data
             }
 
             var requestsResponse = await _friendshipService.MyRequestsAsync();
-            _requests = requestsResponse.Items.ToList();
+            _requests = requestsResponse.Items!.ToList();
         }
 
         public async void OnStargateMessage(ResponseMessage msg)
         {
-            var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString());
+            var inevent = JsonConvert.DeserializeObject<KahlaEvent>(msg.ToString()!);
             switch (inevent.Type)
             {
                 case EventType.NewMessage:
-                    var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString());
+                    var newMessageEvent = JsonConvert.DeserializeObject<NewMessageEvent>(msg.ToString()!);
                     await InsertNewMessage(
                         newMessageEvent.ConversationId,
                         newMessageEvent.Message,
@@ -72,12 +72,12 @@ namespace Kahla.SDK.Data
                     await OnNewMessageEvent(newMessageEvent);
                     break;
                 case EventType.NewFriendRequestEvent:
-                    var newFriendRequestEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString());
+                    var newFriendRequestEvent = JsonConvert.DeserializeObject<NewFriendRequestEvent>(msg.ToString()!);
                     PatchFriendRequest(newFriendRequestEvent.Request);
                     await BuildBot.OnFriendRequest(newFriendRequestEvent);
                     break;
                 case EventType.FriendsChangedEvent:
-                    var friendsChangedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString());
+                    var friendsChangedEvent = JsonConvert.DeserializeObject<FriendsChangedEvent>(msg.ToString()!);
                     PatchFriendRequest(friendsChangedEvent.Request);
                     if (friendsChangedEvent.Result)
                     {
@@ -86,17 +86,17 @@ namespace Kahla.SDK.Data
                     await BuildBot.OnFriendsChangedEvent(friendsChangedEvent);
                     break;
                 case EventType.FriendDeletedEvent:
-                    var friendDeletedEvent = JsonConvert.DeserializeObject<FriendDeletedEvent>(msg.ToString());
+                    var friendDeletedEvent = JsonConvert.DeserializeObject<FriendDeletedEvent>(msg.ToString()!);
                     DeleteConversationIfExist(friendDeletedEvent.ConversationId);
                     await BuildBot.OnWasDeleted(friendDeletedEvent);
                     break;
                 case EventType.DissolveEvent:
-                    var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString());
+                    var dissolveEvent = JsonConvert.DeserializeObject<DissolveEvent>(msg.ToString()!);
                     DeleteConversationIfExist(dissolveEvent.ConversationId);
                     await BuildBot.OnGroupDissolve(dissolveEvent);
                     break;
                 case EventType.SomeoneLeftEvent:
-                    var someoneLeftEvent = JsonConvert.DeserializeObject<SomeoneLeftEvent>(msg.ToString());
+                    var someoneLeftEvent = JsonConvert.DeserializeObject<SomeoneLeftEvent>(msg.ToString()!);
                     if (someoneLeftEvent.LeftUser.Id == BuildBot.Profile.Id)
                     {
                         // you was kicked
@@ -108,7 +108,7 @@ namespace Kahla.SDK.Data
                     }
                     break;
                 case EventType.GroupJoinedEvent:
-                    var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString());
+                    var groupJoinedEvent = JsonConvert.DeserializeObject<GroupJoinedEvent>(msg.ToString()!);
                     SyncGroupToContacts(groupJoinedEvent.CreatedConversation, groupJoinedEvent.MessageCount, groupJoinedEvent.LatestMessage);
                     await BuildBot.OnGroupConnected(new SearchedGroup(groupJoinedEvent.CreatedConversation));
                     break;
@@ -164,7 +164,7 @@ namespace Kahla.SDK.Data
                     // Some message was lost.
                     _botLogger.LogWarning("Some message was lost. Trying to sync...");
                     var missedMessages = await _conversationService.GetMessagesAsync(conversationId, 15, message.Id.ToString());
-                    foreach (var missedMessage in missedMessages.Items)
+                    foreach (var missedMessage in missedMessages.Items!)
                     {
                         if (!conversation.Messages.Any(t => t.Id == missedMessage.Id))
                         {

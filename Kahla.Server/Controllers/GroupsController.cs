@@ -198,6 +198,7 @@ namespace Kahla.Server.Controllers
             var group = await _ownerChecker.FindMyOwnedGroupAsync(groupName, user.Id);
             var targetUser = await _dbContext
                 .UserGroupRelations
+                .Include(userGroupRelation => userGroupRelation.User)
                 .SingleOrDefaultAsync(t => t.GroupId == group.Id && t.UserId == targetUserId);
             if (targetUser == null)
             {

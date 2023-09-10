@@ -1,5 +1,4 @@
-﻿using Aiursoft.AiurProtocol;
-using Aiursoft.CSTools.Tools;
+﻿using Aiursoft.CSTools.Tools;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
 using Kahla.SDK.Events;
 using Kahla.SDK.Models;

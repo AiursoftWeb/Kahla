@@ -3,7 +3,6 @@ using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiAddressModels;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 
 namespace Kahla.SDK.Services
 {
@@ -22,13 +21,13 @@ namespace Kahla.SDK.Services
 
         public Task<MineViewModel> MineAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "Mine", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Friendship", "Mine", new { });
             return _http.Get<MineViewModel>(url);
         }
 
         public async Task<AiurValue<int>> CompleteRequestAsync(int requestId, bool accept)
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "CompleteRequest", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Friendship", "CompleteRequest", new { });
             var form = new AiurApiPayload(new CompleteRequestAddressModel
             {
                 Id = requestId,
@@ -40,7 +39,7 @@ namespace Kahla.SDK.Services
 
         public async Task<AiurCollection<Request>> MyRequestsAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Friendship", "MyRequests", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Friendship", "MyRequests", new { });
             var result = await _http.Get<AiurCollection<Request>>(url);
             return result;
         }

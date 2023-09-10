@@ -3,7 +3,6 @@ using Aiursoft.Directory.SDK.Models.ForApps.AddressModels;
 using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 
 namespace Kahla.SDK.Services
 {
@@ -25,14 +24,14 @@ namespace Kahla.SDK.Services
 
         public async Task<string> OAuthAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "OAuth", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "OAuth", new { });
             var result = await _tracker.Track(url.ToString());
             return result;
         }
 
         public async Task<string> SignIn(int code)
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "AuthResult", new AuthResultAddressModel
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "AuthResult", new AuthResultAddressModel
             {
                 Code = code
             });
@@ -42,28 +41,28 @@ namespace Kahla.SDK.Services
 
         public async Task<AiurValue<KahlaUser>> MeAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "Me", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "Me", new { });
             var result = await _http.Get<AiurValue<KahlaUser>>(url);
             return result;
         }
 
         public async Task<InitPusherViewModel> InitPusherAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "InitPusher", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "InitPusher", new { });
             var result = await _http.Get<InitPusherViewModel>(url);
             return result;
         }
 
         public async Task<AiurValue<bool>> SignInStatusAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "SignInStatus", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "SignInStatus", new { });
             var result = await _http.Get<AiurValue<bool>>(url);
             return result;
         }
 
         public async Task<AiurValue<bool>> LogoffAsync()
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Auth", "Logoff", new { });
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Auth", "Logoff", new { });
             var result = await _http.Get<AiurValue<bool>>(url);
             return result;
         }

@@ -15,7 +15,7 @@ namespace Kahla.Bot.Bots
         public override async Task OnGroupInvitation(int groupId, NewMessageEvent eventContext)
         {
             var group = await GroupsService.GroupSummaryAsync(groupId);
-            if (!group.Value.HasPassword)
+            if (!group.Value!.HasPassword)
             {
                 await JoinGroup(group.Value.Name, string.Empty);
             }

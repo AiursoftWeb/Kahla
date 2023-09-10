@@ -122,7 +122,7 @@ namespace Kahla.SDK.Abstract
             // Trigger on request.
             var requests = (await _friendshipService.MyRequestsAsync())
                 .Items
-                .Where(t => !t.Completed);
+                !.Where(t => !t.Completed);
             foreach (var request in requests)
             {
                 await BuildBot.OnFriendRequest(new NewFriendRequestEvent

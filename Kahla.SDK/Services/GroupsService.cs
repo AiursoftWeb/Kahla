@@ -1,7 +1,6 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.Scanner.Abstractions;
 using Kahla.SDK.Models.ApiViewModels;
-using Newtonsoft.Json;
 
 namespace Kahla.SDK.Services
 {
@@ -44,7 +43,7 @@ namespace Kahla.SDK.Services
 
         public Task<AiurValue<SearchedGroup>> GroupSummaryAsync(int groupId)
         {
-            var url = new AiurApiEndpoint(_kahlaLocation.ToString(), "Groups", "GroupSummary", new
+            var url = new AiurApiEndpoint(_kahlaLocation.ToString()!, "Groups", "GroupSummary", new
             {
                 id = groupId
             });
