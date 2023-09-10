@@ -9,7 +9,7 @@ using Aiursoft.AiurProtocol;
 using Aiursoft.CSTools.Tools;
 using static Aiursoft.WebTools.Extends;
 
-namespace Aiursoft.Archon.Tests
+namespace Kahla.Texts
 {
     [TestClass]
     public class BasicServerTests
@@ -65,7 +65,7 @@ namespace Aiursoft.Archon.Tests
         }
 
         [TestMethod]
-        public async Task CallEmptySDK()
+        public async Task CallEmptySdk()
         {
             var home = _serviceProvider.GetRequiredService<HomeService>();
             var result = await home.IndexAsync(_endpointUrl);
