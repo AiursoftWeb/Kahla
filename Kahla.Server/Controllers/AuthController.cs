@@ -204,9 +204,11 @@ namespace Kahla.Server.Controllers
         public async Task<IActionResult> InitPusher()
         {
             var user = await GetKahlaUser();
-
-            // TODO: ValidateChannelAsync may throw an exception when not found!
-            if (user.CurrentChannel == -1 || (await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey)).Code != Code.ResultShown)
+            try
+            {
+                await _channelService.ValidateChannelAsync(user.CurrentChannel, user.ConnectKey);
+            }
+            catch (AiurUnexpectedServerResponseException e) when (e.Response.Code == Code.NotFound)
             {
                 var channel = await _stargatePushService.ReCreateStargateChannel();
                 user.CurrentChannel = channel.ChannelId;
