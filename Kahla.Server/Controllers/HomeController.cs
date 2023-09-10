@@ -1,4 +1,5 @@
-﻿using Aiursoft.AiurProtocol.Server;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.SDK.Services;
 using Kahla.SDK.Models;
@@ -9,8 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
+    [ApiExceptionHandler]
     public class HomeController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
@@ -41,7 +41,7 @@ namespace Kahla.Server.Controllers
         {
             var model = new IndexViewModel
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Mode = _env.EnvironmentName,
                 Message = $"Welcome to Aiursoft Kahla API! Running in {_env.EnvironmentName} mode.",
                 WikiPath = _serviceLocation.Wiki,

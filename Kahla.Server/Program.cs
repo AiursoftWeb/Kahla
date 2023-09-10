@@ -11,7 +11,7 @@ namespace Kahla.Server
         public static async Task Main(string[] args)
         {
             var app = App<Startup>(args);
-            await app.UpdateDbAsync<KahlaDbContext>();
+            await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
             await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserIconsSiteName"],
                 a => a.GetAccessTokenAsync());
             await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserFilesSiteName"],

@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Identity;
 using Aiursoft.SDK;
 using Aiursoft.Stargate.SDK;
+using Aiursoft.WebTools.Models;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;
@@ -9,33 +10,26 @@ using WebPush;
 
 namespace Kahla.Server
 {
-    public class Startup
+    public class Startup : IWebStartup
     {
-        private IConfiguration Configuration { get; }
-
-        public Startup(IConfiguration configuration)
+        public void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
-            Configuration = configuration;
-        }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContextWithCache<KahlaDbContext>(Configuration.GetConnectionString("DatabaseConnection"));
+            services.AddDbContextForInfraApps<KahlaDbContext>(configuration.GetConnectionString("DatabaseConnection"));
 
             services.AddIdentity<KahlaUser, IdentityRole>()
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<List<DomainSettings>>(Configuration.GetSection("AppDomain"));
+            services.Configure<List<DomainSettings>>(configuration.GetSection("AppDomain"));
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
             
-            services.AddAiurMvc();
+            services.AddAiursoftWebFeatures();
             services.AddAiursoftIdentity<KahlaUser>(
-                probeConfig: Configuration.GetSection("AiursoftProbe"),
-                authenticationConfig: Configuration.GetSection("AiursoftAuthentication"),
-                observerConfig: Configuration.GetSection("AiursoftObserver"));
-            services.AddAiursoftStargate(Configuration.GetSection("AiursoftStargate"));
+                probeConfig: configuration.GetSection("AiursoftProbe"),
+                authenticationConfig: configuration.GetSection("AiursoftAuthentication"),
+                observerConfig: configuration.GetSection("AiursoftObserver"));
+            services.AddAiursoftStargate(configuration.GetSection("AiursoftStargate"));
             services.AddScoped<WebPushClient>();
         }
 

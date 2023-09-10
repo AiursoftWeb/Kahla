@@ -16,9 +16,8 @@ using Aiursoft.Directory.SDK.Services;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiExceptionHandler]
+    [ApiModelStateChecker]
     [AiurForceAuth(true)]
     public class GroupsController : ControllerBase
     {
@@ -58,7 +57,7 @@ namespace Kahla.Server.Controllers
             var exists = _dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.GroupName.ToLower());
             if (exists)
             {
-                return this.Protocol(ErrorType.Conflict, $"A group with name: {model.GroupName} was already exists!");
+                return this.Protocol(Code.Conflict, $"A group with name: {model.GroupName} was already exists!");
             }
             var limitedDate = DateTime.UtcNow - new TimeSpan(1, 0, 0, 0);
             var todayCreated = await _dbContext
@@ -68,7 +67,7 @@ namespace Kahla.Server.Controllers
                 .CountAsync();
             if (todayCreated > 4)
             {
-                return this.Protocol(ErrorType.TooManyRequests, "You have created too many groups today. Try it tomorrow!");
+                return this.Protocol(Code.TooManyRequests, "You have created too many groups today. Try it tomorrow!");
             }
             var createdGroup = await _dbContext.CreateGroup(model.GroupName, _configuration["GroupImagePath"], user.Id, model.JoinPassword);
             var newRelationship = new UserGroupRelation
@@ -83,7 +82,7 @@ namespace Kahla.Server.Controllers
                 pusher.GroupJoinedEvent(user, createdGroup, null, 0));
             return this.Protocol(new AiurValue<int>(createdGroup.Id)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = "You have successfully created a new group and joined it!"
             });
         }
@@ -94,12 +93,12 @@ namespace Kahla.Server.Controllers
             var group = await _dbContext.GroupConversations.SingleOrDefaultAsync(t => t.Id == id);
             if (group == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find a group with id: {id}!");
+                return this.Protocol(Code.NotFound, $"We can not find a group with id: {id}!");
             }
             var view = new SearchedGroup(group);
             return this.Protocol(new AiurValue<SearchedGroup>(view)
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Successfully get your group result."
             });
         }
@@ -167,7 +166,7 @@ namespace Kahla.Server.Controllers
 
             return this.Protocol(new AiurValue<int>(group.Id)
             {
-                Code = ErrorType.Success,
+                Code = Code.JobDone,
                 Message = $"You have successfully joint the group: {groupName}!"
             });
         }
@@ -181,15 +180,15 @@ namespace Kahla.Server.Controllers
             var targetRelationship = await _dbContext.GetRelationFromGroup(targetUserId, group.Id);
             if (targetRelationship == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
+                return this.Protocol(Code.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             if (group.OwnerId == targetUserId)
             {
-                return this.Protocol(ErrorType.HasSuccessAlready, $"Caution! You are already the owner of the group '{groupName}'.");
+                return this.Protocol(Code.NoActionTaken, $"Caution! You are already the owner of the group '{groupName}'.");
             }
             group.OwnerId = targetUserId;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully transferred your group '{groupName}' ownership!");
+            return this.Protocol(Code.JobDone, $"Successfully transferred your group '{groupName}' ownership!");
         }
 
         [HttpPost]
@@ -202,14 +201,14 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.GroupId == group.Id && t.UserId == targetUserId);
             if (targetUser == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
+                return this.Protocol(Code.NotFound, $"We can not find the target user with id: '{targetUserId}' in the group with name: '{groupName}'!");
             }
             _dbContext.UserGroupRelations.Remove(targetUser);
             group.ForEachUser((eachUser, _) =>
                 _cannonQueue.QueueWithDependency<KahlaPushService>(pusher =>
                     pusher.SomeoneLeftEvent(eachUser, targetUser.User, group.Id)));
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully kicked the member from group '{groupName}'.");
+            return this.Protocol(Code.JobDone, $"Successfully kicked the member from group '{groupName}'.");
         }
 
         [HttpPost]
@@ -303,7 +302,7 @@ namespace Kahla.Server.Controllers
                 {
                     if (_dbContext.GroupConversations.Any(t => t.GroupName.ToLower() == model.NewName.ToLower()))
                     {
-                        return this.Protocol(ErrorType.Conflict, $"A group with name: '{model.NewName}' already exists!");
+                        return this.Protocol(Code.Conflict, $"A group with name: '{model.NewName}' already exists!");
                     }
                     group.GroupName = model.NewName;
                 }
@@ -314,7 +313,7 @@ namespace Kahla.Server.Controllers
             }
             group.ListInSearchResult = model.ListInSearchResult;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully updated the group '{model.GroupName}'.");
+            return this.Protocol(Code.JobDone, $"Successfully updated the group '{model.GroupName}'.");
         }
 
         [HttpPost]
@@ -324,7 +323,7 @@ namespace Kahla.Server.Controllers
             var group = await _ownerChecker.FindMyOwnedGroupAsync(model.GroupName, user.Id);
             group.JoinPassword = model.NewJoinPassword;
             await _dbContext.SaveChangesAsync();
-            return this.Protocol(ErrorType.Success, $"Successfully update the join password of the group '{model.GroupName}'.");
+            return this.Protocol(Code.JobDone, $"Successfully update the join password of the group '{model.GroupName}'.");
         }
 
         private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);

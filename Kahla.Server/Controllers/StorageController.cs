@@ -17,9 +17,8 @@ using Microsoft.Extensions.Options;
 
 namespace Kahla.Server.Controllers
 {
-    [LimitPerMin(40)]
-    [APIRemoteExceptionHandler]
-    [APIModelStateChecker]
+    [ApiExceptionHandler]
+    [ApiModelStateChecker]
     [AiurForceAuth(directlyReject: true)]
     public class StorageController : ControllerBase
     {
@@ -62,14 +61,14 @@ namespace Kahla.Server.Controllers
                 new[] { "Upload" },
                 path,
                 TimeSpan.FromMinutes(10));
-            var address = new AiurUrl(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
+            var address = new AiurApiEndpoint(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}", new UploadFileAddressModel
             {
                 Token = token,
                 RecursiveCreate = true
             });
             return this.Protocol(new AiurValue<string>(address.ToString())
             {
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Token is given. You can not upload your file to that address. And your will get your response as 'FilePath'."
             });
         }
@@ -84,12 +83,12 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.ConversationId);
             if (conversation == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
+                return this.Protocol(Code.NotFound, $"Could not find the target conversation with id: {model.ConversationId}!");
             }
             var user = await GetKahlaUser();
             if (!conversation.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
+                return this.Protocol(Code.Unauthorized, $"You are not authorized to upload file to conversation: {conversation.Id}!");
             }
             var accessToken = await _appsContainer.GetAccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];
@@ -103,7 +102,7 @@ namespace Kahla.Server.Controllers
                 permissions.ToArray(),
                 path,
                 TimeSpan.FromMinutes(60));
-            var address = new AiurUrl(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
+            var address = new AiurApiEndpoint(_probeLocator.Instance, $"/Files/UploadFile/{siteName}/{path}/{DateTime.UtcNow:yyyy-MM-dd}", new UploadFileAddressModel
             {
                 Token = token,
                 RecursiveCreate = true
@@ -111,7 +110,7 @@ namespace Kahla.Server.Controllers
             return this.Protocol(new InitFileAccessViewModel(token)
             {
                 UploadAddress = address.ToString(),
-                Code = ErrorType.Success,
+                Code = Code.ResultShown,
                 Message = "Token is given. You can access probe API with the token now. Permissions: " + string.Join(",", permissions)
             });
         }
@@ -131,19 +130,19 @@ namespace Kahla.Server.Controllers
                 .SingleOrDefaultAsync(t => t.Id == model.TargetConversationId);
             if (sourceConversation == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Could not find the source conversation with id: {model.SourceConversationId}!");
+                return this.Protocol(Code.NotFound, $"Could not find the source conversation with id: {model.SourceConversationId}!");
             }
             if (targetConversation == null)
             {
-                return this.Protocol(ErrorType.NotFound, $"Could not find the target conversation with id: {model.TargetConversationId}!");
+                return this.Protocol(Code.NotFound, $"Could not find the target conversation with id: {model.TargetConversationId}!");
             }
             if (!sourceConversation.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {sourceConversation.Id}!");
+                return this.Protocol(Code.Unauthorized, $"You are not authorized to access file from conversation: {sourceConversation.Id}!");
             }
             if (!targetConversation.HasUser(user.Id))
             {
-                return this.Protocol(ErrorType.Unauthorized, $"You are not authorized to access file from conversation: {targetConversation.Id}!");
+                return this.Protocol(Code.Unauthorized, $"You are not authorized to access file from conversation: {targetConversation.Id}!");
             }
             var accessToken = await _appsContainer.GetAccessTokenAsync();
             var siteName = _configuration["UserFilesSiteName"];

@@ -1,4 +1,5 @@
-﻿using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
 using Kahla.Server.Data;
 using Aiursoft.Directory.SDK.Services;
@@ -32,13 +33,13 @@ namespace Kahla.Server.Services
             return channel;
         }
 
-        public async Task<AiurProtocol> PushMessageAsync(string accessToken, int channelId, object eventObject)
+        public async Task<AiurResponse> PushMessageAsync(string accessToken, int channelId, object eventObject)
         {
             try
             {
                 return await _pushMessageService.PushMessageAsync(accessToken, channelId, eventObject);
             }
-            catch (AiurUnexpectedResponse e) when (e.Code == ErrorType.NotFound)
+            catch (AiurUnexpectedServerResponseException e) when (e.Response.Code == Code.NotFound)
             {
                 var referenced = _kahlaDbContext.Users.Where(t => t.CurrentChannel == channelId);
                 foreach (var user in referenced)

@@ -5,6 +5,7 @@ using Kahla.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Net;
+using Aiursoft.AiurProtocol;
 using Aiursoft.CSTools.Tools;
 using static Aiursoft.WebTools.Extends;
 
@@ -29,7 +30,7 @@ namespace Aiursoft.Archon.Tests
         [TestInitialize]
         public async Task CreateServer()
         {
-            _server = App<Startup>(port: _port);
+            _server = App<Startup>(Array.Empty<string>(), port: _port);
             await _server.StartAsync();
 
             _http = new HttpClient();
@@ -60,8 +61,7 @@ namespace Aiursoft.Archon.Tests
 
             var content = await response.Content.ReadAsStringAsync();
             var contentObject = JsonConvert.DeserializeObject<IndexViewModel>(content);
-            Assert.AreEqual(contentObject.Code, ErrorType.Success);
-            Assert.AreEqual(ErrorType.Success, contentObject.Code);
+            Assert.AreEqual(Code.ResultShown, contentObject.Code);
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Aiursoft.Archon.Tests
         {
             var home = _serviceProvider.GetRequiredService<HomeService>();
             var result = await home.IndexAsync(_endpointUrl);
-            Assert.AreEqual(ErrorType.Success, result.Code);
+            Assert.AreEqual(Code.ResultShown, result.Code);
 
         }
 

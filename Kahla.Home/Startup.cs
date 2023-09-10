@@ -9,20 +9,13 @@ namespace Kahla.Home
 {
     public class Startup : IWebStartup
     {
-        public IConfiguration Configuration { get; }
-
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
         public void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
             services.AddAiursoftWebFeatures();
             services.AddTaskCanon();
-            services.AddAiursoftProbe(Configuration.GetSection("AiursoftProbe")); // For file storage.
-            services.AddAiursoftObserver(Configuration.GetSection("AiursoftObserver")); // For error reporting.
-            services.AddAiursoftAppAuthentication(Configuration.GetSection("AiursoftAuthentication")); // For authentication.
+            services.AddAiursoftProbe(configuration.GetSection("AiursoftProbe")); // For file storage.
+            services.AddAiursoftObserver(configuration.GetSection("AiursoftObserver")); // For error reporting.
+            services.AddAiursoftAppAuthentication(configuration.GetSection("AiursoftAuthentication")); // For authentication.
             services.AddScannedServices();
         }
 

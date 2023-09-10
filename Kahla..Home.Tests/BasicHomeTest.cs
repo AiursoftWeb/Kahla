@@ -23,7 +23,7 @@ namespace Kahla.Home.Tests
         [TestInitialize]
         public async Task CreateServer()
         {
-            _server = App<Startup>(port: _port);
+            _server = App<Startup>(Array.Empty<string>(), port: _port);
             await _server.StartAsync();
 
             _http = new HttpClient();
