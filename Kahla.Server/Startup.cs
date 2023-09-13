@@ -33,10 +33,10 @@ namespace Kahla.Server
             services.AddScoped<WebPushClient>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(WebApplication app)
         {
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
-            app.UseAiursoftHandler(env.IsDevelopment(), allowCors: false);
+            app.UseAiursoftHandler(app.Environment.IsDevelopment(), allowCors: false);
             app.UseAiursoftAPIAppRouters(true, t => t.UseMiddleware<OnlineDetectorMiddleware>());
         }
     }
