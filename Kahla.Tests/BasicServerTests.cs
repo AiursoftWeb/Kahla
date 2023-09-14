@@ -65,12 +65,11 @@ namespace Kahla.Texts
         }
 
         [TestMethod]
-        public async Task CallEmptySdk()
+        public async Task GetHomeWithSdk()
         {
             var home = _serviceProvider.GetRequiredService<HomeService>();
             var result = await home.IndexAsync(_endpointUrl);
             Assert.AreEqual(Code.ResultShown, result.Code);
-
         }
 
         [TestMethod]

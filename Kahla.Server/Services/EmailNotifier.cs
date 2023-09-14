@@ -15,16 +15,13 @@ namespace Kahla.Server.Services
         private Timer _timer;
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly DirectoryAppTokenService _appsContainer;
 
         public EmailNotifier(
             ILogger<EmailNotifier> logger,
-            IServiceScopeFactory scopeFactory,
-            DirectoryAppTokenService appsContainer)
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _appsContainer = appsContainer;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -80,7 +77,8 @@ namespace Kahla.Server.Services
                     _logger.LogCritical(ex, "Failed to send an email for user");
                     using var scope = _scopeFactory.CreateScope();
                     var eventService = scope.ServiceProvider.GetRequiredService<ObserverService>();
-                    var accessToken = await _appsContainer.GetAccessTokenAsync();
+                    var appsContainer = scope.ServiceProvider.GetRequiredService<DirectoryAppTokenService>();
+                    var accessToken = await appsContainer.GetAccessTokenAsync();
                     await eventService.LogExceptionAsync(accessToken, ex, "Email Notifier");
                 }
                 catch

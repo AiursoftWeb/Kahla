@@ -10,20 +10,17 @@ namespace Kahla.Server.Services
         private readonly ILogger _logger;
         private Timer _timer;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly DirectoryAppTokenService _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
 
         public FilesCleaner(
             ILogger<FilesCleaner> logger,
             IServiceScopeFactory scopeFactory,
-            DirectoryAppTokenService appsContainer,
             IConfiguration configuration,
             IWebHostEnvironment env)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _appsContainer = appsContainer;
             _configuration = configuration;
             _env = env;
         }
@@ -47,7 +44,8 @@ namespace Kahla.Server.Services
                 _logger.LogInformation("Cleaner task started!");
                 using var scope = _scopeFactory.CreateScope();
                 var foldersService = scope.ServiceProvider.GetRequiredService<FoldersService>();
-                await AllClean(foldersService);
+                var appsContainer = scope.ServiceProvider.GetRequiredService<DirectoryAppTokenService>();
+                await AllClean(foldersService, appsContainer);
             }
             catch (Exception ex)
             {
@@ -55,13 +53,13 @@ namespace Kahla.Server.Services
             }
         }
 
-        public async Task AllClean(FoldersService foldersService)
+        public async Task AllClean(FoldersService foldersService, DirectoryAppTokenService appsContainer)
         {
             try
             {
                 var deadline = DateTime.UtcNow - TimeSpan.FromDays(100);
                 var publicSite = _configuration["UserFilesSiteName"];
-                var accessToken = await _appsContainer.GetAccessTokenAsync();
+                var accessToken = await appsContainer.GetAccessTokenAsync();
                 var rootFolders = await foldersService.ViewContentAsync(accessToken, publicSite, string.Empty);
                 foreach (var conversation in rootFolders.Value.SubFolders)
                 {
