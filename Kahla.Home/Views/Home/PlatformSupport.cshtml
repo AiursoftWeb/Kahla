@@ -1,9 +1,8 @@
 ﻿@using Kahla.Home.Views.Shared.Components.KahlaNav
-@model bool
 @{
     ViewBag.Title = "Kahla Platform support";
 }
-<vc:kahla-nav is-production="Model"></vc:kahla-nav>
+<vc:kahla-nav></vc:kahla-nav>
 
 <div class="container">
     <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" asp-controller="Home" asp-action="Index">@Localizer["<- Back"]</a>

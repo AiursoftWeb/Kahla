@@ -4,12 +4,9 @@ namespace Kahla.Home.Views.Shared.Components.KahlaNav
 {
     public class KahlaNav : ViewComponent
     {
-        public IViewComponentResult Invoke(bool isProduction)
+        public IViewComponentResult Invoke()
         {
-            var model = new KahlaNavViewModel
-            {
-                IsProduction = isProduction
-            };
+            var model = new KahlaNavViewModel();
             return View(model);
         }
     }

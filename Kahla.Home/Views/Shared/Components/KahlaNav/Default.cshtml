@@ -18,32 +18,12 @@
                 <a class="d-inline-block m-2 current" href="https://wiki.aiursoft.com/Kahla/What%20is%20Kahla.md">@Localizer["Documentation"]</a>
             </li>
             <li>
-                <a class="d-inline-block m-2" href="https://github.com/AiursoftWeb/Kahla.App/releases">@Localizer["Release notes"]</a>
+                @* TODO: Load from configuration. *@
+                <a class="d-inline-block m-2" href="https://gitlab.aiursoft.cn/aiursoft/kahla.app/-/releases">@Localizer["Release notes"]</a>
             </li>
             <li>
-                <a class="d-inline-block m-2" data-language-change-link href="@(new AiurApiEndpoint(DirectoryLocator.Value.Instance, "Api", "SetLang", new { }).ToString())">
-                    @Localizer["Language"]
-                </a>
-            </li>
-            @if (Model.IsProduction)
-            {
-                <li>
-                    <a class="d-inline-block m-2" href="//staging.kahla.app">
-                        @Localizer["Staging version"]
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li>
-                    <a class="d-inline-block m-2" href="//www.kahla.app">
-                        @Localizer["Production version"]
-                    </a>
-                </li>
-            }
-            <li>
-                <a class="d-inline-block m-2" href="@Configuration["GitHubAddress"]">
-                    @Localizer["GitHub"]
+                <a class="d-inline-block m-2" href="@Configuration["GitLabAddress"]">
+                    @Localizer["GitLab"]
                 </a>
             </li>
         </ul>

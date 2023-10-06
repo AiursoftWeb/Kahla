@@ -25,21 +25,14 @@ namespace Kahla.Home.Controllers
         {
             var (appVersion, cliVersion) = await _cache.RunWithCache("Version.Cache", () => _version.CheckKahla());
             
-            // TODO: Avoid hard code.
             var downloadSite = "https://download.kahla.app";
-            var mode = Request.Host.ToString().ToLower().Contains("staging") ?
-                "staging" : "production";
-            var isProduction = mode == "production";
             var model = new IndexViewModel
             {
                 AppLatestVersion = appVersion,
                 CLILatestVersion = cliVersion,
                 SDKLatestVersion = _versionService.GetSDKVersion(),
-                DownloadRoot = $"{downloadSite}/{mode}",
-                CliDownloadRoot = $"{downloadSite}/{mode}",
-                ArchiveRoot = "https://github.com/AiursoftWeb/Kahla.App/archive",
-                KahlaWebPath = isProduction ? "//web.kahla.app" : "//staging.web.kahla.app",
-                IsProduction = isProduction,
+                DownloadRoot = $"{downloadSite}/production",
+                CliDownloadRoot = $"{downloadSite}/production"
             };
             return View(model);
         }
@@ -47,10 +40,7 @@ namespace Kahla.Home.Controllers
         [Route("platform-support")]
         public IActionResult PlatformSupport()
         {
-            var mode = Request.Host.ToString().ToLower().Contains("staging") ?
-                "staging" : "production";
-            var isProduction = mode == "production";
-            return View(isProduction);
+            return View();
         }
 
         public IActionResult Error()

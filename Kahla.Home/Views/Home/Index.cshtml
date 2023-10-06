@@ -1,14 +1,7 @@
 ﻿@using Kahla.Home.Views.Shared.Components.KahlaNav
 @model Kahla.Home.Models.HomeViewModels.IndexViewModel
 @{
-    if (Model.IsProduction)
-    {
         ViewBag.Title = "Kahla App";
-    }
-    else
-    {
-        ViewBag.Title = "Kahla App Staging";
-    }
     ViewBag.Des = Localizer["As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free."].Value;
     var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
     if (requestCultureFeature == null)
@@ -16,31 +9,14 @@
         return;
     }
     var requestCulture = requestCultureFeature.RequestCulture.UICulture.IetfLanguageTag;
-    var isChineseUser = requestCulture.ToLower().Trim() == "zh";
-    var blockMainlandChineseUser = Configuration["BlockMainlandChineseUser"] == true.ToString();
 }
 
-<vc:kahla-nav is-production="@Model.IsProduction"></vc:kahla-nav>
+<vc:kahla-nav></vc:kahla-nav>
 <div class="hero pt-6 text-center">
     <div class="container-new px-3">
         <h1 class="f00-light text-white">
-            @if (Model.IsProduction)
-            {
-                @Localizer["Kahla - Connect everyone's thoughts"]
-            }
-            else
-            {
-                @Localizer["Kahla - Staging"]
-            }
+            @Localizer["Kahla - Connect everyone's thoughts"]
         </h1>
-        @if (!Model.IsProduction)
-        {
-            <div class="container alert alert-danger alert-dismissible mt-3" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">x</span></button>
-                <strong>Unstable version!</strong>
-                <p>Kahla Staging is our internal test version. We can not ensure all your data is safe! The app you see is very unstable and may crash frequently!</p>
-            </div>
-        }
         <p class="col-md-8 mx-auto mb-4 f3-light">
             @ViewBag.Des
         </p>
@@ -56,23 +32,16 @@
                 @Localizer["SDK Latest version:"] <kbd>@Model.SDKLatestVersion</kbd>
             }
         </p>
-        @if (isChineseUser && blockMainlandChineseUser)
-        {
-            <p class="text-danger">很抱歉，卡拉不为中国大陆用户提供服务。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">为什么？</a></p>
-        }
-        else
-        {
-            <p>
-                <a asp-controller="Home" asp-action="PlatformSupport">View platform support status</a>
-            </p>
-            <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" href="#" data-toggle="modal" data-target="#downloadModal">@Localizer["Download"]</a>
-            <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple d-none d-md-inline" href="#" data-toggle="modal" data-target="#openModal">@Localizer["Open in browser"]</a>
-            <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple d-md-none" href="@Html.Raw(Model.KahlaWebPath)">@Localizer["Open in browser"]</a>
-            <p>
-                @Localizer["By downloading, you agree to the"]
-                <a href="@($"{ServiceLocation.WWW}{Values.TermsAfterWWW}")">@Localizer["license agreement"]</a>@Localizer["."]
-            </p>
-        }
+        <p>
+            <a asp-controller="Home" asp-action="PlatformSupport">View platform support status</a>
+        </p>
+        <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple" href="#" data-toggle="modal" data-target="#downloadModal">@Localizer["Download"]</a>
+        <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple d-none d-md-inline" href="#" data-toggle="modal" data-target="#openModal">@Localizer["Open in browser"]</a>
+        <a class="mx-1 my-3 f3 btn btn-large btn-outline-purple d-md-none" href="@Html.Raw(Model.KahlaWebPath)">@Localizer["Open in browser"]</a>
+        <p>
+            @Localizer["By downloading, you agree to the"]
+            <a href="@($"{ServiceLocation.WWW}{Values.TermsAfterWWW}")">@Localizer["license agreement"]</a>@Localizer["."]
+        </p>
         <div class="d-block d-md-none width-fit mx-auto mt-6 mb-6">
             <img style="width:100%;max-width:640px;" src="@ServiceLocation.UI/images/kahla-demo.png" class="app-screenshot" />
         </div>
@@ -81,89 +50,79 @@
         </div>
     </div>
 </div>
-@if (Model.IsProduction)
-{
-    <div class="container-new px-3 text-center">
-        <h2 class="f0-light mb-3 text-white">
-            @Localizer["Ready to choose Kahla?"]
-        </h2>
-        <div class="d-md-flex flex-md-row col-xl-10 mx-auto text-white-75 f4 gut-lg">
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-university"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Business level"]
-                </h2>
-                <p>
-                    @Localizer["Kahla is designed for commercial use. the service can be deployed inside your company and access to the full functionality of Kahla without internet."]
-                </p>
-            </div>
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-tv"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Cross-platform"]
-                </h2>
-                <p>
-                    @Localizer["Kahla faced almost all mobile and desktop platforms. Use only one app for quick access by any customer. Kahla also supports open in browser without installation."]
-                </p>
-            </div>
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-lock"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Highly secure"]
-                </h2>
-                <p>
-                    @Localizer["Kahla supports end-to-end encrypted message communication and supports the automatic destruction of messages. Even if you don't trust Kahla's server, you can safely deliver secrets."]
-                </p>
-            </div>
+<div class="container-new px-3 text-center">
+    <h2 class="f0-light mb-3 text-white">
+        @Localizer["Ready to choose Kahla?"]
+    </h2>
+    <div class="d-md-flex flex-md-row col-xl-10 mx-auto text-white-75 f4 gut-lg">
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-university"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Business level"]
+            </h2>
+            <p>
+                @Localizer["Kahla is designed for commercial use. the service can be deployed inside your company and access to the full functionality of Kahla without internet."]
+            </p>
         </div>
-        <div class="d-md-flex flex-md-row col-xl-10 mx-auto text-white-75 f4 gut-lg">
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-gift"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Always free"]
-                </h2>
-                <p>
-                    @Localizer["Kahla is an open source project supported by grants and donations. There is no ad, no affiliate marketer, no creepy tracking. Just for a fast, simple, and secure messaging experience."]
-                </p>
-            </div>
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-server"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Large amount"]
-                </h2>
-                <p>
-                    @Localizer["Kahla provides extremely large storage space for free. Files can remain on the server for up to 100 days. And messages can retain up to 20,000 per conversation and never lose."]
-                </p>
-            </div>
-            <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
-                <i class="fas fa-3x fa-code-branch"></i>
-                <h2 class="f2-light my-2 text-white lh-condensed">
-                    @Localizer["Open development"]
-                </h2>
-                <p>
-                    @Localizer["Kahla opens all of its APIs to the public for free. Whether it's building notifier, open account or chatbots, Kahla makes the process extremely easy."]
-                </p>
-            </div>
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-tv"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Cross-platform"]
+            </h2>
+            <p>
+                @Localizer["Kahla faced almost all mobile and desktop platforms. Use only one app for quick access by any customer. Kahla also supports open in browser without installation."]
+            </p>
         </div>
-        <a class="btn btn-outline-white f4 mb-6 ml-3" href="@Configuration["GitHubAddress"]">
-            <i class="fab fa-fw fa-github"></i>
-            @Localizer["View on GitHub"]
-        </a>
-        @if (isChineseUser && blockMainlandChineseUser)
-        {
-            <p class="text-danger">很抱歉，由于您所在地区政策原因，卡拉无法向您提供服务，请关闭此页。<a href="http://www.cac.gov.cn/2019-04/16/c_1124373996.htm" target="_blank">了解更多</a></p>
-
-        }
-        else
-        {
-            <a class="btn btn-outline-white f4 mb-6" href="#" data-toggle="modal" data-target="#downloadModal">
-                <i class="fas fa-download"></i>
-                @Localizer["Download now"]
-            </a>
-        }
-        <hr class="my-6 mx-auto" style="width: 100px;">
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-lock"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Highly secure"]
+            </h2>
+            <p>
+                @Localizer["Kahla supports end-to-end encrypted message communication and supports the automatic destruction of messages. Even if you don't trust Kahla's server, you can safely deliver secrets."]
+            </p>
+        </div>
     </div>
-}
+    <div class="d-md-flex flex-md-row col-xl-10 mx-auto text-white-75 f4 gut-lg">
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-gift"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Always free"]
+            </h2>
+            <p>
+                @Localizer["Kahla is an open source project supported by grants and donations. There is no ad, no affiliate marketer, no creepy tracking. Just for a fast, simple, and secure messaging experience."]
+            </p>
+        </div>
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-server"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Large amount"]
+            </h2>
+            <p>
+                @Localizer["Kahla provides extremely large storage space for free. Files can remain on the server for up to 100 days. And messages can retain up to 20,000 per conversation and never lose."]
+            </p>
+        </div>
+        <div class="col-sm-10 mx-auto col-md-4 my-5 my-md-3">
+            <i class="fas fa-3x fa-code-branch"></i>
+            <h2 class="f2-light my-2 text-white lh-condensed">
+                @Localizer["Open development"]
+            </h2>
+            <p>
+                @Localizer["Kahla opens all of its APIs to the public for free. Whether it's building notifier, open account or chatbots, Kahla makes the process extremely easy."]
+            </p>
+        </div>
+    </div>
+    <a class="btn btn-outline-white f4 mb-6 ml-3" href="@Configuration["GitHubAddress"]">
+        <i class="fab fa-fw fa-github"></i>
+        @Localizer["View on GitHub"]
+    </a>
+
+    <a class="btn btn-outline-white f4 mb-6" href="#" data-toggle="modal" data-target="#downloadModal">
+        <i class="fas fa-download"></i>
+        @Localizer["Download now"]
+    </a>
+    <hr class="my-6 mx-auto" style="width: 100px;">
+</div>
 <div class="modal fade" id="openModal" tabindex="-1" role="dialog" aria-labelledby="openModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

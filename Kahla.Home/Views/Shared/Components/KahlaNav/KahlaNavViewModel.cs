@@ -2,6 +2,5 @@
 {
     public class KahlaNavViewModel
     {
-        public bool IsProduction { get; set; }
     }
 }
