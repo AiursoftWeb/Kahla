@@ -32,7 +32,10 @@ namespace Kahla.Home.Controllers
                 CLILatestVersion = cliVersion,
                 SDKLatestVersion = _versionService.GetSDKVersion(),
                 DownloadRoot = $"{downloadSite}/production",
-                CliDownloadRoot = $"{downloadSite}/production"
+                CliDownloadRoot = $"{downloadSite}/production",
+
+                // TODO: Avoid hard code.
+                KahlaWebPath = "https://web.kahla.app"
             };
             return View(model);
         }
