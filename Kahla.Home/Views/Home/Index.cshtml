@@ -2,13 +2,7 @@
 @model Kahla.Home.Models.HomeViewModels.IndexViewModel
 @{
         ViewBag.Title = "Kahla App";
-    ViewBag.Des = Localizer["As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free."].Value;
-    var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
-    if (requestCultureFeature == null)
-    {
-        return;
-    }
-    var requestCulture = requestCultureFeature.RequestCulture.UICulture.IetfLanguageTag;
+        ViewBag.Des = Localizer["As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free."].Value;
 }
 
 <vc:kahla-nav></vc:kahla-nav>
