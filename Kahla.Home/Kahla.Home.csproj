@@ -10,7 +10,7 @@
     <Description>Kahla - Connect everyone's thoughts - As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.SDK" Version="7.0.14" />
+    <PackageReference Include="Aiursoft.SDK" Version="7.0.22" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
