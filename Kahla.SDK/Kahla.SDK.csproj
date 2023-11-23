@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Version>7.0.5</Version>
+    <Version>7.0.6</Version>
     <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>Kahla.SDK</AssemblyName>
     <RootNamespace>Kahla.SDK</RootNamespace>
@@ -30,8 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
-    <PackageReference Include="Aiursoft.Stargate.SDK" Version="7.0.11" />
-    <PackageReference Include="Aiursoft.Probe.SDK" Version="7.0.12" />
+    <PackageReference Include="Aiursoft.Stargate.SDK" Version="7.0.14" />
+    <PackageReference Include="Aiursoft.Probe.SDK" Version="7.0.15" />
     <PackageReference Include="Websocket.Client" Version="5.0.0" />
   </ItemGroup>
 </Project>

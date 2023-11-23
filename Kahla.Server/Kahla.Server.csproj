@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="7.0.22" />
+    <PackageReference Include="Aiursoft.Identity" Version="7.0.26" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
   <ItemGroup>
