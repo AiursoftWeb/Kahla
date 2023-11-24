@@ -4,7 +4,7 @@
 [![Pipeline stat](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
 [![Test Coverage](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/coverage.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
 [![NuGet version (Kahla.SDK)](https://img.shields.io/nuget/v/Kahla.SDK.svg)](https://www.nuget.org/packages/Kahla.SDK/)
-[![ManHours](https://manhours.aiursoft.cn/gitlab/gitlab.aiursoft.cn/aiursoft/kahla.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/commits/master?ref_type=heads)
+[![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.cn/aiursoft/kahla.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/commits/master?ref_type=heads)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fwww.kahla.app%2F)](https://www.kahla.app/)
 
 >"For we are bound by the Khala, the sacred union of our every thought and emotion."
