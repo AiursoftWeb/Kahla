@@ -118,3 +118,18 @@ upload_to_local_nuget:
       done
   only:
     - master
+
+deploy_docker:
+  stage: deploy
+  environment: production
+  needs:
+    - publish
+  dependencies:
+    - publish
+  script:
+    - docker build . -t hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+    - docker push hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      exists:
+      - Dockerfile
