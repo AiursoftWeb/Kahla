@@ -17,3 +17,4 @@ appsettings.Production.json
 appsettings.Development.json
 *.log
 TestResults/
+app.db*
