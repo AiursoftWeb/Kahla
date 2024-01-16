@@ -1,15 +1,15 @@
-﻿using Aiursoft.Scanner;
+﻿using System.Net;
+using Aiursoft.AiurProtocol;
+using Aiursoft.CSTools.Tools;
+using Aiursoft.Scanner;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Kahla.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System.Net;
-using Aiursoft.AiurProtocol;
-using Aiursoft.CSTools.Tools;
 using static Aiursoft.WebTools.Extends;
 
-namespace Kahla.Texts
+namespace Kahla.Tests
 {
     [TestClass]
     public class BasicServerTests
