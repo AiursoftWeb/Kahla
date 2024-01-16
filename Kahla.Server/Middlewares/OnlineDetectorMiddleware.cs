@@ -7,7 +7,7 @@ namespace Kahla.Server.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IMemoryCache _memoryCache;
-        private static object _obj = new object();
+        private static object _obj = new();
 
         public OnlineDetectorMiddleware(
             RequestDelegate next,

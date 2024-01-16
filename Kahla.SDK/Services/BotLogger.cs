@@ -4,7 +4,7 @@ namespace Kahla.SDK.Services
 {
     public class BotLogger : ISingletonDependency
     {
-        private static object _obj = new object();
+        private static object _obj = new();
 
         public void WriteGrayNewLine(string content)
         {

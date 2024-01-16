@@ -20,6 +20,6 @@ namespace Kahla.SDK.Models.ApiViewModels
         [JsonIgnore]
         public KahlaUser Sender { get; set; }
         [JsonIgnore]
-        public List<Message> Messages { get; set; } = new List<Message>();
+        public List<Message> Messages { get; set; } = new();
     }
 }

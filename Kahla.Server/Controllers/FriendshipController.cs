@@ -28,7 +28,7 @@ namespace Kahla.Server.Controllers
         private readonly DirectoryAppTokenService _appsContainer;
         private readonly IConfiguration _configuration;
         private readonly FoldersService _foldersService;
-        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+        private static SemaphoreSlim semaphoreSlim = new(1, 1);
 
         public FriendshipController(
             UserManager<KahlaUser> userManager,
