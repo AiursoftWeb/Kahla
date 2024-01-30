@@ -1,0 +1,14 @@
+configVersion: 1
+files:
+  - name: .editorconfig
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/.editorconfig
+  - name: .gitignore
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/.gitignore
+  - name: .gitlab-ci.yml
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/.gitlab-ci.yml
+  - name: LICENSE
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/LICENSE
+  - name: ninja.yaml
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/ninja.yaml
+  - name: nuget.config
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/nuget.config
