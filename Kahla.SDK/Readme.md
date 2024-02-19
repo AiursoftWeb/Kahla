@@ -11,7 +11,7 @@ This will introduce how to write a bot for Kahla. Before starting, make sure you
 
 Download:
 
-1. [.NET 7 SDK](http://dot.net/)
+1. [.NET 8 SDK](http://dot.net/)
 
 ### 1. Create a new console .NET Core app
 
