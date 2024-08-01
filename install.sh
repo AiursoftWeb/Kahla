@@ -18,7 +18,7 @@ install_kahla()
     aiur dotnet/publish $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
     cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
 
-    npm install web-push -g
+    npm install web-push -g --loglevel verbose
     web-push generate-vapid-keys > ./temp.txt
     publicKey=$(cat ./temp.txt | sed -n 5p)
     privateKey=$(cat ./temp.txt | sed -n 8p)
