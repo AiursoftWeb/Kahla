@@ -1,3 +1,4 @@
+using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Events;

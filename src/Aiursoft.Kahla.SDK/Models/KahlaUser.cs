@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;

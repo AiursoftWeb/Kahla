@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

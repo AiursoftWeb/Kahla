@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.Server.Services
@@ -15,7 +16,7 @@ namespace Aiursoft.Kahla.Server.Services
             _canon = canon;
         }
 
-        public void NewMessageEvent(KahlaUser user, IEnumerable<Device> devices, Message message, bool muted,
+        public void NewMessageEvent(KahlaUser user, Message message, bool muted,
             bool mentioned)
         {
             var newMessageEvent = new NewMessageEvent()
@@ -28,7 +29,7 @@ namespace Aiursoft.Kahla.Server.Services
             if (!muted)
             {
                 _canon.FireAsync<WebPushService>(s => s.PushAsync(
-                    devices: devices,
+                    devices: user.HisDevices,
                     payload: newMessageEvent,
                     triggerEmail: message.Sender?.Email ?? "unknown@domain.com"));
             }
@@ -47,8 +48,11 @@ namespace Aiursoft.Kahla.Server.Services
                 triggerEmail: request.Creator?.Email ?? "unknown@domain.com"));
         }
 
-        public void FriendRequestCompletedEvent(KahlaUser target, Request request, bool result,
-            PrivateConversation conversation)
+        public void FriendRequestCompletedEvent(
+            KahlaUser target, 
+            Request request, 
+            bool result,
+            PrivateConversation? conversation)
         {
             var friendAcceptedEvent = new FriendRequestCompletedEvent
             {
@@ -63,8 +67,7 @@ namespace Aiursoft.Kahla.Server.Services
                 triggerEmail: request.Creator?.Email ?? "unknown@domain.com"));
         }
 
-        public void FriendDeletedEvent(int stargateChannel, IEnumerable<Device> devices, KahlaUser trigger,
-            int deletedConversationId)
+        public void FriendDeletedEvent(KahlaUser target, KahlaUser trigger, int deletedConversationId)
         {
             var friendDeletedEvent = new FriendDeletedEvent
             {
@@ -73,7 +76,7 @@ namespace Aiursoft.Kahla.Server.Services
             };
             _canon.FireAsync<WebSocketPushService>(s => s.PushAsync(trigger, friendDeletedEvent));
             _canon.FireAsync<WebPushService>(s => s.PushAsync(
-                devices: devices,
+                devices: target.HisDevices,
                 payload: friendDeletedEvent,
                 triggerEmail: trigger.Email ?? "unknown@domain.com"));
         }

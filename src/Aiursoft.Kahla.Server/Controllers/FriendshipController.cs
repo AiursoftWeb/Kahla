@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -21,14 +24,18 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/friendship")]
 public class FriendshipController(
+    IConfiguration configuration,
+    KahlaPushService pusher,
     OnlineJudger onlineJudger,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext)
     : ControllerBase
 {
-    //private static SemaphoreSlim semaphoreSlim = new(1, 1);
+    private static readonly SemaphoreSlim CreateRequestLock = new(1, 1);
+    private static readonly SemaphoreSlim AcceptRequestLock = new(1, 1);
 
-    [Produces(typeof(MineViewModel))]
+    [HttpGet]
+    [Route("circle")]
     public async Task<IActionResult> Mine()
     {
         var user = await this.GetCurrentUser(userManager);
@@ -53,99 +60,93 @@ public class FriendshipController(
         });
     }
 
-    // [HttpPost]
-    // public async Task<IActionResult> DeleteFriend([Required] string id)
-    // {
-    //     var user = await GetKahlaUser();
-    //     await _dbContext.Entry(user)
-    //         .Collection(t => t.HisDevices)
-    //         .LoadAsync();
-    //     var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
-    //     if (target == null)
-    //     {
-    //         return this.Protocol(Code.NotFound, "We can not find target user.");
-    //     }
-    //     if (!await _dbContext.AreFriends(user.Id, target.Id))
-    //     {
-    //         return this.Protocol(Code.NotFound, "He is not your friend at all.");
-    //     }
-    //     var deletedConversationId = await _dbContext.RemoveFriend(user.Id, target.Id);
-    //     await _dbContext.SaveChangesAsync();
-    //     await Task.WhenAll(
-    //         _pusher.FriendDeletedEvent(target.CurrentChannel, target.HisDevices, user, deletedConversationId),
-    //         _pusher.FriendDeletedEvent(user.CurrentChannel, user.HisDevices, user, deletedConversationId)
-    //     );
-    //     var token = await _appsContainer.GetAccessTokenAsync();
-    //     var siteName = _configuration["UserFilesSiteName"];
-    //     if ((await _foldersService.ViewContentAsync(token, siteName, "/")).Value.SubFolders.Any(f => f.FolderName == $"conversation-{deletedConversationId}"))
-    //     {
-    //         await _foldersService.DeleteFolderAsync(token, siteName, $"conversation-{deletedConversationId}");
-    //     }
-    //     return this.Protocol(Code.JobDone, "Successfully deleted your friend relationship.");
-    // }
-    //
-    // [HttpPost]
-    // [Produces(typeof(AiurValue<int>))]
-    // public async Task<IActionResult> CreateRequest([Required] string id)
-    // {
-    //     var user = await GetKahlaUser();
-    //     await _dbContext.Entry(user)
-    //         .Collection(t => t.HisDevices)
-    //         .LoadAsync();
-    //     var target = await _dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
-    //     if (target == null)
-    //     {
-    //         return this.Protocol(Code.NotFound, "We can not find your target user!");
-    //     }
-    //     if (target.Id == user.Id)
-    //     {
-    //         return this.Protocol(Code.Conflict, "You can't request yourself!");
-    //     }
-    //     var areFriends = await _dbContext.AreFriends(user.Id, target.Id);
-    //     if (areFriends)
-    //     {
-    //         return this.Protocol(Code.Conflict, "You two are already friends!");
-    //     }
-    //     Request request;
-    //     await semaphoreSlim.WaitAsync();
-    //     try
-    //     {
-    //         var pending = await _dbContext.Requests
-    //             .Where(t =>
-    //                 t.CreatorId == user.Id && t.TargetId == target.Id ||
-    //                 t.CreatorId == target.Id && t.TargetId == user.Id)
-    //             .AnyAsync(t => !t.Completed);
-    //         if (pending)
-    //         {
-    //             return this.Protocol(Code.Conflict, "There are some pending request hasn't been completed!");
-    //         }
-    //         request = new Request
-    //         {
-    //             CreatorId = user.Id,
-    //             Creator = user,
-    //             TargetId = id,
-    //         };
-    //         await _dbContext.Requests.AddAsync(request);
-    //         await _dbContext.SaveChangesAsync();
-    //     }
-    //     finally
-    //     {
-    //         semaphoreSlim.Release();
-    //     }
-    //     await Task.WhenAll(
-    //         _pusher.NewFriendRequestEvent(target, request),
-    //         _pusher.NewFriendRequestEvent(user, request)
-    //     );
-    //     if (_configuration["AutoAcceptRequests"] == true.ToString().ToLower())
-    //     {
-    //         await AcceptRequest(request, true);
-    //     }
-    //     return this.Protocol(new AiurValue<int>(request.Id)
-    //     {
-    //         Code = Code.JobDone,
-    //         Message = "Successfully created your request!"
-    //     });
-    // }
+    [HttpPost]
+    [Route("delete-friend/{id}")]
+    public async Task<IActionResult> DeleteFriend([Required][FromRoute] string id)
+    {
+        var user = await this.GetCurrentUser(userManager);
+        await dbContext.Entry(user)
+            .Collection(t => t.HisDevices)
+            .LoadAsync();
+        var target = await dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
+        if (target == null)
+        {
+            return this.Protocol(Code.NotFound, "We can not find target user.");
+        }
+        if (!await dbContext.AreFriends(user.Id, target.Id))
+        {
+            return this.Protocol(Code.NotFound, "He is not your friend at all.");
+        }
+        var deletedConversationId = await dbContext.RemoveFriend(user.Id, target.Id);
+        await dbContext.SaveChangesAsync();
+        pusher.FriendDeletedEvent(target, user, deletedConversationId);
+        pusher.FriendDeletedEvent(user, user, deletedConversationId);
+        // TODO: Delete the folder which saves the files of the conversation.
+        return this.Protocol(Code.JobDone, "Successfully deleted your friend relationship.");
+    }
+    
+    [HttpPost]
+    [Route("create-request/{id}")]
+    public async Task<IActionResult> CreateRequest([Required][FromRoute] string id)
+    {
+        var user = await this.GetCurrentUser(userManager);
+        await dbContext.Entry(user)
+            .Collection(t => t.HisDevices)
+            .LoadAsync();
+        var target = await dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
+        if (target == null)
+        {
+            return this.Protocol(Code.NotFound, "We can not find your target user!");
+        }
+        if (target.Id == user.Id)
+        {
+            return this.Protocol(Code.Conflict, "You can't request yourself!");
+        }
+        var areFriends = await dbContext.AreFriends(user.Id, target.Id);
+        if (areFriends)
+        {
+            return this.Protocol(Code.Conflict, "You two are already friends!");
+        }
+        Request request;
+        await CreateRequestLock.WaitAsync();
+        try
+        {
+            var pending = await dbContext.Requests
+                .Where(t =>
+                    t.CreatorId == user.Id && t.TargetId == target.Id ||
+                    t.CreatorId == target.Id && t.TargetId == user.Id)
+                .AnyAsync(t => !t.Completed);
+            if (pending)
+            {
+                return this.Protocol(Code.Conflict, "There are some pending request hasn't been completed!");
+            }
+            request = new Request
+            {
+                CreatorId = user.Id,
+                Creator = user,
+                TargetId = id,
+                Target = target,
+            };
+            await dbContext.Requests.AddAsync(request);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            CreateRequestLock.Release();
+        }
+
+        pusher.NewFriendRequestEvent(target, request);
+        pusher.NewFriendRequestEvent(user, request);
+        if (configuration["AutoAcceptRequests"] == true.ToString().ToLower())
+        {
+            await AcceptRequest(request, true);
+        }
+        return this.Protocol(new AiurValue<int>(request.Id)
+        {
+            Code = Code.JobDone,
+            Message = "Successfully created your request!"
+        });
+    }
     //
     // [HttpPost]
     // [Produces(typeof(AiurValue<int>))]
@@ -399,39 +400,38 @@ public class FriendshipController(
     //
     // private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     //
-    // private async Task<PrivateConversation> AcceptRequest(Request request, bool accept)
-    // {
-    //     PrivateConversation newConversation = null;
-    //     request.Completed = true;
-    //     await semaphoreSlim.WaitAsync();
-    //     try
-    //     {
-    //         if (accept)
-    //         {
-    //             if (await _dbContext.AreFriends(request.CreatorId, request.TargetId))
-    //             {
-    //                 await _dbContext.SaveChangesAsync();
-    //                 throw new AiurServerException(Code.NoActionTaken, "You two are already friends.");
-    //             }
-    //             newConversation = _dbContext.AddFriend(request.CreatorId, request.TargetId);
-    //         }
-    //         await _dbContext.SaveChangesAsync();
-    //     }
-    //     finally
-    //     {
-    //         semaphoreSlim.Release();
-    //     }
-    //     await Task.WhenAll(
-    //             _pusher.FriendsChangedEvent(
-    //                 request.Creator,
-    //                 request,
-    //                 accept,
-    //                 newConversation?.Build(request.CreatorId, _onlineJudger) as PrivateConversation),
-    //             _pusher.FriendsChangedEvent(
-    //                 request.Target,
-    //                 request,
-    //                 accept,
-    //                 newConversation?.Build(request.TargetId, _onlineJudger) as PrivateConversation));
-    //     return newConversation;
-    // }
+    private async Task AcceptRequest(Request request, bool accept)
+    {
+        PrivateConversation? newConversation = null;
+        request.Completed = true;
+        await AcceptRequestLock.WaitAsync();
+        try
+        {
+            if (accept)
+            {
+                if (await dbContext.AreFriends(request.CreatorId, request.TargetId))
+                {
+                    await dbContext.SaveChangesAsync();
+                    throw new AiurServerException(Code.NoActionTaken, "You two are already friends.");
+                }
+                newConversation = dbContext.AddFriend(request.CreatorId, request.TargetId);
+            }
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            AcceptRequestLock.Release();
+        }
+
+        pusher.FriendRequestCompletedEvent(
+            request.Creator ?? await dbContext.Users.FindAsync(request.CreatorId) ?? throw new AiurServerException(Code.NotFound, "Can not find the creator of this request!"),
+            request,
+            accept,
+            newConversation);
+        pusher.FriendRequestCompletedEvent(
+            request.Target ?? await dbContext.Users.FindAsync(request.TargetId) ?? throw new AiurServerException(Code.NotFound, "Can not find the target of this request!"),
+            request,
+            accept,
+            newConversation);
+    }
 }

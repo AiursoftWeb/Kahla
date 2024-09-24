@@ -1,4 +1,6 @@
-﻿namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
+﻿using Aiursoft.Kahla.SDK.Models.Conversations;
+
+namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
 {
     public class SearchedGroup(GroupConversation conversation)
     {

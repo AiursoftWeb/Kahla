@@ -1,17 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.ModelsOBS;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.SDK.ModelsOBS
+namespace Aiursoft.Kahla.SDK.Models.Conversations
 {
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
         public IEnumerable<UserGroupRelation> Users { get; set; } = new List<UserGroupRelation>();
+        
         public required string GroupImagePath { get; set; }
         public required string GroupName { get; set; }
+        
         [JsonIgnore]
         public required string JoinPassword { get; set; }
+        
         public bool ListInSearchResult { get; set; } = true;
 
         [JsonProperty]
@@ -27,43 +30,25 @@ namespace Aiursoft.Kahla.SDK.ModelsOBS
         public override string GetDisplayImagePath(string userId) => GroupImagePath;
         public override int GetUnReadAmount(string userId)
         {
-            var relation = Users.SingleOrDefault(t => t.UserId == userId);
+            var relation = Users.FirstOrDefault(t => t.UserId == userId);
             if (relation == null)
             {
-                return 0;
+                throw new InvalidOperationException("Users are not loaded from database but tried to get unread amount!");
             }
             return Messages.Count(t => t.SendTime > relation.ReadTimeStamp);
         }
-
-        public override Message? GetLatestMessage()
+        public override bool Muted(string userId)
         {
-            return Messages.MaxBy(p => p.SendTime);
+            return Users.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
         }
-
+        public override Message? GetLatestMessage() => Messages.MaxBy(p => p.SendTime);
+        public override bool HasUser(string userId) => Users.Any(t => t.UserId == userId);
         public override void ForEachUser(Action<KahlaUser, UserGroupRelation> function)
         {
             foreach (var relation in Users)
             {
                 function(relation.User, relation);
             }
-        }
-
-        public override bool Muted(string userId)
-        {
-            return Users.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
-        }
-
-        public override Conversation Build(string userId)
-        {
-            DisplayName = GetDisplayName(userId);
-            DisplayImagePath = GetDisplayImagePath(userId);
-            Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
-            return this;
-        }
-
-        public override bool HasUser(string userId)
-        {
-            return Users.Any(t => t.UserId == userId);
         }
     }
 }
