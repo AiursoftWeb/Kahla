@@ -1,10 +1,12 @@
 ﻿using Aiursoft.AiurProtocol.Server;
+using Aiursoft.Canon;
 using Aiursoft.DbTools.Sqlite;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
+using Aiursoft.Kahla.Server.Services;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
@@ -34,6 +36,8 @@ namespace Aiursoft.Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
             services.AddScoped<WebPushClient>();
+            services.AddScoped<ThirdPartyPushService>();
+            services.AddTaskCanon();
 
             services
                 .AddControllers()

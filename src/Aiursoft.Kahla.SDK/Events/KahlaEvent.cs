@@ -2,7 +2,7 @@
 {
     public class KahlaEvent
     {
-        public required EventType Type { get; set; }
+        public EventType Type { get; init; }
         public string TypeDescription => Type.ToString();
     }
 }

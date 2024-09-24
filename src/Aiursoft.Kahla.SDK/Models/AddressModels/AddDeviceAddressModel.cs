@@ -5,7 +5,7 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
     public class AddDeviceAddressModel
     {
         [Required]
-        [StringLength(30, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+        [StringLength(200, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
         public string? Name { get; set; }
         [Required]
         [StringLength(400, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
