@@ -5,12 +5,12 @@ namespace Aiursoft.Kahla.SDK.Services
 {
     public class VersionService : ISingletonDependency
     {
-        public string GetSDKVersion()
+        public string GetSdkVersion()
         {
-            return SDKVersion();
+            return SdkVersion();
         }
 
-        private static string SDKVersion()
+        private static string SdkVersion()
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString().Split('.');
             if (version == null)

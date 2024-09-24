@@ -36,9 +36,9 @@ namespace Aiursoft.Kahla.SDK.Services
             ServerIndex = await home.IndexAsync(_kahlaRoot);
             _botLogger.AppendResult(true, 5);
             //_botLogger.LogSuccess("Success! Your bot is successfully connected with Kahla!\r\n");
-            _botLogger.LogInfo($"Server time: \t{ServerIndex.UTCTime}\tServer version: \t{ServerIndex.APIVersion}");
-            _botLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{_versionService.GetSDKVersion()}");
-            if (ServerIndex.APIVersion != _versionService.GetSDKVersion())
+            _botLogger.LogInfo($"Server time: \t{ServerIndex.UtcTime}\tServer version: \t{ServerIndex.ApiVersion}");
+            _botLogger.LogInfo($"Local time: \t{DateTime.UtcNow}\tLocal version: \t\t{_versionService.GetSdkVersion()}");
+            if (ServerIndex.ApiVersion != _versionService.GetSdkVersion())
             {
                 _botLogger.AppendResult(false);
                 _botLogger.LogDanger("API version don't match! Kahla bot may crash! We strongly suggest checking the API version first!");

@@ -53,7 +53,7 @@ namespace Aiursoft.Kahla.SDK.Events
         {
             Type = EventType.NewMessage;
         }
-        public string AESKey { get; set; }
+        public string AesKey { get; set; }
         public bool Muted { get; set; }
         /// <summary>
         /// If you was mentioned in this message.

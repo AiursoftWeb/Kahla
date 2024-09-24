@@ -7,7 +7,7 @@ namespace Aiursoft.Kahla.SDK.Models
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public string IPAddress { get; set; }
+        public string IpAddress { get; set; }
         public string UserId { get; set; }
         [JsonIgnore]
         [ForeignKey(nameof(UserId))]
@@ -16,7 +16,7 @@ namespace Aiursoft.Kahla.SDK.Models
         [JsonIgnore]
         public string PushEndpoint { get; set; }
         [JsonIgnore]
-        public string PushP256DH { get; set; }
+        public string PushP256Dh { get; set; }
         [JsonIgnore]
         public string PushAuth { get; set; }
         public DateTime AddTime { get; set; } = DateTime.UtcNow;

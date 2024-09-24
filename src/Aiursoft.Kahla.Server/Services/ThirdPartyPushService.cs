@@ -40,7 +40,7 @@ namespace Aiursoft.Kahla.Server.Services
                 {
                     try
                     {
-                        var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                        var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256Dh, device.PushAuth);
                         var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
                         var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
                         {

@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Data
 {
-    public class KahlaDbContext : IdentityDbContext<KahlaUser>
+    public class KahlaDbContext(DbContextOptions<KahlaDbContext> options) : IdentityDbContext<KahlaUser>(options)
     {
-        public KahlaDbContext(DbContextOptions<KahlaDbContext> options) : base(options)
-        {
-        }
-
         public DbSet<Message> Messages { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<PrivateConversation> PrivateConversations { get; set; }
@@ -50,11 +46,9 @@ namespace Aiursoft.Kahla.Server.Data
                     Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Sender).FirstOrDefault() : null,
 
                     Muted = t is GroupConversation && ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted,
-                    AesKey = t.AESKey,
                     SomeoneAtMe = (t is GroupConversation) && t.Messages
                         .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
                         .Any(p => p.Ats.Any(k => k.TargetUserId == userId)),
-                    EnableInvisiable = (t is PrivateConversation) && (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.EnableInvisiable : ((PrivateConversation)t).RequestUser.EnableInvisiable),
                 })
                 .OrderByDescending(t => t.SomeoneAtMe)
                 .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
@@ -101,7 +95,6 @@ namespace Aiursoft.Kahla.Server.Data
             {
                 GroupName = groupName,
                 GroupImagePath = groupImagePath,
-                AESKey = Guid.NewGuid().ToString("N"),
                 OwnerId = creatorId,
                 JoinPassword = joinPassword ?? string.Empty
             };
@@ -116,7 +109,6 @@ namespace Aiursoft.Kahla.Server.Data
             {
                 RequesterId = userId1,
                 TargetId = userId2,
-                AESKey = Guid.NewGuid().ToString("N")
             };
             PrivateConversations.Add(conversation);
             return conversation;

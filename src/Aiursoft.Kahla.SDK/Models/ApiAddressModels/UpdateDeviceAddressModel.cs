@@ -11,7 +11,7 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
         [Required]
         public string PushEndpoint { get; set; }
         [Required]
-        public string PushP256DH { get; set; }
+        public string PushP256Dh { get; set; }
         [Required]
         public string PushAuth { get; set; }
     }

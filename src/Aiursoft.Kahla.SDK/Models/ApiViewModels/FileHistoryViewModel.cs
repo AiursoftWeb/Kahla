@@ -8,7 +8,7 @@ namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
         public FileHistoryViewModel() { }
 
         public FileHistoryViewModel(List<dynamic> folders) : base(folders) { }
-        public string ShowingDateUTC { get; set; }
+        public string ShowingDateUtc { get; set; }
         public string SiteName { get; set; }
         public string RootPath { get; set; }
     }

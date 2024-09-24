@@ -28,7 +28,7 @@ namespace Aiursoft.Kahla.SDK.Services
             var result = JsonConvert.DeserializeObject<NodePackageJson>(response);
             if (result.Name.ToLower() == "kahla")
             {
-                return (result.Version, _versionService.GetSDKVersion());
+                return (result.Version, _versionService.GetSdkVersion());
             }
             else
             {

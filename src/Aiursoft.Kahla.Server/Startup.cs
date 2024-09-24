@@ -3,6 +3,7 @@ using Aiursoft.DbTools.Sqlite;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
+using Aiursoft.Scanner;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
@@ -30,10 +31,10 @@ namespace Aiursoft.Kahla.Server
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.Configure<List<DomainSettings>>(configuration.GetSection("AppDomain"));
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
             services.AddScoped<WebPushClient>();
-            
+
+            services.AddLibraryDependencies();
             services
                 .AddControllers()
                 .AddApplicationPart(typeof(Startup).Assembly)
