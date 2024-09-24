@@ -50,7 +50,7 @@ namespace Aiursoft.Kahla.Server.Services
                 dbContext.Messages.RemoveRange(hugeConversationMessages);
                 await dbContext.SaveChangesAsync();
 
-                // try delete messages too old.
+                // try to delete messages too old.
                 var outdatedMessages = (await dbContext
                     .Messages
                     .Include(t => t.Conversation)

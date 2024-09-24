@@ -9,12 +9,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.Identity" Version="7.0.31" />
+    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="8.0.13" />
+    <PackageReference Include="Aiursoft.DbTools.Sqlite" Version="8.0.17" />
     <PackageReference Include="Aiursoft.WebTools" Version="8.0.23" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.8" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj" />
-    <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
   </ItemGroup>
 </Project>

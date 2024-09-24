@@ -19,14 +19,14 @@ namespace Aiursoft.Kahla.Server.Middlewares
         public async Task Invoke(HttpContext context)
         {
             var settingsRecord = AppDomain.FirstOrDefault(t => t.Server.ToLower().Trim() == context.Request.Host.ToString().ToLower().Trim());
-            context.Response.Headers.Add("Cache-Control", "no-cache");
-            context.Response.Headers.Add("Expires", "-1");
+            context.Response.Headers.Append("Cache-Control", "no-cache");
+            context.Response.Headers.Append("Expires", "-1");
             if (settingsRecord != null)
             {
-                context.Response.Headers.Add("Access-Control-Allow-Origin", settingsRecord.Client);
+                context.Response.Headers.Append("Access-Control-Allow-Origin", settingsRecord.Client);
             }
-            context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-            context.Response.Headers.Add("Access-Control-Allow-Headers", "Authorization");
+            context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+            context.Response.Headers.Append("Access-Control-Allow-Headers", "Authorization");
             if (context.Request.Method == "OPTIONS")
             {
                 context.Response.StatusCode = 204;

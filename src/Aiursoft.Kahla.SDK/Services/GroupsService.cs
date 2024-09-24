@@ -1,4 +1,6 @@
 ﻿using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Models;
+using Aiursoft.AiurProtocol.Services;
 using Aiursoft.Kahla.SDK.Models.ApiViewModels;
 using Aiursoft.Scanner.Abstractions;
 

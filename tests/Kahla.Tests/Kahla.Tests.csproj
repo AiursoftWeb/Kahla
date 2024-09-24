@@ -18,11 +18,6 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kahla.Server\Kahla.Server.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Aiursoft.CSTools">
-      <HintPath>..\..\..\..\..\..\.nuget\packages\aiursoft.cstools\7.0.10\lib\net7.0\Aiursoft.CSTools.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\src\Aiursoft.Kahla.Server\Aiursoft.Kahla.Server.csproj" />
   </ItemGroup>
 </Project>

@@ -1,13 +1,14 @@
 ﻿using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Models;
 
 namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
-    public class FileHistoryViewModel : AiurCollection<Aiursoft.Probe.SDK.Models.File>
+    public class FileHistoryViewModel : AiurCollection<dynamic> // TODO: Use a more specific type than dynamic
     {
         [Obsolete("This method is only for framework", true)]
         public FileHistoryViewModel() { }
 
-        public FileHistoryViewModel(List<Aiursoft.Probe.SDK.Models.File> folders) : base(folders) { }
+        public FileHistoryViewModel(List<dynamic> folders) : base(folders) { }
         public string ShowingDateUTC { get; set; }
         public string SiteName { get; set; }
         public string RootPath { get; set; }

@@ -1,12 +1,40 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Directory.SDK.Models;
 using Aiursoft.Kahla.SDK.Services;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models
 {
-    public class KahlaUser : AiurUserBase
+    [JsonObject(MemberSerialization.OptIn)]
+    public class KahlaUser : IdentityUser
     {
+        [JsonProperty]
+        public override string Id
+        {
+            get => base.Id;
+            set => base.Id = value;
+        }
+
+        [JsonProperty] public virtual string Bio { get; set; }
+
+        [JsonProperty] public virtual string NickName { get; set; }
+
+        [JsonProperty] public virtual string Sex { get; set; }
+
+        /// <summary>
+        ///     SiteName/Path/FileName.extision
+        /// </summary>
+        [JsonProperty]
+        public string IconFilePath { get; set; }
+
+        [JsonProperty] public virtual string PreferedLanguage { get; set; } = "UnSet";
+
+        [JsonProperty] public virtual DateTime AccountCreateTime { get; set; } = DateTime.UtcNow;
+
+        [JsonProperty] public override bool EmailConfirmed { get; set; }
+
+        [NotMapped] public override bool PhoneNumberConfirmed => !string.IsNullOrEmpty(PhoneNumber);
+        
         [JsonIgnore]
         [InverseProperty(nameof(PrivateConversation.RequestUser))]
         public IEnumerable<PrivateConversation> Friends { get; set; }

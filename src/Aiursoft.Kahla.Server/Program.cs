@@ -1,7 +1,5 @@
 ﻿using Aiursoft.DbTools;
-using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Probe.SDK;
 
 namespace Aiursoft.Kahla.Server
 {
@@ -11,10 +9,6 @@ namespace Aiursoft.Kahla.Server
         {
             var app = await Aiursoft.WebTools.Extends.AppAsync<Startup>(args);
             await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
-            await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserIconsSiteName"],
-                a => a.GetAccessTokenAsync());
-            await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserFilesSiteName"],
-                a => a.GetAccessTokenAsync());
             await app.RunAsync();
         }
     }

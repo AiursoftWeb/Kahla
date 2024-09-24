@@ -1,5 +1,4 @@
-﻿using Aiursoft.AiurProtocol;
-using Aiursoft.Probe.SDK.Models.HomeViewModels;
+﻿using Aiursoft.AiurProtocol.Models;
 
 namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
@@ -13,7 +12,8 @@ namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
         public string ServerName { get; set; }
         public string Mode { get; set; }
         public DomainSettings Domain { get; set; }
-        public ProbeDownloadPatternConfig Probe { get; set; }
+        
+        //public ProbeDownloadPatternConfig Probe { get; set; }
         public bool AutoAcceptRequests { get; set; }
     }
 }

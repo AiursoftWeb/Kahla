@@ -20,18 +20,19 @@
     <RepositoryUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla.git</RepositoryUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <LangVersion>latest</LangVersion>
-    <PackageIcon>kahla.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="kahla.png" Pack="true" PackagePath="\" />
-    <None Include="LICENSE" Pack="true" PackagePath="\" />
     <None Include="Readme.md" Pack="true" PackagePath="." />
   </ItemGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.8" />
+    <PackageReference Include="Aiursoft.Scanner.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.2" />
-    <PackageReference Include="Aiursoft.Stargate.SDK" Version="7.0.18" />
-    <PackageReference Include="Aiursoft.Probe.SDK" Version="7.0.19" />
     <PackageReference Include="Websocket.Client" Version="5.1.1" />
+    <PackageReference Include="Aiursoft.CSTools" Version="8.0.4" />
   </ItemGroup>
 </Project>
