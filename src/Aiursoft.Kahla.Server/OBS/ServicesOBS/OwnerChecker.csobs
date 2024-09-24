@@ -1,0 +1,36 @@
+﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Scanner.Abstractions;
+using Microsoft.EntityFrameworkCore;
+
+namespace Aiursoft.Kahla.Server.Services
+{
+    public class OwnerChecker : IScopedDependency
+    {
+        private readonly KahlaDbContext _dbContext;
+
+        public OwnerChecker(KahlaDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<GroupConversation> FindMyOwnedGroupAsync(string groupName, string userId)
+        {
+            var group = await _dbContext
+                .GroupConversations
+                .Include(t => t.Users)
+                .ThenInclude(t => t.User)
+                .SingleOrDefaultAsync(t => t.GroupName == groupName);
+            if (group == null)
+            {
+                throw new AiurServerException(Code.NotFound, $"We can not find a group with name: '{groupName}'!");
+            }
+            if (group.OwnerId != userId)
+            {
+                throw new AiurServerException(Code.Unauthorized, $"You are not the owner of this group: '{groupName}' and you can't transfer it!");
+            }
+            return group;
+        }
+    }
+}

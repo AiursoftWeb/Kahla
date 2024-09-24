@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Version>8.0.1</Version>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
+    <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
+    <IsTestProject>false</IsTestProject>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Company>Aiursoft</Company>
+    <Product>AiursoftWeb</Product>
+    <Authors>Anduin</Authors>
+    <Description>The base class, interfaces, services and bot framework for Aiursoft Kahla.</Description>
+    <PackageId>Aiursoft.Kahla.SDK</PackageId>
+    <PackageTags>base-class shared-component aiursoft kahla</PackageTags>
+    <PackageProjectUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla.git</RepositoryUrl>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Readme.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
+  </ItemGroup>
+</Project>

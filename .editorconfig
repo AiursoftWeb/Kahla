@@ -30,4 +30,3 @@ resharper_access_to_modified_closure_highlighting=suggestion
 
 # Suppress id not resolved because resharper can't understand
 resharper_html_id_not_resolved_highlighting=suggestion
-

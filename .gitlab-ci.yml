@@ -8,15 +8,9 @@ stages:
 before_script:
   - 'export DOTNET_CLI_TELEMETRY_OPTOUT=1'
   - 'export PATH=$PATH:$HOME/.dotnet/tools'
-  - 'dotnet tool install JetBrains.ReSharper.GlobalTools --global || echo "JB already installed."'
-  - 'dotnet tool install dotnet-reportgenerator-globaltool --global || echo "DRG already installed."'
-  - 'cat /etc/lsb-release && uname -a && pwd && ls -ashl'
+  - 'which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.cn/v3/index.json --configfile ./nuget.config -v d'
+  - 'which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.cn/v3/index.json --configfile ./nuget.config -v d'
   - 'echo "Hostname: $(hostname)"'
-  - 'echo "Uptime: $(uptime -p)"'
-  - 'echo "Memory: $(free -h | awk "/^Mem:/{print \$2}")"'
-  - 'echo "CPU Cores: $(nproc)"'
-  - 'echo "Available Disk Space: $(df -h --output=avail / | tail -1)"'
-  - 'echo "IP Address: $(hostname -I)"'
   - 'dotnet --info'
 
 restore:
@@ -36,7 +30,11 @@ lint:
   needs: 
     - build
   script:
-    - jb inspectcode ./*.sln --output=analyze_output.xml --build
+    - jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml
+    # Remove the warning of UnusedAutoPropertyAccessor InconsistentNaming
+    - sed -i '/InconsistentNaming/d' analyze_output.xml
+    - sed -i '/AssignNullToNotNullAttribute/d' analyze_output.xml # This is because jetbrains is not smart enough to understand the nullability of C# 8.0
+    - sed -i '/UnusedAutoPropertyAccessor/d' analyze_output.xml
     - grep 'WARNING' analyze_output.xml && cat analyze_output.xml && exit 1 || echo "No warning found"
   artifacts:
     when: always
@@ -67,14 +65,6 @@ test:
       coverage_report:
         coverage_format: cobertura
         path: ./Cobertura.xml
-
-publish:
-  stage: publish
-  needs: 
-    - lint
-    - test
-  script:
-    - dotnet publish -maxcpucount:1 --configuration Release --runtime linux-x64 --no-self-contained *.sln
 
 pack:
   stage: publish
@@ -122,11 +112,12 @@ upload_to_local_nuget:
 deploy_docker:
   stage: deploy
   environment: production
-  needs:
-    - publish
-  dependencies:
-    - publish
+  needs: 
+    - lint
+    - test
   script:
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
+    - echo building image hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
     - docker build . -t hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
     - docker push hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
   rules:

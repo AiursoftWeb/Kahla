@@ -1,49 +1,54 @@
 aiur() { arg="$( cut -d ' ' -f 2- <<< "$@" )" && curl -sL https://gitlab.aiursoft.cn/aiursoft/aiurscript/-/raw/master/$1.sh | sudo bash -s $arg; }
 
-kahla_path="/opt/apps/KahlaServer"
-dbPassword=$(uuidgen)
-port=$(aiur network/get_port)
-connectionString="Server=tcp:127.0.0.1,1433;Database=Kahla;uid=sa;Password=$dbPassword;MultipleActiveResultSets=True;"
+app_name="kahla"
+repo_path="https://gitlab.aiursoft.cn/aiursoft/kahla"
+proj_path="src/Aiursoft.Kahla.Server/Aiursoft.Kahla.Server.csproj"
 
-install_kahla()
+get_dll_name()
 {
-    aiur network/enable_bbr
-    aiur install/caddy
-    aiur install/dotnet
-    aiur install/node
-    aiur install/jq
-    aiur install/sql_server
-    aiur mssql/config_password $dbPassword
-    aiur git/clone_to https://gitlab.aiursoft.cn/aiursoft/Kahla ./Kahla
-    aiur dotnet/publish $kahla_path ./Kahla/Kahla.Server/Kahla.Server.csproj
-    cat $kahla_path/appsettings.json > $kahla_path/appsettings.Production.json
-
-    npm install web-push -g --loglevel verbose
-    web-push generate-vapid-keys > ./temp.txt
-    publicKey=$(cat ./temp.txt | sed -n 5p)
-    privateKey=$(cat ./temp.txt | sed -n 8p)
-    rm ./temp.txt
-
-    aiur text/edit_json "VapidKeys.PublicKey" "$publicKey" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "VapidKeys.PrivateKey" "$privateKey" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "ConnectionStrings.DatabaseConnection" "$connectionString" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "AppDomain[2].Server" "$1" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "KahlaAppId" "$2" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "KahlaAppSecret" "$3" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "UserIconsSiteName" "$(uuidgen)" $kahla_path/appsettings.Production.json
-    aiur text/edit_json "UserFilesSiteName" "$(uuidgen)" $kahla_path/appsettings.Production.json
-    aiur services/register_aspnet_service "kahla" $port $kahla_path "Kahla.Server"
-    aiur caddy/add_proxy $1 $port
-
-    # Finish the installation
-    echo "Successfully installed Kahla as a service in your machine! Please open https://$1 to try it now!"
-    echo "The port 1433 is not opened. You can open your database to public via: sudo ufw allow 1433/tcp"
-    echo "You can connect to your server from a Kahla.App. Download the client at: https://www.kahla.app"
-    echo "Database identity: $1:1433 with username: sa and password: $dbPassword"
-    echo ""
-    echo "Your database data file is located at: /var/opt/mssql/. Please back up them regularly."
-    echo "Your web data file is located at: $kahla_path"
-    rm ./Kahla -rf
+    filename=$(basename -- "$proj_path")
+    project_name="${filename/.csproj/}"
+    dll_name="$project_name.dll"
+    echo $dll_name
 }
 
-install_kahla "$@"
+install()
+{
+    port=$1
+    if [ -z "$port" ]; then
+        port=$(aiur network/get_port)
+    fi
+    echo "Installing $app_name... to port $port"
+
+    # Install prerequisites    
+    aiur install/dotnet
+    aiur install/node
+
+    # Clone the repo
+    aiur git/clone_to $repo_path /tmp/repo
+
+    # Install node modules
+    wwwrootPath=$(dirname "/tmp/repo/$proj_path")/wwwroot
+    if [ -d "$wwwrootPath" ]; then
+        echo "Found wwwroot folder $wwwrootPath, will install node modules."
+        sudo npm install --prefix "$wwwrootPath" -force --loglevel verbose
+    fi
+
+    # Publish the app
+    aiur dotnet/publish "/tmp/repo/$proj_path" "/opt/apps/$app_name"
+    
+    # Register the service
+    dll_name=$(get_dll_name)
+    aiur services/register_aspnet_service $app_name $port "/opt/apps/$app_name" $dll_name
+
+    # Clean up
+    echo "Install $app_name finished! Please open http://$(hostname):$port to try!"
+    settings_file_path="/opt/apps/$app_name/appsettings.Production.json"
+    echo "Please change the settings in $settings_file_path ASAP to fit your own needs!!!"
+    echo "Currently settings may save files to /tmp folder."
+    sudo rm /tmp/repo -rf
+}
+
+# This will install this app under /opt/apps and register a new service with systemd.
+# Example: install 5000
+install "$@"
