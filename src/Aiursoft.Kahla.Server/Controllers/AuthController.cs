@@ -32,6 +32,7 @@ public class AuthController(
     {
         if (User.Identity?.IsAuthenticated == true)
         {
+            logger.LogWarning("User with email: {Email} tried to sign in while he is already signed in.", model.Email);
             return this.Protocol(Code.Conflict, "You are already signed in!");
         }
         var result = await signInManager.PasswordSignInAsync(model.Email!, model.Password!, true, lockoutOnFailure: true);
@@ -56,6 +57,7 @@ public class AuthController(
     [Route("register")]
     public async Task<IActionResult> Register(RegisterAddressModel model)
     {
+        logger.LogInformation("User with email: {Email} requested to register.", model.Email);
         var user = new KahlaUser
         {
             UserName = model.Email,
@@ -108,7 +110,7 @@ public class AuthController(
     public async Task<IActionResult> Me()
     {
         var user = await GetCurrentUser();
-        logger.LogInformation("User with email: {Email} queried their own information.", user.Email);
+        logger.LogInformation("User with email: {Email} queried his own information.", user.Email);
         return this.Protocol(new MeViewModel
         {
             Code = Code.ResultShown,
