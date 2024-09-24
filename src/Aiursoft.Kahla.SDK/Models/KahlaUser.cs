@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
@@ -63,13 +64,20 @@ namespace Aiursoft.Kahla.SDK.Models
         [InverseProperty(nameof(Device.KahlaUser))]
         public IEnumerable<Device> HisDevices { get; set; } = new List<Device>();
 
-        [JsonProperty]
+        [JsonIgnore]
         public bool MarkEmailPublic { get; set; } = true;
 
-        [JsonProperty]
+        [JsonIgnore]
         public bool EnableEmailNotification { get; set; }
 
-        [JsonProperty]
+        [JsonIgnore]
         public bool ListInSearchResult { get; set; } = true;
+        
+        [JsonIgnore]
+        public DateTime PushOtpValidTo { get; set; } = DateTime.MinValue;
+        
+        [JsonIgnore]
+        [StringLength(36)]
+        public string? PushOtp { get; set; } // Guid
     }
 }
