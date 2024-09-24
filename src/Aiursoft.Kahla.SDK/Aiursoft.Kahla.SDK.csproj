@@ -7,7 +7,6 @@
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
     <IsTestProject>false</IsTestProject>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
