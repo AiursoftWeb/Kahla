@@ -12,7 +12,6 @@ namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
         public string Discriminator { get; set; }
         public string UserId { get; set; }
         public bool Muted { get; set; }
-        public bool SomeoneAtMe { get; set; }
         public bool? Online { get; set; }
         [JsonIgnore]
         public KahlaUser Sender { get; set; }

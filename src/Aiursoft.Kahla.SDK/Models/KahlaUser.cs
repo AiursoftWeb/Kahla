@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Kahla.SDK.Services;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 

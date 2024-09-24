@@ -9,9 +9,6 @@ namespace Aiursoft.Kahla.SDK.Models
 
         public int ConversationId { get; set; }
 
-        [InverseProperty(nameof(At.Message))]
-        public List<At> Ats { get; set; } = new();
-
         [JsonIgnore]
         [ForeignKey(nameof(ConversationId))]
         public Conversation Conversation { get; set; }

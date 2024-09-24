@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Version>8.0.0</Version>
+    <Version>8.0.1</Version>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
@@ -13,7 +13,7 @@
     <Product>AiursoftWeb</Product>
     <Authors>Anduin</Authors>
     <Description>The base class, interfaces, services and bot framework for Aiursoft Kahla.</Description>
-    <PackageId>Kahla.SDK</PackageId>
+    <PackageId>Aiursoft.Kahla.SDK</PackageId>
     <PackageTags>base-class shared-component aiursoft kahla</PackageTags>
     <PackageProjectUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -29,9 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.8" />
-    <PackageReference Include="Aiursoft.Scanner.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.2" />
-    <PackageReference Include="Aiursoft.CSTools" Version="8.0.4" />
   </ItemGroup>
 </Project>

@@ -45,13 +45,9 @@ namespace Aiursoft.Kahla.Server.Data
                     LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
                     Sender = t.Messages.Any() ? t.Messages.OrderByDescending(p => p.SendTime).Select(m => m.Sender).FirstOrDefault() : null,
 
-                    Muted = t is GroupConversation && ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted,
-                    SomeoneAtMe = (t is GroupConversation) && t.Messages
-                        .Where(m => m.SendTime > ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).ReadTimeStamp)
-                        .Any(p => p.Ats.Any(k => k.TargetUserId == userId)),
+                    Muted = t is GroupConversation && ((GroupConversation)t).Users.SingleOrDefault(u => u.UserId == userId).Muted
                 })
-                .OrderByDescending(t => t.SomeoneAtMe)
-                .ThenByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
+                .OrderByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
         }
 
         public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Kahla.SDK.Services;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models
