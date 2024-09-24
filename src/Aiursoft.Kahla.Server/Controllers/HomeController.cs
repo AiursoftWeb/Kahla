@@ -9,10 +9,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
     PassthroughRemoteErrors = true, 
     PassthroughAiurServerException = true)]
 [ApiModelStateChecker]
-[Route("/")]
+[Route("api")]
 public class HomeController : ControllerBase
 {
-    [Route("/")]
     public IActionResult Index()
     {
         return this.Protocol(Code.ResultShown, "Welcome to this API project!");
