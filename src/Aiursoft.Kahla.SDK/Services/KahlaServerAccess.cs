@@ -86,7 +86,7 @@ public class KahlaServerAccess(
     
     public async Task<AiurResponse> DropDeviceAsync(int id)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/drop-device", param: new { id });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/drop-device/{id}", param: new { id });
         var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
         return result;
     }

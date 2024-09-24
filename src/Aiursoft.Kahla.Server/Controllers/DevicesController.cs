@@ -76,8 +76,8 @@ public class DevicesController(
     }
     
     [HttpPost]
-    [Route("drop-device")]
-    public async Task<IActionResult> DropDevice(int id)
+    [Route("drop-device/{id:int}")]
+    public async Task<IActionResult> DropDevice([FromRoute]int id)
     {
         var user = await GetCurrentUser();
         var device = await dbContext
