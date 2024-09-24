@@ -14,94 +14,60 @@ namespace Aiursoft.Kahla.SDK.Models
             set => base.Id = value;
         }
 
-        [JsonProperty] public virtual string Bio { get; set; }
-
-        [JsonProperty] public virtual string NickName { get; set; }
-
-        [JsonProperty] public virtual string Sex { get; set; }
+        [JsonProperty] public virtual string? Bio { get; set; }
+        [JsonProperty] public virtual string? NickName { get; set; }
 
         /// <summary>
         ///     SiteName/Path/FileName.extision
         /// </summary>
         [JsonProperty]
-        public string IconFilePath { get; set; }
+        public string? IconFilePath { get; set; }
 
         [JsonProperty] public virtual string PreferedLanguage { get; set; } = "UnSet";
 
         [JsonProperty] public virtual DateTime AccountCreateTime { get; set; } = DateTime.UtcNow;
 
         [JsonProperty] public override bool EmailConfirmed { get; set; }
-
-        [NotMapped] public override bool PhoneNumberConfirmed => !string.IsNullOrEmpty(PhoneNumber);
         
         [JsonIgnore]
         [InverseProperty(nameof(PrivateConversation.RequestUser))]
-        public IEnumerable<PrivateConversation> Friends { get; set; }
+        public IEnumerable<PrivateConversation> Friends { get; set; } = new List<PrivateConversation>();
 
         [JsonIgnore]
         [InverseProperty(nameof(PrivateConversation.TargetUser))]
-        public IEnumerable<PrivateConversation> OfFriends { get; set; }
+        public IEnumerable<PrivateConversation> OfFriends { get; set; } = new List<PrivateConversation>();
 
         [JsonIgnore]
         [InverseProperty(nameof(UserGroupRelation.User))]
-        public IEnumerable<UserGroupRelation> GroupsJoined { get; set; }
+        public IEnumerable<UserGroupRelation> GroupsJoined { get; set; } = new List<UserGroupRelation>();
 
         [JsonIgnore]
         [InverseProperty(nameof(GroupConversation.Owner))]
-        public IEnumerable<GroupConversation> GroupsOwned { get; set; }
+        public IEnumerable<GroupConversation> GroupsOwned { get; set; } = new List<GroupConversation>();
 
         [JsonIgnore]
         [InverseProperty(nameof(Message.Sender))]
-        public IEnumerable<Message> MessagesSent { get; set; }
+        public IEnumerable<Message> MessagesSent { get; set; } = new List<Message>();
 
         [JsonIgnore]
         [InverseProperty(nameof(Report.Trigger))]
-        public IEnumerable<Report> Reported { get; set; }
+        public IEnumerable<Report> Reported { get; set; } = new List<Report>();
 
         [JsonIgnore]
         [InverseProperty(nameof(Report.Target))]
-        public IEnumerable<Report> ByReported { get; set; }
+        public IEnumerable<Report> ByReported { get; set; } = new List<Report>();
 
         [JsonIgnore]
         [InverseProperty(nameof(Device.KahlaUser))]
-        public IEnumerable<Device> HisDevices { get; set; }
-
-        [JsonIgnore]
-        [InverseProperty(nameof(At.TargetUser))]
-        public IEnumerable<At> ByAts { get; set; }
-
-        public int CurrentChannel { get; set; } = -1;
-        public string ConnectKey { get; set; }
-        public DateTime LastEmailHimTime { get; set; } = DateTime.MinValue;
-        public string EmailReasonInJson { get; set; }
+        public IEnumerable<Device> HisDevices { get; set; } = new List<Device>();
 
         [JsonProperty]
         public bool MarkEmailPublic { get; set; } = true;
-        [NotMapped]
-        public bool IsMe { get; set; }
-
-        [JsonProperty]
-        public int ThemeId { get; set; }
-        public bool ShouldSerializeThemeId() => IsMe;
-
-        [JsonProperty]
-        public override string Email { get; set; }
-        public bool ShouldSerializeEmail() => MarkEmailPublic || IsMe;
 
         [JsonProperty]
         public bool EnableEmailNotification { get; set; }
-        public bool ShouldSerializeEnableEmailNotification() => IsMe;
-
-        [JsonProperty]
-        public bool EnableEnterToSendMessage { get; set; } = true;
-        public bool ShouldSerializeEnableEnterToSendMessage() => IsMe;
-
-        [JsonProperty]
-        public bool EnableInvisiable { get; set; }
-        public bool ShouldSerializeEnableInvisiable() => IsMe;
 
         [JsonProperty]
         public bool ListInSearchResult { get; set; } = true;
-        public bool ShouldSerializeListInSearchResult() => IsMe;
     }
 }
