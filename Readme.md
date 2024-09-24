@@ -13,8 +13,6 @@ Kahla is a cross platform business chat application. It is written in C# and Typ
 
 This is the server project of Kahla.
 
-![overview](./screenshot.png)
-
 ## Try
 
 Try a running Kahla [here](https://kahla.aiursoft.cn).
