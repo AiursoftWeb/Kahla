@@ -104,4 +104,11 @@ public class KahlaServerAccess(
         var result = await http.Put<AiurResponse>(url, payload);
         return result;
     }
+    
+    public async Task<AiurResponse> PushTestAsync()
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/push-test-message", param: new {  });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
 }

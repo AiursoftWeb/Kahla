@@ -176,4 +176,13 @@ public class BasicServerTests
         Assert.AreEqual(1, devices3.Items?.Count);
         Assert.AreEqual("device2", devices3.Items?.First().Name);
     }
+    
+    [TestMethod]
+    public async Task PushTest()
+    {
+        await _sdk.RegisterAsync("user8@domain.com", "password");
+        var addResponse = await _sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
+        Assert.AreEqual(Code.JobDone, addResponse.Code);
+        await _sdk.PushTestAsync();
+    }
 }
