@@ -1,5 +1,4 @@
-﻿using Aiursoft.AiurProtocol;
-using Aiursoft.AiurProtocol.Exceptions;
+﻿using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Configuration;
