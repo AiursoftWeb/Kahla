@@ -6,6 +6,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
@@ -117,6 +118,36 @@ public class AuthController(
             Message = "Got your user!",
             User = user
         });
+    }
+    
+    [KahlaForceAuth]
+    [HttpPatch]
+    [Route("update-me")]
+    public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingsAddressModel model)
+    {
+        var currentUser = await GetCurrentUser();
+        if (model.ThemeId.HasValue)
+        {
+            currentUser.ThemeId = model.ThemeId ?? 0;
+        }
+        if (model.EnableEmailNotification.HasValue)
+        {
+            currentUser.EnableEmailNotification = model.EnableEmailNotification == true;
+        }
+        if (model.EnableEnterToSendMessage.HasValue)
+        {
+            currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
+        }
+        if (model.EnableHideMyOnlineStatus.HasValue)
+        {
+            currentUser.EnableHideMyOnlineStatus = model.EnableHideMyOnlineStatus == true;
+        }
+        if (model.ListInSearchResult.HasValue)
+        {
+            currentUser.ListInSearchResult = model.ListInSearchResult == true;
+        }
+        await userManager.UpdateAsync(currentUser);
+        return this.Protocol(Code.JobDone, "Successfully update your client setting.");
     }
 
     private async Task<KahlaUser> GetCurrentUser()

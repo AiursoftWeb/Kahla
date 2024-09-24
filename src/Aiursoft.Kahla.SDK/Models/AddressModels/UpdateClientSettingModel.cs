@@ -1,6 +1,6 @@
 ﻿namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels
 {
-    public class UpdateClientSettingAddressModel
+    public class UpdateClientSettingsAddressModel
     {
         public int? ThemeId { get; set; }
 
@@ -8,9 +8,7 @@
 
         public bool? EnableEnterToSendMessage { get; set; }
 
-        public bool? EnableInvisiable { get; set; }
-
-        public bool? MarkEmailPublic { get; set; }
+        public bool? EnableHideMyOnlineStatus { get; set; }
 
         public bool? ListInSearchResult { get; set; }
     }

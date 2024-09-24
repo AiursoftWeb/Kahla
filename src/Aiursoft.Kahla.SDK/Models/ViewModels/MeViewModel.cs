@@ -5,11 +5,14 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 public class MeViewModel : AiurResponse
 {
     public required KahlaUser User { get; init; }
-}
+    
+    public int ThemeId => User.ThemeId;
 
-public class InitPusherViewModel : AiurResponse
-{
-    public required string Otp { get; init; }
-    public required DateTime OtpValidTo { get; init; }
-    public required string WebSocketEndpoint { get; init; }
+    public bool EnableEmailNotification => User.EnableEmailNotification;
+
+    public bool ListInSearchResult => User.ListInSearchResult;
+    
+    public bool EnableEnterToSendMessage => User.EnableEnterToSendMessage;
+    
+    public bool EnableHideMyOnlineStatus => User.EnableHideMyOnlineStatus;
 }
