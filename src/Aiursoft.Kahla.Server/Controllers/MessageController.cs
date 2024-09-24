@@ -68,6 +68,13 @@ public class MessageController(
                 user.Email, otp);
             return this.Protocol(Code.Unauthorized, "Invalid OTP.");
         }
+        
+        if (user.PushOtpValidTo < DateTime.UtcNow)
+        {
+            logger.LogWarning("User with email: {Email} is trying to get a websocket with expired OTP {HisOTP}.",
+                user.Email, otp);
+            return this.Protocol(Code.Unauthorized, "Expired OTP.");
+        }
 
         logger.LogInformation("User with email: {Email} is trying to get a websocket.", user.Email);
         var pusher = await HttpContext.AcceptWebSocketClient();
