@@ -36,7 +36,7 @@ namespace Aiursoft.Kahla.Server
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
             services.AddScoped<WebPushClient>();
-            services.AddScoped<ThirdPartyPushService>();
+            services.AddScoped<WebPushService>();
             services.AddTaskCanon();
 
             services

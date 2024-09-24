@@ -25,7 +25,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
-    ThirdPartyPushService sender,
+    WebPushService sender,
     CanonPool canonPool,
     ILogger<DevicesController> logger,
     UserManager<KahlaUser> userManager,

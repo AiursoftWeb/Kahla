@@ -6,18 +6,16 @@ using WebPush;
 
 namespace Aiursoft.Kahla.Server.Services;
 
-public class ThirdPartyPushService(
+public class WebPushService(
     IConfiguration configuration,
     WebPushClient webPushClient,
-    ILogger<ThirdPartyPushService> logger,
+    ILogger<WebPushService> logger,
     KahlaDbContext dbContext)
 {
-    private readonly ILogger _logger = logger;
-
     public async Task PushAsync(Device device, object payload, string triggerEmail = "postermaster@aiursoft.com")
     {
-        string vapidPublicKey = configuration.GetSection("VapidKeys")["PublicKey"]!;
-        string vapidPrivateKey = configuration.GetSection("VapidKeys")["PrivateKey"]!;
+        var vapidPublicKey = configuration.GetSection("VapidKeys")["PublicKey"]!;
+        var vapidPrivateKey = configuration.GetSection("VapidKeys")["PrivateKey"]!;
         try
         {
             var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256Dh, device.PushAuth);
@@ -33,11 +31,13 @@ public class ThirdPartyPushService(
         {
             dbContext.Devices.Remove(device);
             await dbContext.SaveChangesAsync();
-            _logger.LogCritical(e, "An WebPush error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message, device.Id);
+            logger.LogCritical(e, "A  WebPush error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message, device.Id);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "An error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message, device.Id);
+            dbContext.Devices.Remove(device);
+            await dbContext.SaveChangesAsync();
+            logger.LogCritical(e, "An unknown error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message, device.Id);
         }
     }
 }
