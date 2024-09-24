@@ -25,7 +25,8 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
-    WebPushService sender,
+    WebPushService webPusher,
+    WebSocketPushService wsPusher,
     CanonPool canonPool, // Transient service.
     ILogger<DevicesController> logger,
     UserManager<KahlaUser> userManager,
@@ -161,7 +162,8 @@ public class DevicesController(
         });
         foreach (var hisDevice in user.HisDevices)
         {
-            canonPool.RegisterNewTaskToPool(async () => { await sender.PushAsync(hisDevice, messageEvent); });
+            canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, messageEvent); });
+            canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user, messageEvent); });
         }
 
         await canonPool.RunAllTasksInPoolAsync(Environment

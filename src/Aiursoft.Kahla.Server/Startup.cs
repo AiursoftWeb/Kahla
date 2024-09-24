@@ -35,8 +35,10 @@ namespace Aiursoft.Kahla.Server
                 .AddDefaultTokenProviders();
 
             services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
+            services.AddSingleton<InMemoryDataContext>();
             services.AddScoped<WebPushClient>();
             services.AddScoped<WebPushService>();
+            services.AddScoped<WebSocketPushService>();
             services.AddTaskCanon();
 
             services
