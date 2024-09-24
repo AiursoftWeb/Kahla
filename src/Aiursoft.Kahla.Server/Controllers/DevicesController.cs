@@ -26,7 +26,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/devices")]
 public class DevicesController(
     WebPushService sender,
-    CanonPool canonPool,
+    CanonPool canonPool, // Transient service.
     ILogger<DevicesController> logger,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext) : ControllerBase
