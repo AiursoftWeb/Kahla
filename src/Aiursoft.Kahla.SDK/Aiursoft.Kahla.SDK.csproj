@@ -6,6 +6,8 @@
     <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
     <IsTestProject>false</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,7 +21,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://gitlab.aiursoft.cn/Aiursoft/Kahla.git</RepositoryUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Readme.md" Pack="true" PackagePath="." />
