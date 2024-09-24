@@ -115,9 +115,9 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<AiurResponse> PatchDeviceAsync(int id, string name, string pushAuth, string pushEndpoint, string pushP256Dh)
+    public async Task<AiurResponse> UpdateDeviceAsync(int id, string name, string pushAuth, string pushEndpoint, string pushP256Dh)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/patch-device/{id}", param: new { id });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/update-device/{id}", param: new { id });
         var payload = new AiurApiPayload(new AddDeviceAddressModel
         {
             Name = name,

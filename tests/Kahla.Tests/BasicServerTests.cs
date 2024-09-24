@@ -186,7 +186,7 @@ public class BasicServerTests
         Assert.AreEqual(1, devices2.Items?.Count);
         Assert.AreEqual("device1", devices2.Items?.First().Name);
 
-        var patchResponse = await _sdk.PatchDeviceAsync(addResponse.Value, "device2", "auth2",
+        var patchResponse = await _sdk.UpdateDeviceAsync(addResponse.Value, "device2", "auth2",
             "endpoint://test_endpoint2", "p256dh2");
         Assert.AreEqual(Code.JobDone, patchResponse.Code);
 

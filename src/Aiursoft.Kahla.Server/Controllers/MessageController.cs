@@ -70,7 +70,8 @@ public class MessageController(
             return this.Protocol(Code.Unauthorized, "Expired OTP.");
         }
 
-        logger.LogInformation("User with email: {Email} is trying to get a websocket.", user.Email);
+        logger.LogInformation("User with email: {Email} is trying to get a websocket. And he provided the correct OTP.",
+            user.Email);
         var pusher = await HttpContext.AcceptWebSocketClient();
         var channel = context.GetMyChannel(user.Id);
         var outSub = channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));

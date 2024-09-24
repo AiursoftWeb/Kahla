@@ -113,8 +113,8 @@ public class DevicesController(
     }
 
     [HttpPut]
-    [Route("patch-device/{id:int}")]
-    public async Task<IActionResult> PatchDevice([FromRoute] int id, AddDeviceAddressModel model)
+    [Route("update-device/{id:int}")]
+    public async Task<IActionResult> UpdateDevice([FromRoute] int id, AddDeviceAddressModel model)
     {
         var user = await GetCurrentUser();
         logger.LogInformation("User with email: {Email} is trying to patch a device with id: {DeviceId}", user.Email, id);

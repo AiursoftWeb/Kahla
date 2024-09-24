@@ -166,6 +166,7 @@ public class AuthController(
             userTrackedInDb.ListInSearchResult = model.ListInSearchResult == true;
         }
         await userManager.UpdateAsync(userTrackedInDb);
+        logger.LogInformation("User with email: {Email} successfully updated his client setting.", userTrackedInDb.Email);
         return this.Protocol(Code.JobDone, "Successfully update your client setting.");
     }
 
