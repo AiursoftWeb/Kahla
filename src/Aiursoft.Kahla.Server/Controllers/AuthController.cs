@@ -1,6 +1,7 @@
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.ModelsOBS;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[GenerateDoc]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true, 
     PassthroughAiurServerException = true)]
@@ -24,6 +26,10 @@ public class AuthController(
     [Route("signin")]
     public async Task<IActionResult> SignIn(SignInAddressModel model)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return this.Protocol(Code.Conflict, "You are already signed in!");
+        }
         var result = await signInManager.PasswordSignInAsync(model.Email!, model.Password!, true, lockoutOnFailure: true);
         if (result.Succeeded)
         {

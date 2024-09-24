@@ -1,9 +1,11 @@
 ﻿using Aiursoft.AiurProtocol.Server;
 using Aiursoft.DbTools.Sqlite;
+using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.WebTools.Abstractions.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
 
@@ -46,6 +48,18 @@ namespace Aiursoft.Kahla.Server
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapDefaultControllerRoute();
+            app.UseAiursoftDocGenerator(options =>
+            {
+                options.DocAddress = "/api/doc";
+                options.Format = DocFormat.Markdown;
+                options.RequiresAuthorized = (action, controller) =>
+                {
+                    return
+                        action.CustomAttributes.Any(t => t.AttributeType == typeof(AuthorizeAttribute)) ||
+                        controller.CustomAttributes.Any(t => t.AttributeType == typeof(AuthorizeAttribute));
+                };
+            });
+
         }
     }
 }

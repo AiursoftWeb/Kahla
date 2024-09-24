@@ -1,11 +1,13 @@
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[GenerateDoc]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true, 
     PassthroughAiurServerException = true)]
