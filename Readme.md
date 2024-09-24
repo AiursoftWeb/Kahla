@@ -1,6 +1,10 @@
 # Kahla
 
-![Kahla-logo](./kahla.png)
+<p align="center">
+    <img width="100px" src="./kahla.png">
+    <h3 align="center">Kahla</h3>
+    <p align="center">Kahla is a cross-platform business messaging app.<p>
+</p>
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/blob/master/LICENSE)
 [![Pipeline stat](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
