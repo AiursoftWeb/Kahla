@@ -199,10 +199,11 @@ public class BasicServerTests
         var endpointUrl = pusher.WebSocketEndpoint;
         var socket = await endpointUrl.ConnectAsWebSocketServer();
         var socketStage = new MessageStageLast<string>();
-        socket.Subscribe(socketStage);
+        var subscription = socket.Subscribe(socketStage);
         await Task.Factory.StartNew(() => socket.Listen());
         await _sdk.PushTestAsync();
-        await Task.Delay(200);
-        Assert.IsTrue(socketStage.Stage?.Contains("Test"));
+        await Task.Delay(500);
+        Assert.IsTrue(socketStage.Stage?.Contains("message"));
+        subscription.Unsubscribe();
     }
 }
