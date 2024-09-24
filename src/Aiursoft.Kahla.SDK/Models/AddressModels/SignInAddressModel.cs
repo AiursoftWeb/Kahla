@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Aiursoft.AiurProtocol;
 
 namespace Aiursoft.Kahla.SDK.Models.AddressModels;
 

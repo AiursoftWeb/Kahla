@@ -48,7 +48,7 @@ public class AuthController(
         else
         {
             logger.LogWarning("Invalid login attempt from email: {Email}", model.Email);
-            return this.Protocol(Code.InvalidInput, "Invalid login attempt!");
+            return this.Protocol(Code.Unauthorized, "Invalid login attempt! Please check your email and password.");
         }
     }
     
@@ -69,11 +69,9 @@ public class AuthController(
             logger.LogInformation("User with email: {Email} created.", model.Email);
             return this.Protocol(Code.JobDone, "User created!");
         }
-        else
-        {
-            logger.LogWarning("Failed to create user with email: {Email}. Errors: {Errors}", model.Email, result.Errors);
-        }
-        return this.Protocol(Code.InvalidInput, "Failed to create user!", result.Errors.ToArray());
+        
+        logger.LogWarning("Failed to create user with email: {Email}. Errors: {Errors}", model.Email, result.Errors);
+        return this.Protocol(Code.Conflict, string.Join(", ", result.Errors.Select(t => t.Description)));
     }
     
     [KahlaForceAuth]

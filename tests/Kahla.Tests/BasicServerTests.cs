@@ -1,3 +1,4 @@
+using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK.Services;
@@ -19,11 +20,11 @@ public class BasicServerTests
     {
         _port = Network.GetAvailablePort();
         var endpointUrl = $"http://localhost:{_port}";
-        
+
         var services = new ServiceCollection();
         services.AddKahlaService(endpointUrl);
         var serviceProvider = services.BuildServiceProvider();
-        _sdk = serviceProvider.GetRequiredService<KahlaServerAccess>(); 
+        _sdk = serviceProvider.GetRequiredService<KahlaServerAccess>();
     }
 
     [TestInitialize]
@@ -47,5 +48,42 @@ public class BasicServerTests
     {
         var home = await _sdk.ServerInfoAsync();
         Assert.AreEqual(home.ServerName, "Your Server Name");
+    }
+
+    [TestMethod]
+    public async Task Register_Signout_SignIn()
+    {
+        await _sdk.RegisterAsync("user1@domain.com", "password");
+        await _sdk.Signout();
+        await _sdk.SignInAsync("user1@domain.com", "password");
+    }
+
+    [TestMethod]
+    public async Task SignInInvalid()
+    {
+        try
+        {
+            await _sdk.SignInAsync("bad@a.com", "badzzzzzzz");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(e.Response.Message, "Invalid login attempt! Please check your email and password.");
+        }
+    }
+
+    [TestMethod]
+    public async Task DuplicateRegister()
+    {
+        await _sdk.RegisterAsync("anduin@aiursoft.com", "password");
+        try
+        {
+            await _sdk.RegisterAsync("anduin@aiursoft.com", "password");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(e.Response.Message, "Username 'anduin@aiursoft.com' is already taken.");
+        }
     }
 }
