@@ -20,12 +20,15 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
+    ILogger<DevicesController> logger,
     UserManager<KahlaUser> userManager, 
     KahlaDbContext dbContext) : ControllerBase
 {
+    [Route("my-devices")]
     public async Task<IActionResult> MyDevices()
     {
         var user = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} is trying to get all his devices.", user.Email);
         var devices = await dbContext
             .Devices
             .AsNoTracking()
