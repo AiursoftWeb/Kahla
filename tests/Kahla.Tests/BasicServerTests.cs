@@ -111,4 +111,12 @@ public class BasicServerTests
         Assert.AreEqual("user3", me.User.NickName);
         Assert.AreEqual("user3@domain.com", me.User.Email);
     }
+    
+    [TestMethod]
+    public async Task GetMyDevices()
+    {
+        await _sdk.RegisterAsync("user4@domain.com", "password");
+        var devices = await _sdk.MyDevices();
+        Assert.AreEqual(0, devices.Items?.Count);
+    }
 }

@@ -1,6 +1,7 @@
 using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Services;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Microsoft.Extensions.Options;
@@ -59,6 +60,13 @@ public class KahlaServerAccess(
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/me", param: new {});
         var result = await http.Get<MeViewModel>(url);
+        return result;
+    }
+    
+    public async Task<AiurCollection<Device>> MyDevices()
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/my-devices", param: new {});
+        var result = await http.Get<AiurCollection<Device>>(url);
         return result;
     }
 }

@@ -24,6 +24,7 @@ public class DevicesController(
     UserManager<KahlaUser> userManager, 
     KahlaDbContext dbContext) : ControllerBase
 {
+    [HttpGet]
     [Route("my-devices")]
     public async Task<IActionResult> MyDevices()
     {
