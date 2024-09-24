@@ -94,6 +94,7 @@ public class DevicesController(
     public async Task<IActionResult> DropDevice([FromRoute] int id)
     {
         var user = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} is trying to drop a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
@@ -105,6 +106,8 @@ public class DevicesController(
 
         dbContext.Devices.Remove(device);
         await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with email: {Email} successfully dropped a device with id: {DeviceId}",
+            user.Email, device.Id);
         return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
     }
 
@@ -113,6 +116,7 @@ public class DevicesController(
     public async Task<IActionResult> PatchDevice([FromRoute] int id, AddDeviceAddressModel model)
     {
         var user = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} is trying to patch a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
@@ -128,6 +132,8 @@ public class DevicesController(
         device.PushP256Dh = model.PushP256Dh!;
         dbContext.Devices.Update(device);
         await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with email: {Email} successfully patched a device with id: {DeviceId}",
+            user.Email, device.Id);
         return this.Protocol(Code.JobDone, "Successfully updated your new device with id: " + device.Id,
             value: device.Id);
     }
@@ -137,6 +143,7 @@ public class DevicesController(
     public async Task<IActionResult> PushTestMessage()
     {
         var user = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} is trying to push a test message to all his devices.", user.Email);
         await dbContext.Entry(user)
             .Collection(b => b.HisDevices)
             .LoadAsync();
@@ -160,6 +167,7 @@ public class DevicesController(
         await canonPool.RunAllTasksInPoolAsync(Environment
             .ProcessorCount); // Execute tasks in pool, running tasks should be max at 8.
 
+        logger.LogInformation("User with email: {Email} successfully pushed a test message to all his devices.", user.Email);
         // TODO: Push with stargate.
         //_cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");

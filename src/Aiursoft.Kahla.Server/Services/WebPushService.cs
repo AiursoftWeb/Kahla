@@ -18,6 +18,8 @@ public class WebPushService(
         var vapidPrivateKey = configuration.GetSection("VapidKeys")["PrivateKey"]!;
         try
         {
+            logger.LogInformation("Trying to push a message to device: {DeviceId}. Device endpoint: {Endpoint}, Device P256DH: {P256DH}, Device Auth: {Auth}", 
+                device.Id, device.PushEndpoint, device.PushP256Dh, device.PushAuth);
             var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256Dh, device.PushAuth);
             var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
             var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
