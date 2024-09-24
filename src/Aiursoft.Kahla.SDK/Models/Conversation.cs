@@ -10,7 +10,7 @@ namespace Aiursoft.Kahla.SDK.Models
         [Key]
         public int Id { get; set; }
         public string Discriminator { get; set; }
-        public int MaxLiveSeconds { get; set; } = int.MaxValue;
+        
         [JsonIgnore]
         [InverseProperty(nameof(Message.Conversation))]
         public IEnumerable<Message> Messages { get; set; }
@@ -27,7 +27,7 @@ namespace Aiursoft.Kahla.SDK.Models
         public abstract string GetDisplayImagePath(string userId);
         public abstract int GetUnReadAmount(string userId);
         public abstract bool Muted(string userId);
-        public abstract Conversation Build(string userId, OnlineJudger onlineJudger);
+        public abstract Conversation Build(string userId);
         public abstract Message GetLatestMessage();
         public abstract void ForEachUser(Action<KahlaUser, UserGroupRelation> function);
         public abstract bool HasUser(string userId);

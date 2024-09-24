@@ -104,15 +104,5 @@ namespace Aiursoft.Kahla.SDK.Models
         [JsonProperty]
         public bool ListInSearchResult { get; set; } = true;
         public bool ShouldSerializeListInSearchResult() => IsMe;
-
-        [JsonProperty]
-        [NotMapped]
-        public bool? IsOnline { get; set; } = false;
-
-        public KahlaUser Build(OnlineJudger judge)
-        {
-            IsOnline = judge.IsOnline(Id, !EnableInvisiable);
-            return this;
-        }
     }
 }

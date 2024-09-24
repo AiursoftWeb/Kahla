@@ -39,7 +39,6 @@ namespace Aiursoft.Kahla.SDK.Models
         public override Message GetLatestMessage()
         {
             return Messages
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .OrderByDescending(p => p.SendTime)
                 .FirstOrDefault();
         }
@@ -57,15 +56,11 @@ namespace Aiursoft.Kahla.SDK.Models
             return Users?.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
         }
 
-        public override Conversation Build(string userId, OnlineJudger onlineJudger)
+        public override Conversation Build(string userId)
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
             Users = Users.OrderByDescending(t => t.UserId == OwnerId).ThenBy(t => t.JoinTime);
-            foreach (var user in Users)
-            {
-                user.User.Build(onlineJudger);
-            }
             return this;
         }
 

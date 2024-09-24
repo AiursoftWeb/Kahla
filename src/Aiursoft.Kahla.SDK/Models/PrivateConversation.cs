@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Kahla.SDK.Services;
 
 namespace Aiursoft.Kahla.SDK.Models
 {
@@ -21,11 +20,9 @@ namespace Aiursoft.Kahla.SDK.Models
         public override string GetDisplayName(string userId) => SpecialUser(userId).NickName;
         public override int GetUnReadAmount(string userId) => Messages.Count(p => !p.Read && p.SenderId != userId);
 
-
         public override Message GetLatestMessage()
         {
             return Messages
-                .Where(t => DateTime.UtcNow < t.SendTime + TimeSpan.FromSeconds(t.Conversation.MaxLiveSeconds))
                 .OrderByDescending(p => p.SendTime)
                 .FirstOrDefault();
         }
@@ -44,13 +41,11 @@ namespace Aiursoft.Kahla.SDK.Models
             return false;
         }
 
-        public override Conversation Build(string userId, OnlineJudger onlineJudger)
+        public override Conversation Build(string userId)
         {
             DisplayName = GetDisplayName(userId);
             DisplayImagePath = GetDisplayImagePath(userId);
             AnotherUserId = SpecialUser(userId).Id;
-            RequestUser.Build(onlineJudger);
-            TargetUser.Build(onlineJudger);
             return this;
         }
 

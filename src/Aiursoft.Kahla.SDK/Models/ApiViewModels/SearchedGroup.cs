@@ -25,7 +25,6 @@
             HasPassword = !string.IsNullOrEmpty(conversation.JoinPassword);
             OwnerId = conversation.OwnerId;
             Id = conversation.Id;
-            HasTimer = conversation.MaxLiveSeconds < int.MaxValue;
             ConversationCreateTime = conversation.ConversationCreateTime;
         }
 
@@ -34,7 +33,6 @@
         public bool HasPassword { get; set; }
         public string OwnerId { get; set; }
         public int Id { get; set; }
-        public bool HasTimer { get; set; }
         public DateTime ConversationCreateTime { get; set; }
     }
 }
