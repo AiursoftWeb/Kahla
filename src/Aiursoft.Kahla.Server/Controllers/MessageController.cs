@@ -22,8 +22,8 @@ public class MessageController(
     ILogger<MessageController> logger,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
-    [Route("{id}")]
-    public async Task WebSocket([FromRoute]string id)
+    [Route("websocket")]
+    public async Task WebSocket()
     {
         var user = await GetCurrentUser();
         logger.LogInformation("User with email: {Email} is trying to get a websocket.", user.Email);
