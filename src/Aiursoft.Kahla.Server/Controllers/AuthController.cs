@@ -6,7 +6,6 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
-using Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
@@ -116,37 +115,57 @@ public class AuthController(
         {
             Code = Code.ResultShown,
             Message = "Got your user!",
-            User = user
+            User = user,
+            
+            // Private information
+            ThemeId = user.ThemeId,
+            EnableEmailNotification = user.EnableEmailNotification,
+            ListInSearchResult = user.ListInSearchResult,
+            EnableEnterToSendMessage = user.EnableEnterToSendMessage,
+            EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus
         });
     }
     
     [KahlaForceAuth]
     [HttpPatch]
     [Route("update-me")]
-    public async Task<IActionResult> UpdateClientSetting(UpdateClientSettingsAddressModel model)
+    public async Task<IActionResult> UpdateClientSetting(UpdateMeAddressModel model)
     {
-        var currentUser = await GetCurrentUser();
+        var userTrackedInDb = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} is trying to update his client setting.", userTrackedInDb.Email);
+        
+        // Public information
+        if (model.NickName != null)
+        {
+            userTrackedInDb.NickName = model.NickName;
+        }
+        if (model.Bio != null)
+        {
+            userTrackedInDb.Bio = model.Bio;
+        }
+        
+        // Private information
         if (model.ThemeId.HasValue)
         {
-            currentUser.ThemeId = model.ThemeId ?? 0;
+            userTrackedInDb.ThemeId = model.ThemeId ?? 0;
         }
         if (model.EnableEmailNotification.HasValue)
         {
-            currentUser.EnableEmailNotification = model.EnableEmailNotification == true;
+            userTrackedInDb.EnableEmailNotification = model.EnableEmailNotification == true;
         }
         if (model.EnableEnterToSendMessage.HasValue)
         {
-            currentUser.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
+            userTrackedInDb.EnableEnterToSendMessage = model.EnableEnterToSendMessage == true;
         }
         if (model.EnableHideMyOnlineStatus.HasValue)
         {
-            currentUser.EnableHideMyOnlineStatus = model.EnableHideMyOnlineStatus == true;
+            userTrackedInDb.EnableHideMyOnlineStatus = model.EnableHideMyOnlineStatus == true;
         }
         if (model.ListInSearchResult.HasValue)
         {
-            currentUser.ListInSearchResult = model.ListInSearchResult == true;
+            userTrackedInDb.ListInSearchResult = model.ListInSearchResult == true;
         }
-        await userManager.UpdateAsync(currentUser);
+        await userManager.UpdateAsync(userTrackedInDb);
         return this.Protocol(Code.JobDone, "Successfully update your client setting.");
     }
 

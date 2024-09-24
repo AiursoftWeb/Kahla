@@ -1,4 +1,5 @@
 using Aiursoft.AiurProtocol.Models;
+using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
@@ -6,13 +7,12 @@ public class MeViewModel : AiurResponse
 {
     public required KahlaUser User { get; init; }
     
-    public int ThemeId => User.ThemeId;
+    public int ThemeId { get; init; }
 
-    public bool EnableEmailNotification => User.EnableEmailNotification;
+    public bool EnableEmailNotification { get; init; }
+    public bool ListInSearchResult { get; init; }
 
-    public bool ListInSearchResult => User.ListInSearchResult;
-    
-    public bool EnableEnterToSendMessage => User.EnableEnterToSendMessage;
-    
-    public bool EnableHideMyOnlineStatus => User.EnableHideMyOnlineStatus;
+    public bool EnableEnterToSendMessage { get; init; }
+
+    public bool EnableHideMyOnlineStatus { get; init; }
 }

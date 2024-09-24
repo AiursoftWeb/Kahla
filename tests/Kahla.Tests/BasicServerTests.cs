@@ -116,6 +116,20 @@ public class BasicServerTests
         Assert.AreEqual("user3", me.User.NickName);
         Assert.AreEqual("user3@domain.com", me.User.Email);
     }
+
+    [TestMethod]
+    public async Task PatchMyInfo()
+    {
+        await _sdk.RegisterAsync("user10@domain.com", "password");
+        var me = await _sdk.MeAsync();
+        Assert.AreEqual("user10", me.User.NickName);
+        
+        await _sdk.UpdateMeAsync(themeId: 1, listInSearchResult: false, nickName: "new nick name!");
+        var me2 = await _sdk.MeAsync();
+        Assert.AreEqual("new nick name!", me2.User.NickName);
+        Assert.AreEqual(1, me2.ThemeId);
+        Assert.IsFalse(me2.ListInSearchResult);
+    }
     
     [TestMethod]
     public async Task GetMyDevices()

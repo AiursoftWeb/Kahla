@@ -4,6 +4,7 @@ using Aiursoft.AiurProtocol.Services;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels;
 using Microsoft.Extensions.Options;
 
 namespace Aiursoft.Kahla.SDK.Services;
@@ -60,6 +61,30 @@ public class KahlaServerAccess(
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/me", param: new {});
         var result = await http.Get<MeViewModel>(url);
+        return result;
+    }
+
+    public async Task<AiurResponse> UpdateMeAsync(
+        string? nickName = null,
+        string? bio = null,
+        int? themeId = null, 
+        bool? enableEmailNotification = null, 
+        bool? enableEnterToSendMessage = null, 
+        bool? enableHideMyOnlineStatus = null, 
+        bool? listInSearchResult = null)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/update-me", param: new {});
+        var model = new AiurApiPayload(new UpdateMeAddressModel
+        {
+            NickName = nickName,
+            Bio = bio,
+            ThemeId = themeId,
+            EnableEmailNotification = enableEmailNotification,
+            EnableEnterToSendMessage = enableEnterToSendMessage,
+            EnableHideMyOnlineStatus = enableHideMyOnlineStatus,
+            ListInSearchResult = listInSearchResult
+        });
+        var result = await http.Patch<MeViewModel>(url, model);
         return result;
     }
     

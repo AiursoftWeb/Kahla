@@ -29,18 +29,12 @@ public class MessageController(
     public async Task<IActionResult> InitWebSocket()
     {
         var user = await GetCurrentUser();
-        var userTrackedInDb = await dbContext.Users.FindAsync(user.Id);
-        if (userTrackedInDb == null)
-        {
-            return this.Protocol(Code.NotFound, "The user does not exist in the database.");
-        }
-
         logger.LogInformation("User with email: {Email} is trying to init a websocket OTP.", user.Email);
         var otp = Guid.NewGuid().ToString("N");
         var otpValidTo = DateTime.UtcNow.AddMinutes(5);
-        userTrackedInDb.PushOtp = otp;
-        userTrackedInDb.PushOtpValidTo = otpValidTo;
-        await dbContext.SaveChangesAsync();
+        user.PushOtp = otp;
+        user.PushOtpValidTo = otpValidTo;
+        await userManager.UpdateAsync(user);
         return this.Protocol(new InitPusherViewModel
         {
             Code = Code.ResultShown,

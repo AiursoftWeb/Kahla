@@ -15,14 +15,20 @@ public class KahlaUser : IdentityUser
         get => base.Id;
         set => base.Id = value;
     }
-
-    [JsonProperty] public virtual string? Bio { get; set; }
-    [JsonProperty] public virtual string? NickName { get; set; }
+    
+    [JsonProperty] 
+    [StringLength(40, MinimumLength = 1)]
+    public virtual string? NickName { get; set; }
+    
+    [JsonProperty] 
+    [StringLength(100, MinimumLength = 1)]
+    public virtual string? Bio { get; set; }
 
     /// <summary>
     ///     SiteName/Path/FileName.extision
     /// </summary>
     [JsonProperty]
+    [StringLength(512)]
     public string? IconFilePath { get; set; }
 
     [JsonProperty] public virtual DateTime AccountCreateTime { get; set; } = DateTime.UtcNow;
@@ -63,7 +69,7 @@ public class KahlaUser : IdentityUser
     public IEnumerable<Device> HisDevices { get; set; } = new List<Device>();
 
     // User's settings
-    [JsonIgnore] public int ThemeId { get; set; } = 0;
+    [JsonIgnore] public int ThemeId { get; set; }
 
     [JsonIgnore] public bool EnableEmailNotification { get; set; } = true;
 

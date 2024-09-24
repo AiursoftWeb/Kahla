@@ -1,7 +1,14 @@
-﻿namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Aiursoft.Kahla.SDK.Models.AddressModels
 {
-    public class UpdateClientSettingsAddressModel
+    public class UpdateMeAddressModel
     {
+        [StringLength(100, MinimumLength = 1)]
+        public string? Bio { get; set; }
+        
+        [StringLength(40, MinimumLength = 1)]
+        public string? NickName { get; set; }
         public int? ThemeId { get; set; }
 
         public bool? EnableEmailNotification { get; set; }
