@@ -89,7 +89,7 @@ public class AuthController(
     {
         var user = await GetCurrentUser();
         logger.LogInformation("User with email: {Email} queried their own information.", user.Email);
-        return this.Protocol( new MeViewModel
+        return this.Protocol(new MeViewModel
         {
             Code = Code.ResultShown,
             Message = "Got your user!",
