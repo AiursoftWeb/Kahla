@@ -1,7 +1,8 @@
 using Aiursoft.AiurProtocol;
+using Aiursoft.Kahla.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Aiursoft.Kahla.SDK.Services;
+namespace Aiursoft.Kahla.SDK;
 
 public static class Extensions
 {

@@ -28,8 +28,8 @@ namespace Aiursoft.Kahla.Server.Services
 
         public Task PushAsync(IEnumerable<Device> devices, object payload, string triggerEmail = "postermaster@aiursoft.com")
         {
-            string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"];
-            string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"];
+            string vapidPublicKey = _configuration.GetSection("VapidKeys")["PublicKey"]!;
+            string vapidPrivateKey = _configuration.GetSection("VapidKeys")["PrivateKey"]!;
             // Push to all devices.
 
             var pushTasks = new ConcurrentBag<Task>();

@@ -16,6 +16,7 @@ namespace Aiursoft.Kahla.Server.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
 
+        #nullable disable
         public IQueryable<ContactInfo> MyContacts(string userId)
         {
             return Conversations
@@ -25,7 +26,7 @@ namespace Aiursoft.Kahla.Server.Data
                 .Select(t => new ContactInfo
                 {
                     ConversationId = t.Id,
-                    Discriminator = t.Discriminator,
+                    Discriminator = t.Discriminator!,
 
                     DisplayName = (t is PrivateConversation) ?
                         (userId == ((PrivateConversation)t).RequesterId ? ((PrivateConversation)t).TargetUser.NickName : ((PrivateConversation)t).RequestUser.NickName) :
@@ -48,14 +49,15 @@ namespace Aiursoft.Kahla.Server.Data
                 })
                 .OrderByDescending(t => t.LatestMessage == null ? DateTime.MinValue : t.LatestMessage.SendTime);
         }
+        #nullable enable
 
-        public async Task<UserGroupRelation> GetRelationFromGroup(string userId, int groupId)
+        public async Task<UserGroupRelation?> GetRelationFromGroup(string userId, int groupId)
         {
             return await UserGroupRelations
                 .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
 
-        public Task<PrivateConversation> FindConversationAsync(string userId1, string userId2)
+        public Task<PrivateConversation?> FindConversationAsync(string userId1, string userId2)
         {
             return PrivateConversations.Where(t =>
                     (t.RequesterId == userId1 && t.TargetId == userId2) ||
@@ -91,7 +93,7 @@ namespace Aiursoft.Kahla.Server.Data
                 GroupName = groupName,
                 GroupImagePath = groupImagePath,
                 OwnerId = creatorId,
-                JoinPassword = joinPassword ?? string.Empty
+                JoinPassword = joinPassword
             };
             await GroupConversations.AddAsync(newGroup);
             await SaveChangesAsync();
@@ -109,7 +111,7 @@ namespace Aiursoft.Kahla.Server.Data
             return conversation;
         }
 
-        public async Task<DateTime> SetLastRead(Conversation conversation, string userId)
+        public async Task<DateTime> GetLastReadTime(Conversation conversation, string userId)
         {
             if (conversation is PrivateConversation)
             {
@@ -137,11 +139,11 @@ namespace Aiursoft.Kahla.Server.Data
                     .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
                 try
                 {
-                    return relation.ReadTimeStamp;
+                    return relation!.ReadTimeStamp;
                 }
                 finally
                 {
-                    relation.ReadTimeStamp = DateTime.UtcNow;
+                    if (relation != null) relation.ReadTimeStamp = DateTime.UtcNow;
                 }
             }
             else

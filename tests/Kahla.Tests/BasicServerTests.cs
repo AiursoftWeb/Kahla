@@ -1,6 +1,7 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
+using Aiursoft.Kahla.SDK;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
@@ -47,7 +48,7 @@ public class BasicServerTests
     public async Task TestServerInfo()
     {
         var home = await _sdk.ServerInfoAsync();
-        Assert.AreEqual(home.ServerName, "Your Server Name");
+        Assert.AreEqual("Your Server Name", home.ServerName);
     }
 
     [TestMethod]
@@ -68,7 +69,22 @@ public class BasicServerTests
         }
         catch (AiurUnexpectedServerResponseException e)
         {
-            Assert.AreEqual(e.Response.Message, "Invalid login attempt! Please check your email and password.");
+            Assert.AreEqual("Invalid login attempt! Please check your email and password.", e.Response.Message);
+        }
+    }
+
+    [TestMethod]
+    public async Task SignInWhileSignedIn()
+    {
+        await _sdk.RegisterAsync("user2@domain.com", "password");
+        try
+        {
+            await _sdk.SignInAsync("zzzzzzzz@domain.com", "password");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("You are already signed in!", e.Response.Message);
         }
     }
 
@@ -83,7 +99,7 @@ public class BasicServerTests
         }
         catch (AiurUnexpectedServerResponseException e)
         {
-            Assert.AreEqual(e.Response.Message, "Username 'anduin@aiursoft.com' is already taken.");
+            Assert.AreEqual("Username 'anduin@aiursoft.com' is already taken.", e.Response.Message);
         }
     }
 }
