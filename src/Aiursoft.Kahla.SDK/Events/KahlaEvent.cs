@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Events
 {

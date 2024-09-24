@@ -1,6 +1,7 @@
 ﻿using Aiursoft.AiurProtocol.Server;
 using Aiursoft.DbTools.Sqlite;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.WebTools.Abstractions.Models;
