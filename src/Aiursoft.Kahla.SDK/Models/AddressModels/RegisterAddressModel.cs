@@ -10,7 +10,8 @@ public class RegisterAddressModel
     public string? Email { get; set; }
 
     [Required]
-    [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+    [MinLength(6, ErrorMessage = "Password length should between 6 and 32.")]
+    [MaxLength(32, ErrorMessage = "Password length should between 6 and 32.")]
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
     public string? Password { get; set; }

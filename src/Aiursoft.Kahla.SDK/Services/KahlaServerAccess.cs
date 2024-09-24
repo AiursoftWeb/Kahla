@@ -45,6 +45,18 @@ public class KahlaServerAccess(
         return result;
     }
     
+    public async Task<AiurResponse> ChangePasswordAsync(string oldPassword, string newPassword)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/change-password", param: new {});
+        var model = new AiurApiPayload(new ChangePasswordAddressModel
+        {
+            OldPassword = oldPassword,
+            NewPassword = newPassword
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
+    
     public async Task<AiurResponse> SignoutAsync(int? deviceId = null)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/signout", param: new {});

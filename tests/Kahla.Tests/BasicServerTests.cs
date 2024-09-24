@@ -92,6 +92,25 @@ public class BasicServerTests
             Assert.AreEqual("You are already signed in!", e.Response.Message);
         }
     }
+    
+    [TestMethod]
+    public async Task SignIn_ChangePassword_SignIn()
+    {
+        await _sdk.RegisterAsync("user11@domain.com", "password");
+        await _sdk.ChangePasswordAsync("password", "newpassword");
+        await _sdk.SignoutAsync();
+        try
+        {
+            await _sdk.SignInAsync("user11@domain.com", "password");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("Invalid login attempt! Please check your email and password.", e.Response.Message);
+        }
+        
+        await _sdk.SignInAsync("user11@domain.com", "newpassword");
+    }
 
     [TestMethod]
     public async Task DuplicateRegister()

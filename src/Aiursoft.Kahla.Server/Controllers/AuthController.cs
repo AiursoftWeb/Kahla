@@ -78,6 +78,23 @@ public class AuthController(
     
     [KahlaForceAuth]
     [HttpPost]
+    [Route("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
+    {
+        var currentUser = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} requested to change his password.", currentUser.Email);
+        var result = await userManager.ChangePasswordAsync(currentUser, model.OldPassword!, model.NewPassword!);
+        if (!result.Succeeded)
+        {
+            logger.LogWarning("Failed to change password for user with email: {Email}. Errors: {Errors}", currentUser.Email, result.Errors);
+            return this.Protocol(Code.Unauthorized, string.Join(", ", result.Errors.Select(t => t.Description)));
+        }
+        logger.LogInformation("User with email: {Email} successfully changed his password.", currentUser.Email);
+        return this.Protocol(Code.JobDone, "Successfully changed your password!");
+    }
+    
+    [KahlaForceAuth]
+    [HttpPost]
     [Route("signout")]
     public async Task<IActionResult> SignOutUser(SignOutAddressModel model)
     {
