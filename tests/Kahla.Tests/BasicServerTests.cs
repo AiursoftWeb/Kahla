@@ -97,6 +97,16 @@ public class BasicServerTests
     public async Task SignIn_ChangePassword_SignIn()
     {
         await _sdk.RegisterAsync("user11@domain.com", "password");
+        try
+        {
+            await _sdk.ChangePasswordAsync("bad_password", "useless_string");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("Incorrect password.", e.Response.Message);
+        }
+        
         await _sdk.ChangePasswordAsync("password", "newpassword");
         await _sdk.SignoutAsync();
         try
