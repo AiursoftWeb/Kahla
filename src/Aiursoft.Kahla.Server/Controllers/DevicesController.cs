@@ -94,18 +94,18 @@ public class DevicesController(
     }
     
     [HttpPut]
-    [Route("patch-device")]
+    [Route("patch-device/{id:int}")]
     [Produces(typeof(AiurValue<Device>))]
-    public async Task<IActionResult> PatchDevice(PatchDeviceAddressModel model)
+    public async Task<IActionResult> PatchDevice([FromRoute]int id, AddDeviceAddressModel model)
     {
         var user = await GetCurrentUser();
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
-            .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
+            .SingleOrDefaultAsync(t => t.Id == id);
         if (device == null)
         {
-            return this.Protocol(Code.NotFound, "Can not find a device with ID: " + model.DeviceId);
+            return this.Protocol(Code.NotFound, "Can not find a device with ID: " + id);
         }
         device.Name = model.Name!;
         device.PushAuth = model.PushAuth!;

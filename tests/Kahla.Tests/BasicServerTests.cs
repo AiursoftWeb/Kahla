@@ -153,4 +153,27 @@ public class BasicServerTests
         var devices3 = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices3.Items?.Count);
     }
+
+    [TestMethod]
+    public async Task AddAndPatchDevice()
+    {
+        await _sdk.RegisterAsync("user7@domain.com", "password");
+        var devices = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(0, devices.Items?.Count);
+
+        var addResponse = await _sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
+        Assert.AreEqual(Code.JobDone, addResponse.Code);
+
+        var devices2 = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(1, devices2.Items?.Count);
+        Assert.AreEqual("device1", devices2.Items?.First().Name);
+
+        var patchResponse = await _sdk.PatchDeviceAsync(addResponse.Value, "device2", "auth2",
+            "endpoint://test_endpoint2", "p256dh2");
+        Assert.AreEqual(Code.JobDone, patchResponse.Code);
+
+        var devices3 = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(1, devices3.Items?.Count);
+        Assert.AreEqual("device2", devices3.Items?.First().Name);
+    }
 }
