@@ -1,4 +1,3 @@
-using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
@@ -81,7 +80,7 @@ public class AuthController(
     [Route("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
     {
-        var currentUser = await GetCurrentUser();
+        var currentUser = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} requested to change his password.", currentUser.Email);
         var result = await userManager.ChangePasswordAsync(currentUser, model.OldPassword!, model.NewPassword!);
         if (!result.Succeeded)
@@ -98,7 +97,7 @@ public class AuthController(
     [Route("signout")]
     public async Task<IActionResult> SignOutUser(SignOutAddressModel model)
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} requested to sign out.", user.Email);
         var device = await dbContext
             .Devices
@@ -126,7 +125,7 @@ public class AuthController(
     [Route("me")]
     public async Task<IActionResult> Me()
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} queried his own information.", user.Email);
         return this.Protocol(new MeViewModel
         {
@@ -148,7 +147,7 @@ public class AuthController(
     [Route("update-me")]
     public async Task<IActionResult> UpdateClientSetting(UpdateMeAddressModel model)
     {
-        var userTrackedInDb = await GetCurrentUser();
+        var userTrackedInDb = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to update his client setting.", userTrackedInDb.Email);
         
         // Public information
@@ -185,15 +184,5 @@ public class AuthController(
         await userManager.UpdateAsync(userTrackedInDb);
         logger.LogInformation("User with email: {Email} successfully updated his client setting.", userTrackedInDb.Email);
         return this.Protocol(Code.JobDone, "Successfully update your client setting.");
-    }
-
-    private async Task<KahlaUser> GetCurrentUser()
-    {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            throw new AiurServerException(Code.Conflict, "The user you signed in was deleted from the database!");
-        }
-        return user;
     }
 }

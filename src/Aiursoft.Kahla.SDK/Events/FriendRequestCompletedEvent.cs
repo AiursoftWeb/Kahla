@@ -2,11 +2,11 @@ using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
-public class FriendsChangedEvent : KahlaEvent
+public class FriendRequestCompletedEvent : KahlaEvent
 {
-    public FriendsChangedEvent()
+    public FriendRequestCompletedEvent()
     {
-        Type = EventType.FriendsChangedEvent;
+        Type = EventType.FriendRequestCompletedEvent;
     }
     public required Request Request { get; set; }
     public required bool Result { get; set; }

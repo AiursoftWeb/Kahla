@@ -11,17 +11,13 @@ public enum EventType
     /// </summary>
     NewFriendRequestEvent = 1,
     /// <summary>
-    /// When you were deleted by a friend or you deleted a friend.
+    /// When you were deleted by a friend, or you deleted a friend.
     /// </summary>
     FriendDeletedEvent = 2,
     /// <summary>
-    /// When one of friend request related to you was completed.
+    /// When one of friend request related to you was completed (accepted or rejected).
     /// </summary>
-    FriendsChangedEvent = 3,
-    /// <summary>
-    /// When the timer of one of the conversations you joined was changed.
-    /// </summary>
-    TimerUpdatedEvent = 4,
+    FriendRequestCompletedEvent = 3,
     /// <summary>
     /// When someone joined a group you joined.
     /// </summary>

@@ -5,7 +5,6 @@ using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Mvc;
 using Aiursoft.AiurObserver.Extensions;
-using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
@@ -28,7 +27,7 @@ public class MessageController(
     [Route("init-websocket")]
     public async Task<IActionResult> InitWebSocket()
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to init a websocket OTP.", user.Email);
         var otp = Guid.NewGuid().ToString("N");
         var otpValidTo = DateTime.UtcNow.AddMinutes(5);
@@ -92,16 +91,5 @@ public class MessageController(
         }
 
         return new EmptyResult();
-    }
-
-    private async Task<KahlaUser> GetCurrentUser()
-    {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            throw new AiurServerException(Code.Conflict, "The user you signed in was deleted from the database!");
-        }
-
-        return user;
     }
 }

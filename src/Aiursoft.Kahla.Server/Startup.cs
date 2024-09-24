@@ -39,6 +39,8 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebPushClient>();
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();
+            services.AddScoped<KahlaPushService>();
+            services.AddTransient<OnlineJudger>();
             services.AddTaskCanon();
 
             services
@@ -54,6 +56,7 @@ namespace Aiursoft.Kahla.Server
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<OnlineDetectorMiddleware>();
             app.MapDefaultControllerRoute();
             app.UseAiursoftDocGenerator(options =>
             {

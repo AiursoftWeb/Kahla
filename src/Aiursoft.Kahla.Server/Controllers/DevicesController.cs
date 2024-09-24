@@ -1,4 +1,3 @@
-using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
@@ -36,7 +35,7 @@ public class DevicesController(
     [Route("my-devices")]
     public async Task<IActionResult> MyDevices()
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his devices.", user.Email);
         var devices = await dbContext
             .Devices
@@ -51,7 +50,7 @@ public class DevicesController(
     [Route("add-device")]
     public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         var existingDevice = await dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256Dh == model.PushP256Dh);
         if (existingDevice != null)
         {
@@ -94,7 +93,7 @@ public class DevicesController(
     [Route("drop-device/{id:int}")]
     public async Task<IActionResult> DropDevice([FromRoute] int id)
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to drop a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
@@ -116,7 +115,7 @@ public class DevicesController(
     [Route("update-device/{id:int}")]
     public async Task<IActionResult> UpdateDevice([FromRoute] int id, AddDeviceAddressModel model)
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to patch a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
@@ -143,23 +142,27 @@ public class DevicesController(
     [Route("push-test-message")]
     public async Task<IActionResult> PushTestMessage()
     {
-        var user = await GetCurrentUser();
+        var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to push a test message to all his devices.", user.Email);
         await dbContext.Entry(user)
             .Collection(b => b.HisDevices)
             .LoadAsync();
-        var messageEvent = new NewMessageEvent(new Message
+        var messageEvent = new NewMessageEvent
         {
-            ConversationId = -1,
-            Sender = new KahlaUser
+            Message = new Message
             {
-                IconFilePath = null,
-                NickName = "Aiursoft Push System",
+                ConversationId = -1,
+                Sender = new KahlaUser
+                {
+                    IconFilePath = null,
+                    NickName = "Aiursoft Push System",
+                },
+                SenderId = "<Example user>",
+                Content = "Sample message",
+                SendTime = DateTime.UtcNow,
             },
-            SenderId = "<Example user>",
-            Content = "Sample message",
-            SendTime = DateTime.UtcNow,
-        });
+            Muted = false,
+        };
         
         canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user, messageEvent); });
         foreach (var hisDevice in user.HisDevices)
@@ -172,16 +175,5 @@ public class DevicesController(
 
         logger.LogInformation("User with email: {Email} successfully pushed a test message to all his devices.", user.Email);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");
-    }
-
-    private async Task<KahlaUser> GetCurrentUser()
-    {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            throw new AiurServerException(Code.Conflict, "The user you signed in was deleted from the database!");
-        }
-
-        return user;
     }
 }
