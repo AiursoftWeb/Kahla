@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Kahla.Tests</RootNamespace>
+    <RootNamespace>Aiursoft.Kahla.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,5 +19,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kahla.Server\Kahla.Server.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Aiursoft.CSTools">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\aiursoft.cstools\7.0.10\lib\net7.0\Aiursoft.CSTools.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

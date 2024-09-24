@@ -3,6 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EC13B6F3-04F3-4AC6-B101-B13DDFD971EF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{43EC900D-CCE7-42D1-8268-EB5BA61F7853}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aiursoft.Kahla.SDK", "src\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj", "{A6E8B575-4DB1-4BF7-B27F-FB685031577A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aiursoft.Kahla.Server", "src\Aiursoft.Kahla.Server\Aiursoft.Kahla.Server.csproj", "{183B105A-D9A1-4B26-B7C1-5575C75D645F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kahla.Tests", "tests\Kahla.Tests\Kahla.Tests.csproj", "{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10,5 +20,24 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A6E8B575-4DB1-4BF7-B27F-FB685031577A} = {EC13B6F3-04F3-4AC6-B101-B13DDFD971EF}
+		{183B105A-D9A1-4B26-B7C1-5575C75D645F} = {EC13B6F3-04F3-4AC6-B101-B13DDFD971EF}
+		{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB} = {43EC900D-CCE7-42D1-8268-EB5BA61F7853}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6E8B575-4DB1-4BF7-B27F-FB685031577A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6E8B575-4DB1-4BF7-B27F-FB685031577A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6E8B575-4DB1-4BF7-B27F-FB685031577A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6E8B575-4DB1-4BF7-B27F-FB685031577A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{183B105A-D9A1-4B26-B7C1-5575C75D645F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{183B105A-D9A1-4B26-B7C1-5575C75D645F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{183B105A-D9A1-4B26-B7C1-5575C75D645F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{183B105A-D9A1-4B26-B7C1-5575C75D645F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9E105D5-4E8C-4E51-9DFD-2B3508C1D0CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Identity;
 using Aiursoft.SDK;
 using Aiursoft.Stargate.SDK;
-using Aiursoft.WebTools.Models;
+using Aiursoft.WebTools.Abstractions.Models;
 using Kahla.SDK.Models;
 using Kahla.Server.Data;
 using Kahla.Server.Middlewares;

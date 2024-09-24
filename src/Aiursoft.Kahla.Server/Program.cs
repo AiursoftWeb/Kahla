@@ -10,7 +10,7 @@ namespace Kahla.Server
     {
         public static async Task Main(string[] args)
         {
-            var app = App<Startup>(args);
+            var app = await Aiursoft.WebTools.Extends.AppAsync<Startup>(args);
             await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
             await app.InitSiteAsync<DirectoryAppTokenService>(c => c["UserIconsSiteName"],
                 a => a.GetAccessTokenAsync());

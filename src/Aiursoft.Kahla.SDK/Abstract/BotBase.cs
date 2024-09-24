@@ -5,6 +5,7 @@ using Kahla.SDK.Models;
 using Kahla.SDK.Models.ApiViewModels;
 using Kahla.SDK.Services;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
 
 namespace Kahla.SDK.Abstract
 {

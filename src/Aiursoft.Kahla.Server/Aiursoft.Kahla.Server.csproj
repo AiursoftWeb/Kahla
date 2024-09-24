@@ -2,17 +2,19 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyName>Kahla.Server</AssemblyName>
-    <RootNamespace>Kahla.Server</RootNamespace>
+    <AssemblyName>Aiursoft.Kahla.Server</AssemblyName>
+    <RootNamespace>Aiursoft.Kahla.Server</RootNamespace>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.Identity" Version="7.0.31" />
+    <PackageReference Include="Aiursoft.WebTools" Version="8.0.23" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj" />
     <ProjectReference Include="..\Kahla.SDK\Kahla.SDK.csproj" />
   </ItemGroup>
 </Project>
