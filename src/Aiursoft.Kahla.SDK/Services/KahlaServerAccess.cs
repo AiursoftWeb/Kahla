@@ -111,4 +111,11 @@ public class KahlaServerAccess(
         var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
         return result;
     }
+    
+    public async Task<InitPusherViewModel> InitPusherAsync()
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/messages/init-websocket", param: new { });
+        var result = await http.Get<InitPusherViewModel>(url);
+        return result;
+    }
 }

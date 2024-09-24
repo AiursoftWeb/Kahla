@@ -1,3 +1,5 @@
+using Aiursoft.AiurObserver.DefaultConsumers;
+using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Tools;
@@ -63,9 +65,11 @@ public class BasicServerTests
     [TestMethod]
     public async Task SignInInvalid()
     {
+        await _sdk.RegisterAsync("userz@domain.com", "password");
+        await _sdk.SignoutAsync();
         try
         {
-            await _sdk.SignInAsync("bad@a.com", "badzzzzzzz");
+            await _sdk.SignInAsync("userz@domain.com", "badzzzzzzz");
             Assert.Fail();
         }
         catch (AiurUnexpectedServerResponseException e)
@@ -186,4 +190,19 @@ public class BasicServerTests
         await _sdk.PushTestAsync();
     }
 
+        
+    [TestMethod]
+    public async Task WebSocketPushTest()
+    {
+        await _sdk.RegisterAsync("user9@domain.com", "password");
+        var pusher = await _sdk.InitPusherAsync();
+        var endpointUrl = pusher.WebSocketEndpoint;
+        var socket = await endpointUrl.ConnectAsWebSocketServer();
+        var socketStage = new MessageStageLast<string>();
+        socket.Subscribe(socketStage);
+        await Task.Factory.StartNew(() => socket.Listen());
+        await _sdk.PushTestAsync();
+        await Task.Delay(200);
+        Assert.IsTrue(socketStage.Stage?.Contains("Test"));
+    }
 }

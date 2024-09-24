@@ -160,18 +160,17 @@ public class DevicesController(
             Content = "Sample message",
             SendTime = DateTime.UtcNow,
         });
+        
+        canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user, messageEvent); });
         foreach (var hisDevice in user.HisDevices)
         {
             canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, messageEvent); });
-            canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user, messageEvent); });
         }
 
         await canonPool.RunAllTasksInPoolAsync(Environment
             .ProcessorCount); // Execute tasks in pool, running tasks should be max at 8.
 
         logger.LogInformation("User with email: {Email} successfully pushed a test message to all his devices.", user.Email);
-        // TODO: Push with stargate.
-        //_cannonService.FireAsync<PushMessageService>(s => s.PushMessageAsync(token, user.CurrentChannel, messageEvent));
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");
     }
 

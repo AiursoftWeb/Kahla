@@ -47,7 +47,7 @@ public class MessageController(
             Message = "Successfully generated a new OTP. It will be valid for 5 minutes.",
             Otp = otp,
             OtpValidTo = otpValidTo,
-            WebSocketEndpoint = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/messages/websocket/{user.Id}?otp={otp}"
+            WebSocketEndpoint = $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{user.Id}?otp={otp}"
         });
     }
 
