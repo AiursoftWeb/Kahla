@@ -93,6 +93,29 @@ public class DevicesController(
         return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
     }
     
+    [HttpPut]
+    [Route("patch-device")]
+    [Produces(typeof(AiurValue<Device>))]
+    public async Task<IActionResult> PatchDevice(PatchDeviceAddressModel model)
+    {
+        var user = await GetCurrentUser();
+        var device = await dbContext
+            .Devices
+            .Where(t => t.OwnerId == user.Id)
+            .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
+        if (device == null)
+        {
+            return this.Protocol(Code.NotFound, "Can not find a device with ID: " + model.DeviceId);
+        }
+        device.Name = model.Name!;
+        device.PushAuth = model.PushAuth!;
+        device.PushEndpoint = model.PushEndpoint!;
+        device.PushP256Dh = model.PushP256Dh!;
+        dbContext.Devices.Update(device);
+        await dbContext.SaveChangesAsync();
+        return this.Protocol(Code.JobDone, "Successfully updated your new device with id: " + device.Id, value: device.Id);
+    }
+    
     private async Task<KahlaUser> GetCurrentUser()
     {
         var user = await userManager.GetUserAsync(User);
