@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Aiursoft.Kahla.Server.Migrations
 {
     [DbContext(typeof(KahlaDbContext))]
-    [Migration("20240924071812_Init")]
+    [Migration("20240924081653_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -19,27 +19,6 @@ namespace Aiursoft.Kahla.Server.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
-
-            modelBuilder.Entity("Aiursoft.Kahla.SDK.Models.At", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TargetUserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("Ats");
-                });
 
             modelBuilder.Entity("Aiursoft.Kahla.SDK.Models.Conversation", b =>
                 {
@@ -74,21 +53,27 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IpAddress")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PushAuth")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PushEndpoint")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PushP256Dh")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -116,12 +101,6 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ConnectKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CurrentChannel")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -129,22 +108,10 @@ namespace Aiursoft.Kahla.Server.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("EmailReasonInJson")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("EnableEmailNotification")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("EnableEnterToSendMessage")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("EnableInvisiable")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("IconFilePath")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("LastEmailHimTime")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("ListInSearchResult")
@@ -176,17 +143,15 @@ namespace Aiursoft.Kahla.Server.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("PreferedLanguage")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("Sex")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ThemeId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
@@ -214,6 +179,7 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ConversationId")
@@ -229,6 +195,7 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SenderId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -283,9 +250,11 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CreatorId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TargetId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -316,6 +285,7 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -460,18 +430,22 @@ namespace Aiursoft.Kahla.Server.Migrations
                     b.HasBaseType("Aiursoft.Kahla.SDK.Models.Conversation");
 
                     b.Property<string>("GroupImagePath")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("GroupName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("JoinPassword")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("ListInSearchResult")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("OwnerId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasIndex("OwnerId");
@@ -484,9 +458,11 @@ namespace Aiursoft.Kahla.Server.Migrations
                     b.HasBaseType("Aiursoft.Kahla.SDK.Models.Conversation");
 
                     b.Property<string>("RequesterId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TargetId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasIndex("RequesterId");
@@ -496,28 +472,13 @@ namespace Aiursoft.Kahla.Server.Migrations
                     b.HasDiscriminator().HasValue("PrivateConversation");
                 });
 
-            modelBuilder.Entity("Aiursoft.Kahla.SDK.Models.At", b =>
-                {
-                    b.HasOne("Aiursoft.Kahla.SDK.Models.Message", "Message")
-                        .WithMany()
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "TargetUser")
-                        .WithMany("ByAts")
-                        .HasForeignKey("TargetUserId");
-
-                    b.Navigation("Message");
-
-                    b.Navigation("TargetUser");
-                });
-
             modelBuilder.Entity("Aiursoft.Kahla.SDK.Models.Device", b =>
                 {
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "KahlaUser")
                         .WithMany("HisDevices")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("KahlaUser");
                 });
@@ -532,7 +493,9 @@ namespace Aiursoft.Kahla.Server.Migrations
 
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "Sender")
                         .WithMany("MessagesSent")
-                        .HasForeignKey("SenderId");
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Conversation");
 
@@ -558,11 +521,15 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "Creator")
                         .WithMany()
-                        .HasForeignKey("CreatorId");
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "Target")
                         .WithMany()
-                        .HasForeignKey("TargetId");
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Creator");
 
@@ -579,7 +546,9 @@ namespace Aiursoft.Kahla.Server.Migrations
 
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "User")
                         .WithMany("GroupsJoined")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 
@@ -641,7 +610,9 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "Owner")
                         .WithMany("GroupsOwned")
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Owner");
                 });
@@ -650,11 +621,15 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "RequestUser")
                         .WithMany("Friends")
-                        .HasForeignKey("RequesterId");
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Aiursoft.Kahla.SDK.Models.KahlaUser", "TargetUser")
                         .WithMany("OfFriends")
-                        .HasForeignKey("TargetId");
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("RequestUser");
 
@@ -668,8 +643,6 @@ namespace Aiursoft.Kahla.Server.Migrations
 
             modelBuilder.Entity("Aiursoft.Kahla.SDK.Models.KahlaUser", b =>
                 {
-                    b.Navigation("ByAts");
-
                     b.Navigation("ByReported");
 
                     b.Navigation("Friends");

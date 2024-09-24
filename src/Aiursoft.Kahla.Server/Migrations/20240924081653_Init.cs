@@ -32,29 +32,22 @@ namespace Aiursoft.Kahla.Server.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Bio = table.Column<string>(type: "TEXT", nullable: true),
                     NickName = table.Column<string>(type: "TEXT", nullable: true),
-                    Sex = table.Column<string>(type: "TEXT", nullable: true),
                     IconFilePath = table.Column<string>(type: "TEXT", nullable: true),
-                    PreferedLanguage = table.Column<string>(type: "TEXT", nullable: true),
+                    PreferedLanguage = table.Column<string>(type: "TEXT", nullable: false),
                     AccountCreateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CurrentChannel = table.Column<int>(type: "INTEGER", nullable: false),
-                    ConnectKey = table.Column<string>(type: "TEXT", nullable: true),
-                    LastEmailHimTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EmailReasonInJson = table.Column<string>(type: "TEXT", nullable: true),
                     MarkEmailPublic = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ThemeId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     EnableEmailNotification = table.Column<bool>(type: "INTEGER", nullable: false),
-                    EnableEnterToSendMessage = table.Column<bool>(type: "INTEGER", nullable: false),
-                    EnableInvisiable = table.Column<bool>(type: "INTEGER", nullable: false),
                     ListInSearchResult = table.Column<bool>(type: "INTEGER", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
                     SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
                     PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -194,17 +187,20 @@ namespace Aiursoft.Kahla.Server.Migrations
                         name: "FK_Conversations_AspNetUsers_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Conversations_AspNetUsers_RequesterId",
                         column: x => x.RequesterId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Conversations_AspNetUsers_TargetId",
                         column: x => x.TargetId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -213,12 +209,12 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    IpAddress = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<string>(type: "TEXT", nullable: true),
-                    PushEndpoint = table.Column<string>(type: "TEXT", nullable: true),
-                    PushP256Dh = table.Column<string>(type: "TEXT", nullable: true),
-                    PushAuth = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    IpAddress = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    PushEndpoint = table.Column<string>(type: "TEXT", nullable: false),
+                    PushP256Dh = table.Column<string>(type: "TEXT", nullable: false),
+                    PushAuth = table.Column<string>(type: "TEXT", nullable: false),
                     AddTime = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -228,7 +224,8 @@ namespace Aiursoft.Kahla.Server.Migrations
                         name: "FK_Devices_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -264,8 +261,8 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    CreatorId = table.Column<string>(type: "TEXT", nullable: true),
-                    TargetId = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatorId = table.Column<string>(type: "TEXT", nullable: false),
+                    TargetId = table.Column<string>(type: "TEXT", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Completed = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
@@ -276,12 +273,14 @@ namespace Aiursoft.Kahla.Server.Migrations
                         name: "FK_Requests_AspNetUsers_CreatorId",
                         column: x => x.CreatorId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Requests_AspNetUsers_TargetId",
                         column: x => x.TargetId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -290,9 +289,9 @@ namespace Aiursoft.Kahla.Server.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     ConversationId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SenderId = table.Column<string>(type: "TEXT", nullable: true),
+                    SenderId = table.Column<string>(type: "TEXT", nullable: false),
                     SendTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Content = table.Column<string>(type: "TEXT", nullable: true),
+                    Content = table.Column<string>(type: "TEXT", nullable: false),
                     Read = table.Column<bool>(type: "INTEGER", nullable: false),
                     GroupWithPrevious = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
@@ -303,7 +302,8 @@ namespace Aiursoft.Kahla.Server.Migrations
                         name: "FK_Messages_AspNetUsers_SenderId",
                         column: x => x.SenderId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Conversations_ConversationId",
                         column: x => x.ConversationId,
@@ -320,7 +320,7 @@ namespace Aiursoft.Kahla.Server.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     JoinTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Muted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    UserId = table.Column<string>(type: "TEXT", nullable: true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
                     GroupId = table.Column<int>(type: "INTEGER", nullable: false),
                     ReadTimeStamp = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -331,36 +331,12 @@ namespace Aiursoft.Kahla.Server.Migrations
                         name: "FK_UserGroupRelations_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserGroupRelations_Conversations_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ats",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    TargetUserId = table.Column<string>(type: "TEXT", nullable: true),
-                    MessageId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ats", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ats_AspNetUsers_TargetUserId",
-                        column: x => x.TargetUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Ats_Messages_MessageId",
-                        column: x => x.MessageId,
-                        principalTable: "Messages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -401,16 +377,6 @@ namespace Aiursoft.Kahla.Server.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ats_MessageId",
-                table: "Ats",
-                column: "MessageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ats_TargetUserId",
-                table: "Ats",
-                column: "TargetUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Conversations_OwnerId",
@@ -492,10 +458,10 @@ namespace Aiursoft.Kahla.Server.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Ats");
+                name: "Devices");
 
             migrationBuilder.DropTable(
-                name: "Devices");
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Reports");
@@ -508,9 +474,6 @@ namespace Aiursoft.Kahla.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Conversations");
