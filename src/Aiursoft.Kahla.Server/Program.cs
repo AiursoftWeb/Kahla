@@ -1,10 +1,9 @@
 ﻿using Aiursoft.DbTools;
 using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Probe.SDK;
-using Kahla.Server.Data;
-using static Aiursoft.WebTools.Extends;
 
-namespace Kahla.Server
+namespace Aiursoft.Kahla.Server
 {
     public class Program
     {

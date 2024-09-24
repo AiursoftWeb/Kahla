@@ -3,7 +3,7 @@ using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class VersionChecker : IScopedDependency
     {

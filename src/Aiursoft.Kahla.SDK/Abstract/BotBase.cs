@@ -1,13 +1,13 @@
 ﻿using Aiursoft.CSTools.Tools;
+using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
+using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Probe.SDK.Models.FilesViewModels;
-using Kahla.SDK.Events;
-using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
-using Kahla.SDK.Services;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public abstract class BotBase
     {

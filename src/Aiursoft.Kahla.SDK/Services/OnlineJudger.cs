@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class OnlineJudger : ISingletonDependency
     {

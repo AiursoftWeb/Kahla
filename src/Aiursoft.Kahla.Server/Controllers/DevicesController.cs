@@ -1,19 +1,19 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Server;
+using Aiursoft.Canon;
+using Aiursoft.Directory.SDK.Services;
 using Aiursoft.Identity.Attributes;
+using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiAddressModels;
+using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
-using Kahla.SDK.Events;
-using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiAddressModels;
-using Kahla.Server.Data;
-using Kahla.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Aiursoft.Canon;
-using Aiursoft.Directory.SDK.Services;
 
-namespace Kahla.Server.Controllers
+namespace Aiursoft.Kahla.Server.Controllers
 {
     [ApiModelStateChecker]
     [ApiExceptionHandler]

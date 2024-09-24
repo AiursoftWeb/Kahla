@@ -1,9 +1,9 @@
-﻿using Kahla.SDK.Data;
-using Kahla.SDK.Factories;
+﻿using System.Reflection;
+using Aiursoft.Kahla.SDK.Data;
+using Aiursoft.Kahla.SDK.Factories;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public static class BotExtends
     {

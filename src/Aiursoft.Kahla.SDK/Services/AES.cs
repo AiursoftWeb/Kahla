@@ -4,7 +4,7 @@ using Aiursoft.Scanner.Abstractions;
 
 #pragma warning disable SYSLIB0022 // Type or member is obsolete
 #pragma warning disable SYSLIB0023
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class AES : ITransientDependency
     {

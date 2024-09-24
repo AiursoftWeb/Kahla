@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Scanner.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class SettingsService : ISingletonDependency
     {

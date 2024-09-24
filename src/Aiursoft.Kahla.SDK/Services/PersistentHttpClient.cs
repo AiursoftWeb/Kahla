@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class PersistentHttpClient : ISingletonDependency
     {

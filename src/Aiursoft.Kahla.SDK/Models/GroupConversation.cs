@@ -1,8 +1,8 @@
-﻿using Kahla.SDK.Services;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Services;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kahla.SDK.Models
+namespace Aiursoft.Kahla.SDK.Models
 {
     public class GroupConversation : Conversation
     {

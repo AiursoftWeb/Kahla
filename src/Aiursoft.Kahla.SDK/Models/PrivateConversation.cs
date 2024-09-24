@@ -1,7 +1,7 @@
-﻿using Kahla.SDK.Services;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Services;
 
-namespace Kahla.SDK.Models
+namespace Aiursoft.Kahla.SDK.Models
 {
     public class PrivateConversation : Conversation
     {

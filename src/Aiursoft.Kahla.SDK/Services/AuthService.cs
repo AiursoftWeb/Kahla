@@ -1,10 +1,10 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.Directory.SDK.Models.ForApps.AddressModels;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
 using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class AuthService : IScopedDependency
     {

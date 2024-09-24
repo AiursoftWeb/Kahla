@@ -1,8 +1,8 @@
-﻿using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Models.ApiViewModels;
+﻿using Aiursoft.Kahla.SDK.Models.ApiViewModels;
+using Aiursoft.Scanner.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class KahlaLocation : ISingletonDependency
     {

@@ -1,7 +1,7 @@
-﻿using Kahla.SDK.Abstract;
+﻿using Aiursoft.Kahla.SDK.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kahla.SDK.Factories
+namespace Aiursoft.Kahla.SDK.Factories
 {
     public class CommandFactory<T> where T : BotBase
     {

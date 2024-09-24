@@ -1,10 +1,10 @@
 ﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Models;
-using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class OwnerChecker : IScopedDependency
     {

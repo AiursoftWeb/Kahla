@@ -1,14 +1,14 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Server;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
+using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Probe.SDK.Services;
 using Aiursoft.SDK.Services;
-using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
-using Kahla.SDK.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Kahla.Server.Controllers
+namespace Aiursoft.Kahla.Server.Controllers
 {
     [ApiExceptionHandler]
     public class HomeController : ControllerBase

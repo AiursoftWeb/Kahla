@@ -1,10 +1,10 @@
-﻿using Kahla.SDK.Events;
-using Kahla.SDK.Models;
-using Aiursoft.Canon;
+﻿using Aiursoft.Canon;
 using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class KahlaPushService : IScopedDependency
     {

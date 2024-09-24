@@ -1,7 +1,7 @@
 ﻿using Aiursoft.Identity;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Kahla.Server.Middlewares
+namespace Aiursoft.Kahla.Server.Middlewares
 {
     public class OnlineDetectorMiddleware
     {

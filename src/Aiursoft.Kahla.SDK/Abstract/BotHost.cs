@@ -1,14 +1,14 @@
-﻿using Aiursoft.AiurProtocol;
-using Kahla.SDK.Data;
-using Kahla.SDK.Events;
-using Kahla.SDK.Factories;
-using Kahla.SDK.Services;
-using Microsoft.Extensions.Hosting;
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
+using Aiursoft.AiurProtocol;
+using Aiursoft.Kahla.SDK.Data;
+using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Factories;
+using Aiursoft.Kahla.SDK.Services;
+using Microsoft.Extensions.Hosting;
 using Websocket.Client;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public class BotHost<T> where T : BotBase
     {

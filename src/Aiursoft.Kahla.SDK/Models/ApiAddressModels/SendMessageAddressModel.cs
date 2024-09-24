@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Aiursoft.CSTools.Attributes;
 
-namespace Kahla.SDK.Models.ApiAddressModels
+namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
 {
     public class SendMessageAddressModel
     {

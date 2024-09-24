@@ -1,7 +1,7 @@
-﻿using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Services;
+﻿using Aiursoft.Kahla.SDK.Services;
+using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public class BotSelector : ISingletonDependency
     {

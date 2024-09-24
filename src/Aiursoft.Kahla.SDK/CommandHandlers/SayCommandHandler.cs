@@ -1,8 +1,8 @@
-﻿using Kahla.SDK.Abstract;
-using Kahla.SDK.Data;
-using Kahla.SDK.Services;
+﻿using Aiursoft.Kahla.SDK.Abstract;
+using Aiursoft.Kahla.SDK.Data;
+using Aiursoft.Kahla.SDK.Services;
 
-namespace Kahla.SDK.CommandHandlers
+namespace Aiursoft.Kahla.SDK.CommandHandlers
 {
     public class SayCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {

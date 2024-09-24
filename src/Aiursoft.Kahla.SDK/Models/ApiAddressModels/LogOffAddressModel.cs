@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kahla.SDK.Models.ApiAddressModels
+namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
 {
     public class LogOffAddressModel
     {

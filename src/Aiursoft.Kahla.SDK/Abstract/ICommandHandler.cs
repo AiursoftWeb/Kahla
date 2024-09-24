@@ -1,4 +1,4 @@
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public interface ICommandHandler<T> where T : BotBase
     {

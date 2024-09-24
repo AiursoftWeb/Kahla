@@ -1,7 +1,7 @@
-﻿using Kahla.SDK.Models;
+﻿using Aiursoft.Kahla.SDK.Models;
 using Microsoft.Extensions.Options;
 
-namespace Kahla.Server.Middlewares
+namespace Aiursoft.Kahla.Server.Middlewares
 {
     public class HandleKahlaOptionsMiddleware
     {

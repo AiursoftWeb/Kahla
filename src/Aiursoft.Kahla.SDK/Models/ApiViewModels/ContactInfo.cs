@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Kahla.SDK.Models.ApiViewModels
+namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
     public class ContactInfo
     {

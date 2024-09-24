@@ -1,9 +1,9 @@
 ﻿using Aiursoft.CSTools.Tools;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Scanner.Abstractions;
-using Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class TimedCleaner : IHostedService, IDisposable, ISingletonDependency
     {

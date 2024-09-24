@@ -1,13 +1,13 @@
-﻿using Kahla.SDK.Abstract;
-using Kahla.SDK.Events;
-using Kahla.SDK.Factories;
-using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
-using Kahla.SDK.Services;
+﻿using Aiursoft.Kahla.SDK.Abstract;
+using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Factories;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
+using Aiursoft.Kahla.SDK.Services;
 using Newtonsoft.Json;
 using Websocket.Client;
 
-namespace Kahla.SDK.Data
+namespace Aiursoft.Kahla.SDK.Data
 {
     public class EventSyncer<T>  where T : BotBase
     {

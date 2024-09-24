@@ -1,6 +1,6 @@
-﻿using Kahla.SDK.Models;
+﻿using Aiursoft.Kahla.SDK.Models;
 
-namespace Kahla.SDK.Events
+namespace Aiursoft.Kahla.SDK.Events
 {
     public enum EventType
     {

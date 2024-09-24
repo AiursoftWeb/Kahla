@@ -1,6 +1,6 @@
 ﻿using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
 
-namespace Kahla.SDK.Models.ApiViewModels
+namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
     public class InitPusherViewModel : CreateChannelViewModel
     {

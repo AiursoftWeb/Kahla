@@ -1,7 +1,7 @@
 ﻿using Aiursoft.AiurProtocol;
 using Aiursoft.Probe.SDK.Models.HomeViewModels;
 
-namespace Kahla.SDK.Models.ApiViewModels
+namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
     public class IndexViewModel : AiurResponse
     {

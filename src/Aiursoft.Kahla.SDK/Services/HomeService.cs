@@ -1,8 +1,8 @@
 ﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
 using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Models.ApiViewModels;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class HomeService : IScopedDependency
     {

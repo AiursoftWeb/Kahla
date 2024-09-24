@@ -1,7 +1,7 @@
-﻿using Aiursoft.Scanner.Abstractions;
-using Kahla.SDK.Models;
+﻿using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public class ProfileContainer : ISingletonDependency
     {

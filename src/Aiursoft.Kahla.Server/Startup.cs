@@ -1,14 +1,14 @@
 ﻿using Aiursoft.Identity;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.SDK;
 using Aiursoft.Stargate.SDK;
 using Aiursoft.WebTools.Abstractions.Models;
-using Kahla.SDK.Models;
-using Kahla.Server.Data;
-using Kahla.Server.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
 
-namespace Kahla.Server
+namespace Aiursoft.Kahla.Server
 {
     public class Startup : IWebStartup
     {

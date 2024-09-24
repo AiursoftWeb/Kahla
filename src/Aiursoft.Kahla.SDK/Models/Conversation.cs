@@ -1,9 +1,9 @@
-﻿using Kahla.SDK.Services;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Services;
+using Newtonsoft.Json;
 
-namespace Kahla.SDK.Models
+namespace Aiursoft.Kahla.SDK.Models
 {
     public abstract class Conversation
     {

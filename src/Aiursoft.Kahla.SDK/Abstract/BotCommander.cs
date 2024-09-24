@@ -1,7 +1,7 @@
-﻿using Kahla.SDK.Factories;
-using Kahla.SDK.Services;
+﻿using Aiursoft.Kahla.SDK.Factories;
+using Aiursoft.Kahla.SDK.Services;
 
-namespace Kahla.SDK.Abstract
+namespace Aiursoft.Kahla.SDK.Abstract
 {
     public class BotCommander<T> where T : BotBase
     {

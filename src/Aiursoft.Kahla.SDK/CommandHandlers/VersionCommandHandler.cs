@@ -1,7 +1,7 @@
-﻿using Kahla.SDK.Abstract;
-using Kahla.SDK.Services;
+﻿using Aiursoft.Kahla.SDK.Abstract;
+using Aiursoft.Kahla.SDK.Services;
 
-namespace Kahla.SDK.CommandHandlers
+namespace Aiursoft.Kahla.SDK.CommandHandlers
 {
     public class VersionCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {

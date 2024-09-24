@@ -1,11 +1,11 @@
 ﻿using Aiursoft.AiurProtocol;
+using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Scanner.Abstractions;
 using Aiursoft.Stargate.SDK.Models.ChannelViewModels;
 using Aiursoft.Stargate.SDK.Services.ToStargateServer;
-using Kahla.Server.Data;
-using Aiursoft.Directory.SDK.Services;
-using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class StargatePushService : IScopedDependency
     {

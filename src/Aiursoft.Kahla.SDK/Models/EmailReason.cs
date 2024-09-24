@@ -1,4 +1,4 @@
-﻿namespace Kahla.SDK.Models
+﻿namespace Aiursoft.Kahla.SDK.Models
 {
     public class EmailReason
     {

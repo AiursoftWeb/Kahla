@@ -1,9 +1,9 @@
-﻿using Aiursoft.Directory.SDK.Models;
-using Kahla.SDK.Services;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Directory.SDK.Models;
+using Aiursoft.Kahla.SDK.Services;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kahla.SDK.Models
+namespace Aiursoft.Kahla.SDK.Models
 {
     public class KahlaUser : AiurUserBase
     {

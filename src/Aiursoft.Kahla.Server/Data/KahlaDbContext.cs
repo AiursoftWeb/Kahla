@@ -1,9 +1,9 @@
-﻿using Kahla.SDK.Models;
-using Kahla.SDK.Models.ApiViewModels;
+﻿using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kahla.Server.Data
+namespace Aiursoft.Kahla.Server.Data
 {
     public class KahlaDbContext : IdentityDbContext<KahlaUser>
     {

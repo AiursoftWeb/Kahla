@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Kahla.SDK.Models.ApiAddressModels
+namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
 {
     public class InitFileAccessAddressModel
     {

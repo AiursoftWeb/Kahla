@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.SDK.Services
+namespace Aiursoft.Kahla.SDK.Services
 {
     public class VersionService : ISingletonDependency
     {

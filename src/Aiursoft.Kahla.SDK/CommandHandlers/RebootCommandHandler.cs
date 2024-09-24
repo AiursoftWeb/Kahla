@@ -1,6 +1,6 @@
-﻿using Kahla.SDK.Abstract;
+﻿using Aiursoft.Kahla.SDK.Abstract;
 
-namespace Kahla.SDK.CommandHandlers
+namespace Aiursoft.Kahla.SDK.CommandHandlers
 {
     public class RebootCommandHandler<T> : ICommandHandler<T> where T : BotBase
     {

@@ -1,14 +1,14 @@
-﻿using Aiursoft.Identity.Services;
+﻿using System.Text;
+using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Identity.Services;
+using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Observer.SDK.Services.ToObserverServer;
-using Kahla.SDK.Models;
-using Kahla.Server.Data;
+using Aiursoft.Scanner.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Text;
-using Aiursoft.Directory.SDK.Services;
-using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class EmailNotifier : IHostedService, IDisposable, ISingletonDependency
     {

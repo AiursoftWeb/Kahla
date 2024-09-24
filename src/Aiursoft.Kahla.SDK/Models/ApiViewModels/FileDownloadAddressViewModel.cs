@@ -1,6 +1,6 @@
 ﻿using Aiursoft.AiurProtocol;
 
-namespace Kahla.SDK.Models.ApiViewModels
+namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
     public class FileDownloadAddressViewModel : AiurResponse
     {

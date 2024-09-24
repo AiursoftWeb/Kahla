@@ -1,9 +1,9 @@
 ﻿using Aiursoft.CSTools.Tools;
-using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Directory.SDK.Services;
+using Aiursoft.Probe.SDK.Services.ToProbeServer;
 using Aiursoft.Scanner.Abstractions;
 
-namespace Kahla.Server.Services
+namespace Aiursoft.Kahla.Server.Services
 {
     public class FilesCleaner : IHostedService, IDisposable, ISingletonDependency
     {
