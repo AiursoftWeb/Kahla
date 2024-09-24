@@ -75,6 +75,24 @@ public class DevicesController(
         return this.Protocol(Code.JobDone, "Successfully created your new device with id: " + device.Id, value: device.Id);
     }
     
+    [HttpPost]
+    [Route("drop-device")]
+    public async Task<IActionResult> DropDevice(int id)
+    {
+        var user = await GetCurrentUser();
+        var device = await dbContext
+            .Devices
+            .Where(t => t.OwnerId == user.Id)
+            .SingleOrDefaultAsync(t => t.Id == id);
+        if (device == null)
+        {
+            return this.Protocol(Code.NotFound, $"Can't find your device with id: '{id}'.");
+        }
+        dbContext.Devices.Remove(device);
+        await dbContext.SaveChangesAsync();
+        return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
+    }
+    
     private async Task<KahlaUser> GetCurrentUser()
     {
         var user = await userManager.GetUserAsync(User);

@@ -1,4 +1,5 @@
 using Aiursoft.AiurProtocol.Exceptions;
+using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK;
@@ -131,5 +132,25 @@ public class BasicServerTests
         var devices2 = await _sdk.MyDevicesAsync();
         Assert.AreEqual(1, devices2.Items?.Count);
         Assert.AreEqual("device1", devices2.Items?.First().Name);
+    }
+
+    [TestMethod]
+    public async Task AddAndDropDevice()
+    {
+        await _sdk.RegisterAsync("user6@domain.com", "password");
+        var devices = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(0, devices.Items?.Count);
+
+        var addResponse = await _sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
+        Assert.AreEqual(Code.JobDone, addResponse.Code);
+
+        var devices2 = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(1, devices2.Items?.Count);
+
+        var dropResponse = await _sdk.DropDeviceAsync(addResponse.Value);
+        Assert.AreEqual(Code.JobDone, dropResponse.Code);
+
+        var devices3 = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(0, devices3.Items?.Count);
     }
 }
