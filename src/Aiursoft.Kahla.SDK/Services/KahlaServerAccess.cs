@@ -45,7 +45,7 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<AiurResponse> Signout(int? deviceId = null)
+    public async Task<AiurResponse> SignoutAsync(int? deviceId = null)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/signout", param: new {});
         var model = new AiurApiPayload(new SignOutAddressModel
@@ -63,10 +63,24 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<AiurCollection<Device>> MyDevices()
+    public async Task<AiurCollection<Device>> MyDevicesAsync()
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/my-devices", param: new {});
         var result = await http.Get<AiurCollection<Device>>(url);
+        return result;
+    }
+    
+    public async Task<AiurValue<int>> AddDeviceAsync(string name, string pushAuth, string pushEndpoint, string pushP256Dh)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/add-device", param: new {});
+        var payload = new AiurApiPayload(new AddDeviceAddressModel
+        {
+            Name = name,
+            PushAuth = pushAuth,
+            PushEndpoint = pushEndpoint,
+            PushP256Dh = pushP256Dh
+        });
+        var result = await http.Post<AiurValue<int>>(url, payload);
         return result;
     }
 }

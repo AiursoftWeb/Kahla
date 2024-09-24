@@ -55,7 +55,7 @@ public class BasicServerTests
     public async Task Register_Signout_SignIn()
     {
         await _sdk.RegisterAsync("user1@domain.com", "password");
-        await _sdk.Signout();
+        await _sdk.SignoutAsync();
         await _sdk.SignInAsync("user1@domain.com", "password");
     }
 
@@ -116,7 +116,20 @@ public class BasicServerTests
     public async Task GetMyDevices()
     {
         await _sdk.RegisterAsync("user4@domain.com", "password");
-        var devices = await _sdk.MyDevices();
+        var devices = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices.Items?.Count);
+    }
+    
+    [TestMethod]
+    public async Task AddAndGetMyDevices()
+    {
+        await _sdk.RegisterAsync("user5@domain.com", "password");
+        var devices = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(0, devices.Items?.Count);
+        
+        await _sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
+        var devices2 = await _sdk.MyDevicesAsync();
+        Assert.AreEqual(1, devices2.Items?.Count);
+        Assert.AreEqual("device1", devices2.Items?.First().Name);
     }
 }
