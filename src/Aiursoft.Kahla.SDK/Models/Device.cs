@@ -9,6 +9,7 @@ namespace Aiursoft.Kahla.SDK.Models
         public required string Name { get; init; }
         public required string IpAddress { get; init; }
         
+        [JsonIgnore]
         public required string OwnerId { get; init; }
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
