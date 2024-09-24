@@ -25,6 +25,7 @@ public class HomeController(
         return this.Protocol(Code.ResultShown, "Welcome to this API project!");
     }
     
+    [HttpPost]
     [Route("signin")]
     public async Task<IActionResult> SignIn(SignInAddressModel model)
     {
@@ -76,6 +77,7 @@ public class HomeController(
     }
     
     [Authorize]
+    [HttpGet]
     [Route("me")]
     public async Task<IActionResult> Me()
     {
