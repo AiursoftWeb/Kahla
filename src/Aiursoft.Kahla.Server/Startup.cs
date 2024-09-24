@@ -49,6 +49,7 @@ namespace Aiursoft.Kahla.Server
 
         public void Configure(WebApplication app)
         {
+            app.UseWebSockets();
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseRouting();
             app.UseAuthentication();

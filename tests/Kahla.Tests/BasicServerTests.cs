@@ -1,3 +1,5 @@
+using Aiursoft.AiurObserver.DefaultConsumers;
+using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Tools;
@@ -185,4 +187,20 @@ public class BasicServerTests
         Assert.AreEqual(Code.JobDone, addResponse.Code);
         await _sdk.PushTestAsync();
     }
+    
+    // TODO: Authentication.
+    // [TestMethod]
+    // public async Task WebSocketPushTest()
+    // {
+    //     await _sdk.RegisterAsync("user9@domain.com", "password");
+    //     var me = await _sdk.MeAsync();
+    //     var endpointUrl = $"ws://localhost:{_port}/api/messages/{me.User.Id}";
+    //     var socket = await endpointUrl.ConnectAsWebSocketServer();
+    //     var socketStage = new MessageStageLast<string>();
+    //     socket.Subscribe(socketStage);
+    //     await Task.Factory.StartNew(() => socket.Listen());
+    //     await _sdk.PushTestAsync();
+    //     await Task.Delay(150);
+    //     Assert.AreEqual("Test message.", socketStage.Stage);
+    // }
 }
