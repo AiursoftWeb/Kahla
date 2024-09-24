@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2023 Aiursoft
+Copyright (c) 2024 Aiursoft
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+In addition to the permissions and conditions stated above, the maintenance and development of the Software shall adhere to the following Aiursoft Principles:
+
+1. Any compiled artifacts of the Software must be capable of performing their full functions without requiring an internet connection.
+2. The source code of the Software must be capable of being compiled locally within Aiursoft's infrastructure without requiring an internet connection.
+3. The source code of the Software must be capable of being compiled locally by third-party developers with an internet connection.
