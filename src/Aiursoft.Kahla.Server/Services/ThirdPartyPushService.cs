@@ -1,14 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Scanner.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebPush;
 
 namespace Aiursoft.Kahla.Server.Services
 {
-    public class ThirdPartyPushService : IScopedDependency
+    public class ThirdPartyPushService
     {
         private readonly IConfiguration _configuration;
         private readonly WebPushClient _webPushClient;
