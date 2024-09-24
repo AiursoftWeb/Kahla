@@ -91,8 +91,11 @@ public class AuthController(
         await signInManager.SignOutAsync();
         if (device == null)
         {
-            logger.LogWarning("User with email: {Email} signed out, but we did not find device with id: {DeviceId}.", user.Email, model.DeviceId);
-            return this.Protocol(Code.JobDone, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+            logger.LogWarning(
+                "User with email: {Email} signed out, but we did not find device with id: {DeviceId}. It is suggested to pass the 'deviceid' parameter so we will remove the device from your account.",
+                user.Email, model.DeviceId);
+            return this.Protocol(Code.JobDone,
+                "Successfully signed you off, but we could not find device with id: " + model.DeviceId +" in your account.");
         }
 
         dbContext.Devices.Remove(device);

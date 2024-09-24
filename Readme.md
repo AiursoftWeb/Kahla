@@ -1,5 +1,7 @@
 # Kahla
 
+![Kahla-logo](./kahla.png)
+
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/blob/master/LICENSE)
 [![Pipeline stat](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
 [![Test Coverage](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/coverage.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
