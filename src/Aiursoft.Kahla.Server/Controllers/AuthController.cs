@@ -5,7 +5,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.ModelsOBS;
-using Microsoft.AspNetCore.Authorization;
+using Aiursoft.Kahla.Server.Attributes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -72,7 +72,7 @@ public class AuthController(
         return this.Protocol(Code.InvalidInput, "Failed to create user!", result.Errors.ToArray());
     }
     
-    [Authorize]
+    [KahlaForceAuth]
     [HttpPost]
     [Route("signout")]
     public async Task<IActionResult> SignOutUser()
@@ -82,7 +82,7 @@ public class AuthController(
         return this.Protocol(Code.JobDone, "User signed out!");
     }
     
-    [Authorize]
+    [KahlaForceAuth]
     [HttpGet]
     [Route("me")]
     public async Task<IActionResult> Me()

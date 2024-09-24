@@ -2,10 +2,10 @@
 using Aiursoft.DbTools.Sqlite;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.ModelsOBS;
+using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.WebTools.Abstractions.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
 
@@ -55,8 +55,8 @@ namespace Aiursoft.Kahla.Server
                 options.RequiresAuthorized = (action, controller) =>
                 {
                     return
-                        action.CustomAttributes.Any(t => t.AttributeType == typeof(AuthorizeAttribute)) ||
-                        controller.CustomAttributes.Any(t => t.AttributeType == typeof(AuthorizeAttribute));
+                        action.CustomAttributes.Any(t => t.AttributeType == typeof(KahlaForceAuth)) ||
+                        controller.CustomAttributes.Any(t => t.AttributeType == typeof(KahlaForceAuth));
                 };
             });
 
