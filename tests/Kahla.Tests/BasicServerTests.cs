@@ -102,4 +102,13 @@ public class BasicServerTests
             Assert.AreEqual("Username 'anduin@aiursoft.com' is already taken.", e.Response.Message);
         }
     }
+
+    [TestMethod]
+    public async Task GetMyInfo()
+    {
+        await _sdk.RegisterAsync("user3@domain.com", "password");
+        var me = await _sdk.MeAsync();
+        Assert.AreEqual("user3", me.User.NickName);
+        Assert.AreEqual("user3@domain.com", me.User.Email);
+    }
 }

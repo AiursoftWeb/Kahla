@@ -54,4 +54,11 @@ public class KahlaServerAccess(
         var result = await http.Post<AiurResponse>(url, model);
         return result;
     }
+    
+    public async Task<MeViewModel> MeAsync()
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/me", param: new {});
+        var result = await http.Get<MeViewModel>(url);
+        return result;
+    }
 }

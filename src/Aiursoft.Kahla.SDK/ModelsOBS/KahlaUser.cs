@@ -28,6 +28,7 @@ namespace Aiursoft.Kahla.SDK.ModelsOBS
         [JsonProperty] public virtual DateTime AccountCreateTime { get; set; } = DateTime.UtcNow;
 
         [JsonProperty] public override bool EmailConfirmed { get; set; }
+        [JsonProperty] public override string? Email { get; set; }
         
         [JsonIgnore]
         [InverseProperty(nameof(PrivateConversation.RequestUser))]
