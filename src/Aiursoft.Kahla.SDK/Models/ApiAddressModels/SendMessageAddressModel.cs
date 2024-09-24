@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Aiursoft.CSTools.Attributes;
 
 namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
 {
@@ -13,14 +12,6 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
 
         [Required]
         [MaxLength(2500)]
-        public string Content { get; set; }
-
-        public string[] At { get; set; } = Array.Empty<string>();
-        /// <summary>
-        /// Guid. For example: 8fe1dd34-7430-4650-8b0a-8587d39dd412
-        /// </summary>
-        [IsGuidOrEmpty]
-        [Required]
-        public string MessageId { get; set; }
+        public string? Content { get; set; }
     }
 }

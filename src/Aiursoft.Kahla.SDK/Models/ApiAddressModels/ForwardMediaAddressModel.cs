@@ -7,7 +7,7 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
         [Required]
         public int SourceConversationId { get; set; }
         [Required]
-        public string SourceFilePath { get; set; }
+        public string? SourceFilePath { get; set; }
         [Required]
         public int TargetConversationId { get; set; }
     }

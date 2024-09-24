@@ -6,23 +6,22 @@ namespace Aiursoft.Kahla.SDK.Models
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]
-        public IEnumerable<UserGroupRelation> Users { get; set; }
-        public string GroupImagePath { get; set; }
-        public string GroupName { get; set; }
+        public IEnumerable<UserGroupRelation> Users { get; set; } = new List<UserGroupRelation>();
+        public required string GroupImagePath { get; set; }
+        public required string GroupName { get; set; }
         [JsonIgnore]
-        public string JoinPassword { get; set; }
+        public required string JoinPassword { get; set; }
         public bool ListInSearchResult { get; set; } = true;
 
         [JsonProperty]
         [NotMapped]
         public bool HasPassword => !string.IsNullOrEmpty(JoinPassword);
 
-        public string OwnerId { get; set; }
+        public required string OwnerId { get; set; }
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
-        public KahlaUser Owner { get; set; }
+        public KahlaUser? Owner { get; set; }
 
-        public override KahlaUser SpecialUser(string myId) => Owner;
         public override string GetDisplayName(string userId) => GroupName;
         public override string GetDisplayImagePath(string userId) => GroupImagePath;
         public override int GetUnReadAmount(string userId)
@@ -35,11 +34,9 @@ namespace Aiursoft.Kahla.SDK.Models
             return Messages.Count(t => t.SendTime > relation.ReadTimeStamp);
         }
 
-        public override Message GetLatestMessage()
+        public override Message? GetLatestMessage()
         {
-            return Messages
-                .OrderByDescending(p => p.SendTime)
-                .FirstOrDefault();
+            return Messages.MaxBy(p => p.SendTime);
         }
 
         public override void ForEachUser(Action<KahlaUser, UserGroupRelation> function)
@@ -52,7 +49,7 @@ namespace Aiursoft.Kahla.SDK.Models
 
         public override bool Muted(string userId)
         {
-            return Users?.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
+            return Users.SingleOrDefault(t => t.UserId == userId)?.Muted ?? throw new ArgumentNullException();
         }
 
         public override Conversation Build(string userId)

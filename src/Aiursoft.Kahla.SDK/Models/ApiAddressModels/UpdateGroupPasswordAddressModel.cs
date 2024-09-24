@@ -6,9 +6,9 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
     public class UpdateGroupPasswordAddressModel
     {
         [Required]
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
         [NoSpace]
         [DataType(DataType.Password)]
-        public string NewJoinPassword { get; set; }
+        public string? NewJoinPassword { get; set; }
     }
 }

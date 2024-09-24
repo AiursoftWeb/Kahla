@@ -6,10 +6,10 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
     {
         [Required]
         [MaxLength(20)]
-        public virtual string NickName { get; set; }
+        public string? NickName { get; set; }
         [MaxLength(80)]
-        public virtual string Bio { get; set; }
+        public string? Bio { get; set; }
         [Required]
-        public virtual string HeadIconPath { get; set; }
+        public string? HeadIconPath { get; set; }
     }
 }

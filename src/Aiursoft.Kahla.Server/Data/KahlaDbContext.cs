@@ -15,7 +15,6 @@ namespace Aiursoft.Kahla.Server.Data
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
-        public DbSet<At> Ats { get; set; }
 
         public IQueryable<ContactInfo> MyContacts(string userId)
         {

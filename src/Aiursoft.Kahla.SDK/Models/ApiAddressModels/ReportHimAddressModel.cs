@@ -5,11 +5,11 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
     public class ReportHimAddressModel
     {
         [Required]
-        public string TargetUserId { get; set; }
+        public string? TargetUserId { get; set; }
 
         [Required]
         [MinLength(5)]
         [MaxLength(200)]
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
     }
 }

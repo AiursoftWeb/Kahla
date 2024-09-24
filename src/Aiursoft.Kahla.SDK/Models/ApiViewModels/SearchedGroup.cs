@@ -1,6 +1,6 @@
 ﻿namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
-    public class SearchedGroup
+    public class SearchedGroup(GroupConversation conversation)
     {
         public static List<SearchedGroup> Map(List<GroupConversation> conversations)
         {
@@ -12,27 +12,11 @@
             return list;
         }
 
-        [Obsolete(error: true, message: "This method is only for doc generator.")]
-        public SearchedGroup()
-        {
-
-        }
-
-        public SearchedGroup(GroupConversation conversation)
-        {
-            ImagePath = conversation.GroupImagePath;
-            Name = conversation.GroupName;
-            HasPassword = !string.IsNullOrEmpty(conversation.JoinPassword);
-            OwnerId = conversation.OwnerId;
-            Id = conversation.Id;
-            ConversationCreateTime = conversation.ConversationCreateTime;
-        }
-
-        public string ImagePath { get; set; }
-        public string Name { get; set; }
-        public bool HasPassword { get; set; }
-        public string OwnerId { get; set; }
-        public int Id { get; set; }
-        public DateTime ConversationCreateTime { get; set; }
+        public string ImagePath { get; set; } = conversation.GroupImagePath;
+        public string Name { get; set; } = conversation.GroupName;
+        public bool HasPassword { get; set; } = !string.IsNullOrEmpty(conversation.JoinPassword);
+        public string OwnerId { get; set; } = conversation.OwnerId;
+        public int Id { get; set; } = conversation.Id;
+        public DateTime ConversationCreateTime { get; set; } = conversation.ConversationCreateTime;
     }
 }

@@ -5,7 +5,7 @@ namespace Aiursoft.Kahla.SDK.Events
     public enum EventType
     {
         /// <summary>
-        /// When some one sent you a new message.
+        /// When someone sent you a new message.
         /// </summary>
         NewMessage = 0,
         /// <summary>
@@ -43,7 +43,7 @@ namespace Aiursoft.Kahla.SDK.Events
     }
     public class KahlaEvent
     {
-        public EventType Type { get; set; }
+        public required EventType Type { get; set; }
         public string TypeDescription => Type.ToString();
     }
 
@@ -53,15 +53,11 @@ namespace Aiursoft.Kahla.SDK.Events
         {
             Type = EventType.NewMessage;
         }
-        public string AesKey { get; set; }
         public bool Muted { get; set; }
-        /// <summary>
-        /// If you was mentioned in this message.
-        /// </summary>
-        public bool Mentioned { get; set; }
+        
         public int ConversationId => Message.ConversationId;
-        public Message Message { get; set; }
-        public string PreviousMessageId { get; set; }
+        public required Message Message { get; set; }
+        public required string PreviousMessageId { get; set; }
     }
 
     public class NewFriendRequestEvent : KahlaEvent
@@ -71,7 +67,7 @@ namespace Aiursoft.Kahla.SDK.Events
             Type = EventType.NewFriendRequestEvent;
         }
 
-        public Request Request { get; set; }
+        public required Request Request { get; set; }
     }
 
     public class FriendsChangedEvent : KahlaEvent
@@ -80,9 +76,9 @@ namespace Aiursoft.Kahla.SDK.Events
         {
             Type = EventType.FriendsChangedEvent;
         }
-        public Request Request { get; set; }
-        public bool Result { get; set; }
-        public PrivateConversation CreatedConversation { get; set; }
+        public required Request Request { get; set; }
+        public required bool Result { get; set; }
+        public required PrivateConversation CreatedConversation { get; set; }
     }
 
     public class FriendDeletedEvent : KahlaEvent
@@ -92,8 +88,8 @@ namespace Aiursoft.Kahla.SDK.Events
             Type = EventType.FriendDeletedEvent;
         }
 
-        public KahlaUser Trigger { get; set; }
-        public int ConversationId { get; set; }
+        public required  KahlaUser Trigger { get; set; }
+        public required int ConversationId { get; init; }
     }
 
     public class TimerUpdatedEvent : KahlaEvent
@@ -112,8 +108,8 @@ namespace Aiursoft.Kahla.SDK.Events
         {
             Type = EventType.NewMemberEvent;
         }
-        public int ConversationId { get; set; }
-        public KahlaUser NewMember { get; set; }
+        public required int ConversationId { get; set; }
+        public required KahlaUser NewMember { get; set; }
     }
 
     public class SomeoneLeftEvent : KahlaEvent
@@ -122,8 +118,8 @@ namespace Aiursoft.Kahla.SDK.Events
         {
             Type = EventType.SomeoneLeftEvent;
         }
-        public int ConversationId { get; set; }
-        public KahlaUser LeftUser { get; set; }
+        public required int ConversationId { get; set; }
+        public required KahlaUser LeftUser { get; set; }
     }
 
     public class DissolveEvent : KahlaEvent
@@ -143,8 +139,8 @@ namespace Aiursoft.Kahla.SDK.Events
             Type = EventType.GroupJoinedEvent;
         }
 
-        public GroupConversation CreatedConversation { get; set; }
-        public Message LatestMessage { get; set; }
+        public required GroupConversation CreatedConversation { get; set; }
+        public required Message LatestMessage { get; set; }
         public int MessageCount { get; set; }
     }
 }

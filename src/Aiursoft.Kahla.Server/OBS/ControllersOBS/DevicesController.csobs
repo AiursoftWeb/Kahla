@@ -153,10 +153,9 @@ namespace Aiursoft.Kahla.Server.Controllers
                         NickName = "Aiursoft Push System",
                     },
                     SenderId = "<Example user>",
-                    Content = "U2FsdGVkX1+6kWGFqiSsjuPWX2iS7occQbqXm+PCNDLleTdk5p2UVQgQpu8J4XAYSpz/NT6N5mJMUQIUrNt6Ow==",
+                    Content = "Sample message",
                     SendTime = DateTime.UtcNow,
                 },
-                AESKey = "37316f609ebc4e79bd7812a5f2ab37b8",
                 Muted = false,
                 Mentioned = false
             };

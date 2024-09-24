@@ -4,10 +4,10 @@ namespace Aiursoft.Kahla.SDK.Models.ApiViewModels
 {
     public class UserDetailViewModel : AiurResponse
     {
-        public KahlaUser User { get; set; }
-        public bool AreFriends { get; set; }
-        public bool SentRequest { get; set; }
-        public Request PendingRequest { get; set; }
+        public required KahlaUser User { get; set; }
+        public required bool AreFriends { get; set; }
+        public required bool SentRequest { get; set; }
+        public Request? PendingRequest { get; set; }
         public int? ConversationId { get; set; }
     }
 }

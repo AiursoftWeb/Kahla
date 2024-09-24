@@ -9,11 +9,11 @@ namespace Aiursoft.Kahla.SDK.Models.ApiAddressModels
         [MinLength(3)]
         [MaxLength(25)]
         [Display(Name = "new group's name")]
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         [MaxLength(100, ErrorMessage = "Your password was too long.")]
         [DataType(DataType.Password)]
         [NoSpace]
-        public string JoinPassword { get; set; }
+        public string? JoinPassword { get; set; }
     }
 }
