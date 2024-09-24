@@ -1,3 +1,4 @@
+using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
@@ -6,8 +7,10 @@ using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Attributes;
+using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -18,6 +21,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/auth")]
 public class AuthController(
+    KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager,
     SignInManager<KahlaUser> signInManager,
     ILogger<AuthController> logger) : ControllerBase
@@ -62,7 +66,7 @@ public class AuthController(
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: false);
-            logger.LogInformation($"User {user.Email} created.");
+            logger.LogInformation("User with email: {Email} created.", model.Email);
             return this.Protocol(Code.JobDone, "User created!");
         }
         else
@@ -75,11 +79,26 @@ public class AuthController(
     [KahlaForceAuth]
     [HttpPost]
     [Route("signout")]
-    public async Task<IActionResult> SignOutUser()
+    public async Task<IActionResult> SignOutUser(SignOutAddressModel model)
     {
+        var user = await GetCurrentUser();
+        logger.LogInformation("User with email: {Email} requested to sign out.", user.Email);
+        var device = await dbContext
+            .Devices
+            .Where(t => t.UserId == user.Id)
+            .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
+        
         await signInManager.SignOutAsync();
-        logger.LogInformation("User with email: {Email} signed out.", (await GetCurrentUser()).Email);
-        return this.Protocol(Code.JobDone, "User signed out!");
+        if (device == null)
+        {
+            logger.LogWarning("User with email: {Email} signed out, but we did not find device with id: {DeviceId}.", user.Email, model.DeviceId);
+            return this.Protocol(Code.JobDone, "Successfully logged you off, but we did not find device with id: " + model.DeviceId);
+        }
+
+        dbContext.Devices.Remove(device);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with email: {Email} signed out and removed device with id: {DeviceId}.", user.Email, model.DeviceId);
+        return this.Protocol(Code.JobDone, "Success. And the device with id: " + model.DeviceId + " is removed from your account.");
     }
     
     [KahlaForceAuth]
@@ -100,6 +119,10 @@ public class AuthController(
     private async Task<KahlaUser> GetCurrentUser()
     {
         var user = await userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            throw new AiurServerException(Code.Conflict, "The user you signed in was deleted from the database!");
+        }
         return user;
     }
 }
