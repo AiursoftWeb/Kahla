@@ -96,7 +96,7 @@ public class MessageController(
             outSub.Unsubscribe();
         }
 
-        return Ok();
+        return new EmptyResult();
     }
 
     private async Task<KahlaUser> GetCurrentUser()

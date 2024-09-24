@@ -190,7 +190,6 @@ public class BasicServerTests
         await _sdk.PushTestAsync();
     }
 
-        
     [TestMethod]
     public async Task WebSocketPushTest()
     {
