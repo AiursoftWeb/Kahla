@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Models;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS

@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.ModelsOBS;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.SDK.ModelsOBS
+namespace Aiursoft.Kahla.SDK.Models
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class KahlaUser : IdentityUser

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Aiursoft.Kahla.SDK.Models;
+using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
 {

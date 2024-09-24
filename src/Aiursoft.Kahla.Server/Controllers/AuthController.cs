@@ -3,9 +3,9 @@ using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
-using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
@@ -83,7 +83,7 @@ public class AuthController(
         logger.LogInformation("User with email: {Email} requested to sign out.", user.Email);
         var device = await dbContext
             .Devices
-            .Where(t => t.UserId == user.Id)
+            .Where(t => t.OwnerId == user.Id)
             .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
         
         await signInManager.SignOutAsync();

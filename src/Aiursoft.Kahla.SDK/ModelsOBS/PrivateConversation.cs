@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.Models;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS
 {

@@ -1,7 +1,7 @@
 ﻿using Aiursoft.AiurProtocol.Server;
 using Aiursoft.DbTools.Sqlite;
 using Aiursoft.DocGenerator.Services;
-using Aiursoft.Kahla.SDK.ModelsOBS;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;

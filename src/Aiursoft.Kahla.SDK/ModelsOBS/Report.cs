@@ -1,4 +1,6 @@
-﻿namespace Aiursoft.Kahla.SDK.ModelsOBS
+﻿using Aiursoft.Kahla.SDK.Models;
+
+namespace Aiursoft.Kahla.SDK.ModelsOBS
 {
     public enum ReportStatus
     {
