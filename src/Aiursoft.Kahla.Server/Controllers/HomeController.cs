@@ -28,7 +28,7 @@ public class HomeController(
     [Route("signin")]
     public async Task<IActionResult> SignIn(SignInAddressModel model)
     {
-        var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, true, lockoutOnFailure: true);
+        var result = await signInManager.PasswordSignInAsync(model.Email!, model.Password!, true, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             logger.LogInformation(1, "User logged in");
@@ -54,9 +54,9 @@ public class HomeController(
         {
             UserName = model.Email,
             Email = model.Email,
-            NickName = model.Email.Split('@')[0]
+            NickName = model.Email!.Split('@')[0]
         };
-        var result = await userManager.CreateAsync(user, model.Password);
+        var result = await userManager.CreateAsync(user, model.Password!);
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: false);

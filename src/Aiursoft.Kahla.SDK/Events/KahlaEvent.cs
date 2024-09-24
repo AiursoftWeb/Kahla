@@ -13,7 +13,7 @@ namespace Aiursoft.Kahla.SDK.Events
         /// </summary>
         NewFriendRequestEvent = 1,
         /// <summary>
-        /// When you was deleted by a friend or you deleted a friend.
+        /// When you were deleted by a friend or you deleted a friend.
         /// </summary>
         FriendDeletedEvent = 2,
         /// <summary>
@@ -25,11 +25,11 @@ namespace Aiursoft.Kahla.SDK.Events
         /// </summary>
         TimerUpdatedEvent = 4,
         /// <summary>
-        /// When some one joined a group you joined.
+        /// When someone joined a group you joined.
         /// </summary>
         NewMemberEvent = 5,
         /// <summary>
-        /// When some one left a group you joined or kicked out of a group.
+        /// When someone left a group you joined or kicked out of a group.
         /// </summary>
         SomeoneLeftEvent = 6,
         /// <summary>
