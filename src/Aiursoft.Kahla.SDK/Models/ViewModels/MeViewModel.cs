@@ -1,5 +1,4 @@
 using Aiursoft.AiurProtocol.Models;
-using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
