@@ -45,7 +45,7 @@ public class ContactsController(
         {
             Code = Code.ResultShown,
             Message = "Successfully get all your known contacts.",
-            Users = knownContacts
+            KnownContacts = knownContacts
         });
     }
     
