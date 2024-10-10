@@ -12,7 +12,6 @@ using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -105,7 +104,7 @@ public class ContactsController(
     }
 
     [HttpGet]
-    [Route("details/{id:string}")]
+    [Route("details/{id}")]
     public async Task<IActionResult> Details([FromRoute]string id)
     {
         var user = await this.GetCurrentUser(userManager);
@@ -125,7 +124,7 @@ public class ContactsController(
     }
 
     [HttpPost]
-    [Route("add/{id:string}")]
+    [Route("add/{id}")]
     public async Task<IActionResult> AddContact([FromRoute] string id)
     {
         var user = await this.GetCurrentUser(userManager);
