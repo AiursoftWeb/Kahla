@@ -1,6 +1,9 @@
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Attributes;
+using Aiursoft.Kahla.Server.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aiursoft.Kahla.Server.Controllers;
@@ -12,8 +15,39 @@ namespace Aiursoft.Kahla.Server.Controllers;
     PassthroughAiurServerException = true)]
 [ApiModelStateChecker]
 [Route("api/contacts")]
-public class ContactsController : ControllerBase
+public class ContactsController(
+#pragma warning disable CS9113 // Parameter is unread.
+    KahlaDbContext dbContext,
+    UserManager<KahlaUser> userManager) : ControllerBase
+#pragma warning restore CS9113 // Parameter is unread.
 {
+    [HttpGet]
+    [Route("mine")]
+    public IActionResult Mine()
+    {
+        // var user = await this.GetCurrentUser(userManager);
+        // var personalRelations = (await dbContext.PrivateConversations
+        //         .AsNoTracking()
+        //         .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
+        //         .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
+        //         .ToListAsync())
+        //     .Select(onlineJudger.BuildUserWithOnlineStatus)
+        //     .OrderBy(t => t.User.NickName);
+        // var groups = await dbContext.GroupConversations
+        //     .AsNoTracking()
+        //     .Where(t => t.Users.Any(p => p.UserId == user.Id))
+        //     .OrderBy(t => t.GroupName)
+        //     .ToListAsync();
+        // return this.Protocol(new MineViewModel
+        // {
+        //     Code = Code.ResultShown,
+        //     Message = "Successfully get all your groups and friends.",
+        //     Users = personalRelations,
+        //     Groups = SearchedGroup.Map(groups),
+        // });
+        throw new NotImplementedException();
+    }
+    
     // [Produces(typeof(SearchEverythingViewModel))]
     // public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
     // {

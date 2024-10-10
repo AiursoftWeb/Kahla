@@ -3,6 +3,7 @@ using Aiursoft.Kahla.SDK.Models;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
 {
+    [Obsolete]
     public class SearchEverythingViewModel : AiurResponse
     {
         public int UsersCount { get; set; }

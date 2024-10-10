@@ -58,6 +58,10 @@ public class KahlaUser : IdentityUser
     public IEnumerable<GroupConversation> GroupsOwned { get; set; } = new List<GroupConversation>();
     
     [JsonIgnore]
+    [InverseProperty(nameof(UserThreadRelation.User))]
+    public IEnumerable<UserThreadRelation> ThreadsRelations { get; set; } = new List<UserThreadRelation>();
+    
+    [JsonIgnore]
     [InverseProperty(nameof(ContactRecord.Creator))]
     public IEnumerable<ContactRecord> KnownContacts { get; set; } = new List<ContactRecord>();
 
@@ -88,7 +92,7 @@ public class KahlaUser : IdentityUser
 
     [JsonIgnore] public bool EnableEmailNotification { get; set; } = true;
 
-    [JsonIgnore] public bool ListInSearchResult { get; set; } = true;
+    [JsonIgnore] public bool AllowSearchByName { get; set; } = true;
     
     [JsonIgnore] public bool EnableEnterToSendMessage { get; set; } = true;
     

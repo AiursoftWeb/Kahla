@@ -136,7 +136,7 @@ public class AuthController(
             // Private information
             ThemeId = user.ThemeId,
             EnableEmailNotification = user.EnableEmailNotification,
-            ListInSearchResult = user.ListInSearchResult,
+            ListInSearchResult = user.AllowSearchByName,
             EnableEnterToSendMessage = user.EnableEnterToSendMessage,
             EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus,
             AllowHardInvitation = user.AllowHardInvitation
@@ -176,7 +176,7 @@ public class AuthController(
         }
         if (model.ListInSearchResult.HasValue)
         {
-            userTrackedInDb.ListInSearchResult = model.ListInSearchResult == true;
+            userTrackedInDb.AllowSearchByName = model.ListInSearchResult == true;
         }
         if (model.EnableEnterToSendMessage.HasValue)
         {

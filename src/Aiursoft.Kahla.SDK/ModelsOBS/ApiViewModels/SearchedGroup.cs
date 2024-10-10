@@ -2,6 +2,7 @@
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
 {
+    [Obsolete]
     public class SearchedGroup(GroupConversation conversation)
     {
         public static List<SearchedGroup> Map(List<GroupConversation> conversations)

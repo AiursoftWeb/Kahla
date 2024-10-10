@@ -3,6 +3,7 @@ using Aiursoft.Kahla.SDK.Models;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
 
+[Obsolete]
 public class MineViewModel : AiurResponse
 {
     public IEnumerable<KahlaUserWithOnlineStatus> Users { get; set; } = new List<KahlaUserWithOnlineStatus>();

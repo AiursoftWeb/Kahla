@@ -2,6 +2,7 @@ using Aiursoft.Kahla.SDK.Models;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
+[Obsolete]
 public class NewFriendRequestEvent : KahlaEvent
 {
     public NewFriendRequestEvent()

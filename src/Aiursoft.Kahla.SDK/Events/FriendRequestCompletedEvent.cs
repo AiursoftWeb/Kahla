@@ -3,6 +3,7 @@ using Aiursoft.Kahla.SDK.Models.Conversations;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
+[Obsolete]
 public class FriendRequestCompletedEvent : KahlaEvent
 {
     public FriendRequestCompletedEvent()

@@ -10,6 +10,7 @@ namespace Aiursoft.Kahla.SDK.ModelsOBS
         public Guid Id { get; set; }
 
         public int ConversationId { get; set; }
+        [Obsolete]
         [JsonIgnore]
         [ForeignKey(nameof(ConversationId))]
         public Conversation? Conversation { get; set; }

@@ -3,6 +3,7 @@ using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
+[Obsolete]
 public class GroupJoinedEvent : KahlaEvent
 {
     public GroupJoinedEvent()
