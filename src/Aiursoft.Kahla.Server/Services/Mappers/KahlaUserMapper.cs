@@ -33,4 +33,18 @@ public class KahlaUserMapper(IMemoryCache memoryCache)
             Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus)
         };
     }
+
+    public KahlaUserMappedOthersViewWithCommonThreads MapDetailedView(KahlaUser? user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        return new KahlaUserMappedOthersViewWithCommonThreads
+        {
+            User = user,
+            Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus)
+        };
+    }
 }

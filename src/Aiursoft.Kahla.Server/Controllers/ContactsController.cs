@@ -4,6 +4,7 @@ using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -11,6 +12,7 @@ using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -102,9 +104,29 @@ public class ContactsController(
         });
     }
 
+    [HttpGet]
+    [Route("details/{id:string}")]
+    public async Task<IActionResult> Details([FromRoute]string id)
+    {
+        var user = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", user.Email, id);
+        var target = await dbContext.Users.FindAsync(id);
+        if (target == null)
+        {
+            return this.Protocol(Code.NotFound, "The target user does not exist.");
+        }
+        var mapped = kahlaUserMapper.MapDetailedView(target);
+        return this.Protocol(new UserDetailViewModel 
+        {
+            User = mapped,
+            Code = Code.ResultShown,
+            Message = "User detail is shown."
+        });
+    }
+
     [HttpPost]
-    [Route("add/{id}")]
-    public async Task<IActionResult> AddContact(string id)
+    [Route("add/{id:string}")]
+    public async Task<IActionResult> AddContact([FromRoute] string id)
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to add a new contact with id: {TargetId}.", user.Email, id);
