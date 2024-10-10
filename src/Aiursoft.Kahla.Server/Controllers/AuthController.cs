@@ -132,14 +132,15 @@ public class AuthController(
             Code = Code.ResultShown,
             Message = "Got your user!",
             User = user,
-            
-            // Private information
-            ThemeId = user.ThemeId,
-            AllowHardInvitation = user.AllowHardInvitation,
-            EnableEmailNotification = user.EnableEmailNotification,
-            AllowSearchByName = user.AllowSearchByName,
-            EnableEnterToSendMessage = user.EnableEnterToSendMessage,
-            EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus,
+            PrivateSettings = new PrivateSettings
+            {
+                ThemeId = user.ThemeId,
+                AllowHardInvitation = user.AllowHardInvitation,
+                EnableEmailNotification = user.EnableEmailNotification,
+                AllowSearchByName = user.AllowSearchByName,
+                EnableEnterToSendMessage = user.EnableEnterToSendMessage,
+                EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus,
+            }
         });
     }
     

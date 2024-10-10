@@ -6,6 +6,11 @@ public class MeViewModel : AiurResponse
 {
     public required KahlaUser User { get; init; }
     
+    public required PrivateSettings PrivateSettings { get; init; }
+}
+
+public class PrivateSettings
+{
     public int ThemeId { get; init; }
     public bool AllowHardInvitation { get; init; }
     public bool EnableEmailNotification { get; init; }

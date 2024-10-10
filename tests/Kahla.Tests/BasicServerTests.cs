@@ -156,8 +156,8 @@ public class BasicServerTests
         await _sdk.UpdateMeAsync(themeId: 1, listInSearchResult: false, nickName: "new nick name!");
         var me2 = await _sdk.MeAsync();
         Assert.AreEqual("new nick name!", me2.User.NickName);
-        Assert.AreEqual(1, me2.ThemeId);
-        Assert.IsFalse(me2.AllowSearchByName);
+        Assert.AreEqual(1, me2.PrivateSettings.ThemeId);
+        Assert.IsFalse(me2.PrivateSettings.AllowSearchByName);
     }
     
     [TestMethod]
