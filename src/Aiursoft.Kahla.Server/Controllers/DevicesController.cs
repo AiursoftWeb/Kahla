@@ -151,7 +151,7 @@ public class DevicesController(
         {
             Message = new Message
             {
-                ConversationId = -1,
+                ThreadId = -1,
                 Sender = new KahlaUser
                 {
                     IconFilePath = null,

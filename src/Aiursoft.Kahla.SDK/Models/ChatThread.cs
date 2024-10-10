@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Aiursoft.Kahla.SDK.ModelsOBS;
 
 // ReSharper disable RedundantDefaultMemberInitializer
 
@@ -16,6 +17,9 @@ public class ChatThread
     /// Admins can change this value.
     /// </summary>
     [StringLength(256)] public required string Name { get; set; } = "{THE OTHER USER}";
+    
+    [InverseProperty(nameof(Message.Thread))]
+    public IEnumerable<Message> Messages { get; set; } = new List<Message>();
     
     /// <summary>
     /// The icon of this thread. This icon will be shown in the chat list.

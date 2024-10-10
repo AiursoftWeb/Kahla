@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Aiursoft.Kahla.SDK.Models;
-using Aiursoft.Kahla.SDK.Models.Conversations;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS
@@ -9,11 +8,10 @@ namespace Aiursoft.Kahla.SDK.ModelsOBS
     {
         public Guid Id { get; set; }
 
-        public int ConversationId { get; set; }
-        [Obsolete]
+        public int ThreadId { get; set; }
         [JsonIgnore]
-        [ForeignKey(nameof(ConversationId))]
-        public Conversation? Conversation { get; set; }
+        [ForeignKey(nameof(ThreadId))]
+        public ChatThread? Thread { get; set; }
         
         public required string SenderId { get; set; }
         [ForeignKey(nameof(SenderId))]

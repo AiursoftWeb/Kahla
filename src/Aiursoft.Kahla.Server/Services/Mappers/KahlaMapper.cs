@@ -28,23 +28,12 @@ public class KahlaMapper(
     {
         return Task.FromResult(new KahlaThreadMappedSearchedView
         {
+            Id = thread.Id,
             Name = thread.Name,
             ImagePath = thread.IconFilePath,
             OwnerId = thread.OwnerRelation.UserId,
             AllowDirectJoinWithoutInvitation = thread.AllowDirectJoinWithoutInvitation
         });
-    }
-    
-    public async Task<KahlaThreadMappedJoinedView> MapJoinedThreadAsync(ChatThread thread)
-    {
-        await Task.CompletedTask; // TODO: In the future, some properties will be calculated here with await.
-        return new KahlaThreadMappedJoinedView
-        {
-            Name = thread.Name,
-            ImagePath = thread.IconFilePath,
-            OwnerId = thread.OwnerRelation.UserId,
-            AllowDirectJoinWithoutInvitation = thread.AllowDirectJoinWithoutInvitation
-        };
     }
     
     public Task<KahlaUserMappedOthersView> MapOtherUserViewAsync(KahlaUser? user)
@@ -69,20 +58,14 @@ public class KahlaMapper(
         }
 
         var commonThreads = await dbContext
-            .UserThreadRelations
-            .Where(t => t.UserId == currentUser.Id) // My threads
-            .Select(t => t.Thread)
-            .Where(t => t.Members.Any(u => u.UserId == user.Id)) // Where that user is in
+            .QueryCommonThreads(currentUser.Id, user.Id)
             .ToListAsync();
-
-        var mappedCommonThreads = await commonThreads
-            .SelectAsListAsync(MapJoinedThreadAsync);
 
         return new KahlaUserMappedDetailedOthersView
         {
             User = user,
             Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus),
-            CommonThreads = mappedCommonThreads
+            CommonThreads = commonThreads
         };
     }
 }

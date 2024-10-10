@@ -10,7 +10,7 @@ public class NewMessageEvent : KahlaEvent
     }
 
     public bool Muted { get; set; }
-    public int ConversationId => Message.ConversationId;
+    public int ThreadId => Message.ThreadId;
     public required Message Message { get; set; }
     public bool Mentioned { get; set; }
 }

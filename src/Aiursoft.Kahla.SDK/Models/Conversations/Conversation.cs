@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Aiursoft.Kahla.SDK.ModelsOBS;
-using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models.Conversations
 {
@@ -13,8 +12,8 @@ namespace Aiursoft.Kahla.SDK.Models.Conversations
         public int Id { get; set; }
         public string? Discriminator { get; set; }
         
-        [JsonIgnore]
-        [InverseProperty(nameof(Message.Conversation))]
+        [Obsolete]
+        [NotMapped]
         public IEnumerable<Message> Messages { get; set; } = new List<Message>();
 
         public DateTime ConversationCreateTime { get; set; } = DateTime.UtcNow;

@@ -1,5 +1,6 @@
 ﻿using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Conversations;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -28,6 +29,51 @@ namespace Aiursoft.Kahla.Server.Data
         public DbSet<UserThreadRelation> UserThreadRelations { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
+
+        public IQueryable<KahlaThreadMappedJoinedView> QueryJoinedThreads(string userId)
+        {
+            return ChatThreads
+                .AsNoTracking()
+                .Where(t => t.Members.Any(p => p.UserId == userId))
+                .Select(t => new KahlaThreadMappedJoinedView
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ImagePath = t.IconFilePath,
+                    OwnerId = t.OwnerRelation.UserId,
+                    AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
+                    UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
+                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+                    Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
+                    TopTenMembers = t.Members
+                        .OrderBy(p => p.JoinTime)
+                        .Select(p => p.User)
+                        .Take(10)
+                });
+        }
+        
+        public IQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string userId, string targetUserId)
+        {
+            return ChatThreads
+                .AsNoTracking()
+                .Where(t => t.Members.Any(p => p.UserId == userId))
+                .Where(t => t.Members.Any(p => p.UserId == targetUserId))
+                .Select(t => new KahlaThreadMappedJoinedView
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ImagePath = t.IconFilePath,
+                    OwnerId = t.OwnerRelation.UserId,
+                    AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
+                    UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
+                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+                    Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
+                    TopTenMembers = t.Members
+                        .OrderBy(p => p.JoinTime)
+                        .Select(p => p.User)
+                        .Take(10)
+                });
+        }
 
         #nullable disable
         [Obsolete]
@@ -133,46 +179,46 @@ namespace Aiursoft.Kahla.Server.Data
             return conversation;
         }
         
-        [Obsolete]
-        public async Task<DateTime> GetLastReadTime(Conversation conversation, string userId)
-        {
-            if (conversation is PrivateConversation)
-            {
-                var query = Messages
-                    .Where(t => t.ConversationId == conversation.Id)
-                    .Where(t => t.SenderId != userId);
-                try
-                {
-                    return (await query
-                        .Where(t => t.Read)
-                        .OrderByDescending(t => t.SendTime)
-                        .FirstOrDefaultAsync())
-                        ?.SendTime ?? DateTime.MinValue;
-                }
-                finally
-                {
-                    await query
-                        .Where(t => t.Read == false)
-                        .ForEachAsync(t => t.Read = true);
-                }
-            }
-            if (conversation is GroupConversation)
-            {
-                var relation = await UserGroupRelations
-                    .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
-                try
-                {
-                    return relation!.ReadTimeStamp;
-                }
-                finally
-                {
-                    if (relation != null) relation.ReadTimeStamp = DateTime.UtcNow;
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
+        // [Obsolete]
+        // public async Task<DateTime> GetLastReadTime(Conversation conversation, string userId)
+        // {
+        //     if (conversation is PrivateConversation)
+        //     {
+        //         var query = Messages
+        //             .Where(t => t.ConversationId == conversation.Id)
+        //             .Where(t => t.SenderId != userId);
+        //         try
+        //         {
+        //             return (await query
+        //                 .Where(t => t.Read)
+        //                 .OrderByDescending(t => t.SendTime)
+        //                 .FirstOrDefaultAsync())
+        //                 ?.SendTime ?? DateTime.MinValue;
+        //         }
+        //         finally
+        //         {
+        //             await query
+        //                 .Where(t => t.Read == false)
+        //                 .ForEachAsync(t => t.Read = true);
+        //         }
+        //     }
+        //     if (conversation is GroupConversation)
+        //     {
+        //         var relation = await UserGroupRelations
+        //             .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
+        //         try
+        //         {
+        //             return relation!.ReadTimeStamp;
+        //         }
+        //         finally
+        //         {
+        //             if (relation != null) relation.ReadTimeStamp = DateTime.UtcNow;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         throw new InvalidOperationException();
+        //     }
+        // }
     }
 }
