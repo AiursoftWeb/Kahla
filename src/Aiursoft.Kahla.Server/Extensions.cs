@@ -1,7 +1,11 @@
 using System.Security.Claims;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.CSTools.Tools;
+using Aiursoft.DbTools.InMemory;
+using Aiursoft.DbTools.MySql;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,5 +36,21 @@ public static class Extensions
             result.Add(await selector(item));
         }
         return result;
+    }
+    
+    public static IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
+    {
+        if (EntryExtends.IsInUnitTests())
+        {
+            Console.WriteLine("Unit test detected, using in-memory database.");
+            services.AddAiurInMemoryDb<KahlaDbContext>();
+        }
+        else
+        {
+            Console.WriteLine("Production environment detected, using MySQL database.");
+            services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString);
+        }
+        
+        return services;
     }
 }

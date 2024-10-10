@@ -1,8 +1,5 @@
 ﻿using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Canon;
-using Aiursoft.CSTools.Tools;
-using Aiursoft.DbTools.InMemory;
-using Aiursoft.DbTools.MySql;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Attributes;
@@ -23,16 +20,7 @@ namespace Aiursoft.Kahla.Server
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             services.AddMemoryCache();
-            if (EntryExtends.IsInUnitTests())
-            {
-                Console.WriteLine("Unit test detected, using in-memory database.");
-                services.AddAiurInMemoryDb<KahlaDbContext>();
-            }
-            else
-            {
-                services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString);
-            }
-            
+            services.AddDatabase(connectionString);
             services.AddIdentity<KahlaUser, IdentityRole>(options => options.Password = new PasswordOptions
                 {
                     RequireNonAlphanumeric = false,
