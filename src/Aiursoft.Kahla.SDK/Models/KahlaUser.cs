@@ -89,8 +89,8 @@ public class KahlaUser : IdentityUser
 
     // User's settings
     [JsonIgnore] public int ThemeId { get; set; }
-    
-    [JsonIgnore] public bool AllowHardInvitation { get; set; }
+
+    [JsonIgnore] public bool AllowHardInvitation { get; set; } = true;
 
     [JsonIgnore] public bool EnableEmailNotification { get; set; } = true;
 
