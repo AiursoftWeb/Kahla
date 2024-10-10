@@ -154,4 +154,43 @@ public class KahlaServerAccess(
         var result = await http.Get<InitPusherViewModel>(url);
         return result;
     }
+
+    public async Task<MyContactsViewModel> MineAsync(int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/mine", param: new { take });
+        var result = await http.Get<MyContactsViewModel>(url);
+        return result;
+    }
+    
+    public async Task<SearchEverythingViewModel> SearchEverythingAsync(string searchInput, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/search", param: new {  });
+        var result = await http.Post<SearchEverythingViewModel>(url, new AiurApiPayload(new SearchEverythingAddressModel
+        {
+            SearchInput = searchInput,
+            Take = take
+        }));
+        return result;
+    }
+    
+    public async Task<UserDetailViewModel> UserDetailAsync(string userId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/details/{userId}", param: new { userId });
+        var result = await http.Get<UserDetailViewModel>(url);
+        return result;
+    }
+    
+    public async Task<AiurResponse> AddContactAsync(string userId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/add/{userId}", param: new { userId });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
+    
+    public async Task<AiurResponse> RemoveContactAsync(string userId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/remove/{userId}", param: new { userId });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
 }

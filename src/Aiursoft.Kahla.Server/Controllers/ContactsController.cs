@@ -32,6 +32,7 @@ public class ContactsController(
 
     [HttpGet]
     [Route("mine")]
+    [Produces<MyContactsViewModel>]
     public async Task<IActionResult> Mine([FromQuery]int take = 20)
     {
         var user = await this.GetCurrentUser(userManager);
