@@ -5,6 +5,8 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.SDK.ModelsOBS;
+using Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.Mappers;
@@ -188,5 +190,39 @@ public class ContactsController(
         logger.LogInformation("User with email: {Email} successfully removed a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts. Please call the 'mine' API to get the latest information.");
     }
+    
+    
+    [HttpPost]
+    [Route("report")]
+    public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
+    {
+        var currentUser = await this.GetCurrentUser(userManager);
+        var targetUser = await dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
+        if (targetUser == null)
+        {
+            return this.Protocol(Code.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
+        }
+        if (currentUser.Id == targetUser.Id)
+        {
+            return this.Protocol(Code.Conflict, "You can not report yourself!");
+        }
+        var exists = await dbContext
+            .Reports
+            .AnyAsync((t) => t.TriggerId == currentUser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
+        if (exists)
+        {
+            return this.Protocol(Code.NoActionTaken, "You have already reported the target user!");
+        }
+        // All check passed. Report him now!
+        await dbContext.Reports.AddAsync(new Report
+        {
+            TargetId = targetUser.Id,
+            TriggerId = currentUser.Id,
+            Reason = model.Reason
+        });
+        await dbContext.SaveChangesAsync();
+        return this.Protocol(Code.JobDone, "Successfully reported target user!");
+    }
+    
 }
 
