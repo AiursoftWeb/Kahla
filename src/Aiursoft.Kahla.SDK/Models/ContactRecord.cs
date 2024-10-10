@@ -18,5 +18,5 @@ public class ContactRecord
     [JsonIgnore]
     public KahlaUser? Target { get; set; }
 
-    public DateTime CreateTime { get; set; } = DateTime.UtcNow;
+    public DateTime AddTime { get; set; } = DateTime.UtcNow;
 }

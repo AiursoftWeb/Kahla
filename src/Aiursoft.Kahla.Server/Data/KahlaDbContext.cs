@@ -24,6 +24,7 @@ namespace Aiursoft.Kahla.Server.Data
         public DbSet<Conversation> Conversations { get; set; }
         
         public DbSet<ChatThread> ChatThreads { get; set; }
+        public DbSet<ContactRecord> ContactRecords { get; set; }
         public DbSet<UserThreadRelation> UserThreadRelations { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }

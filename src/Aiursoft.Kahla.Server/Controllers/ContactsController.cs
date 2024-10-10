@@ -98,4 +98,36 @@ public class ContactsController(
             Message = "Search result is shown."
         });
     }
+
+    [HttpPost]
+    [Route("add/{id}")]
+    public async Task<IActionResult> AddContact(string id)
+    {
+        var user = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to add a new contact with id: {TargetId}.", user.Email, id);
+        var target = await dbContext.Users.FindAsync(id);
+        if (target == null)
+        {
+            logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target does not exist.", user.Email, id);
+            return this.Protocol(Code.NotFound, "The target user does not exist.");
+        }
+        var duplicated = await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == user.Id && t.TargetId == target.Id);
+        if (duplicated)
+        {
+            logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target is already his contact.", user.Email, id);
+            return this.Protocol(Code.Conflict, "The target user is already your contact.");
+        }
+        
+        var contactRecord = new ContactRecord
+        {
+            CreatorId = user.Id,
+            TargetId = target.Id,
+            AddTime = DateTime.UtcNow
+        };
+        await dbContext.ContactRecords.AddAsync(contactRecord);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with email: {Email} successfully added a new contact with id: {TargetId}.", user.Email, id);
+        return this.Protocol(Code.JobDone, "Successfully added the target user as your contact. Please call the 'mine' API to get the latest information.");
+    }
 }
+
