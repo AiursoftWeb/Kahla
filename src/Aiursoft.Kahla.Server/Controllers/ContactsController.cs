@@ -36,10 +36,12 @@ public class ContactsController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
-        await dbContext.Entry(user).Collection(t => t.KnownContacts).LoadAsync();
-        var knownContacts = await user.KnownContacts
+        var knownContacts = await dbContext
+            .ContactRecords
+            .AsNoTracking()
+            .Where(t => t.CreatorId == user.Id)
             .Select(t => t.Target)
-            .OrderBy(t => t?.NickName)
+            .OrderBy(t => t!.NickName)
             .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
