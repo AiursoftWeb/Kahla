@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
-using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services;
@@ -24,15 +22,11 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/friendship")]
 public class FriendshipController(
-    IConfiguration configuration,
     KahlaPushService pusher,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext)
     : ControllerBase
 {
-    private static readonly SemaphoreSlim CreateRequestLock = new(1, 1);
-    private static readonly SemaphoreSlim AcceptRequestLock = new(1, 1);
-
     [HttpPost]
     [Route("delete-friend/{id}")]
     public async Task<IActionResult> DeleteFriend([Required][FromRoute] string id)
@@ -58,68 +52,6 @@ public class FriendshipController(
         return this.Protocol(Code.JobDone, "Successfully deleted your friend relationship.");
     }
     
-    [HttpPost]
-    [Route("create-request/{id}")]
-    public async Task<IActionResult> CreateRequest([Required][FromRoute] string id)
-    {
-        var user = await this.GetCurrentUser(userManager);
-        await dbContext.Entry(user)
-            .Collection(t => t.HisDevices)
-            .LoadAsync();
-        var target = await dbContext.Users.Include(t => t.HisDevices).SingleOrDefaultAsync(t => t.Id == id);
-        if (target == null)
-        {
-            return this.Protocol(Code.NotFound, "We can not find your target user!");
-        }
-        if (target.Id == user.Id)
-        {
-            return this.Protocol(Code.Conflict, "You can't request yourself!");
-        }
-        var areFriends = await dbContext.AreFriends(user.Id, target.Id);
-        if (areFriends)
-        {
-            return this.Protocol(Code.Conflict, "You two are already friends!");
-        }
-        Request request;
-        await CreateRequestLock.WaitAsync();
-        try
-        {
-            var pending = await dbContext.Requests
-                .Where(t =>
-                    t.CreatorId == user.Id && t.TargetId == target.Id ||
-                    t.CreatorId == target.Id && t.TargetId == user.Id)
-                .AnyAsync(t => !t.Completed);
-            if (pending)
-            {
-                return this.Protocol(Code.Conflict, "There are some pending request hasn't been completed!");
-            }
-            request = new Request
-            {
-                CreatorId = user.Id,
-                Creator = user,
-                TargetId = id,
-                Target = target,
-            };
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-        }
-        finally
-        {
-            CreateRequestLock.Release();
-        }
-
-        pusher.NewFriendRequestEvent(target, request);
-        pusher.NewFriendRequestEvent(user, request);
-        if (configuration["AutoAcceptRequests"] == true.ToString().ToLower())
-        {
-            await AcceptRequest(request, true);
-        }
-        return this.Protocol(new AiurValue<int>(request.Id)
-        {
-            Code = Code.JobDone,
-            Message = "Successfully created your request!"
-        });
-    }
     //
     // [HttpPost]
     // [Produces(typeof(AiurValue<int>))]
@@ -373,38 +305,4 @@ public class FriendshipController(
     //
     // private Task<KahlaUser> GetKahlaUser() => _userManager.GetUserAsync(User);
     //
-    private async Task AcceptRequest(Request request, bool accept)
-    {
-        PrivateConversation? newConversation = null;
-        request.Completed = true;
-        await AcceptRequestLock.WaitAsync();
-        try
-        {
-            if (accept)
-            {
-                if (await dbContext.AreFriends(request.CreatorId, request.TargetId))
-                {
-                    await dbContext.SaveChangesAsync();
-                    throw new AiurServerException(Code.NoActionTaken, "You two are already friends.");
-                }
-                newConversation = dbContext.AddFriend(request.CreatorId, request.TargetId);
-            }
-            await dbContext.SaveChangesAsync();
-        }
-        finally
-        {
-            AcceptRequestLock.Release();
-        }
-
-        pusher.FriendRequestCompletedEvent(
-            request.Creator ?? await dbContext.Users.FindAsync(request.CreatorId) ?? throw new AiurServerException(Code.NotFound, "Can not find the creator of this request!"),
-            request,
-            accept,
-            newConversation);
-        pusher.FriendRequestCompletedEvent(
-            request.Target ?? await dbContext.Users.FindAsync(request.TargetId) ?? throw new AiurServerException(Code.NotFound, "Can not find the target of this request!"),
-            request,
-            accept,
-            newConversation);
-    }
 }

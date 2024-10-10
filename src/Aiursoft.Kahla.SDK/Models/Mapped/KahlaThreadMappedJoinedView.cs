@@ -12,9 +12,12 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedSearchedView
     
     // Last message.
     public Message? LatestMessage { get; set; }
+    // Last message sender.
+    public KahlaUser? LatestMessageSender { get; set; }
     
     // Muted.
     public bool Muted { get; set; }
+
 
     // Someone at me. TODO.
 }

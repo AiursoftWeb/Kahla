@@ -50,13 +50,8 @@ public class KahlaMapper(
         });
     }
 
-    public async Task<KahlaUserMappedDetailedOthersView> MapDetailedOtherUserView(KahlaUser? user, KahlaUser currentUser)
+    public async Task<KahlaUserMappedDetailedOthersView> MapDetailedOtherUserView(KahlaUser user, KahlaUser currentUser)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-
         var commonThreads = await dbContext
             .QueryCommonThreads(currentUser.Id, user.Id)
             .ToListAsync();

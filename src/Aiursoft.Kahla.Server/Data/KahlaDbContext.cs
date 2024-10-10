@@ -30,11 +30,10 @@ namespace Aiursoft.Kahla.Server.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
 
-        public IQueryable<KahlaThreadMappedJoinedView> QueryJoinedThreads(string userId)
+        private IQueryable<KahlaThreadMappedJoinedView> Map(IQueryable<ChatThread> threads, string userId)
         {
-            return ChatThreads
+            return threads
                 .AsNoTracking()
-                .Where(t => t.Members.Any(p => p.UserId == userId))
                 .Select(t => new KahlaThreadMappedJoinedView
                 {
                     Id = t.Id,
@@ -43,36 +42,73 @@ namespace Aiursoft.Kahla.Server.Data
                     OwnerId = t.OwnerRelation.UserId,
                     AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
                     UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
-                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+                    LatestMessage = t.Messages
+                        .OrderByDescending(p => p.SendTime)
+                        .FirstOrDefault(),
+                    LatestMessageSender = t.Messages.Any() ? t.Messages
+                        .OrderByDescending(p => p.SendTime)
+                        .Select(m => m.Sender)
+                        .FirstOrDefault() : null,
                     Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
                     TopTenMembers = t.Members
                         .OrderBy(p => p.JoinTime)
                         .Select(p => p.User)
-                        .Take(10)
+                        .Take(10),
                 });
+        }
+        
+        public IQueryable<KahlaThreadMappedJoinedView> QueryJoinedThreads(string userId)
+        {
+            var query = ChatThreads
+                .AsNoTracking()
+                .Where(t => t.Members.Any(p => p.UserId == userId));
+            return Map(query, userId);
+            // return ChatThreads
+            //     .AsNoTracking()
+            //     .Where(t => t.Members.Any(p => p.UserId == userId))
+            //     .Select(t => new KahlaThreadMappedJoinedView
+            //     {
+            //         Id = t.Id,
+            //         Name = t.Name,
+            //         ImagePath = t.IconFilePath,
+            //         OwnerId = t.OwnerRelation.UserId,
+            //         AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
+            //         UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
+            //         LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+            //         Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
+            //         TopTenMembers = t.Members
+            //             .OrderBy(p => p.JoinTime)
+            //             .Select(p => p.User)
+            //             .Take(10)
+            //     });
         }
         
         public IQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string userId, string targetUserId)
         {
-            return ChatThreads
+            var query = ChatThreads
                 .AsNoTracking()
                 .Where(t => t.Members.Any(p => p.UserId == userId))
-                .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-                .Select(t => new KahlaThreadMappedJoinedView
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    ImagePath = t.IconFilePath,
-                    OwnerId = t.OwnerRelation.UserId,
-                    AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
-                    UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
-                    LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
-                    Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
-                    TopTenMembers = t.Members
-                        .OrderBy(p => p.JoinTime)
-                        .Select(p => p.User)
-                        .Take(10)
-                });
+                .Where(t => t.Members.Any(p => p.UserId == targetUserId));
+            return Map(query, userId);
+            // return ChatThreads
+            //     .AsNoTracking()
+            //     .Where(t => t.Members.Any(p => p.UserId == userId))
+            //     .Where(t => t.Members.Any(p => p.UserId == targetUserId))
+            //     .Select(t => new KahlaThreadMappedJoinedView
+            //     {
+            //         Id = t.Id,
+            //         Name = t.Name,
+            //         ImagePath = t.IconFilePath,
+            //         OwnerId = t.OwnerRelation.UserId,
+            //         AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
+            //         UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == userId)!.ReadTimeStamp),
+            //         LatestMessage = t.Messages.OrderByDescending(p => p.SendTime).FirstOrDefault(),
+            //         Muted = t.Members.SingleOrDefault(u => u.UserId == userId)!.Muted,
+            //         TopTenMembers = t.Members
+            //             .OrderBy(p => p.JoinTime)
+            //             .Select(p => p.User)
+            //             .Take(10)
+            //     });
         }
 
         #nullable disable
@@ -151,74 +187,8 @@ namespace Aiursoft.Kahla.Server.Data
             return -1;
         }
 
-        [Obsolete]
 
-        public async Task<GroupConversation> CreateGroup(string groupName, string groupImagePath, string creatorId, string joinPassword)
-        {
-            var newGroup = new GroupConversation
-            {
-                GroupName = groupName,
-                GroupImagePath = groupImagePath,
-                OwnerId = creatorId,
-                JoinPassword = joinPassword
-            };
-            await GroupConversations.AddAsync(newGroup);
-            await SaveChangesAsync();
-            return newGroup;
-        }
 
-        [Obsolete]
-        public PrivateConversation AddFriend(string userId1, string userId2)
-        {
-            var conversation = new PrivateConversation
-            {
-                RequesterId = userId1,
-                TargetId = userId2,
-            };
-            PrivateConversations.Add(conversation);
-            return conversation;
-        }
-        
-        // [Obsolete]
-        // public async Task<DateTime> GetLastReadTime(Conversation conversation, string userId)
-        // {
-        //     if (conversation is PrivateConversation)
-        //     {
-        //         var query = Messages
-        //             .Where(t => t.ConversationId == conversation.Id)
-        //             .Where(t => t.SenderId != userId);
-        //         try
-        //         {
-        //             return (await query
-        //                 .Where(t => t.Read)
-        //                 .OrderByDescending(t => t.SendTime)
-        //                 .FirstOrDefaultAsync())
-        //                 ?.SendTime ?? DateTime.MinValue;
-        //         }
-        //         finally
-        //         {
-        //             await query
-        //                 .Where(t => t.Read == false)
-        //                 .ForEachAsync(t => t.Read = true);
-        //         }
-        //     }
-        //     if (conversation is GroupConversation)
-        //     {
-        //         var relation = await UserGroupRelations
-        //             .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == conversation.Id);
-        //         try
-        //         {
-        //             return relation!.ReadTimeStamp;
-        //         }
-        //         finally
-        //         {
-        //             if (relation != null) relation.ReadTimeStamp = DateTime.UtcNow;
-        //         }
-        //     }
-        //     else
-        //     {
-        //         throw new InvalidOperationException();
-        //     }
-        // }
+
     }
 }
