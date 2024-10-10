@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models.Conversations
 {
+    [Obsolete]
     public class GroupConversation : Conversation
     {
         [InverseProperty(nameof(UserGroupRelation.Group))]

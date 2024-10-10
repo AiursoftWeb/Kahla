@@ -35,6 +35,7 @@ namespace Aiursoft.Kahla.Server.Services
             }
         }
 
+        [Obsolete]
         public void NewFriendRequestEvent(KahlaUser target, Request request)
         {
             var newFriendRequestEvent = new NewFriendRequestEvent
@@ -48,6 +49,7 @@ namespace Aiursoft.Kahla.Server.Services
                 triggerEmail: request.Creator?.Email ?? "unknown@domain.com"));
         }
 
+        [Obsolete]
         public void FriendRequestCompletedEvent(
             KahlaUser target, 
             Request request, 
@@ -110,6 +112,7 @@ namespace Aiursoft.Kahla.Server.Services
             _canon.FireAsync<WebSocketPushService>(s => s.PushAsync(receiver, dissolveEvent));
         }
 
+        [Obsolete]
         public void GroupJoinedEvent(KahlaUser receiver, GroupConversation createdConversation,
             Message latestMessage, int messageCount)
         {

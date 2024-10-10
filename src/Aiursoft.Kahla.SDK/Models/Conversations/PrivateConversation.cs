@@ -3,6 +3,7 @@ using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Models.Conversations
 {
+    [Obsolete]
     public class PrivateConversation : Conversation
     {
         // Properties

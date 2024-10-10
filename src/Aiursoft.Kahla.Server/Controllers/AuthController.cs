@@ -138,7 +138,8 @@ public class AuthController(
             EnableEmailNotification = user.EnableEmailNotification,
             ListInSearchResult = user.ListInSearchResult,
             EnableEnterToSendMessage = user.EnableEnterToSendMessage,
-            EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus
+            EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus,
+            AllowHardInvitation = user.AllowHardInvitation
         });
     }
     
@@ -165,9 +166,17 @@ public class AuthController(
         {
             userTrackedInDb.ThemeId = model.ThemeId ?? 0;
         }
+        if (model.AllowHardInvitation.HasValue)
+        {
+            userTrackedInDb.AllowHardInvitation = model.AllowHardInvitation == true;
+        }
         if (model.EnableEmailNotification.HasValue)
         {
             userTrackedInDb.EnableEmailNotification = model.EnableEmailNotification == true;
+        }
+        if (model.ListInSearchResult.HasValue)
+        {
+            userTrackedInDb.ListInSearchResult = model.ListInSearchResult == true;
         }
         if (model.EnableEnterToSendMessage.HasValue)
         {
@@ -176,10 +185,6 @@ public class AuthController(
         if (model.EnableHideMyOnlineStatus.HasValue)
         {
             userTrackedInDb.EnableHideMyOnlineStatus = model.EnableHideMyOnlineStatus == true;
-        }
-        if (model.ListInSearchResult.HasValue)
-        {
-            userTrackedInDb.ListInSearchResult = model.ListInSearchResult == true;
         }
         await userManager.UpdateAsync(userTrackedInDb);
         logger.LogInformation("User with email: {Email} successfully updated his client setting.", userTrackedInDb.Email);

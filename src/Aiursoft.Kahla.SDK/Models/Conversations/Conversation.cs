@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models.Conversations
 {
+    [Obsolete]
     public abstract class Conversation
     {
         // Properties

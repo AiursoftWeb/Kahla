@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models
 {
+    [Obsolete]
     public class Request
     {
         [Key]

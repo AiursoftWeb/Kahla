@@ -10,15 +10,18 @@ namespace Aiursoft.Kahla.Server.Data
     public class KahlaDbContext(DbContextOptions<KahlaDbContext> options) : IdentityDbContext<KahlaUser>(options)
     {
         public DbSet<Message> Messages { get; set; }
+#pragma warning disable CS0612 // Type or member is obsolete
         public DbSet<Request> Requests { get; set; }
         public DbSet<PrivateConversation> PrivateConversations { get; set; }
         public DbSet<GroupConversation> GroupConversations { get; set; }
         public DbSet<UserGroupRelation> UserGroupRelations { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
+#pragma warning restore CS0612 // Type or member is obsolete
         public DbSet<Report> Reports { get; set; }
         public DbSet<Device> Devices { get; set; }
 
         #nullable disable
+        [Obsolete]
         public IQueryable<ContactInfo> MyContacts(string userId)
         {
             return Conversations
@@ -53,12 +56,14 @@ namespace Aiursoft.Kahla.Server.Data
         }
         #nullable enable
 
+        [Obsolete]
         public async Task<UserGroupRelation?> GetRelationFromGroup(string userId, int groupId)
         {
             return await UserGroupRelations
                 .SingleOrDefaultAsync(t => t.UserId == userId && t.GroupId == groupId);
         }
-
+        
+        [Obsolete]
         public Task<PrivateConversation?> FindConversationAsync(string userId1, string userId2)
         {
             return PrivateConversations.Where(t =>
@@ -66,10 +71,13 @@ namespace Aiursoft.Kahla.Server.Data
                     (t.RequesterId == userId2 && t.TargetId == userId1)).FirstOrDefaultAsync();
         }
 
+        [Obsolete]
         public async Task<bool> AreFriends(string userId1, string userId2)
         {
             return await FindConversationAsync(userId1, userId2) != null;
         }
+
+        [Obsolete]
 
         public async Task<int> RemoveFriend(string userId1, string userId2)
         {
@@ -88,6 +96,8 @@ namespace Aiursoft.Kahla.Server.Data
             return -1;
         }
 
+        [Obsolete]
+
         public async Task<GroupConversation> CreateGroup(string groupName, string groupImagePath, string creatorId, string joinPassword)
         {
             var newGroup = new GroupConversation
@@ -102,6 +112,7 @@ namespace Aiursoft.Kahla.Server.Data
             return newGroup;
         }
 
+        [Obsolete]
         public PrivateConversation AddFriend(string userId1, string userId2)
         {
             var conversation = new PrivateConversation
@@ -112,7 +123,8 @@ namespace Aiursoft.Kahla.Server.Data
             PrivateConversations.Add(conversation);
             return conversation;
         }
-
+        
+        [Obsolete]
         public async Task<DateTime> GetLastReadTime(Conversation conversation, string userId)
         {
             if (conversation is PrivateConversation)

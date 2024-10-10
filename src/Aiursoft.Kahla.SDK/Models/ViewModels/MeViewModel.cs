@@ -14,4 +14,5 @@ public class MeViewModel : AiurResponse
     public bool EnableEnterToSendMessage { get; init; }
 
     public bool EnableHideMyOnlineStatus { get; init; }
+    public bool AllowHardInvitation { get; init; }
 }

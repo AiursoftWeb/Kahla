@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Aiursoft.Kahla.Server.Controllers;
 
 [KahlaForceAuth]
+[Obsolete]
 [GenerateDoc]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true,
