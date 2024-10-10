@@ -45,6 +45,8 @@ public class ContactsController(
         });
     }
     
+    [HttpPost]
+    [Route("search")]
     [Produces(typeof(SearchEverythingViewModel))]
     public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
     {
