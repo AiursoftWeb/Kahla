@@ -15,4 +15,16 @@ public class KahlaThreadMapper
             AllowDirectJoinWithoutInvitation = thread.AllowDirectJoinWithoutInvitation
         };
     }
+    
+    public async Task<KahlaThreadMappedJoinedView> MapJoinedThread(ChatThread thread)
+    {
+        await Task.CompletedTask; // TODO: In the future, some properties will be calculated here with await.
+        return new KahlaThreadMappedJoinedView
+        {
+            Name = thread.Name,
+            ImagePath = thread.IconFilePath,
+            OwnerId = thread.OwnerRelation.UserId,
+            AllowDirectJoinWithoutInvitation = thread.AllowDirectJoinWithoutInvitation
+        };
+    }
 }

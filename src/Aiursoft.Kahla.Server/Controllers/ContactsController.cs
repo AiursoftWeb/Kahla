@@ -112,9 +112,11 @@ public class ContactsController(
         var target = await dbContext.Users.FindAsync(id);
         if (target == null)
         {
+            logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
-        var mapped = kahlaUserMapper.MapDetailedView(target);
+        var mapped = await kahlaUserMapper.MapDetailedOthersView(target, user);
+        logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {
             User = mapped,
