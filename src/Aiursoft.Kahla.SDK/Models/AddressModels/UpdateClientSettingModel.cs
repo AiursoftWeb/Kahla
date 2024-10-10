@@ -16,8 +16,7 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         public bool? EnableEnterToSendMessage { get; set; }
 
         public bool? EnableHideMyOnlineStatus { get; set; }
-
-        public bool? ListInSearchResult { get; set; }
+        public bool? AllowSearchByName { get; set; }
         public bool? AllowHardInvitation { get; set; }
     }
 }

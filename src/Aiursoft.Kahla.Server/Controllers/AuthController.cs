@@ -135,11 +135,11 @@ public class AuthController(
             
             // Private information
             ThemeId = user.ThemeId,
+            AllowHardInvitation = user.AllowHardInvitation,
             EnableEmailNotification = user.EnableEmailNotification,
-            ListInSearchResult = user.AllowSearchByName,
+            AllowSearchByName = user.AllowSearchByName,
             EnableEnterToSendMessage = user.EnableEnterToSendMessage,
             EnableHideMyOnlineStatus = user.EnableHideMyOnlineStatus,
-            AllowHardInvitation = user.AllowHardInvitation
         });
     }
     
@@ -174,9 +174,9 @@ public class AuthController(
         {
             userTrackedInDb.EnableEmailNotification = model.EnableEmailNotification == true;
         }
-        if (model.ListInSearchResult.HasValue)
+        if (model.AllowSearchByName.HasValue)
         {
-            userTrackedInDb.AllowSearchByName = model.ListInSearchResult == true;
+            userTrackedInDb.AllowSearchByName = model.AllowSearchByName == true;
         }
         if (model.EnableEnterToSendMessage.HasValue)
         {

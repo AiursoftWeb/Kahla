@@ -93,7 +93,7 @@ public class KahlaServerAccess(
             EnableEmailNotification = enableEmailNotification,
             EnableEnterToSendMessage = enableEnterToSendMessage,
             EnableHideMyOnlineStatus = enableHideMyOnlineStatus,
-            ListInSearchResult = listInSearchResult
+            AllowSearchByName = listInSearchResult
         });
         var result = await http.Patch<MeViewModel>(url, model);
         return result;
