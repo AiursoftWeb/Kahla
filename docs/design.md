@@ -10,6 +10,8 @@
 * Bio
 * 倾向的主题 ID
 * 允许自己被硬拉入（默认允许）
+  * 在界面上，这里展示为开关：“Private Account”，增加注释："Other users can't add you to a conversation. (You can still join a conversation by yourself)"
+  * 在提交到API时，其值取反。
 * 允许系统为自己发 Email （默认允许）
 * 允许自己被通过昵称被搜索到（默认允许）
 * 回车发送消息 （默认允许）
