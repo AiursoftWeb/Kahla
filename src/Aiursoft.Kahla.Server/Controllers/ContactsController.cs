@@ -28,6 +28,9 @@ public class ContactsController(
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
+    // This lock is used to prevent adding the same friend twice.
+    private static readonly SemaphoreSlim AddFriendLock = new(1, 1);
+
     [HttpGet]
     [Route("mine")]
     public async Task<IActionResult> Mine()
@@ -111,23 +114,55 @@ public class ContactsController(
             logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target does not exist.", user.Email, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
-        var duplicated = await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == user.Id && t.TargetId == target.Id);
-        if (duplicated)
-        {
-            logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target is already his contact.", user.Email, id);
-            return this.Protocol(Code.Conflict, "The target user is already your contact.");
-        }
         
-        var contactRecord = new ContactRecord
+        logger.LogTrace("Waiting for the lock to add a new contact from id {SourceId} with id: {TargetId}.", user.Id, id);
+        await AddFriendLock.WaitAsync();
+        try
         {
-            CreatorId = user.Id,
-            TargetId = target.Id,
-            AddTime = DateTime.UtcNow
-        };
-        await dbContext.ContactRecords.AddAsync(contactRecord);
-        await dbContext.SaveChangesAsync();
+            var duplicated =
+                await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == user.Id && t.TargetId == target.Id);
+            if (duplicated)
+            {
+                logger.LogWarning(
+                    "User with email: {Email} is trying to add a contact with id: {TargetId} but the target is already his contact.",
+                    user.Email, id);
+                return this.Protocol(Code.Conflict, "The target user is already your known contact.");
+            }
+
+            var contactRecord = new ContactRecord
+            {
+                CreatorId = user.Id,
+                TargetId = target.Id,
+                AddTime = DateTime.UtcNow
+            };
+            await dbContext.ContactRecords.AddAsync(contactRecord);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            AddFriendLock.Release();
+            logger.LogTrace("Released the lock to add a new contact from id {SourceId} with id: {TargetId}.", user.Id, id);
+        }
         logger.LogInformation("User with email: {Email} successfully added a new contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(Code.JobDone, "Successfully added the target user as your contact. Please call the 'mine' API to get the latest information.");
+    }
+    
+    [HttpPost]
+    [Route("remove/{id}")]
+    public async Task<IActionResult> RemoveContact(string id)
+    {
+        var user = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to remove a contact with id: {TargetId}.", user.Email, id);
+        var contactRecord = await dbContext.ContactRecords.SingleOrDefaultAsync(t => t.CreatorId == user.Id && t.TargetId == id);
+        if (contactRecord == null)
+        {
+            logger.LogWarning("User with email: {Email} is trying to remove a contact with id: {TargetId} but the target is not his contact.", user.Email, id);
+            return this.Protocol(Code.NotFound, "The target user is not your known contact.");
+        }
+        dbContext.ContactRecords.Remove(contactRecord);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with email: {Email} successfully removed a contact with id: {TargetId}.", user.Email, id);
+        return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts. Please call the 'mine' API to get the latest information.");
     }
 }
 
