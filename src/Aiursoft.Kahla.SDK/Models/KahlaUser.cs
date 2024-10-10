@@ -36,22 +36,34 @@ public class KahlaUser : IdentityUser
 
     [JsonProperty] public override bool EmailConfirmed { get; set; }
     [JsonProperty] public override string? Email { get; set; }
-
+    
+    [Obsolete]
     [JsonIgnore]
     [InverseProperty(nameof(PrivateConversation.RequestUser))]
     public IEnumerable<PrivateConversation> Friends { get; set; } = new List<PrivateConversation>();
 
+    [Obsolete]
     [JsonIgnore]
     [InverseProperty(nameof(PrivateConversation.TargetUser))]
     public IEnumerable<PrivateConversation> OfFriends { get; set; } = new List<PrivateConversation>();
 
+    [Obsolete]
     [JsonIgnore]
     [InverseProperty(nameof(UserGroupRelation.User))]
     public IEnumerable<UserGroupRelation> GroupsJoined { get; set; } = new List<UserGroupRelation>();
 
+    [Obsolete]
     [JsonIgnore]
     [InverseProperty(nameof(GroupConversation.Owner))]
     public IEnumerable<GroupConversation> GroupsOwned { get; set; } = new List<GroupConversation>();
+    
+    [JsonIgnore]
+    [InverseProperty(nameof(ContactRecord.Creator))]
+    public IEnumerable<ContactRecord> KnownContacts { get; set; } = new List<ContactRecord>();
+
+    [JsonIgnore]
+    [InverseProperty(nameof(ContactRecord.Target))]
+    public IEnumerable<ContactRecord> OfKnownContacts { get; set; } = new List<ContactRecord>();
 
     [JsonIgnore]
     [InverseProperty(nameof(Message.Sender))]

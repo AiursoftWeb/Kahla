@@ -11,7 +11,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
     PassthroughRemoteErrors = true,
     PassthroughAiurServerException = true)]
 [ApiModelStateChecker]
-[Route("api/friendship")]
+[Route("api/contacts")]
 public class ContactsController : ControllerBase
 {
     // [Produces(typeof(SearchEverythingViewModel))]
