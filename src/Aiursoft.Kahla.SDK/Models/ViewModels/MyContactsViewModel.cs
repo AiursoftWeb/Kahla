@@ -5,5 +5,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class MyContactsViewModel : AiurResponse
 {
-    public IEnumerable<KahlaUserMappedOthersView> Users { get; set; } = new List<KahlaUserMappedOthersView>();
+    public List<KahlaUserMappedOthersView> Users { get; set; } = new();
 }

@@ -22,6 +22,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/contacts")]
 public class ContactsController(
+    ILogger<ContactsController> logger,
     KahlaThreadMapper kahlaThreadMapper,
     KahlaUserMapper kahlaUserMapper,
     KahlaDbContext dbContext,
@@ -32,15 +33,18 @@ public class ContactsController(
     public async Task<IActionResult> Mine()
     {
         var user = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
         await dbContext.Entry(user).Collection(t => t.KnownContacts).LoadAsync();
         var knownContacts = user.KnownContacts
             .Select(t => t.Target)
             .OrderBy(t => t?.NickName)
-            .Select(kahlaUserMapper.MapOthersView);
+            .Select(kahlaUserMapper.MapOthersView)
+            .ToList();
+        logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
             Code = Code.ResultShown,
-            Message = "Successfully get all your groups and friends.",
+            Message = "Successfully get all your known contacts.",
             Users = knownContacts
         });
     }
@@ -50,6 +54,9 @@ public class ContactsController(
     [Produces(typeof(SearchEverythingViewModel))]
     public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
     {
+        var user = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to search for {SearchInput}. Take: {Take}.", user.Email, model.SearchInput, model.Take);
+        
         var usersQuery = dbContext
             .Users
             .AsNoTracking()
@@ -64,6 +71,7 @@ public class ContactsController(
         var usersView = usersEntities
             .Select(kahlaUserMapper.MapOthersView)
             .ToList();
+        logger.LogInformation("User with email: {Email} successfully get {Count} users.", user.Email, usersView.Count);
         
         var threadsQuery = dbContext
             .ChatThreads
@@ -78,6 +86,7 @@ public class ContactsController(
         var threadsView = threadsEntities
             .Select(kahlaThreadMapper.MapSearchedThread)
             .ToList();
+        logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threadsView.Count);
     
         return this.Protocol(new SearchEverythingViewModel
         {
