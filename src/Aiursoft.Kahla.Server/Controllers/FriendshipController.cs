@@ -6,7 +6,6 @@ using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Conversations;
-using Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services;
@@ -27,39 +26,12 @@ namespace Aiursoft.Kahla.Server.Controllers;
 public class FriendshipController(
     IConfiguration configuration,
     KahlaPushService pusher,
-    OnlineJudger onlineJudger,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext)
     : ControllerBase
 {
     private static readonly SemaphoreSlim CreateRequestLock = new(1, 1);
     private static readonly SemaphoreSlim AcceptRequestLock = new(1, 1);
-
-    [HttpGet]
-    [Route("circle")]
-    public async Task<IActionResult> Mine()
-    {
-        var user = await this.GetCurrentUser(userManager);
-        var personalRelations = (await dbContext.PrivateConversations
-                .AsNoTracking()
-                .Where(t => t.RequesterId == user.Id || t.TargetId == user.Id)
-                .Select(t => user.Id == t.RequesterId ? t.TargetUser : t.RequestUser)
-                .ToListAsync())
-            .Select(onlineJudger.BuildUserWithOnlineStatus)
-            .OrderBy(t => t.User.NickName);
-        var groups = await dbContext.GroupConversations
-            .AsNoTracking()
-            .Where(t => t.Users.Any(p => p.UserId == user.Id))
-            .OrderBy(t => t.GroupName)
-            .ToListAsync();
-        return this.Protocol(new MineViewModel
-        {
-            Code = Code.ResultShown,
-            Message = "Successfully get all your groups and friends.",
-            Users = personalRelations,
-            Groups = SearchedGroup.Map(groups),
-        });
-    }
 
     [HttpPost]
     [Route("delete-friend/{id}")]

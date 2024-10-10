@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Aiursoft.Kahla.SDK.Models.Conversations;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +20,7 @@ public class KahlaUser : IdentityUser
     
     [JsonProperty] 
     [StringLength(40, MinimumLength = 1)]
+    [NotNull]
     public virtual string? NickName { get; set; }
     
     [JsonProperty] 
@@ -35,7 +37,7 @@ public class KahlaUser : IdentityUser
     [JsonProperty] public virtual DateTime AccountCreateTime { get; set; } = DateTime.UtcNow;
 
     [JsonProperty] public override bool EmailConfirmed { get; set; }
-    [JsonProperty] public override string? Email { get; set; }
+    [NotNull][JsonProperty] public override string? Email { get; set; }
     
     [Obsolete]
     [JsonIgnore]

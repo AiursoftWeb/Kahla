@@ -1,10 +1,10 @@
 using Aiursoft.Kahla.SDK.Models;
-using Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Aiursoft.Kahla.Server.Services;
+namespace Aiursoft.Kahla.Server.Services.Mappers;
 
-public class OnlineJudger(IMemoryCache memoryCache)
+public class KahlaUserMapper(IMemoryCache memoryCache)
 {
     public bool? IsOnline(string userId, bool userEnableHideMyOnlineStatus)
     {
@@ -20,14 +20,14 @@ public class OnlineJudger(IMemoryCache memoryCache)
         return isOnline;
     }
     
-    public KahlaUserWithOnlineStatus BuildUserWithOnlineStatus(KahlaUser? user)
+    public KahlaUserMappedOthersView MapOthersView(KahlaUser? user)
     {
         if (user == null)
         {
             throw new ArgumentNullException(nameof(user));
         }
         
-        return new KahlaUserWithOnlineStatus
+        return new KahlaUserMappedOthersView
         {
             User = user,
             Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus)

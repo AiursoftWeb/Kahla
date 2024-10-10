@@ -80,7 +80,7 @@ namespace Aiursoft.Kahla.Server.Services
             _canon.FireAsync<WebPushService>(s => s.PushAsync(
                 devices: target.HisDevices,
                 payload: friendDeletedEvent,
-                triggerEmail: trigger.Email ?? "unknown@domain.com"));
+                triggerEmail: trigger.Email));
         }
 
         public void NewMemberEvent(KahlaUser receiver, KahlaUser newMember, int conversationId)
