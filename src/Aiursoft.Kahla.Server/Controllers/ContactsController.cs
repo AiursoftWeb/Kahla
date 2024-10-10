@@ -32,7 +32,7 @@ public class ContactsController(
 
     [HttpGet]
     [Route("mine")]
-    public async Task<IActionResult> Mine()
+    public async Task<IActionResult> Mine([FromQuery]int take = 20)
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
@@ -42,13 +42,16 @@ public class ContactsController(
             .Where(t => t.CreatorId == user.Id)
             .Select(t => t.Target)
             .OrderBy(t => t!.NickName)
+            .Take(take)
+            .ToListAsync();
+        var mappedKnownContacts = await knownContacts
             .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully get all your known contacts.",
-            KnownContacts = knownContacts
+            KnownContacts = mappedKnownContacts
         });
     }
     
