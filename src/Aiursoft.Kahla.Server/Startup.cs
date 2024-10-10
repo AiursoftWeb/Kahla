@@ -1,6 +1,6 @@
 ﻿using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Canon;
-using Aiursoft.DbTools.Sqlite;
+using Aiursoft.DbTools.MySql;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Server.Attributes;
@@ -21,7 +21,7 @@ namespace Aiursoft.Kahla.Server
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             services.AddMemoryCache();
-            services.AddAiurSqliteWithCache<KahlaDbContext>(connectionString);
+            services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString);
             
             services.AddIdentity<KahlaUser, IdentityRole>(options => options.Password = new PasswordOptions
                 {
