@@ -122,7 +122,7 @@ public class ContactsController(
         logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {
-            User = mapped,
+            DetailedUser = mapped,
             Code = Code.ResultShown,
             Message = "User detail is shown."
         });

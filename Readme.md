@@ -21,33 +21,9 @@ This is the server project of Kahla.
 
 Try a running Kahla [here](https://kahla.aiursoft.cn).
 
-## Run in Ubuntu
-
-The following script will install\update this app on your Ubuntu server. Supports Ubuntu 22.04.
-
-On your Ubuntu server, run the following command:
-
-```bash
-curl -sL https://gitlab.aiursoft.cn/aiursoft/kahla/-/raw/master/install.sh | sudo bash
-```
-
-Of course it is suggested that append a custom port number to the command:
-
-```bash
-curl -sL https://gitlab.aiursoft.cn/aiursoft/kahla/-/raw/master/install.sh | sudo bash -s 8080
-```
-
-It will install the app as a systemd service, and start it automatically. Binary files will be located at `/opt/apps`. Service files will be located at `/etc/systemd/system`.
-
 ## Run manually
 
-Requirements about how to run
-
-1. Install MySQL as instructions below.
-2. Execute `dotnet run` to run the app.
-3. Use your browser to view [http://localhost:5000](http://localhost:5000).
-
-To install MySQL on AnduinOS, run the following commands:
+Before starting, you need to install MySQL.
 
 ```bash
 sudo apt update
@@ -78,6 +54,11 @@ FLUSH PRIVILEGES;
 exit;
 ````
 
+Requirements about how to run
+
+1. Install MySQL as instructions above.
+2. Execute `dotnet run` to run the app.
+3. Use your browser to view [http://localhost:5000](http://localhost:5000).
 
 ## Run in Microsoft Visual Studio
 
