@@ -188,6 +188,6 @@ public class AuthController(
         }
         await userManager.UpdateAsync(userTrackedInDb);
         logger.LogInformation("User with email: {Email} successfully updated his client setting.", userTrackedInDb.Email);
-        return this.Protocol(Code.JobDone, "Successfully update your client setting.");
+        return this.Protocol(Code.JobDone, "Successfully update your client setting. Please call the 'me' API to get the latest information.");
     }
 }
