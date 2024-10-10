@@ -23,4 +23,14 @@ public static class Extensions
         }
         return user;
     }
+    
+    public static async Task<List<T2>> SelectAsListAsync<T1, T2>(this IEnumerable<T1> source, Func<T1, Task<T2>> selector)
+    {
+        var result = new List<T2>();
+        foreach (var item in source)
+        {
+            result.Add(await selector(item));
+        }
+        return result;
+    }
 }

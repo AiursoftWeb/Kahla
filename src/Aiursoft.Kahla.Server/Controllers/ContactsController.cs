@@ -23,8 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/contacts")]
 public class ContactsController(
     ILogger<ContactsController> logger,
-    KahlaThreadMapper kahlaThreadMapper,
-    KahlaUserMapper kahlaUserMapper,
+    KahlaMapper kahlaMapper,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
@@ -38,11 +37,10 @@ public class ContactsController(
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
         await dbContext.Entry(user).Collection(t => t.KnownContacts).LoadAsync();
-        var knownContacts = user.KnownContacts
+        var knownContacts = await user.KnownContacts
             .Select(t => t.Target)
             .OrderBy(t => t?.NickName)
-            .Select(kahlaUserMapper.MapOthersView)
-            .ToList();
+            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
@@ -71,9 +69,8 @@ public class ContactsController(
         var usersEntities = await usersQuery
             .Take(model.Take)
             .ToListAsync();
-        var usersView = usersEntities
-            .Select(kahlaUserMapper.MapOthersView)
-            .ToList();
+        var usersView = await usersEntities
+            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
         logger.LogInformation("User with email: {Email} successfully get {Count} users.", user.Email, usersView.Count);
         
         var threadsQuery = dbContext
@@ -86,9 +83,8 @@ public class ContactsController(
         var threadsEntities = await threadsQuery
             .Take(model.Take)
             .ToListAsync();
-        var threadsView = threadsEntities
-            .Select(kahlaThreadMapper.MapSearchedThread)
-            .ToList();
+        var threadsView = await threadsEntities
+            .SelectAsListAsync(kahlaMapper.MapSearchedThreadAsync);
         logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threadsView.Count);
     
         return this.Protocol(new SearchEverythingViewModel
@@ -114,7 +110,7 @@ public class ContactsController(
             logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
-        var mapped = await kahlaUserMapper.MapDetailedOthersView(target, user);
+        var mapped = await kahlaMapper.MapDetailedOtherUserView(target, user);
         logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {

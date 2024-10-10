@@ -41,8 +41,7 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
-            services.AddScoped<KahlaUserMapper>();
-            services.AddScoped<KahlaThreadMapper>();
+            services.AddScoped<KahlaMapper>();
             services.AddTaskCanon();
 
             services
