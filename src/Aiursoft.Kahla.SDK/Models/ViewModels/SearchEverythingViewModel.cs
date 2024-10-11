@@ -8,6 +8,6 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels
         public int TotalUsersCount { get; set; }
         public int TotalThreadsCount { get; set; }
         public List<KahlaUserMappedOthersView> Users { get; set; } = new();
-        public List<KahlaThreadMappedSearchedView> Threads { get; set; } = new();
+        public List<KahlaThreadMappedOthersView> Threads { get; set; } = new();
     }
 }

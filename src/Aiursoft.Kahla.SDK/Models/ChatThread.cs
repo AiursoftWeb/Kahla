@@ -87,4 +87,6 @@ public class ChatThread
     /// Admins can change this value.
     /// </summary>
     public bool AllowMembersEnlistAllMembers { get; set; } = true;
+    
+    public DateTime CreateTime { get; set; } = DateTime.UtcNow;
 }

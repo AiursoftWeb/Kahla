@@ -8,6 +8,7 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/contacts")]
 public class ContactsController(
+    UserOthersViewAppService usersAppAppService,
+    ThreadOthersViewAppService threadsAppService,
+    UserDetailedViewAppService userDetailedViewAppService,
     ILogger<ContactsController> logger,
     KahlaMapper kahlaMapper,
     KahlaDbContext dbContext,
@@ -38,25 +42,13 @@ public class ContactsController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
-        var knownContacts = await dbContext
-            .ContactRecords
-            .AsNoTracking()
-            .Where(t => t.CreatorId == user.Id)
-            .Include(t => t.Target)
-            .Include(t => t.Target.OfKnownContacts)
-            .Include(t => t.Target.BlockedBy)
-            .Select(t => t.Target)
-            .OrderBy(t => t.NickName)
-            .Take(take)
-            .ToListAsync();
-        var mappedKnownContacts = await knownContacts
-            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
+        var knownContacts = await usersAppAppService.GetMyContactsPagedAsync(user.Id, take);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully get all your known contacts.",
-            KnownContacts = mappedKnownContacts
+            KnownContacts = knownContacts
         });
     }
     
@@ -68,43 +60,31 @@ public class ContactsController(
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to search for {SearchInput}. Take: {Take}.", user.Email, model.SearchInput, model.Take);
         
-        var usersQuery = dbContext
-            .Users
-            .AsNoTracking()
-            .Include(t => t.OfKnownContacts)
-            .Include(t => t.BlockedBy)
-            .Where(t => t.AllowSearchByName || t.Id == model.SearchInput)
-            .Where(t =>
-                t.Email.Contains(model.SearchInput) ||
-                t.NickName.Contains(model.SearchInput) ||
-                t.Id == model.SearchInput);
-        var usersEntities = await usersQuery
-            .Take(model.Take)
-            .ToListAsync();
-        var usersView = await usersEntities
-            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
-        logger.LogInformation("User with email: {Email} successfully get {Count} users.", user.Email, usersView.Count);
+        var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, user.Id, model.Take);
+        logger.LogInformation("User with email: {Email} successfully searched {Count} users.", user.Email, users.Count);
         
-        var threadsQuery = dbContext
-            .ChatThreads
-            .AsNoTracking()
-            .Where(t => t.AllowSearchByName || t.Id.ToString() == model.SearchInput)
-            .Where(t => 
-                t.Name.Contains(model.SearchInput) ||
-                t.Id.ToString() == model.SearchInput);
-        var threadsEntities = await threadsQuery
-            .Take(model.Take)
-            .ToListAsync();
-        var threadsView = await threadsEntities
-            .SelectAsListAsync(kahlaMapper.MapSearchedThreadAsync);
-        logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threadsView.Count);
+        // // TODO: Use app service.
+        // var threadsQuery = dbContext
+        //     .ChatThreads
+        //     .AsNoTracking()
+        //     .Where(t => t.AllowSearchByName || t.Id.ToString() == model.SearchInput)
+        //     .Where(t => 
+        //         t.Name.Contains(model.SearchInput) ||
+        //         t.Id.ToString() == model.SearchInput);
+        // var threadsEntities = await threadsQuery
+        //     .Take(model.Take)
+        //     .ToListAsync();
+        // var threadsView = await threadsEntities
+        //     .SelectAsListAsync(kahlaMapper.MapSearchedThreadAsync);
+        var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, user.Id, model.Take);
+        logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threads.Count);
     
         return this.Protocol(new SearchEverythingViewModel
         {
-            TotalUsersCount = await usersQuery.CountAsync(),
-            TotalThreadsCount = await threadsQuery.CountAsync(),
-            Users = usersView,
-            Threads = threadsView,
+            TotalUsersCount = totalUsersCount,
+            TotalThreadsCount = totalThreadsCount,
+            Users = users,
+            Threads = threads,
             Code = Code.ResultShown,
             Message = "Search result is shown."
         });
@@ -112,26 +92,22 @@ public class ContactsController(
 
     [HttpGet]
     [Route("details/{id}")]
-    public async Task<IActionResult> Details([FromRoute]string id)
+    public async Task<IActionResult> Details([FromRoute]string id, [FromQuery]int takeThreads = 5)
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", user.Email, id);
-        var target = await dbContext.Users
-            .Include(t => t.OfKnownContacts)
-            .Include(t => t.BlockedBy)
-            .FirstOrDefaultAsync(t => t.Id == id); // Search by primary key, use FirstOrDefault instead of SingleOrDefault for better performance.
-        if (target == null)
+        var mapped = await userDetailedViewAppService.GetUserDetailedViewAsync(id, user.Id, takeThreads);
+        if (mapped == null)
         {
             logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
-            return this.Protocol(Code.NotFound, "The target user does not exist.");
+            return this.Protocol(Code.NotFound, "The target user with id `{id}` does not exist.");
         }
-        var mapped = await kahlaMapper.MapDetailedOtherUserView(target, user.Id);
         logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {
             DetailedUser = mapped,
             Code = Code.ResultShown,
-            Message = "User detail is shown."
+            Message = $"User detail with first {takeThreads} common threads are shown."
         });
     }
 

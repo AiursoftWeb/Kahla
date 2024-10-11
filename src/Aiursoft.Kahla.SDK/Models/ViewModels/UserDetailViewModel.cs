@@ -5,5 +5,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class UserDetailViewModel : AiurResponse
 {
-    public required KahlaUserMappedDetailedOthersView DetailedUser { get; init; }
+    public required KahlaUserMappedDetailedView DetailedUser { get; init; }
 }

@@ -6,7 +6,7 @@ using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Services.Mappers;
+using Aiursoft.Kahla.Server.Services.AppService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +21,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/blocks")]
 public class BlocksController(
+    UserOthersViewAppService usersAppAppService,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext,
-    KahlaMapper kahlaMapper,
     ILogger<BlocksController> logger) : ControllerBase
 {
     // This lock is used to prevent blocking the same user multiple times.
@@ -36,25 +36,13 @@ public class BlocksController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known blocks.", user.Email);
-        var knownBlocks = await dbContext
-            .BlockRecords
-            .AsNoTracking()
-            .Where(t => t.CreatorId == user.Id)
-            .Include(t => t.Target)
-            .Include(t => t.Target.OfKnownContacts)
-            .Include(t => t.Target.BlockedBy)
-            .Select(t => t.Target)
-            .OrderBy(t => t.NickName)
-            .Take(take)
-            .ToListAsync();
-        var mappedKnownBlocks = await knownBlocks
-            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
+        var knownBlocks = await usersAppAppService.GetMyBlocksPagedAsync(user.Id, take);
         logger.LogInformation("User with email: {Email} successfully get all his known blocks with total {Count}.", user.Email, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully get all your known blocks.",
-            KnownBlocks = mappedKnownBlocks
+            KnownBlocks = knownBlocks
         });
     }
     

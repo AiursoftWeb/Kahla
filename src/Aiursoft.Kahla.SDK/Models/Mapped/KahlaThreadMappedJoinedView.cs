@@ -2,7 +2,7 @@ using Aiursoft.Kahla.SDK.ModelsOBS;
 
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
-public class KahlaThreadMappedJoinedView : KahlaThreadMappedSearchedView
+public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 {
     // Top ten members.
     public IEnumerable<KahlaUser> TopTenMembers { get; set; } = new List<KahlaUser>();
