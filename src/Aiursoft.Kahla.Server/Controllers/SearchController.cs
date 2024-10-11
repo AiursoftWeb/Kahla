@@ -34,10 +34,10 @@ public class SearchController(
         logger.LogInformation("User with email: {Email} is trying to search for {SearchInput}. Take: {Take}.", user.Email, model.SearchInput, model.Take);
         
         var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, user.Id, model.Take);
-        logger.LogInformation("User with email: {Email} successfully searched {Count} users.", user.Email, users.Count);
+        logger.LogInformation("User with email: {Email} successfully got {Count} users from search result.", user.Email, users.Count);
         
         var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, user.Id, model.Take);
-        logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threads.Count);
+        logger.LogInformation("User with email: {Email} successfully got {Count} threads from search result.", user.Email, threads.Count);
     
         return this.Protocol(new SearchEverythingViewModel
         {
