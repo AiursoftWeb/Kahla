@@ -26,7 +26,7 @@ public class SearchController(
     UserManager<KahlaUser> userManager) : ControllerBase
 {
     [HttpPost]
-    [Route("search-everyting")]
+    [Route("search-everything")]
     [Produces(typeof(SearchEverythingViewModel))]
     public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
     {

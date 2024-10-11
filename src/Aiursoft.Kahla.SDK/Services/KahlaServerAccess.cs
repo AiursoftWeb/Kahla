@@ -164,7 +164,7 @@ public class KahlaServerAccess(
     
     public async Task<SearchEverythingViewModel> SearchEverythingAsync(string searchInput, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/search", param: new {  });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-everything", param: new {  });
         var result = await http.Post<SearchEverythingViewModel>(url, new AiurApiPayload(new SearchEverythingAddressModel
         {
             SearchInput = searchInput,
