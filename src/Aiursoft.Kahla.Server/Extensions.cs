@@ -58,7 +58,7 @@ public static class Extensions
         else
         {
             Console.WriteLine("Production environment detected, using MySQL database.");
-            services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString);
+            services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString, splitQuery: false);
         }
         
         return services;
