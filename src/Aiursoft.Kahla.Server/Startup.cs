@@ -7,7 +7,6 @@ using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
-using Aiursoft.Kahla.Server.Services.Mappers;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
@@ -57,7 +56,6 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
-            services.AddScoped<KahlaMapper>();
             services.AddScoped<OnlineJudger>();
 
             services.AddTaskCanon();

@@ -9,7 +9,6 @@ using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
-using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +27,6 @@ public class ContactsController(
     ThreadOthersViewAppService threadsAppService,
     UserDetailedViewAppService userDetailedViewAppService,
     ILogger<ContactsController> logger,
-    KahlaMapper kahlaMapper,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
