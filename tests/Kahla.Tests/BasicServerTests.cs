@@ -145,13 +145,30 @@ public class BasicServerTests
         Assert.AreEqual("user3", me.User.NickName);
         Assert.AreEqual("user3@domain.com", me.User.Email);
     }
+    
+    [TestMethod]
+    public async Task GetMyInfoUnauthorized()
+    {
+        await _sdk.RegisterAsync("user4@domain.com", "password");
+        await _sdk.SignoutAsync();
+        
+        try
+        {
+            await _sdk.MeAsync();
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("You are unauthorized to access this API.", e.Message);
+        }
+    }
 
     [TestMethod]
     public async Task PatchMyInfo()
     {
-        await _sdk.RegisterAsync("user10@domain.com", "password");
+        await _sdk.RegisterAsync("user5@domain.com", "password");
         var me = await _sdk.MeAsync();
-        Assert.AreEqual("user10", me.User.NickName);
+        Assert.AreEqual("user5", me.User.NickName);
         
         await _sdk.UpdateMeAsync(themeId: 1, listInSearchResult: false, nickName: "new nick name!");
         var me2 = await _sdk.MeAsync();
@@ -163,7 +180,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task GetMyDevices()
     {
-        await _sdk.RegisterAsync("user4@domain.com", "password");
+        await _sdk.RegisterAsync("user6@domain.com", "password");
         var devices = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices.Items?.Count);
     }
@@ -171,7 +188,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task AddAndGetMyDevices()
     {
-        await _sdk.RegisterAsync("user5@domain.com", "password");
+        await _sdk.RegisterAsync("user7@domain.com", "password");
         var devices = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices.Items?.Count);
         
@@ -184,7 +201,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task AddAndDropDevice()
     {
-        await _sdk.RegisterAsync("user6@domain.com", "password");
+        await _sdk.RegisterAsync("user8@domain.com", "password");
         var devices = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices.Items?.Count);
 
@@ -204,7 +221,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task AddAndPatchDevice()
     {
-        await _sdk.RegisterAsync("user7@domain.com", "password");
+        await _sdk.RegisterAsync("user9@domain.com", "password");
         var devices = await _sdk.MyDevicesAsync();
         Assert.AreEqual(0, devices.Items?.Count);
 
@@ -227,7 +244,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task PushTest()
     {
-        await _sdk.RegisterAsync("user8@domain.com", "password");
+        await _sdk.RegisterAsync("user10@domain.com", "password");
         var addResponse = await _sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
         Assert.AreEqual(Code.JobDone, addResponse.Code);
         await _sdk.PushTestAsync();
@@ -236,7 +253,7 @@ public class BasicServerTests
     [TestMethod]
     public async Task WebSocketPushTest()
     {
-        await _sdk.RegisterAsync("user9@domain.com", "password");
+        await _sdk.RegisterAsync("user11@domain.com", "password");
         var pusher = await _sdk.InitPusherAsync();
         var endpointUrl = pusher.WebSocketEndpoint;
         var socket = await endpointUrl.ConnectAsWebSocketServer();
@@ -253,17 +270,17 @@ public class BasicServerTests
     public async Task AddMySelfAsContactTest()
     {
         // Register
-        await _sdk.RegisterAsync("user10@domain.com", "password");
+        await _sdk.RegisterAsync("user12@domain.com", "password");
         
         // No contacts.
         var myContacts = await _sdk.MineAsync(take: 2);
         Assert.AreEqual(0, myContacts.KnownContacts.Count);
 
         // Search me.
-        var searchResult = await _sdk.SearchEverythingAsync("user10", 1);
+        var searchResult = await _sdk.SearchEverythingAsync("user12", 1);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
-        Assert.AreEqual("user10", searchResult.Users.First().User.NickName);
+        Assert.AreEqual("user12", searchResult.Users.First().User.NickName);
         Assert.AreEqual(false, searchResult.Users.First().IsKnownContact);
         
         // Add me as a contact.
@@ -284,7 +301,7 @@ public class BasicServerTests
         // I should have one contact now.
         var myContacts2 = await _sdk.MineAsync(take: 2);
         Assert.AreEqual(1, myContacts2.KnownContacts.Count);
-        Assert.AreEqual("user10", myContacts2.KnownContacts.First().User.NickName);
+        Assert.AreEqual("user12", myContacts2.KnownContacts.First().User.NickName);
         Assert.AreEqual(true, myContacts2.KnownContacts.First().IsKnownContact);
 
         // Remove me as a contact.
@@ -311,13 +328,13 @@ public class BasicServerTests
     public async Task GetMyDetailsTest()
     {
         // Register
-        await _sdk.RegisterAsync("user11@domain.com", "password");
+        await _sdk.RegisterAsync("user13@domain.com", "password");
         var searchResult = await _sdk.SearchEverythingAsync("user11", 1);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         
         var details = await _sdk.UserDetailAsync(searchResult.Users.First().User.Id);
-        Assert.AreEqual("user11", details.SearchedUser.User.NickName);
+        Assert.AreEqual("user13", details.SearchedUser.User.NickName);
     }
 
     [TestMethod]
@@ -327,7 +344,7 @@ public class BasicServerTests
         await _sdk.RegisterAsync("bad@domain.com", "password");
         
         // Register
-        await _sdk.RegisterAsync("user12@domain.com", "password");
+        await _sdk.RegisterAsync("user14@domain.com", "password");
         
         // Search bad guy.
         var searchResult = await _sdk.SearchEverythingAsync("bad", 1);
