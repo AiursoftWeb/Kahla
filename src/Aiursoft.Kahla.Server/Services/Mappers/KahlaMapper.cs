@@ -56,11 +56,26 @@ public class KahlaMapper(
             .QueryCommonThreads(currentUser.Id, user.Id)
             .ToListAsync();
 
+        if (!dbContext.Entry(user).Collection(t => t.OfKnownContacts).IsLoaded)
+        {
+            await dbContext.Entry(user)
+                .Collection(t => t.OfKnownContacts)
+                .LoadAsync();
+        }
+        if (!dbContext.Entry(user).Collection(t => t.BlockedBy).IsLoaded)
+        {
+            await dbContext.Entry(user)
+                .Collection(t => t.BlockedBy)
+                .LoadAsync();
+        }
+
         return new KahlaUserMappedDetailedOthersView
         {
             User = user,
             Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus),
-            CommonThreads = commonThreads
+            CommonThreads = commonThreads,
+            IsKnownContact = user.OfKnownContacts.Any(t => t.CreatorId == currentUser.Id),
+            IsBlockedByYou = currentUser.BlockedBy.Any(t => t.CreatorId == user.Id) 
         };
     }
 }

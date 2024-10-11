@@ -70,6 +70,14 @@ public class KahlaUser : IdentityUser
     [JsonIgnore]
     [InverseProperty(nameof(ContactRecord.Target))]
     public IEnumerable<ContactRecord> OfKnownContacts { get; set; } = new List<ContactRecord>();
+    
+    [JsonIgnore]
+    [InverseProperty(nameof(BlockRecord.Creator))]
+    public IEnumerable<BlockRecord> BlockList { get; set; } = new List<BlockRecord>();
+    
+    [JsonIgnore]
+    [InverseProperty(nameof(BlockRecord.Target))]
+    public IEnumerable<BlockRecord> BlockedBy { get; set; } = new List<BlockRecord>();
 
     [JsonIgnore]
     [InverseProperty(nameof(Message.Sender))]

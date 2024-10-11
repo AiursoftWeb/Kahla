@@ -111,7 +111,10 @@ public class ContactsController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", user.Email, id);
-        var target = await dbContext.Users.FindAsync(id);
+        var target = await dbContext.Users
+            .Include(t => t.OfKnownContacts)
+            .Include(t => t.BlockedBy)
+            .FirstOrDefaultAsync(t => t.Id == id); // Search by primary key, use FirstOrDefault instead of SingleOrDefault for better performance.
         if (target == null)
         {
             logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
