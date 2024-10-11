@@ -30,4 +30,14 @@ public class UserOthersViewAppService(
         users.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
         return (totalCount, users);
     }
+    
+    public async Task<KahlaUserMappedOthersView?> GetUserById(string targetUser, string currentUser)
+    {
+        var user = await repo.QueryUserById(
+                targetUserId: targetUser,
+                viewingUserId: currentUser)
+            .FirstOrDefaultAsync();
+
+        return user;
+    }
 }

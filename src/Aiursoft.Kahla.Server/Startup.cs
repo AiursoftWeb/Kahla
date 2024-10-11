@@ -47,7 +47,6 @@ namespace Aiursoft.Kahla.Server
             
             // App services
             services.AddScoped<UserOthersViewAppService>();
-            services.AddScoped<UserDetailedViewAppService>();
             services.AddScoped<ThreadOthersViewAppService>();
             services.AddScoped<ThreadJoinedViewAppService>();
             

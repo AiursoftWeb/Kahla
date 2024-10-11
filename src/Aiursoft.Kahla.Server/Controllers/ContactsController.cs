@@ -22,8 +22,8 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/contacts")]
 public class ContactsController(
-    UserOthersViewAppService usersAppAppService,
-    UserDetailedViewAppService userDetailedViewAppService,
+    UserOthersViewAppService userAppService,
+    ThreadJoinedViewAppService threadService,
     ILogger<ContactsController> logger,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
@@ -38,7 +38,7 @@ public class ContactsController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
-        var knownContacts = await usersAppAppService.GetMyContactsPagedAsync(user.Id, take);
+        var knownContacts = await userAppService.GetMyContactsPagedAsync(user.Id, take);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
@@ -52,18 +52,26 @@ public class ContactsController(
     [Route("details/{id}")]
     public async Task<IActionResult> Details([FromRoute]string id, [FromQuery]int takeThreads = 5)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", user.Email, id);
-        var mapped = await userDetailedViewAppService.GetUserDetailedViewAsync(id, user.Id, takeThreads);
-        if (mapped == null)
+        var currentUser = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", currentUser.Email, id);
+        var searchedUser = await userAppService.GetUserById(id, currentUser.Id);
+        if (searchedUser == null)
         {
-            logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
+            logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", currentUser.Email, id);
             return this.Protocol(Code.NotFound, "The target user with id `{id}` does not exist.");
         }
-        logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
+        
+        var (commonThreadsCount, commonThreads) = await threadService.QueryCommonThreadsAsync(
+            viewingUserId: currentUser.Id,
+            targetUserId: id,
+            take: takeThreads);
+        
+        logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", currentUser.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {
-            DetailedUser = mapped,
+            SearchedUser = searchedUser,
+            CommonThreadsCount = commonThreadsCount,
+            CommonThreads = commonThreads,
             Code = Code.ResultShown,
             Message = $"User detail with first {takeThreads} common threads are shown."
         });
@@ -164,6 +172,5 @@ public class ContactsController(
         await dbContext.SaveChangesAsync();
         return this.Protocol(Code.JobDone, "Successfully reported target user!");
     }
-    
 }
 

@@ -21,7 +21,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/blocks")]
 public class BlocksController(
-    UserOthersViewAppService usersAppAppService,
+    UserOthersViewAppService userAppService,
     UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext,
     ILogger<BlocksController> logger) : ControllerBase
@@ -36,7 +36,7 @@ public class BlocksController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known blocks.", user.Email);
-        var knownBlocks = await usersAppAppService.GetMyBlocksPagedAsync(user.Id, take);
+        var knownBlocks = await userAppService.GetMyBlocksPagedAsync(user.Id, take);
         logger.LogInformation("User with email: {Email} successfully get all his known blocks with total {Count}.", user.Email, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
         {

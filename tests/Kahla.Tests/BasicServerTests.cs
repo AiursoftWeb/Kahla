@@ -317,7 +317,7 @@ public class BasicServerTests
         Assert.AreEqual(1, searchResult.Users.Count);
         
         var details = await _sdk.UserDetailAsync(searchResult.Users.First().User.Id);
-        Assert.AreEqual("user11", details.DetailedUser.SearchedUser.User.NickName);
+        Assert.AreEqual("user11", details.SearchedUser.User.NickName);
     }
 
     [TestMethod]

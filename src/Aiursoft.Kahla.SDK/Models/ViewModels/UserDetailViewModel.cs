@@ -5,5 +5,7 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class UserDetailViewModel : AiurResponse
 {
-    public required KahlaUserMappedDetailedView DetailedUser { get; init; }
+    public required KahlaUserMappedOthersView SearchedUser { get; init; }
+    public required List<KahlaThreadMappedJoinedView> CommonThreads { get; init; } = new();
+    public int CommonThreadsCount { get; set; }
 }
