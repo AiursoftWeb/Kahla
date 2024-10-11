@@ -36,26 +36,8 @@ public class KahlaMapper(
         });
     }
     
-    public Task<KahlaUserMappedOthersView> MapOtherUserViewAsync(KahlaUser? user)
+    public async Task<KahlaUserMappedOthersView> MapOtherUserViewAsync(KahlaUser user, string currentUserId)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-        
-        return Task.FromResult(new KahlaUserMappedOthersView
-        {
-            User = user,
-            Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus)
-        });
-    }
-
-    public async Task<KahlaUserMappedDetailedOthersView> MapDetailedOtherUserView(KahlaUser user, KahlaUser currentUser)
-    {
-        var commonThreads = await dbContext
-            .QueryCommonThreads(currentUser.Id, user.Id)
-            .ToListAsync();
-
         if (!dbContext.Entry(user).Collection(t => t.OfKnownContacts).IsLoaded)
         {
             await dbContext.Entry(user)
@@ -68,14 +50,41 @@ public class KahlaMapper(
                 .Collection(t => t.BlockedBy)
                 .LoadAsync();
         }
+        
+        return new KahlaUserMappedOthersView
+        {
+            User = user,
+            Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus),
+            IsKnownContact = user.OfKnownContacts.Any(t => t.CreatorId == currentUserId),
+            IsBlockedByYou = user.BlockedBy.Any(t => t.CreatorId == currentUserId) 
+        };
+    }
 
+    public async Task<KahlaUserMappedDetailedOthersView> MapDetailedOtherUserView(KahlaUser user, string currentUserId)
+    {
+        var commonThreads = await dbContext
+            .QueryCommonThreads(currentUserId, user.Id)
+            .ToListAsync();
+        
+        if (!dbContext.Entry(user).Collection(t => t.OfKnownContacts).IsLoaded)
+        {
+            await dbContext.Entry(user)
+                .Collection(t => t.OfKnownContacts)
+                .LoadAsync();
+        }
+        if (!dbContext.Entry(user).Collection(t => t.BlockedBy).IsLoaded)
+        {
+            await dbContext.Entry(user)
+                .Collection(t => t.BlockedBy)
+                .LoadAsync();
+        }
         return new KahlaUserMappedDetailedOthersView
         {
             User = user,
             Online = IsOnline(user.Id, userEnableHideMyOnlineStatus: user.EnableHideMyOnlineStatus),
             CommonThreads = commonThreads,
-            IsKnownContact = user.OfKnownContacts.Any(t => t.CreatorId == currentUser.Id),
-            IsBlockedByYou = currentUser.BlockedBy.Any(t => t.CreatorId == user.Id) 
+            IsKnownContact = user.OfKnownContacts.Any(t => t.CreatorId == currentUserId),
+            IsBlockedByYou = user.BlockedBy.Any(t => t.CreatorId == currentUserId) 
         };
     }
 }

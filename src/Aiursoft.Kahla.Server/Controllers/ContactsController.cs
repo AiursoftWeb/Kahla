@@ -47,7 +47,9 @@ public class ContactsController(
             .Take(take)
             .ToListAsync();
         var mappedKnownContacts = await knownContacts
-            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
+            .Where(t => t != null)
+            .Select(t => t!)
+            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
@@ -77,7 +79,7 @@ public class ContactsController(
             .Take(model.Take)
             .ToListAsync();
         var usersView = await usersEntities
-            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync);
+            .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
         logger.LogInformation("User with email: {Email} successfully get {Count} users.", user.Email, usersView.Count);
         
         var threadsQuery = dbContext
@@ -120,7 +122,7 @@ public class ContactsController(
             logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", user.Email, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
-        var mapped = await kahlaMapper.MapDetailedOtherUserView(target, user);
+        var mapped = await kahlaMapper.MapDetailedOtherUserView(target, user.Id);
         logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", user.Email, id);
         return this.Protocol(new UserDetailViewModel 
         {

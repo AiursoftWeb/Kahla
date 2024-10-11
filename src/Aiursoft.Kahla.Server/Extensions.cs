@@ -38,6 +38,16 @@ public static class Extensions
         return result;
     }
     
+    public static async Task<List<T2>> SelectAsListAsync<T1, T2, T3>(this IEnumerable<T1> source, Func<T1, T3, Task<T2>> selector, T3 arg1)
+    {
+        var result = new List<T2>();
+        foreach (var item in source)
+        {
+            result.Add(await selector(item, arg1));
+        }
+        return result;
+    }
+    
     public static IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
     {
         if (EntryExtends.IsInUnitTests())
