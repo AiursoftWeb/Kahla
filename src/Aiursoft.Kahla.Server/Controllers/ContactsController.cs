@@ -5,7 +5,6 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
-using Aiursoft.Kahla.SDK.ModelsOBS;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
@@ -24,7 +23,6 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/contacts")]
 public class ContactsController(
     UserOthersViewAppService usersAppAppService,
-    ThreadOthersViewAppService threadsAppService,
     UserDetailedViewAppService userDetailedViewAppService,
     ILogger<ContactsController> logger,
     KahlaDbContext dbContext,
@@ -47,44 +45,6 @@ public class ContactsController(
             Code = Code.ResultShown,
             Message = "Successfully get all your known contacts.",
             KnownContacts = knownContacts
-        });
-    }
-    
-    [HttpPost]
-    [Route("search")]
-    [Produces(typeof(SearchEverythingViewModel))]
-    public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
-    {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to search for {SearchInput}. Take: {Take}.", user.Email, model.SearchInput, model.Take);
-        
-        var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, user.Id, model.Take);
-        logger.LogInformation("User with email: {Email} successfully searched {Count} users.", user.Email, users.Count);
-        
-        // // TODO: Use app service.
-        // var threadsQuery = dbContext
-        //     .ChatThreads
-        //     .AsNoTracking()
-        //     .Where(t => t.AllowSearchByName || t.Id.ToString() == model.SearchInput)
-        //     .Where(t => 
-        //         t.Name.Contains(model.SearchInput) ||
-        //         t.Id.ToString() == model.SearchInput);
-        // var threadsEntities = await threadsQuery
-        //     .Take(model.Take)
-        //     .ToListAsync();
-        // var threadsView = await threadsEntities
-        //     .SelectAsListAsync(kahlaMapper.MapSearchedThreadAsync);
-        var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, user.Id, model.Take);
-        logger.LogInformation("User with email: {Email} successfully get {Count} threads.", user.Email, threads.Count);
-    
-        return this.Protocol(new SearchEverythingViewModel
-        {
-            TotalUsersCount = totalUsersCount,
-            TotalThreadsCount = totalThreadsCount,
-            Users = users,
-            Threads = threads,
-            Code = Code.ResultShown,
-            Message = "Search result is shown."
         });
     }
 
