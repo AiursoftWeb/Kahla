@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace Aiursoft.Kahla.Server.Services.Mappers;
 
 public class KahlaMapper(
+    ILogger<KahlaMapper> logger,
     KahlaDbContext dbContext,
     IMemoryCache memoryCache)
 {
@@ -36,16 +37,26 @@ public class KahlaMapper(
         });
     }
     
+    /// <summary>
+    /// Map a KahlaUser to KahlaUserMappedOthersView.
+    ///
+    /// Before calling this method, it is suggested to load the OfKnownContacts and BlockedBy collections.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="currentUserId"></param>
+    /// <returns></returns>
     public async Task<KahlaUserMappedOthersView> MapOtherUserViewAsync(KahlaUser user, string currentUserId)
     {
         if (!dbContext.Entry(user).Collection(t => t.OfKnownContacts).IsLoaded)
         {
+            logger.LogWarning("OfKnownContacts is not loaded for user: {UserId}. Loading...", user.Id);
             await dbContext.Entry(user)
                 .Collection(t => t.OfKnownContacts)
                 .LoadAsync();
         }
         if (!dbContext.Entry(user).Collection(t => t.BlockedBy).IsLoaded)
         {
+            logger.LogWarning("BlockedBy is not loaded for user: {UserId}. Loading...", user.Id);
             await dbContext.Entry(user)
                 .Collection(t => t.BlockedBy)
                 .LoadAsync();
@@ -68,12 +79,14 @@ public class KahlaMapper(
         
         if (!dbContext.Entry(user).Collection(t => t.OfKnownContacts).IsLoaded)
         {
+            logger.LogWarning("OfKnownContacts is not loaded for user: {UserId}. Loading...", user.Id);
             await dbContext.Entry(user)
                 .Collection(t => t.OfKnownContacts)
                 .LoadAsync();
         }
         if (!dbContext.Entry(user).Collection(t => t.BlockedBy).IsLoaded)
         {
+            logger.LogWarning("BlockedBy is not loaded for user: {UserId}. Loading...", user.Id);
             await dbContext.Entry(user)
                 .Collection(t => t.BlockedBy)
                 .LoadAsync();

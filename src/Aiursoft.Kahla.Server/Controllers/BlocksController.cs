@@ -41,12 +41,12 @@ public class BlocksController(
             .AsNoTracking()
             .Where(t => t.CreatorId == user.Id)
             .Select(t => t.Target)
-            .OrderBy(t => t!.NickName)
+            .Include(t => t.OfKnownContacts)
+            .Include(t => t.BlockedBy)
+            .OrderBy(t => t.NickName)
             .Take(take)
             .ToListAsync();
         var mappedKnownBlocks = await knownBlocks
-            .Where(t => t != null)
-            .Select(t => t!)
             .SelectAsListAsync(kahlaMapper.MapOtherUserViewAsync, user.Id);
         logger.LogInformation("User with email: {Email} successfully get all his known blocks with total {Count}.", user.Email, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
