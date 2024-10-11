@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiAddressModels
+namespace Aiursoft.Kahla.SDK.Models.AddressModels
 {
     public class ReportHimAddressModel
     {

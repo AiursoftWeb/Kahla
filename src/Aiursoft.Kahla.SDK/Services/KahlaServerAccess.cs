@@ -193,4 +193,15 @@ public class KahlaServerAccess(
         var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
         return result;
     }
+    
+    public async Task<AiurResponse> ReportUserAsync(string userId, string reason)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/report/", param: new { });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new ReportHimAddressModel
+        {
+            TargetUserId = userId,
+            Reason = reason
+        }));
+        return result;
+    }
 }

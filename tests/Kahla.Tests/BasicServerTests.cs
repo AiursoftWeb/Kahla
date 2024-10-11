@@ -317,4 +317,32 @@ public class BasicServerTests
         var details = await _sdk.UserDetailAsync(searchResult.Users.First().User.Id);
         Assert.AreEqual("user11", details.DetailedUser.User.NickName);
     }
+
+    [TestMethod]
+    public async Task ReportTwiceTest()
+    {
+        // Register bad guy.
+        await _sdk.RegisterAsync("bad@domain.com", "password");
+        
+        // Register
+        await _sdk.RegisterAsync("user12@domain.com", "password");
+        
+        // Search bad guy.
+        var searchResult = await _sdk.SearchEverythingAsync("bad", 1);
+        
+        // Report
+        var reportResult = await _sdk.ReportUserAsync(searchResult.Users.First().User.Id, "reason1");
+        Assert.AreEqual(Code.JobDone, reportResult.Code);
+        
+        // Report again should fail.
+        try
+        {
+            await _sdk.ReportUserAsync(searchResult.Users.First().User.Id, "reason2");
+            Assert.Fail();
+        }
+        catch
+        {
+            // ignored
+        }
+    }
 }
