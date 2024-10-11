@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Version>8.0.3</Version>
+    <Version>8.0.4</Version>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
@@ -29,7 +29,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.11" />
+    <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
   </ItemGroup>
 </Project>
