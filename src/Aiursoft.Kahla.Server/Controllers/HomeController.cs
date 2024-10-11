@@ -24,7 +24,6 @@ public class HomeController(
         {
             Code = Code.ResultShown,
             Message = "Welcome to this API project!",
-            AutoAcceptRequests = bool.Parse(configuration["AutoAcceptRequests"]?? "false"),
             ServerName = configuration["ServerName"] ?? "Kahla Server",
             VapidPublicKey = configuration["VapidKeys:PublicKey"] ?? string.Empty
         };

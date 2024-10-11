@@ -6,6 +6,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels
     {
         public required string VapidPublicKey { get; set; }
         public required string ServerName { get; set; }
-        public bool AutoAcceptRequests { get; set; }
     }
 }
