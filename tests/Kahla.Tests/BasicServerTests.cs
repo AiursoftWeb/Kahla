@@ -329,7 +329,7 @@ public class BasicServerTests
     {
         // Register
         await _sdk.RegisterAsync("user13@domain.com", "password");
-        var searchResult = await _sdk.SearchEverythingAsync("user11", 1);
+        var searchResult = await _sdk.SearchEverythingAsync("user13", 1);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         
