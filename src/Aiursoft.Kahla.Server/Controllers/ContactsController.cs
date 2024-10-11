@@ -42,9 +42,10 @@ public class ContactsController(
             .ContactRecords
             .AsNoTracking()
             .Where(t => t.CreatorId == user.Id)
+            .Include(t => t.Target)
+            .Include(t => t.Target.OfKnownContacts)
+            .Include(t => t.Target.BlockedBy)
             .Select(t => t.Target)
-            .Include(t => t.OfKnownContacts)
-            .Include(t => t.BlockedBy)
             .OrderBy(t => t.NickName)
             .Take(take)
             .ToListAsync();

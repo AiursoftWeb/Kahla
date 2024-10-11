@@ -58,6 +58,8 @@ public static class Extensions
         else
         {
             Console.WriteLine("Production environment detected, using MySQL database.");
+            
+            // As tested, splitQuery: false has better performance.
             services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString, splitQuery: false);
         }
         

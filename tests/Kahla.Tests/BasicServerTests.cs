@@ -264,6 +264,7 @@ public class BasicServerTests
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         Assert.AreEqual("user10", searchResult.Users.First().User.NickName);
+        Assert.AreEqual(false, searchResult.Users.First().IsKnownContact);
         
         // Add me as a contact.
         var addResult = await _sdk.AddContactAsync(searchResult.Users.First().User.Id);
@@ -284,7 +285,8 @@ public class BasicServerTests
         var myContacts2 = await _sdk.MineAsync(take: 2);
         Assert.AreEqual(1, myContacts2.KnownContacts.Count);
         Assert.AreEqual("user10", myContacts2.KnownContacts.First().User.NickName);
-        
+        Assert.AreEqual(true, myContacts2.KnownContacts.First().IsKnownContact);
+
         // Remove me as a contact.
         var removeResult = await _sdk.RemoveContactAsync(searchResult.Users.First().User.Id);
         Assert.AreEqual(Code.JobDone, removeResult.Code);
