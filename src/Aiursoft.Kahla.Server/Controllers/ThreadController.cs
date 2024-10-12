@@ -47,64 +47,72 @@ public class ThreadController(
             return this.Protocol(Code.Conflict, "The target user has blocked you so you can not create a thread with him/her.");
         }
         
-        await using var transaction = await dbContext.Database.BeginTransactionAsync();
-        try
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Step 1: Create a new thread without setting OwnerRelationId initially.
-            var thread = new ChatThread();
-            dbContext.ChatThreads.Add(thread);
-            logger.LogInformation("Creating a new thread...");
-            await dbContext.SaveChangesAsync(); // This will generate the thread's id
-
-            // Step 2: Add myself to the thread with role Admin
-            var myRelation = new UserThreadRelation
+            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            try
             {
-                UserId = currentUser.Id,
-                ThreadId = thread.Id,
-                UserThreadRole = UserThreadRole.Admin
-            };
-            dbContext.UserThreadRelations.Add(myRelation);
-            logger.LogInformation("Adding myself (ID is {ID}) to the thread...", currentUser.Id);   
-            await dbContext.SaveChangesAsync(); // This will generate myRelation's id
+                // Step 1: Create a new thread without setting OwnerRelationId initially.
+                var thread = new ChatThread();
+                dbContext.ChatThreads.Add(thread);
+                logger.LogInformation("Creating a new thread...");
+                await dbContext.SaveChangesAsync(); // This will generate the thread's id
 
-            // Step 3: Set the owner of the thread after myRelation is saved
-            thread.OwnerRelationId = myRelation.Id;
-            dbContext.ChatThreads.Update(thread);
-            logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})...", currentUser.Id);
-            await dbContext.SaveChangesAsync(); // Now the OwnerRelationId is set correctly
-
-            if (currentUser.Id != targetUser.Id)
-            {
-                // Step 4: Add the target user to the thread
-                var targetRelation = new UserThreadRelation
+                // Step 2: Add myself to the thread with role Admin
+                var myRelation = new UserThreadRelation
                 {
-                    UserId = targetUser.Id,
+                    UserId = currentUser.Id,
                     ThreadId = thread.Id,
-                    UserThreadRole = UserThreadRole.Member
+                    UserThreadRole = UserThreadRole.Admin
                 };
-                dbContext.UserThreadRelations.Add(targetRelation);
-                logger.LogInformation("Adding the target user (ID is {ID}) to the thread...", targetUser.Id);
-                await dbContext.SaveChangesAsync(); // Save the targetRelation
-            }
-            else
-            {
-                logger.LogWarning("The current user and the target user are the same. Skip adding the target user to the thread. This might because of the user creating a thread with himself/herself.");
-            }
+                dbContext.UserThreadRelations.Add(myRelation);
+                logger.LogInformation("Adding myself (ID is {ID}) to the thread...", currentUser.Id);
+                await dbContext.SaveChangesAsync(); // This will generate myRelation's id
 
-            // Commit the transaction if everything is successful
-            await transaction.CommitAsync();
-            return this.Protocol(new CreateNewThreadViewModel
+                // Step 3: Set the owner of the thread after myRelation is saved
+                thread.OwnerRelationId = myRelation.Id;
+                dbContext.ChatThreads.Update(thread);
+                // Don't call SaveChangesAsync here for better performance.
+
+                if (currentUser.Id != targetUser.Id)
+                {
+                    // Step 4: Add the target user to the thread
+                    var targetRelation = new UserThreadRelation
+                    {
+                        UserId = targetUser.Id,
+                        ThreadId = thread.Id,
+                        UserThreadRole = UserThreadRole.Member
+                    };
+                    dbContext.UserThreadRelations.Add(targetRelation);
+                    // Don't call SaveChangesAsync here for better performance.
+                }
+                else
+                {
+                    logger.LogWarning(
+                        "The current user and the target user are the same. Skip adding the target user to the thread. This might because of the user creating a thread with himself/herself.");
+                }
+
+                // Commit the transaction if everything is successful
+                logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUser.Id, targetUser.Id);
+                await dbContext.SaveChangesAsync(); // Save the targetRelation
+                
+                await transaction.CommitAsync();
+                logger.LogInformation("The thread has been created successfully.");
+                return this.Protocol(new CreateNewThreadViewModel
+                {
+                    NewThreadId = thread.Id,
+                    Code = Code.JobDone,
+                    Message = "The thread has been created successfully."
+                });
+            }
+            catch (Exception e)
             {
-                NewThreadId = thread.Id,
-                Code = Code.JobDone,
-                Message = "The thread has been created successfully."
-            });
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to create a thread.");
-            await transaction.RollbackAsync();
-            return this.Protocol(Code.UnknownError, "Failed to create the thread. Might because of a database error.");
-        }
+                logger.LogError(e, "Failed to create a thread.");
+                await transaction.RollbackAsync();
+                return this.Protocol(Code.UnknownError,
+                    "Failed to create the thread. Might because of a database error.");
+            }
+        });
     }
 }
