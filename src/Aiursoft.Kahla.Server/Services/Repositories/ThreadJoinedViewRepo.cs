@@ -30,7 +30,9 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
                     .OrderBy(p => p.JoinTime)
                     .Select(p => p.User)
                     .Take(10),
-                ImInIt = t.Members.Any(u => u.UserId == currentUserId)
+                ImInIt = t.Members.Any(u => u.UserId == currentUserId),
+                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.UserThreadRole == UserThreadRole.Admin,
+                ImOwner = t.OwnerRelation.UserId == currentUserId
             });
     }
 

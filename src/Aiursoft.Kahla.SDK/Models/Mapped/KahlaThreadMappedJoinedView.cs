@@ -18,6 +18,11 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
     // Muted.
     public bool Muted { get; set; }
 
-
+    // I'm an Admin of this thread.
+    public bool ImAdmin { get; set; }
+    
+    // I'm the owner of this thread.
+    public bool ImOwner { get; set; }
+    
     // Someone at me. TODO.
 }

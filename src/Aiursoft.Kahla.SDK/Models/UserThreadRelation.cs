@@ -13,7 +13,7 @@ public class UserThreadRelation
     public int Id { get; set; }
     public DateTime JoinTime { get; set; } = DateTime.UtcNow;
 
-    public Role Role { get; set; } = Role.Member;
+    public UserThreadRole UserThreadRole { get; set; } = UserThreadRole.Member;
     
     public bool Muted { get; set; }
     
