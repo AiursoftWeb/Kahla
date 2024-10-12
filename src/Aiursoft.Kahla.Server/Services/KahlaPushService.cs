@@ -46,7 +46,7 @@ namespace Aiursoft.Kahla.Server.Services
             _canon.FireAsync<WebPushService>(s => s.PushAsync(
                 devices: target.HisDevices,
                 payload: newFriendRequestEvent,
-                triggerEmail: request.Creator?.Email ?? "unknown@domain.com"));
+                triggerEmail: request.Creator.Email));
         }
 
         [Obsolete]
@@ -66,7 +66,7 @@ namespace Aiursoft.Kahla.Server.Services
             _canon.FireAsync<WebPushService>(s => s.PushAsync(
                 devices: target.HisDevices,
                 payload: friendAcceptedEvent,
-                triggerEmail: request.Creator?.Email ?? "unknown@domain.com"));
+                triggerEmail: request.Creator.Email));
         }
 
         public void FriendDeletedEvent(KahlaUser target, KahlaUser trigger, int deletedConversationId)

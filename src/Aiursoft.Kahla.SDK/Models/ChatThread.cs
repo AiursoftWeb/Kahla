@@ -16,7 +16,7 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    [StringLength(256)] public required string Name { get; set; } = "{THE OTHER USER}";
+    [StringLength(256)] public string Name { get; set; } = "{THE OTHER USER}";
     
     [InverseProperty(nameof(Message.Thread))]
     public IEnumerable<Message> Messages { get; set; } = new List<Message>();
@@ -27,7 +27,7 @@ public class ChatThread
     /// Admins can change this value.
     /// </summary>
     [StringLength(512)]
-    public required string IconFilePath { get; set; } = "{THE OTHER USER ICON}";
+    public string IconFilePath { get; set; } = "{THE OTHER USER ICON}";
     
     [InverseProperty(nameof(UserThreadRelation.Thread))]
     public IEnumerable<UserThreadRelation> Members { get; set; } = new List<UserThreadRelation>();
@@ -41,9 +41,9 @@ public class ChatThread
     ///
     /// Only the owner can change the roles of the members. (Admins can NOT do this)
     /// </summary>
-    public required int OwnerRelationId { get; set; }
+    public int? OwnerRelationId { get; set; }
     [ForeignKey(nameof(OwnerRelationId))]
-    public required UserThreadRelation OwnerRelation { get; set; }
+    public UserThreadRelation? OwnerRelation { get; set; }
     
     /// <summary>
     /// Indicating if allowing a user to join this thread without a SoftInvitation. By default, this is false.

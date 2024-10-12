@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models;
@@ -24,12 +25,14 @@ public class UserThreadRelation
 
     public required string UserId { get; set; }
     [ForeignKey(nameof(UserId))]
-    public required KahlaUser User { get; set; }
+    [NotNull]
+    public KahlaUser? User { get; set; }
 
-    public int ThreadId { get; set; }
+    public required int ThreadId { get; set; }
     [JsonIgnore]
     [ForeignKey(nameof(ThreadId))]
-    public required ChatThread Thread { get; set; }
+    [NotNull]
+    public ChatThread? Thread { get; set; }
 
     public DateTime ReadTimeStamp { get; set; } = DateTime.UtcNow;
 }

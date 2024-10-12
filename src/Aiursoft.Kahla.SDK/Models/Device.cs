@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Aiursoft.Kahla.SDK.Models
@@ -22,6 +23,7 @@ namespace Aiursoft.Kahla.SDK.Models
         
         [JsonIgnore]
         [ForeignKey(nameof(OwnerId))]
+        [NotNull]
         public KahlaUser? KahlaUser { get; init; }
 
         [JsonIgnore]

@@ -16,7 +16,7 @@ public class ThreadOthersViewRepo(KahlaDbContext dbContext)
                 Id = t.Id,
                 Name = t.Name,
                 ImagePath = t.IconFilePath,
-                OwnerId = t.OwnerRelation.UserId,
+                OwnerId = t.OwnerRelation!.UserId,
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
                 CreateTime = t.CreateTime,
                 ImInIt = t.Members.Any(u => u.UserId == userId)
@@ -36,4 +36,15 @@ public class ThreadOthersViewRepo(KahlaDbContext dbContext)
         return MapThreadsOthersView(threadsQuery, userId)
             .OrderByDescending(t => t.CreateTime);
     }
+    
+    public IQueryable<KahlaThreadMappedOthersView> QueryThreadById(int threadId, string userId)
+    {
+        var threadsQuery = dbContext
+            .ChatThreads
+            .AsNoTracking()
+            .Where(t => t.Id == threadId);
+
+        return MapThreadsOthersView(threadsQuery, userId);
+    }
+
 }
