@@ -36,10 +36,10 @@ public class ContactsController(
     [Produces<MyContactsViewModel>]
     public async Task<IActionResult> Mine([FromQuery]int take = 20)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", user.Email);
-        var knownContacts = await userAppService.GetMyContactsPagedAsync(user.Id, take);
-        logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", user.Email, knownContacts.Count);
+        var currenUser = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", currenUser.Email);
+        var knownContacts = await userAppService.GetMyContactsPagedAsync(currenUser.Id, take);
+        logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", currenUser.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
             Code = Code.ResultShown,
@@ -81,32 +81,32 @@ public class ContactsController(
     [Route("add/{id}")]
     public async Task<IActionResult> AddContact([FromRoute] string id)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to add a new contact with id: {TargetId}.", user.Email, id);
+        var currentUser = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to add a new contact with id: {TargetId}.", currentUser.Email, id);
         var target = await dbContext.Users.FindAsync(id);
         if (target == null)
         {
-            logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target does not exist.", user.Email, id);
+            logger.LogWarning("User with email: {Email} is trying to add a contact with id: {TargetId} but the target does not exist.", currentUser.Email, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
         
-        logger.LogTrace("Waiting for the lock to add a new contact from id {SourceId} with id: {TargetId}.", user.Id, id);
+        logger.LogTrace("Waiting for the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUser.Id, target.Id);
         await AddFriendLock.WaitAsync();
         try
         {
             var duplicated =
-                await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == user.Id && t.TargetId == target.Id);
+                await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == currentUser.Id && t.TargetId == target.Id);
             if (duplicated)
             {
                 logger.LogWarning(
                     "User with email: {Email} is trying to add a contact with id: {TargetId} but the target is already his contact.",
-                    user.Email, id);
+                    currentUser.Email, id);
                 return this.Protocol(Code.Conflict, "The target user is already your known contact.");
             }
 
             var contactRecord = new ContactRecord
             {
-                CreatorId = user.Id,
+                CreatorId = currentUser.Id,
                 TargetId = target.Id,
                 AddTime = DateTime.UtcNow
             };
@@ -116,9 +116,9 @@ public class ContactsController(
         finally
         {
             AddFriendLock.Release();
-            logger.LogTrace("Released the lock to add a new contact from id {SourceId} with id: {TargetId}.", user.Id, id);
+            logger.LogTrace("Released the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUser.Id, id);
         }
-        logger.LogInformation("User with email: {Email} successfully added a new contact with id: {TargetId}.", user.Email, id);
+        logger.LogInformation("User with email: {Email} successfully added a new contact with id: {TargetId}.", currentUser.Email, id);
         return this.Protocol(Code.JobDone, "Successfully added the target user as your contact. Please call the 'mine' API to get the latest information.");
     }
     
@@ -126,20 +126,19 @@ public class ContactsController(
     [Route("remove/{id}")]
     public async Task<IActionResult> RemoveContact(string id)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to remove a contact with id: {TargetId}.", user.Email, id);
-        var contactRecord = await dbContext.ContactRecords.SingleOrDefaultAsync(t => t.CreatorId == user.Id && t.TargetId == id);
+        var currentUser = await this.GetCurrentUser(userManager);
+        logger.LogInformation("User with email: {Email} is trying to remove a contact with id: {TargetId}.", currentUser.Email, id);
+        var contactRecord = await dbContext.ContactRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUser.Id && t.TargetId == id);
         if (contactRecord == null)
         {
-            logger.LogWarning("User with email: {Email} is trying to remove a contact with id: {TargetId} but the target is not his contact.", user.Email, id);
+            logger.LogWarning("User with email: {Email} is trying to remove a contact with id: {TargetId} but the target is not his contact.", currentUser.Email, id);
             return this.Protocol(Code.NotFound, "The target user is not your known contact.");
         }
         dbContext.ContactRecords.Remove(contactRecord);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} successfully removed a contact with id: {TargetId}.", user.Email, id);
+        logger.LogInformation("User with email: {Email} successfully removed a contact with id: {TargetId}.", currentUser.Email, id);
         return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts. Please call the 'mine' API to get the latest information.");
     }
-    
     
     [HttpPost]
     [Route("report")]
