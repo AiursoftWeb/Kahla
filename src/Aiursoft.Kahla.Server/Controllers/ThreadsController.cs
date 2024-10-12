@@ -18,9 +18,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
     PassthroughRemoteErrors = true,
     PassthroughAiurServerException = true)]
 [ApiModelStateChecker]
-[Route("api/thread")]
-public class ThreadController(
-    ILogger<ThreadController> logger,
+[Route("api/threads")]
+public class ThreadsController(
+    ILogger<ThreadsController> logger,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
