@@ -32,7 +32,8 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
                     .Take(10),
                 ImInIt = t.Members.Any(u => u.UserId == currentUserId),
                 ImAdmin = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.UserThreadRole == UserThreadRole.Admin,
-                ImOwner = t.OwnerRelation.UserId == currentUserId
+                ImOwner = t.OwnerRelation.UserId == currentUserId,
+                CreateTime = t.CreateTime
             });
     }
 
