@@ -6,6 +6,7 @@ using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Services.AppService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +22,25 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/threads")]
 public class ThreadsController(
     ILogger<ThreadsController> logger,
+    ThreadJoinedViewAppService threadService,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
+    [HttpGet]
+    [Route("mine")]
+    public async Task<IActionResult> Mine([FromQuery]int take = 20)
+    {
+        var currentUser = await this.GetCurrentUser(userManager);
+        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUser.Id, take);
+        return this.Protocol(new MyThreadsViewModel
+        {
+            Code = Code.ResultShown,
+            Message = $"Successfully get your first {take} joined threads.",
+            KnownThreads = threads,
+            TotalCount = count
+        });
+    }
+    
     [HttpPost]
     [Route("hard-invite/{id}")]
     public async Task<IActionResult> HardInvite([FromRoute]string id)

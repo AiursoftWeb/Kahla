@@ -21,6 +21,10 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
                 LatestMessage = t.Messages
                     .OrderByDescending(p => p.SendTime)
                     .FirstOrDefault(),
+                LastMessageTime = t.Messages.Any() ? t.Messages
+                    .OrderByDescending(p => p.SendTime)
+                    .Select(m => m.SendTime)
+                    .FirstOrDefault() : t.CreateTime,
                 LatestMessageSender = t.Messages.Any() ? t.Messages
                     .OrderByDescending(p => p.SendTime)
                     .Select(m => m.Sender)
@@ -35,6 +39,14 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
                 ImOwner = t.OwnerRelation.UserId == currentUserId,
                 CreateTime = t.CreateTime
             });
+    }
+    
+    public IQueryable<KahlaThreadMappedJoinedView> QueryThreadsIJoined(string viewingUserId)
+    {
+        var query = dbContext.ChatThreads
+            .AsNoTracking()
+            .Where(t => t.Members.Any(p => p.UserId == viewingUserId));
+        return MapThreadsJoinedView(query, viewingUserId);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)

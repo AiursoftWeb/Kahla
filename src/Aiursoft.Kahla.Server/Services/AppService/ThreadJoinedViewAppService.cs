@@ -16,7 +16,21 @@ public class ThreadJoinedViewAppService(
         
         logger.LogInformation("User with id: {ViewingUserId} is trying to get common threads with user with id: {TargetUserId}.", viewingUserId, targetUserId);
         var threads = await query
-            .OrderByDescending(t => t.CreateTime)
+            .OrderByDescending(t => t.LastMessageTime)
+            .Take(take)
+            .ToListAsync();
+        return (totalCount, threads);
+    }
+    
+    public async Task<(int count, List<KahlaThreadMappedJoinedView> threads)> QueryThreadsIJoinedAsync(string viewingUserId, int take)
+    {
+        var query = repo.QueryThreadsIJoined(viewingUserId);
+        logger.LogInformation("Counting the total threads that user with id: {ViewingUserId} joined.", viewingUserId);
+        var totalCount = await query.CountAsync();
+        
+        logger.LogInformation("User with id: {ViewingUserId} is trying to get threads that he joined.", viewingUserId);
+        var threads = await query
+            .OrderByDescending(t => t.LastMessageTime)
             .Take(take)
             .ToListAsync();
         return (totalCount, threads);
