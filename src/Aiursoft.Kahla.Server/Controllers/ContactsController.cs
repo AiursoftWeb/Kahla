@@ -119,7 +119,7 @@ public class ContactsController(
             logger.LogTrace("Released the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUserId, id);
         }
         logger.LogInformation("User with Id: {Id} successfully added a new contact with id: {TargetId}.", currentUserId, id);
-        return this.Protocol(Code.JobDone, "Successfully added the target user as your contact. Please call the 'mine' API to get the latest information.");
+        return this.Protocol(Code.JobDone, "Successfully added the target user as your contact.");
     }
     
     [HttpPost]
@@ -137,7 +137,7 @@ public class ContactsController(
         dbContext.ContactRecords.Remove(contactRecord);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully removed a contact with id: {TargetId}.", currentUserId, id);
-        return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts. Please call the 'mine' API to get the latest information.");
+        return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts.");
     }
     
     [HttpPost]

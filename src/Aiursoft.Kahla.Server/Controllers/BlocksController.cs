@@ -86,7 +86,7 @@ public class BlocksController(
             logger.LogTrace("Released the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, id);
         }
         logger.LogInformation("User with Id: {Id} successfully blocked a user with id: {TargetId}.", currentUserId, id);
-        return this.Protocol(Code.JobDone, "Successfully blocked the target user. Please call the 'list' API to get the latest block list.");
+        return this.Protocol(Code.JobDone, "Successfully blocked the target user.");
     }
     
     [HttpPost]
@@ -104,6 +104,6 @@ public class BlocksController(
         dbContext.BlockRecords.Remove(blockRecord);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully removed a block record with id: {TargetId}.", currentUserId, id);
-        return this.Protocol(Code.JobDone, "Successfully removed the target user from your block list. Please call the 'list' API to get the latest block list.");
+        return this.Protocol(Code.JobDone, "Successfully removed the target user from your block list.");
     }
 }
