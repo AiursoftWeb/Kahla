@@ -8,7 +8,6 @@ namespace Aiursoft.Kahla.Tests.SdkTests;
 [TestClass]
 public class WebSocketTests : KahlaTestBase
 {
-     
     [TestMethod]
     public async Task WebSocketPushTest()
     {
