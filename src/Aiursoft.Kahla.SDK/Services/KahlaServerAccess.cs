@@ -210,4 +210,25 @@ public class KahlaServerAccess(
         }));
         return result;
     }
+    
+    public async Task<MyBlocksViewModel> MyBlocksAsync(int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/list", param: new { skip, take });
+        var result = await http.Get<MyBlocksViewModel>(url);
+        return result;
+    }
+    
+    public async Task<AiurResponse> BlockNewAsync(string userId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/block/{userId}", param: new { userId });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
+    
+    public async Task<AiurResponse> UnblockAsync(string userId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/remove/{userId}", param: new { userId });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
 }
