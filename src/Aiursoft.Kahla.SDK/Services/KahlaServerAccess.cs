@@ -155,29 +155,30 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<MyContactsViewModel> MineAsync(int take = 20)
+    public async Task<MyContactsViewModel> MineAsync(int skip = 0, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/mine", param: new { take });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/mine", param: new { skip, take });
         var result = await http.Get<MyContactsViewModel>(url);
         return result;
     }
     
-    public async Task<SearchEverythingViewModel> SearchEverythingAsync(string searchInput, int take = 20)
+    public async Task<SearchEverythingViewModel> SearchEverythingAsync(string searchInput, int skip = 0, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-everything", param: new {  });
         var result = await http.Post<SearchEverythingViewModel>(url, new AiurApiPayload(new SearchEverythingAddressModel
         {
             SearchInput = searchInput,
+            Skip = skip,
             Take = take
         }));
         return result;
     }
     
-    public async Task<UserDetailViewModel> UserDetailAsync(string userId, int takeThreads = 5)
+    public async Task<UserDetailViewModel> UserDetailAsync(string userId, int skip = 0, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/details/{userId}", param: new
         {
-            userId, takeThreads
+            userId, skip, take
         });
         var result = await http.Get<UserDetailViewModel>(url);
         return result;

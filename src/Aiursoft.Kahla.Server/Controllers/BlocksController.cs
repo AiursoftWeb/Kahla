@@ -32,17 +32,18 @@ public class BlocksController(
     [HttpGet]
     [Route("list")]
     [Produces<MyBlocksViewModel>]
-    public async Task<IActionResult> List([FromQuery]int take = 20)
+    public async Task<IActionResult> List([FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currentUser = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known blocks.", currentUser.Email);
-        var knownBlocks = await userAppService.GetMyBlocksPagedAsync(currentUser.Id, take);
+        var (totalCount, knownBlocks) = await userAppService.GetMyBlocksPagedAsync(currentUser.Id, skip, take);
         logger.LogInformation("User with email: {Email} successfully get all his known blocks with total {Count}.", currentUser.Email, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully get all your known blocks.",
-            KnownBlocks = knownBlocks
+            KnownBlocks = knownBlocks,
+            TotalKnownBlocks = totalCount
         });
     }
     

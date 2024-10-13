@@ -9,6 +9,9 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         [Required]
         public required string SearchInput { get; set; }
 
+        public int Skip { get; set; } = 0;
+        
         public int Take { get; set; } = 20;
+        
     }
 }

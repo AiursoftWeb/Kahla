@@ -6,21 +6,23 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
 {
-    public IQueryable<KahlaThreadMappedJoinedView> QueryThreadsIJoined(string viewingUserId)
+    public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryThreadsIJoined(string viewingUserId)
     {
         return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
-            .MapThreadsJoinedView(viewingUserId);
+            .MapThreadsJoinedView(viewingUserId)
+            .OrderByDescending(t => t.LastMessageTime);
     }
 
-    public IQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
+    public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
     {
         return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId);
+            .MapThreadsJoinedView(viewingUserId)
+            .OrderByDescending(t => t.LastMessageTime);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)

@@ -6,27 +6,25 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class UserOthersViewRepo(KahlaDbContext dbContext)
 {
-    public IQueryable<KahlaUserMappedOthersView> QueryMyContacts(string viewingUserId, int take)
+    public IOrderedQueryable<KahlaUserMappedOthersView> QueryMyContacts(string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId))
             .MapUsersOthersView(viewingUserId)
-            .OrderBy(t => t.User.NickName)
-            .Take(take);
+            .OrderBy(t => t.User.NickName);
     }
         
-    public IQueryable<KahlaUserMappedOthersView> QueryMyBlocksPaged(string viewingUserId, int take)
+    public IOrderedQueryable<KahlaUserMappedOthersView> QueryMyBlocksPaged(string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId))
             .MapUsersOthersView(viewingUserId)
-            .OrderBy(t => t.User.NickName)
-            .Take(take);
+            .OrderBy(t => t.User.NickName);
     }
 
-    public IQueryable<KahlaUserMappedOthersView> SearchUsers(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchUsers(string searchInput, string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()

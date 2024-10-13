@@ -6,4 +6,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 public class MyContactsViewModel : AiurResponse
 {
     public required List<KahlaUserMappedOthersView> KnownContacts { get; set; } = new();
+    public required int TotalKnownContacts { get; set; }
 }

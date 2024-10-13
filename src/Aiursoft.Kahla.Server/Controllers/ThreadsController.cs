@@ -28,10 +28,10 @@ public class ThreadsController(
 {
     [HttpGet]
     [Route("mine")]
-    public async Task<IActionResult> Mine([FromQuery]int take = 20)
+    public async Task<IActionResult> Mine([FromQuery]int skip = 20, [FromQuery]int take = 20)
     {
         var currentUser = await this.GetCurrentUser(userManager);
-        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUser.Id, take);
+        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUser.Id, skip, take);
         return this.Protocol(new MyThreadsViewModel
         {
             Code = Code.ResultShown,

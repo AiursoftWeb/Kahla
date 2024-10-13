@@ -34,27 +34,28 @@ public class ContactsController(
     [HttpGet]
     [Route("mine")]
     [Produces<MyContactsViewModel>]
-    public async Task<IActionResult> Mine([FromQuery]int take = 20)
+    public async Task<IActionResult> Mine([FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currenUser = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to get all his known contacts.", currenUser.Email);
-        var knownContacts = await userAppService.GetMyContactsPagedAsync(currenUser.Id, take);
+        var (totalCount, knownContacts) = await userAppService.GetMyContactsPagedAsync(currenUser.Id, skip, take);
         logger.LogInformation("User with email: {Email} successfully get all his known contacts with total {Count}.", currenUser.Email, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {
             Code = Code.ResultShown,
-            Message = "Successfully get all your known contacts.",
-            KnownContacts = knownContacts
+            Message = $"Successfully get your first {take} known contacts and skipped {skip} contacts.",
+            KnownContacts = knownContacts,
+            TotalKnownContacts = totalCount
         });
     }
 
     [HttpGet]
     [Route("details/{id}")]
-    public async Task<IActionResult> Details([FromRoute]string id, [FromQuery]int takeThreads = 5)
+    public async Task<IActionResult> Details([FromRoute]string id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currentUser = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId}.", currentUser.Email, id);
-        var searchedUser = await userAppService.GetUserById(id, currentUser.Id);
+        var searchedUser = await userAppService.GetUserByIdAsync(id, currentUser.Id);
         if (searchedUser == null)
         {
             logger.LogWarning("User with email: {Email} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", currentUser.Email, id);
@@ -64,7 +65,8 @@ public class ContactsController(
         var (commonThreadsCount, commonThreads) = await threadService.QueryCommonThreadsAsync(
             viewingUserId: currentUser.Id,
             targetUserId: id,
-            take: takeThreads);
+            skip: skip,
+            take: take);
         
         logger.LogInformation("User with email: {Email} successfully downloaded the detailed info with a contact with id: {TargetId}.", currentUser.Email, id);
         return this.Protocol(new UserDetailViewModel 
@@ -73,7 +75,7 @@ public class ContactsController(
             CommonThreadsCount = commonThreadsCount,
             CommonThreads = commonThreads,
             Code = Code.ResultShown,
-            Message = $"User detail with first {takeThreads} common threads are shown."
+            Message = $"User detail with first {take} common threads and skipped {skip} threads successfully downloaded."
         });
     }
 

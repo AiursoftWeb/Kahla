@@ -8,30 +8,34 @@ public class UserOthersViewAppService(
     OnlineJudger judger,
     UserOthersViewRepo repo)
 {
-    public async Task<List<KahlaUserMappedOthersView>> GetMyContactsPagedAsync(string viewingUserId, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> contacts)> GetMyContactsPagedAsync(string viewingUserId, int skip, int take)
     {
-        var views = await repo.QueryMyContacts(viewingUserId, take).ToListAsync();
-        views.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
-        return views;
+        var query = repo.QueryMyContacts(viewingUserId);
+        var totalCount = await query.CountAsync();
+        var contacts = await query.Skip(skip).Take(take).ToListAsync();
+        contacts.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
+        return (totalCount, contacts);
     }
         
-    public async Task<List<KahlaUserMappedOthersView>> GetMyBlocksPagedAsync(string viewingUserId, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> blocks)> GetMyBlocksPagedAsync(string viewingUserId, int skip, int take)
     {
-        var views = await repo.QueryMyBlocksPaged(viewingUserId, take).ToListAsync();
-        views.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
-        return views;
+        var query = repo.QueryMyBlocksPaged(viewingUserId);
+        var totalCount = await query.CountAsync();
+        var blocks = await query.Skip(skip).Take(take).ToListAsync();
+        blocks.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
+        return (totalCount, blocks);
     }
 
-    public async Task<(int count, List<KahlaUserMappedOthersView> users)> SearchUsersPagedAsync(string searchInput, string viewingUserId, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> users)> SearchUsersPagedAsync(string searchInput, string viewingUserId, int skip, int take)
     {
         var query = repo.SearchUsers(searchInput, viewingUserId);
         var totalCount = await query.CountAsync();
-        var users = await query.Take(take).ToListAsync();
+        var users = await query.Skip(skip).Take(take).ToListAsync();
         users.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
         return (totalCount, users);
     }
     
-    public async Task<KahlaUserMappedOthersView?> GetUserById(string targetUserId, string viewingUserId)
+    public async Task<KahlaUserMappedOthersView?> GetUserByIdAsync(string targetUserId, string viewingUserId)
     {
         var user = await repo.QueryUserById(
                 targetUserId: targetUserId,
