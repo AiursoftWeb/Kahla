@@ -17,7 +17,8 @@ public class KahlaForceAuth : ActionFilterAttribute
 
         if (!controller.User.Identity?.IsAuthenticated ?? false)
         {
-            throw new AiurServerException(Code.Unauthorized, "You are unauthorized to access this API.");
+            var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
+            throw new AiurServerException(Code.Unauthorized, $"You are unauthorized to access this API. Your IP address '{ip}' has been recorded.");
         }
     }
 }
