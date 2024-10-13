@@ -4,7 +4,6 @@ using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools.InMemory;
 using Aiursoft.DbTools.MySql;
-using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;

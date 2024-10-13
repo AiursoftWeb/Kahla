@@ -27,5 +27,4 @@ public class ThreadOthersViewRepo(KahlaDbContext dbContext)
             .Where(t => t.Id == threadId)
             .MapThreadsOthersView(viewingUserId);
     }
-
 }
