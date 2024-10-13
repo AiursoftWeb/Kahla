@@ -142,7 +142,7 @@ public class ContactsController(
     
     [HttpPost]
     [Route("report")]
-    public async Task<IActionResult> ReportHim(ReportHimAddressModel model)
+    public async Task<IActionResult> ReportHim([FromForm]ReportHimAddressModel model)
     {
         var currentUserId = User.GetUserId();
         var targetUser = await dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);

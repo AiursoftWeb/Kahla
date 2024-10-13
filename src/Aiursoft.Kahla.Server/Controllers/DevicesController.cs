@@ -47,7 +47,7 @@ public class DevicesController(
 
     [HttpPost]
     [Route("add-device")]
-    public async Task<IActionResult> AddDevice(AddDeviceAddressModel model)
+    public async Task<IActionResult> AddDevice([FromForm]AddDeviceAddressModel model)
     {
         var user = await this.GetCurrentUser(userManager);
         var existingDevice = await dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256Dh == model.PushP256Dh);
@@ -73,11 +73,11 @@ public class DevicesController(
 
         var device = new Device
         {
-            Name = model.Name!,
+            Name = model.Name,
             OwnerId = user.Id,
-            PushAuth = model.PushAuth!,
-            PushEndpoint = model.PushEndpoint!,
-            PushP256Dh = model.PushP256Dh!,
+            PushAuth = model.PushAuth,
+            PushEndpoint = model.PushEndpoint,
+            PushP256Dh = model.PushP256Dh,
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()!
         };
         await dbContext.Devices.AddAsync(device);
@@ -112,7 +112,7 @@ public class DevicesController(
 
     [HttpPut]
     [Route("update-device/{id:int}")]
-    public async Task<IActionResult> UpdateDevice([FromRoute] int id, AddDeviceAddressModel model)
+    public async Task<IActionResult> UpdateDevice([FromRoute] int id, [FromForm] AddDeviceAddressModel model)
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} is trying to patch a device with id: {DeviceId}", user.Email, id);
@@ -125,10 +125,10 @@ public class DevicesController(
             return this.Protocol(Code.NotFound, "Can not find a device with ID: " + id);
         }
 
-        device.Name = model.Name!;
-        device.PushAuth = model.PushAuth!;
-        device.PushEndpoint = model.PushEndpoint!;
-        device.PushP256Dh = model.PushP256Dh!;
+        device.Name = model.Name;
+        device.PushAuth = model.PushAuth;
+        device.PushEndpoint = model.PushEndpoint;
+        device.PushP256Dh = model.PushP256Dh;
         dbContext.Devices.Update(device);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully patched a device with id: {DeviceId}",

@@ -9,13 +9,13 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         [MaxLength(32, ErrorMessage = "Password length should between 6 and 32.")]
         [DataType(DataType.Password)]
         [Display(Name = "Old Password")]
-        public string? OldPassword { get; init; }
+        public required string OldPassword { get; init; }
 
         [Required]
         [MinLength(6, ErrorMessage = "Password length should between 6 and 32.")]
         [MaxLength(32, ErrorMessage = "Password length should between 6 and 32.")]
         [DataType(DataType.Password)]
         [Display(Name = "New Password")]
-        public string? NewPassword { get; init; }
+        public required string NewPassword { get; init; }
     }
 }

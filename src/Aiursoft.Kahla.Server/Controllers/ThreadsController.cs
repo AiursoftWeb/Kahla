@@ -63,6 +63,63 @@ public class ThreadsController(
             TotalCount = count
         });
     }
+    
+    [HttpPost]
+    [Route("create-scratch")]
+    public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)
+    {
+        var currentUserId = User.GetUserId();
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Step 1: Create a new thread without setting OwnerRelationId initially.
+                var thread = new ChatThread
+                {
+                    Name = model.Name,
+                    AllowSearchByName = model.AllowSearchByName,
+                    AllowDirectJoinWithoutInvitation = model.AllowDirectJoinWithoutInvitation,
+                    AllowMemberSoftInvitation = model.AllowMemberSoftInvitation,
+                    AllowMembersSendMessages = model.AllowMembersSendMessages,
+                    AllowMembersEnlistAllMembers = model.AllowMembersEnlistAllMembers
+                };
+                dbContext.ChatThreads.Add(thread);
+                await dbContext.SaveChangesAsync();
+                
+                // Step 2: Add myself to the thread with role Admin
+                var myRelation = new UserThreadRelation
+                {
+                    UserId = currentUserId,
+                    ThreadId = thread.Id,
+                    UserThreadRole = UserThreadRole.Admin
+                };
+                dbContext.UserThreadRelations.Add(myRelation);
+                await dbContext.SaveChangesAsync();
+                
+                // Step 3: Set the owner of the thread after myRelation is saved
+                thread.OwnerRelationId = myRelation.Id;
+                await dbContext.SaveChangesAsync();
+                
+                // Commit the transaction if everything is successful
+                await transaction.CommitAsync();
+                return this.Protocol(new CreateNewThreadViewModel
+                {
+                    NewThreadId = thread.Id,
+                    Code = Code.JobDone,
+                    Message = "The thread has been created successfully."
+                });
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Failed to create a thread.");
+                await transaction.RollbackAsync();
+                return this.Protocol(Code.UnknownError,
+                    "Failed to create the thread. Might because of a database error.");
+            }
+        });
+    }
         
     [HttpPost]
     [Route("hard-invite/{id}")]
@@ -155,4 +212,19 @@ public class ThreadsController(
             }
         });
     }
+}
+
+public class CreateThreadAddressModel
+{
+    public required string Name { get; init; }
+    
+    public required bool AllowSearchByName { get; init; }
+    
+    public required bool AllowDirectJoinWithoutInvitation { get; init; }
+    
+    public required bool AllowMemberSoftInvitation { get; init; }
+    
+    public required bool AllowMembersSendMessages { get; init; } = true;
+    
+    public required bool AllowMembersEnlistAllMembers { get; init; } = true;
 }

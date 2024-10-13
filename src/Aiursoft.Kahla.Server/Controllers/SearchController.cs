@@ -25,7 +25,7 @@ public class SearchController(
     [HttpPost]
     [Route("search-everything")]
     [Produces(typeof(SearchEverythingViewModel))]
-    public async Task<IActionResult> SearchEverything(SearchEverythingAddressModel model)
+    public async Task<IActionResult> SearchEverything([FromForm]SearchEverythingAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search for {SearchInput}. Take: {Take}.", currentUserId, model.SearchInput, model.Take);

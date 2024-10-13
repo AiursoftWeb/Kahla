@@ -27,14 +27,14 @@ public class AuthController(
 {
     [HttpPost]
     [Route("signin")]
-    public async Task<IActionResult> SignIn(SignInAddressModel model)
+    public async Task<IActionResult> SignIn([FromForm]SignInAddressModel model)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             logger.LogWarning("User with Id: {Id} tried to sign in while he is already signed in.", model.Email);
             return this.Protocol(Code.Conflict, "You are already signed in!");
         }
-        var result = await signInManager.PasswordSignInAsync(model.Email!, model.Password!, true, lockoutOnFailure: true);
+        var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, true, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             logger.LogInformation("User with Id: {Id} logged in.", model.Email);
@@ -54,16 +54,16 @@ public class AuthController(
     
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register(RegisterAddressModel model)
+    public async Task<IActionResult> Register([FromForm]RegisterAddressModel model)
     {
         logger.LogInformation("User with Id: {Id} requested to register.", model.Email);
         var user = new KahlaUser
         {
             UserName = model.Email,
             Email = model.Email,
-            NickName = model.Email!.Split('@')[0]
+            NickName = model.Email.Split('@')[0]
         };
-        var result = await userManager.CreateAsync(user, model.Password!);
+        var result = await userManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: false);
@@ -78,11 +78,11 @@ public class AuthController(
     [KahlaForceAuth]
     [HttpPost]
     [Route("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
+    public async Task<IActionResult> ChangePassword([FromForm]ChangePasswordAddressModel model)
     {
         var currentUser = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} requested to change his password.", currentUser.Email);
-        var result = await userManager.ChangePasswordAsync(currentUser, model.OldPassword!, model.NewPassword!);
+        var result = await userManager.ChangePasswordAsync(currentUser, model.OldPassword, model.NewPassword);
         if (!result.Succeeded)
         {
             logger.LogWarning("Failed to change password for User with Id: {Id}. Errors: {Errors}", currentUser.Email, result.Errors);
@@ -108,7 +108,7 @@ public class AuthController(
         if (device == null)
         {
             logger.LogWarning(
-                "User with Id: {Id} signed out, but we did not find device with id: {DeviceId}. It is suggested to pass the 'deviceid' parameter so we will remove the device from your account.",
+                "User with Id: {Id} signed out, but we did not find device with id: {DeviceId}. It is suggested to pass the 'deviceId' parameter so we will remove the device from your account.",
                 user.Email, model.DeviceId);
             return this.Protocol(Code.JobDone,
                 "Successfully signed you off, but we could not find device with id: " + model.DeviceId +" in your account.");
@@ -147,7 +147,7 @@ public class AuthController(
     [KahlaForceAuth]
     [HttpPatch]
     [Route("update-me")]
-    public async Task<IActionResult> UpdateClientSetting(UpdateMeAddressModel model)
+    public async Task<IActionResult> UpdateClientSetting([FromForm]UpdateMeAddressModel model)
     {
         var userTrackedInDb = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} is trying to update his client setting.", userTrackedInDb.Email);
