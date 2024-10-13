@@ -41,7 +41,10 @@ public class UserOthersViewAppService(
                 targetUserId: targetUserId,
                 viewingUserId: viewingUserId)
             .FirstOrDefaultAsync();
-
+        if (user != null)
+        {
+            user.Online = judger.IsOnline(user.User.Id, user.User.EnableHideMyOnlineStatus);
+        }
         return user;
     }
 }
