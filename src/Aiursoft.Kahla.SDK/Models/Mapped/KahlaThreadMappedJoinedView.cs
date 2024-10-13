@@ -1,5 +1,3 @@
-using Aiursoft.Kahla.SDK.ModelsOBS;
-
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
 public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
