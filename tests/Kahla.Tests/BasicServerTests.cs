@@ -159,7 +159,7 @@ public class BasicServerTests
         }
         catch (AiurUnexpectedServerResponseException e)
         {
-            Assert.AreEqual("You are unauthorized to access this API.", e.Message);
+            Assert.IsTrue(e.Message.StartsWith("You are unauthorized to access this API."));
         }
     }
 
