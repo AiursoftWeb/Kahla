@@ -1,4 +1,3 @@
-using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
@@ -7,65 +6,29 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
 {
-    private IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(IQueryable<ChatThread> filteredThreads, string currentUserId)
-    {
-        return filteredThreads
-            .Select(t => new KahlaThreadMappedJoinedView
-            {
-                Id = t.Id,
-                Name = t.Name,
-                ImagePath = t.IconFilePath,
-                OwnerId = t.OwnerRelation!.UserId,
-                AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
-                UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.ReadTimeStamp),
-                LatestMessage = t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .FirstOrDefault(),
-                LastMessageTime = t.Messages.Any() ? t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .Select(m => m.SendTime)
-                    .FirstOrDefault() : t.CreateTime,
-                LatestMessageSender = t.Messages.Any() ? t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .Select(m => m.Sender)
-                    .FirstOrDefault() : null,
-                Muted = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.Muted,
-                TopTenMembers = t.Members
-                    .OrderBy(p => p.JoinTime)
-                    .Select(p => p.User)
-                    .Take(10),
-                ImInIt = t.Members.Any(u => u.UserId == currentUserId),
-                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.UserThreadRole == UserThreadRole.Admin,
-                ImOwner = t.OwnerRelation.UserId == currentUserId,
-                CreateTime = t.CreateTime
-            });
-    }
-    
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadsIJoined(string viewingUserId)
     {
-        var query = dbContext.ChatThreads
+        return dbContext.ChatThreads
             .AsNoTracking()
-            .Where(t => t.Members.Any(p => p.UserId == viewingUserId));
-        return MapThreadsJoinedView(query, viewingUserId);
+            .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
+            .MapThreadsJoinedView(viewingUserId);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
     {
-        var query = dbContext.ChatThreads
+        return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
-            .Where(t => t.Members.Any(p => p.UserId == targetUserId));
-        return MapThreadsJoinedView(query, viewingUserId);
+            .Where(t => t.Members.Any(p => p.UserId == targetUserId))
+            .MapThreadsJoinedView(viewingUserId);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)
     {
-        var threadsQuery = dbContext
+        return dbContext
             .ChatThreads
             .AsNoTracking()
-            .Where(t => t.Id == threadId);
-        
-        return MapThreadsJoinedView(threadsQuery, currentUserId);
+            .Where(t => t.Id == threadId)
+            .MapThreadsJoinedView(currentUserId);
     }
-
 }
