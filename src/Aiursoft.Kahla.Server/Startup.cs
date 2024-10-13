@@ -42,11 +42,13 @@ namespace Aiursoft.Kahla.Server
             
             // Repositories
             services.AddScoped<UserOthersViewRepo>();
+            services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
             
             // App services
             services.AddScoped<UserOthersViewAppService>();
+            services.AddScoped<UserInThreadViewAppService>();
             services.AddScoped<ThreadOthersViewAppService>();
             services.AddScoped<ThreadJoinedViewAppService>();
             

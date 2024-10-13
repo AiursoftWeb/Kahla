@@ -13,9 +13,14 @@ namespace Aiursoft.Kahla.Server;
 
 public static class Extensions
 {
-    public static string? GetUserId(this ClaimsPrincipal user)
+    public static string GetUserId(this ClaimsPrincipal user)
     {
-        return user.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+        var userId = user.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new AiurServerException(Code.Unauthorized, "You are not authorized to view this content.");
+        }
+        return userId;
     }
     
     public static async Task<KahlaUser> GetCurrentUser(this ControllerBase controller, UserManager<KahlaUser> userManager)

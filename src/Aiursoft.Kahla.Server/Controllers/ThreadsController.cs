@@ -23,6 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 public class ThreadsController(
     ILogger<ThreadsController> logger,
     ThreadJoinedViewAppService threadService,
+    UserInThreadViewAppService userAppService,
     KahlaDbContext dbContext,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
@@ -41,6 +42,29 @@ public class ThreadsController(
         });
     }
     
+    [HttpGet]
+    [Route("members/{id}")]
+    public async Task<IActionResult> Members([FromRoute]int id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
+    {
+        var currentUserId = User.GetUserId();
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);
+        return this.Protocol(new ThreadMembersViewModel
+        {
+            Code = Code.ResultShown,
+            Message = $"Successfully get the first {take} members of the thread and skipped {skip} members.",
+            Members = members,
+            TotalCount = count
+        });
+    }
+        
     [HttpPost]
     [Route("hard-invite/{id}")]
     public async Task<IActionResult> HardInvite([FromRoute]string id)

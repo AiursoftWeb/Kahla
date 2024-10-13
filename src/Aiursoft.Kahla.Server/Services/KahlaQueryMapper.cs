@@ -17,6 +17,24 @@ public static class KahlaQueryMapper
             });
     }
     
+    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, int threadId)
+    {
+        return filteredUsers
+            .Select(u => new KahlaUserMappedInThreadView
+            {
+                User = u,
+                Online = null, // This needed to be calculated in real-time.
+                IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == threadId).UserThreadRole == UserThreadRole.Admin,
+                IsOwner = u.ThreadsRelations
+                    .Where(p => p.ThreadId == threadId)
+                    .Select(p => p.Thread)
+                    .First().OwnerRelation!.UserId == viewingUserId,
+                JoinTime = u.ThreadsRelations.First(p => p.ThreadId == threadId).JoinTime
+            });
+    }
+    
     public static IQueryable<KahlaThreadMappedOthersView> MapThreadsOthersView(this IQueryable<ChatThread> filteredThreads, string userId)
     {
         return filteredThreads
