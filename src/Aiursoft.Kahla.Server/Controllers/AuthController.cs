@@ -31,13 +31,13 @@ public class AuthController(
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            logger.LogWarning("User with email: {Email} tried to sign in while he is already signed in.", model.Email);
+            logger.LogWarning("User with Id: {Id} tried to sign in while he is already signed in.", model.Email);
             return this.Protocol(Code.Conflict, "You are already signed in!");
         }
         var result = await signInManager.PasswordSignInAsync(model.Email!, model.Password!, true, lockoutOnFailure: true);
         if (result.Succeeded)
         {
-            logger.LogInformation("User with email: {Email} logged in.", model.Email);
+            logger.LogInformation("User with Id: {Id} logged in.", model.Email);
             return this.Protocol(Code.JobDone, "User logged in!");
         }
         if (result.IsLockedOut)
@@ -56,7 +56,7 @@ public class AuthController(
     [Route("register")]
     public async Task<IActionResult> Register(RegisterAddressModel model)
     {
-        logger.LogInformation("User with email: {Email} requested to register.", model.Email);
+        logger.LogInformation("User with Id: {Id} requested to register.", model.Email);
         var user = new KahlaUser
         {
             UserName = model.Email,
@@ -67,11 +67,11 @@ public class AuthController(
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: false);
-            logger.LogInformation("User with email: {Email} created.", model.Email);
+            logger.LogInformation("User with Id: {Id} created.", model.Email);
             return this.Protocol(Code.JobDone, "User created!");
         }
         
-        logger.LogWarning("Failed to create user with email: {Email}. Errors: {Errors}", model.Email, result.Errors);
+        logger.LogWarning("Failed to create User with Id: {Id}. Errors: {Errors}", model.Email, result.Errors);
         return this.Protocol(Code.Conflict, string.Join(", ", result.Errors.Select(t => t.Description)));
     }
     
@@ -81,14 +81,14 @@ public class AuthController(
     public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
     {
         var currentUser = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} requested to change his password.", currentUser.Email);
+        logger.LogInformation("User with Id: {Id} requested to change his password.", currentUser.Email);
         var result = await userManager.ChangePasswordAsync(currentUser, model.OldPassword!, model.NewPassword!);
         if (!result.Succeeded)
         {
-            logger.LogWarning("Failed to change password for user with email: {Email}. Errors: {Errors}", currentUser.Email, result.Errors);
+            logger.LogWarning("Failed to change password for User with Id: {Id}. Errors: {Errors}", currentUser.Email, result.Errors);
             return this.Protocol(Code.Unauthorized, string.Join(", ", result.Errors.Select(t => t.Description)));
         }
-        logger.LogInformation("User with email: {Email} successfully changed his password.", currentUser.Email);
+        logger.LogInformation("User with Id: {Id} successfully changed his password.", currentUser.Email);
         return this.Protocol(Code.JobDone, "Successfully changed your password!");
     }
     
@@ -98,7 +98,7 @@ public class AuthController(
     public async Task<IActionResult> SignOutUser(SignOutAddressModel model)
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} requested to sign out.", user.Email);
+        logger.LogInformation("User with Id: {Id} requested to sign out.", user.Email);
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
@@ -108,7 +108,7 @@ public class AuthController(
         if (device == null)
         {
             logger.LogWarning(
-                "User with email: {Email} signed out, but we did not find device with id: {DeviceId}. It is suggested to pass the 'deviceid' parameter so we will remove the device from your account.",
+                "User with Id: {Id} signed out, but we did not find device with id: {DeviceId}. It is suggested to pass the 'deviceid' parameter so we will remove the device from your account.",
                 user.Email, model.DeviceId);
             return this.Protocol(Code.JobDone,
                 "Successfully signed you off, but we could not find device with id: " + model.DeviceId +" in your account.");
@@ -116,7 +116,7 @@ public class AuthController(
 
         dbContext.Devices.Remove(device);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} signed out and removed device with id: {DeviceId}.", user.Email, model.DeviceId);
+        logger.LogInformation("User with Id: {Id} signed out and removed device with id: {DeviceId}.", user.Email, model.DeviceId);
         return this.Protocol(Code.JobDone, "Success. And the device with id: " + model.DeviceId + " is removed from your account.");
     }
     
@@ -126,7 +126,7 @@ public class AuthController(
     public async Task<IActionResult> Me()
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} queried his own information.", user.Email);
+        logger.LogInformation("User with Id: {Id} queried his own information.", user.Email);
         return this.Protocol(new MeViewModel
         {
             Code = Code.ResultShown,
@@ -150,7 +150,7 @@ public class AuthController(
     public async Task<IActionResult> UpdateClientSetting(UpdateMeAddressModel model)
     {
         var userTrackedInDb = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to update his client setting.", userTrackedInDb.Email);
+        logger.LogInformation("User with Id: {Id} is trying to update his client setting.", userTrackedInDb.Email);
         
         // Public information
         if (model.NickName != null)
@@ -188,7 +188,7 @@ public class AuthController(
             userTrackedInDb.EnableHideMyOnlineStatus = model.EnableHideMyOnlineStatus == true;
         }
         await userManager.UpdateAsync(userTrackedInDb);
-        logger.LogInformation("User with email: {Email} successfully updated his client setting.", userTrackedInDb.Email);
+        logger.LogInformation("User with Id: {Id} successfully updated his client setting.", userTrackedInDb.Email);
         return this.Protocol(Code.JobDone, "Successfully update your client setting. Please call the 'me' API to get the latest information.");
     }
 }

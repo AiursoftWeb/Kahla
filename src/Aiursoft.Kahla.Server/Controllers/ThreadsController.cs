@@ -7,7 +7,6 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,15 +23,14 @@ public class ThreadsController(
     ILogger<ThreadsController> logger,
     ThreadJoinedViewAppService threadService,
     UserInThreadViewAppService userAppService,
-    KahlaDbContext dbContext,
-    UserManager<KahlaUser> userManager) : ControllerBase
+    KahlaDbContext dbContext) : ControllerBase
 {
     [HttpGet]
     [Route("mine")]
     public async Task<IActionResult> Mine([FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
-        var currentUser = await this.GetCurrentUser(userManager);
-        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUser.Id, skip, take);
+        var currentUserId = User.GetUserId();
+        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUserId, skip, take);
         return this.Protocol(new MyThreadsViewModel
         {
             Code = Code.ResultShown,
@@ -69,7 +67,7 @@ public class ThreadsController(
     [Route("hard-invite/{id}")]
     public async Task<IActionResult> HardInvite([FromRoute]string id)
     {
-        var currentUser = await this.GetCurrentUser(userManager);
+        var currentUserId = User.GetUserId();
         var targetUser = await dbContext.Users.FindAsync(id);
         if (targetUser == null)
         {
@@ -81,7 +79,7 @@ public class ThreadsController(
         }
         var targetUserBlockedMe = await dbContext.BlockRecords
             .Where(t => t.CreatorId == targetUser.Id)
-            .Where(t => t.TargetId == currentUser.Id)
+            .Where(t => t.TargetId == currentUserId)
             .AnyAsync();
         if (targetUserBlockedMe)
         {
@@ -103,12 +101,12 @@ public class ThreadsController(
                 // Step 2: Add myself to the thread with role Admin
                 var myRelation = new UserThreadRelation
                 {
-                    UserId = currentUser.Id,
+                    UserId = currentUserId,
                     ThreadId = thread.Id,
                     UserThreadRole = UserThreadRole.Admin
                 };
                 dbContext.UserThreadRelations.Add(myRelation);
-                logger.LogInformation("Adding myself (ID is {ID}) to the thread...", currentUser.Id);
+                logger.LogInformation("Adding myself (ID is {ID}) to the thread...", currentUserId);
                 await dbContext.SaveChangesAsync(); // This will generate myRelation's id
 
                 // Step 3: Set the owner of the thread after myRelation is saved
@@ -116,7 +114,7 @@ public class ThreadsController(
                 dbContext.ChatThreads.Update(thread);
                 // Don't call SaveChangesAsync here for better performance.
 
-                if (currentUser.Id != targetUser.Id)
+                if (currentUserId != targetUser.Id)
                 {
                     // Step 4: Add the target user to the thread
                     var targetRelation = new UserThreadRelation
@@ -135,7 +133,7 @@ public class ThreadsController(
                 }
 
                 // Commit the transaction if everything is successful
-                logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUser.Id, targetUser.Id);
+                logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUserId, targetUser.Id);
                 await dbContext.SaveChangesAsync(); // Save the targetRelation
                 
                 await transaction.CommitAsync();

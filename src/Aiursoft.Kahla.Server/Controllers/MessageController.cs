@@ -28,7 +28,7 @@ public class MessageController(
     public async Task<IActionResult> InitWebSocket()
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to init a websocket OTP.", user.Email);
+        logger.LogInformation("User with Id: {Id} is trying to init a websocket OTP.", user.Email);
         var otp = Guid.NewGuid().ToString("N");
         var otpValidTo = DateTime.UtcNow.AddMinutes(5);
         user.PushOtp = otp;
@@ -57,19 +57,19 @@ public class MessageController(
 
         if (!string.Equals(user.PushOtp, otp, StringComparison.OrdinalIgnoreCase))
         {
-            logger.LogWarning("User with email: {Email} is trying to get a websocket with invalid OTP {HisOTP}.",
+            logger.LogWarning("User with Id: {Id} is trying to get a websocket with invalid OTP {HisOTP}.",
                 user.Email, otp);
             return this.Protocol(Code.Unauthorized, "Invalid OTP.");
         }
         
         if (user.PushOtpValidTo < DateTime.UtcNow)
         {
-            logger.LogWarning("User with email: {Email} is trying to get a websocket with expired OTP {HisOTP}.",
+            logger.LogWarning("User with Id: {Id} is trying to get a websocket with expired OTP {HisOTP}.",
                 user.Email, otp);
             return this.Protocol(Code.Unauthorized, "Expired OTP.");
         }
 
-        logger.LogInformation("User with email: {Email} is trying to get a websocket. And he provided the correct OTP.",
+        logger.LogInformation("User with Id: {Id} is trying to get a websocket. And he provided the correct OTP.",
             user.Email);
         var pusher = await HttpContext.AcceptWebSocketClient();
         var channel = context.GetMyChannel(user.Id);
@@ -85,7 +85,7 @@ public class MessageController(
         }
         finally
         {
-            logger.LogInformation("User with email: {Email} closed the websocket.", user.Email);
+            logger.LogInformation("User with Id: {Id} closed the websocket.", user.Email);
             await pusher.Close(HttpContext.RequestAborted);
             outSub.Unsubscribe();
         }

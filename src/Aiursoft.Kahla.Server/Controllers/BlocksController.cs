@@ -7,7 +7,6 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +21,6 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/blocks")]
 public class BlocksController(
     UserOthersViewAppService userAppService,
-    UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext,
     ILogger<BlocksController> logger) : ControllerBase
 {
@@ -34,10 +32,10 @@ public class BlocksController(
     [Produces<MyBlocksViewModel>]
     public async Task<IActionResult> List([FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
-        var currentUser = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to get all his known blocks.", currentUser.Email);
-        var (totalCount, knownBlocks) = await userAppService.GetMyBlocksPagedAsync(currentUser.Id, skip, take);
-        logger.LogInformation("User with email: {Email} successfully get all his known blocks with total {Count}.", currentUser.Email, knownBlocks.Count);
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get all his known blocks.", currentUserId);
+        var (totalCount, knownBlocks) = await userAppService.GetMyBlocksPagedAsync(currentUserId, skip, take);
+        logger.LogInformation("User with Id: {Id} successfully get all his known blocks with total {Count}.", currentUserId, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
         {
             Code = Code.ResultShown,
@@ -51,31 +49,31 @@ public class BlocksController(
     [Route("block/{id}")]
     public async Task<IActionResult> BlockNew([FromRoute] string id)
     {
-        var currentUser = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to block a user with id: {TargetId}.", currentUser.Email, id);
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to block a user with id: {TargetId}.", currentUserId, id);
         var target = await dbContext.Users.FindAsync(id);
         if (target == null)
         {
-            logger.LogWarning("User with email: {Email} is trying to block a user with id: {TargetId} but the target does not exist.", currentUser.Email, id);
+            logger.LogWarning("User with Id: {Id} is trying to block a user with id: {TargetId} but the target does not exist.", currentUserId, id);
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
         
-        logger.LogTrace("Waiting for the lock to block a user from id {SourceId} with id: {TargetId}.", currentUser.Id, target.Id);
+        logger.LogTrace("Waiting for the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, target.Id);
         await BlockUserLock.WaitAsync();
         try
         {
             var duplicated =
-                await dbContext.BlockRecords.AnyAsync(t => t.CreatorId == currentUser.Id && t.TargetId == target.Id);
+                await dbContext.BlockRecords.AnyAsync(t => t.CreatorId == currentUserId && t.TargetId == target.Id);
             if (duplicated)
             {
                 logger.LogWarning(
-                    "User with email: {Email} is trying to block a user with id: {TargetId} but the target is already blocked.", currentUser.Email, id);
+                    "User with Id: {Id} is trying to block a user with id: {TargetId} but the target is already blocked.", currentUserId, id);
                 return this.Protocol(Code.Conflict, "The target user is already in your block list.");
             }
 
             var blockRecord = new BlockRecord
             {
-                CreatorId = currentUser.Id,
+                CreatorId = currentUserId,
                 TargetId = target.Id,
                 AddTime = DateTime.UtcNow
             };
@@ -85,9 +83,9 @@ public class BlocksController(
         finally
         {
             BlockUserLock.Release();
-            logger.LogTrace("Released the lock to block a user from id {SourceId} with id: {TargetId}.", currentUser.Id, id);
+            logger.LogTrace("Released the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, id);
         }
-        logger.LogInformation("User with email: {Email} successfully blocked a user with id: {TargetId}.", currentUser.Email, id);
+        logger.LogInformation("User with Id: {Id} successfully blocked a user with id: {TargetId}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully blocked the target user. Please call the 'list' API to get the latest block list.");
     }
     
@@ -95,17 +93,17 @@ public class BlocksController(
     [Route("remove/{id}")]
     public async Task<IActionResult> RemoveBlock(string id)
     {
-        var currentUser = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to remove a block record with id: {TargetId}.", currentUser.Email, id);
-        var blockRecord = await dbContext.BlockRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUser.Id && t.TargetId == id);
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to remove a block record with id: {TargetId}.", currentUserId, id);
+        var blockRecord = await dbContext.BlockRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUserId && t.TargetId == id);
         if (blockRecord == null)
         {
-            logger.LogWarning("User with email: {Email} is trying to remove a block record with id: {TargetId} but the target is not in the block list.", currentUser.Email, id);
+            logger.LogWarning("User with Id: {Id} is trying to remove a block record with id: {TargetId} but the target is not in the block list.", currentUserId, id);
             return this.Protocol(Code.NotFound, "The target user is not in your block list.");
         }
         dbContext.BlockRecords.Remove(blockRecord);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} successfully removed a block record with id: {TargetId}.", currentUser.Email, id);
+        logger.LogInformation("User with Id: {Id} successfully removed a block record with id: {TargetId}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully removed the target user from your block list. Please call the 'list' API to get the latest block list.");
     }
 }

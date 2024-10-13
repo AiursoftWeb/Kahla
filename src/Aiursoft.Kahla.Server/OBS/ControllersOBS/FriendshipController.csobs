@@ -315,12 +315,12 @@ namespace Aiursoft.Kahla.Server.Controllers
                 return elation;
             }
             var currentUser = await GetKahlaUser();
-            var myFriends = HisPersonalFriendsId(currentUser.Id);
-            var myGroups = HisGroups(currentUser.Id);
+            var myFriends = HisPersonalFriendsId(currentUserId);
+            var myGroups = HisGroups(currentUserId);
             var calculated = new List<FriendDiscovery>();
             foreach (var user in users)
             {
-                if (user.Id == currentUser.Id || AreFriends(user.Id, currentUser.Id))
+                if (user.Id == currentUserId || AreFriends(user.Id, currentUserId))
                 {
                     continue;
                 }
@@ -335,7 +335,7 @@ namespace Aiursoft.Kahla.Server.Controllers
                         CommonFriends = commonFriends,
                         CommonGroups = commonGroups,
                         TargetUser = user,
-                        SentRequest = SentRequest(currentUser.Id, user.Id)
+                        SentRequest = SentRequest(currentUserId, user.Id)
                     });
                 }
             }
@@ -396,13 +396,13 @@ namespace Aiursoft.Kahla.Server.Controllers
             {
                 return this.Protocol(Code.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
             }
-            if (currentUser.Id == targetUser.Id)
+            if (currentUserId == targetUser.Id)
             {
                 return this.Protocol(Code.Conflict, "You can not report yourself!");
             }
             var exists = await _dbContext
                 .Reports
-                .AnyAsync((t) => t.TriggerId == currentUser.Id && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
+                .AnyAsync((t) => t.TriggerId == currentUserId && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
             if (exists)
             {
                 return this.Protocol(Code.NoActionTaken, "You have already reported the target user!");
@@ -411,7 +411,7 @@ namespace Aiursoft.Kahla.Server.Controllers
             await _dbContext.Reports.AddAsync(new Report
             {
                 TargetId = targetUser.Id,
-                TriggerId = currentUser.Id,
+                TriggerId = currentUserId,
                 Reason = model.Reason
             });
             await _dbContext.SaveChangesAsync();

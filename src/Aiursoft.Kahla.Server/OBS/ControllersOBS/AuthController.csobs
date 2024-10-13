@@ -132,7 +132,7 @@ namespace Aiursoft.Kahla.Server.Controllers
             currentUser.IconFilePath = model.HeadIconPath;
             currentUser.NickName = model.NickName;
             currentUser.Bio = model.Bio;
-            await _userService.ChangeProfileAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
+            await _userService.ChangeProfileAsync(currentUserId, await _appsContainer.GetAccessTokenAsync(), currentUser.NickName, model.HeadIconPath, currentUser.Bio);
             await _userManager.UpdateAsync(currentUser);
             return this.Protocol(Code.ResultShown, "Successfully set your personal info.");
         }
@@ -175,7 +175,7 @@ namespace Aiursoft.Kahla.Server.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordAddressModel model)
         {
             var currentUser = await GetKahlaUser();
-            await _userService.ChangePasswordAsync(currentUser.Id, await _appsContainer.GetAccessTokenAsync(), model.OldPassword, model.NewPassword);
+            await _userService.ChangePasswordAsync(currentUserId, await _appsContainer.GetAccessTokenAsync(), model.OldPassword, model.NewPassword);
             return this.Protocol(Code.JobDone, "Successfully changed your password!");
         }
 

@@ -36,7 +36,7 @@ public class DevicesController(
     public async Task<IActionResult> MyDevices()
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to get all his devices.", user.Email);
+        logger.LogInformation("User with Id: {Id} is trying to get all his devices.", user.Email);
         var devices = await dbContext
             .Devices
             .AsNoTracking()
@@ -55,7 +55,7 @@ public class DevicesController(
         if (existingDevice != null)
         {
             logger.LogInformation(
-                "User with email: {Email} is trying to add a device that already exists. It's ID is: {DeviceId}",
+                "User with Id: {Id} is trying to add a device that already exists. It's ID is: {DeviceId}",
                 user.Email, existingDevice.Id);
             dbContext.Devices.Remove(existingDevice);
             await dbContext.SaveChangesAsync();
@@ -66,7 +66,7 @@ public class DevicesController(
         {
             var toDrop = devicesExists.OrderBy(t => t.AddTime).First();
             logger.LogWarning(
-                "User with email: {Email} is trying to add a device but he already has 20 devices! Trying to delete the oldest one with id: {DeviceId}",
+                "User with Id: {Id} is trying to add a device but he already has 20 devices! Trying to delete the oldest one with id: {DeviceId}",
                 user.Email, toDrop.Id);
             dbContext.Devices.Remove(toDrop);
             await dbContext.SaveChangesAsync();
@@ -83,7 +83,7 @@ public class DevicesController(
         };
         await dbContext.Devices.AddAsync(device);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} successfully added a new device with id: {DeviceId}",
+        logger.LogInformation("User with Id: {Id} successfully added a new device with id: {DeviceId}",
             user.Email, device.Id);
         return this.Protocol(Code.JobDone, "Successfully created your new device with id: " + device.Id,
             value: device.Id);
@@ -94,7 +94,7 @@ public class DevicesController(
     public async Task<IActionResult> DropDevice([FromRoute] int id)
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to drop a device with id: {DeviceId}", user.Email, id);
+        logger.LogInformation("User with Id: {Id} is trying to drop a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
@@ -106,7 +106,7 @@ public class DevicesController(
 
         dbContext.Devices.Remove(device);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} successfully dropped a device with id: {DeviceId}",
+        logger.LogInformation("User with Id: {Id} successfully dropped a device with id: {DeviceId}",
             user.Email, device.Id);
         return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
     }
@@ -116,7 +116,7 @@ public class DevicesController(
     public async Task<IActionResult> UpdateDevice([FromRoute] int id, AddDeviceAddressModel model)
     {
         var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to patch a device with id: {DeviceId}", user.Email, id);
+        logger.LogInformation("User with Id: {Id} is trying to patch a device with id: {DeviceId}", user.Email, id);
         var device = await dbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
@@ -132,7 +132,7 @@ public class DevicesController(
         device.PushP256Dh = model.PushP256Dh!;
         dbContext.Devices.Update(device);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("User with email: {Email} successfully patched a device with id: {DeviceId}",
+        logger.LogInformation("User with Id: {Id} successfully patched a device with id: {DeviceId}",
             user.Email, device.Id);
         return this.Protocol(Code.JobDone, "Successfully updated your new device with id: " + device.Id,
             value: device.Id);
@@ -142,11 +142,13 @@ public class DevicesController(
     [Route("push-test-message")]
     public async Task<IActionResult> PushTestMessage()
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with email: {Email} is trying to push a test message to all his devices.", user.Email);
-        await dbContext.Entry(user)
-            .Collection(b => b.HisDevices)
-            .LoadAsync();
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to push a test message to all his devices.", currentUserId);
+        var devices = await dbContext
+            .Devices
+            .AsNoTracking()
+            .Where(t => t.OwnerId == currentUserId)
+            .ToListAsync();
         var messageEvent = new NewMessageEvent
         {
             Message = new Message
@@ -164,8 +166,8 @@ public class DevicesController(
             Muted = false,
         };
         
-        canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user, messageEvent); });
-        foreach (var hisDevice in user.HisDevices)
+        canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(currentUserId, messageEvent); });
+        foreach (var hisDevice in devices)
         {
             canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, messageEvent); });
         }
@@ -173,7 +175,7 @@ public class DevicesController(
         await canonPool.RunAllTasksInPoolAsync(Environment
             .ProcessorCount); // Execute tasks in pool, running tasks should be max at 8.
 
-        logger.LogInformation("User with email: {Email} successfully pushed a test message to all his devices.", user.Email);
+        logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");
     }
 }
