@@ -35,7 +35,7 @@ public static class KahlaQueryMapper
             });
     }
     
-    public static IQueryable<KahlaThreadMappedOthersView> MapThreadsOthersView(this IQueryable<ChatThread> filteredThreads, string userId)
+    public static IQueryable<KahlaThreadMappedOthersView> MapThreadsOthersView(this IQueryable<ChatThread> filteredThreads, string viewingUserId)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedOthersView
@@ -46,11 +46,11 @@ public static class KahlaQueryMapper
                 OwnerId = t.OwnerRelation!.UserId,
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
                 CreateTime = t.CreateTime,
-                ImInIt = t.Members.Any(u => u.UserId == userId)
+                ImInIt = t.Members.Any(u => u.UserId == viewingUserId)
             });
     }
     
-    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(this IQueryable<ChatThread> filteredThreads, string currentUserId)
+    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(this IQueryable<ChatThread> filteredThreads, string viewingUserId)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedJoinedView
@@ -60,7 +60,7 @@ public static class KahlaQueryMapper
                 ImagePath = t.IconFilePath,
                 OwnerId = t.OwnerRelation!.UserId,
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
-                UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.ReadTimeStamp),
+                UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.ReadTimeStamp),
                 LatestMessage = t.Messages
                     .OrderByDescending(p => p.SendTime)
                     .FirstOrDefault(),
@@ -72,14 +72,14 @@ public static class KahlaQueryMapper
                     .OrderByDescending(p => p.SendTime)
                     .Select(m => m.Sender)
                     .FirstOrDefault() : null,
-                Muted = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.Muted,
+                Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
                     .OrderBy(p => p.JoinTime)
                     .Select(p => p.User)
                     .Take(10),
-                ImInIt = t.Members.Any(u => u.UserId == currentUserId),
-                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == currentUserId)!.UserThreadRole == UserThreadRole.Admin,
-                ImOwner = t.OwnerRelation.UserId == currentUserId,
+                ImInIt = t.Members.Any(u => u.UserId == viewingUserId),
+                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole == UserThreadRole.Admin,
+                ImOwner = t.OwnerRelation.UserId == viewingUserId,
                 CreateTime = t.CreateTime
             });
     }
