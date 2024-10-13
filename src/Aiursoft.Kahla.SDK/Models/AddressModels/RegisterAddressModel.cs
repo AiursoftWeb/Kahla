@@ -7,12 +7,12 @@ public class RegisterAddressModel
     [Required]
     [EmailAddress]
     [Display(Name = "Email")]
-    public string? Email { get; set; }
+    public string? Email { get; init; }
 
     [Required]
     [MinLength(6, ErrorMessage = "Password length should between 6 and 32.")]
     [MaxLength(32, ErrorMessage = "Password length should between 6 and 32.")]
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
-    public string? Password { get; set; }
+    public string? Password { get; init; }
 }

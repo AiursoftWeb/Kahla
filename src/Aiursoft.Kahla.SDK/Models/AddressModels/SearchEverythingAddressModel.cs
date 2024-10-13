@@ -7,11 +7,11 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         [MinLength(1)]
         [MaxLength(50)]
         [Required]
-        public required string SearchInput { get; set; }
+        public required string SearchInput { get; init; }
 
-        public int Skip { get; set; }
+        public int Skip { get; init; }
         
-        public int Take { get; set; } = 20;
+        public int Take { get; init; } = 20;
         
     }
 }

@@ -1,4 +1,5 @@
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 
 namespace Aiursoft.Kahla.Server.Services;

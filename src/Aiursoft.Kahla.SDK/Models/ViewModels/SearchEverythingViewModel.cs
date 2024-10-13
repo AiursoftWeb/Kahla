@@ -5,9 +5,9 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels
 {
     public class SearchEverythingViewModel : AiurResponse
     {
-        public int TotalUsersCount { get; set; }
-        public int TotalThreadsCount { get; set; }
-        public List<KahlaUserMappedOthersView> Users { get; set; } = new();
-        public List<KahlaThreadMappedOthersView> Threads { get; set; } = new();
+        public required int TotalUsersCount { get; set; }
+        public required int TotalThreadsCount { get; set; }
+        public required List<KahlaUserMappedOthersView> Users { get; init; } = new();
+        public required List<KahlaThreadMappedOthersView> Threads { get; set; } = new();
     }
 }

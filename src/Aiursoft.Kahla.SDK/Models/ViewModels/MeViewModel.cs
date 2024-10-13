@@ -1,4 +1,5 @@
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.Kahla.SDK.Models.Entities;
 
 namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
@@ -7,14 +8,4 @@ public class MeViewModel : AiurResponse
     public required KahlaUser User { get; init; }
     
     public required PrivateSettings PrivateSettings { get; init; }
-}
-
-public class PrivateSettings
-{
-    public int ThemeId { get; init; }
-    public bool AllowHardInvitation { get; init; }
-    public bool EnableEmailNotification { get; init; }
-    public bool AllowSearchByName { get; init; }
-    public bool EnableEnterToSendMessage { get; init; }
-    public bool EnableHideMyOnlineStatus { get; init; }
 }

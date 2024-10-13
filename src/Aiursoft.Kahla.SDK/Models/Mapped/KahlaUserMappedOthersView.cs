@@ -1,3 +1,5 @@
+using Aiursoft.Kahla.SDK.Models.Entities;
+
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
 public class KahlaUserMappedOthersView
@@ -6,7 +8,7 @@ public class KahlaUserMappedOthersView
     
     public bool? Online { get; set; }
     
-    public bool IsKnownContact { get; set; }
+    public required bool IsKnownContact { get; init; }
     
-    public bool IsBlockedByYou { get; set; }
+    public required bool IsBlockedByYou { get; init; }
 }

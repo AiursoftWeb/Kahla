@@ -3,6 +3,7 @@ using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Services;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Microsoft.Extensions.Options;
 
@@ -36,7 +37,7 @@ public class KahlaServerAccess(
     public async Task<AiurResponse> RegisterAsync(string email, string password)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/register", param: new {});
-        var model = new AiurApiPayload(new SignInAddressModel
+        var model = new AiurApiPayload(new RegisterAddressModel
         {
             Email = email,
             Password = password
@@ -82,7 +83,8 @@ public class KahlaServerAccess(
         bool? enableEmailNotification = null, 
         bool? enableEnterToSendMessage = null, 
         bool? enableHideMyOnlineStatus = null, 
-        bool? listInSearchResult = null)
+        bool? listInSearchResult = null,
+        bool? allowHardInvitation = null)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/auth/update-me", param: new {});
         var model = new AiurApiPayload(new UpdateMeAddressModel
@@ -93,7 +95,8 @@ public class KahlaServerAccess(
             EnableEmailNotification = enableEmailNotification,
             EnableEnterToSendMessage = enableEnterToSendMessage,
             EnableHideMyOnlineStatus = enableHideMyOnlineStatus,
-            AllowSearchByName = listInSearchResult
+            AllowSearchByName = listInSearchResult,
+            AllowHardInvitation = allowHardInvitation
         });
         var result = await http.Patch<MeViewModel>(url, model);
         return result;

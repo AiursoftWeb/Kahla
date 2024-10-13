@@ -288,6 +288,7 @@ namespace Aiursoft.Kahla.Server.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
+                        .HasMaxLength(16384)
                         .HasColumnType("longtext");
 
                     b.Property<bool>("GroupWithPrevious")
@@ -321,7 +322,8 @@ namespace Aiursoft.Kahla.Server.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Reason")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(400)
+                        .HasColumnType("varchar(400)");
 
                     b.Property<DateTime>("ReportTime")
                         .HasColumnType("datetime(6)");

@@ -1,26 +1,29 @@
+using Aiursoft.Kahla.SDK.Models.Entities;
+
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
 public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 {
     // Top ten members.
-    public IEnumerable<KahlaUser> TopTenMembers { get; set; } = new List<KahlaUser>();
+    public required IEnumerable<KahlaUser> TopTenMembers { get; set; } = new List<KahlaUser>();
 
     // Unread amount.
-    public int UnReadAmount { get; set; }
+    public required int UnReadAmount { get; set; }
     
     // Last message.
-    public Message? LatestMessage { get; set; }
+    public required Message? LatestMessage { get; set; }
     // Last message sender.
-    public KahlaUser? LatestMessageSender { get; set; }
-    
+    public required KahlaUser? LatestMessageSender { get; set; }
+    // If Last message is null, this is the last message time. Or it is the creation time of this thread.
+    public required DateTime LastMessageTime { get; init; }
     // Muted.
-    public bool Muted { get; set; }
+    public required bool Muted { get; set; }
 
     // I'm an Admin of this thread.
-    public bool ImAdmin { get; set; }
+    public required bool ImAdmin { get; set; }
     
     // I'm the owner of this thread.
-    public bool ImOwner { get; set; }
+    public required bool ImOwner { get; set; }
     
     // Someone at me. TODO.
 }

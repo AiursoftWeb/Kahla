@@ -1,4 +1,5 @@
 ﻿using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

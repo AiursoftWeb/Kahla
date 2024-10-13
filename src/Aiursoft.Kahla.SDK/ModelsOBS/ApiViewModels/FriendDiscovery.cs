@@ -1,4 +1,5 @@
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Entities;
 
 namespace Aiursoft.Kahla.SDK.ModelsOBS.ApiViewModels
 {

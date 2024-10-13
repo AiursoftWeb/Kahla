@@ -2,6 +2,7 @@
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;

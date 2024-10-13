@@ -7,7 +7,6 @@ public class KahlaThreadMappedOthersView
     public required string ImagePath { get; set; }
     public required string OwnerId { get; set; }
     public required bool AllowDirectJoinWithoutInvitation { get; set; }
-    public DateTime CreateTime { get; set; }
-    public DateTime LastMessageTime { get; set; }
+    public required DateTime CreateTime { get; init; }
     public required bool ImInIt { get; set; }
 }

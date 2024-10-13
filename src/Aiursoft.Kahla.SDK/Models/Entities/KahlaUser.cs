@@ -4,11 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.SDK.Models;
+namespace Aiursoft.Kahla.SDK.Models.Entities;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class KahlaUser : IdentityUser
 {
+    [Key]
     [JsonProperty]
     public override string Id
     {
