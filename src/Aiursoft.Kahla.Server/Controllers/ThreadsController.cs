@@ -50,10 +50,15 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (myRelation.Thread.AllowMembersEnlistAllMembers == false && myRelation.UserThreadRole != UserThreadRole.Admin)
+        {
+            return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members.");
         }
         var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);
         return this.Protocol(new ThreadMembersViewModel
