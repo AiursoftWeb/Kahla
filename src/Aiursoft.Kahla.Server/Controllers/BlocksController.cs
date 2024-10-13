@@ -41,7 +41,7 @@ public class BlocksController(
         return this.Protocol(new MyBlocksViewModel
         {
             Code = Code.ResultShown,
-            Message = "Successfully get all your known blocks.",
+            Message = $"Successfully get your first {take} known blocks and skipped {skip} blocks.",
             KnownBlocks = knownBlocks,
             TotalKnownBlocks = totalCount
         });

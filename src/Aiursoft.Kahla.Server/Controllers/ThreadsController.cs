@@ -35,7 +35,7 @@ public class ThreadsController(
         return this.Protocol(new MyThreadsViewModel
         {
             Code = Code.ResultShown,
-            Message = $"Successfully get your first {take} joined threads.",
+            Message = $"Successfully get your first {take} joined threads and skipped {skip} threads.",
             KnownThreads = threads,
             TotalCount = count
         });
