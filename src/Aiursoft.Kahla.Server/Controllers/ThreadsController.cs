@@ -3,6 +3,7 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
@@ -212,19 +213,4 @@ public class ThreadsController(
             }
         });
     }
-}
-
-public class CreateThreadAddressModel
-{
-    public required string Name { get; init; }
-    
-    public required bool AllowSearchByName { get; init; }
-    
-    public required bool AllowDirectJoinWithoutInvitation { get; init; }
-    
-    public required bool AllowMemberSoftInvitation { get; init; }
-    
-    public required bool AllowMembersSendMessages { get; init; } = true;
-    
-    public required bool AllowMembersEnlistAllMembers { get; init; } = true;
 }
