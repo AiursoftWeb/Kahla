@@ -57,7 +57,7 @@ public class ContactsController(
         if (searchedUser == null)
         {
             logger.LogWarning("User with Id: {Id} is trying to download the detailed info with a contact with id: {TargetId} but the target does not exist.", currentUserId, id);
-            return this.Protocol(Code.NotFound, "The target user with id `{id}` does not exist.");
+            return this.Protocol(Code.NotFound, $"The target user with id `{id}` does not exist.");
         }
         
         var (commonThreadsCount, commonThreads) = await threadService.QueryCommonThreadsAsync(

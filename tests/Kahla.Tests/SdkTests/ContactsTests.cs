@@ -1,3 +1,4 @@
+using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Kahla.Tests.TestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -105,5 +106,34 @@ public class ContactsTests : KahlaTestBase
             // ignored
         }
     }
-    
+
+    [TestMethod]
+    public async Task AddNonExistTest()
+    {
+        await Sdk.RegisterAsync("user18@domain.com", "password");
+        try
+        {
+            await Sdk.AddContactAsync("non-exist-user-id");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("The target user does not exist.", e.Response.Message);
+        }
+    }
+
+    [TestMethod]
+    public async Task DetailsNonExistTest()
+    {
+        await Sdk.RegisterAsync("user19@domain.com", "password");
+        try
+        {
+            await Sdk.UserDetailAsync("non-exist-user-id");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("The target user with id `non-exist-user-id` does not exist.", e.Response.Message);
+        }
+    }
 }

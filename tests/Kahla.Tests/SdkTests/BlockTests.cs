@@ -39,4 +39,34 @@ public class BlockTests : KahlaTestBase
         var myBlocks3 = await Sdk.MyBlocksAsync();
         Assert.AreEqual(0, myBlocks3.TotalKnownBlocks);
     }
+
+    [TestMethod]
+    public async Task BlockNonExist()
+    {
+        await Sdk.RegisterAsync("user16@domain.com", "password");
+        try
+        {
+            await Sdk.BlockNewAsync("non-exist-user-id");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("The target user does not exist.", e.Response.Message);
+        }
+    }
+    
+    [TestMethod]
+    public async Task RemoveBlockNonExist()
+    {
+        await Sdk.RegisterAsync("user17@domain.com", "password");
+        try
+        {
+            await Sdk.UnblockAsync("non-exist-user-id");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual("The target user is not in your block list.", e.Response.Message);
+        }
+    }
 }
