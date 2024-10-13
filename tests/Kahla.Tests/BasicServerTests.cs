@@ -261,7 +261,7 @@ public class BasicServerTests
         Assert.AreEqual(0, myContacts.KnownContacts.Count);
 
         // Search me.
-        var searchResult = await _sdk.SearchEverythingAsync("user12", 1);
+        var searchResult = await _sdk.SearchEverythingAsync("user12");
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         Assert.AreEqual("user12", searchResult.Users.First().User.NickName);
@@ -313,7 +313,7 @@ public class BasicServerTests
     {
         // Register
         await _sdk.RegisterAsync("user13@domain.com", "password");
-        var searchResult = await _sdk.SearchEverythingAsync("user13", 1);
+        var searchResult = await _sdk.SearchEverythingAsync("user13");
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         
@@ -331,7 +331,7 @@ public class BasicServerTests
         await _sdk.RegisterAsync("user14@domain.com", "password");
         
         // Search bad guy.
-        var searchResult = await _sdk.SearchEverythingAsync("bad", 1);
+        var searchResult = await _sdk.SearchEverythingAsync("bad");
         
         // Report
         var reportResult = await _sdk.ReportUserAsync(searchResult.Users.First().User.Id, "reason1");
