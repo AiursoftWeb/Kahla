@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Aiursoft.Kahla.SDK.Models.Conversations;
-using Aiursoft.Kahla.SDK.ModelsOBS;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
@@ -38,26 +36,6 @@ public class KahlaUser : IdentityUser
 
     [JsonProperty] public override bool EmailConfirmed { get; set; }
     [NotNull][JsonProperty] public override string? Email { get; set; }
-    
-    [Obsolete]
-    [JsonIgnore]
-    [InverseProperty(nameof(PrivateConversation.RequestUser))]
-    public IEnumerable<PrivateConversation> Friends { get; set; } = new List<PrivateConversation>();
-
-    [Obsolete]
-    [JsonIgnore]
-    [InverseProperty(nameof(PrivateConversation.TargetUser))]
-    public IEnumerable<PrivateConversation> OfFriends { get; set; } = new List<PrivateConversation>();
-
-    [Obsolete]
-    [JsonIgnore]
-    [InverseProperty(nameof(UserGroupRelation.User))]
-    public IEnumerable<UserGroupRelation> GroupsJoined { get; set; } = new List<UserGroupRelation>();
-
-    [Obsolete]
-    [JsonIgnore]
-    [InverseProperty(nameof(GroupConversation.Owner))]
-    public IEnumerable<GroupConversation> GroupsOwned { get; set; } = new List<GroupConversation>();
     
     [JsonIgnore]
     [InverseProperty(nameof(UserThreadRelation.User))]

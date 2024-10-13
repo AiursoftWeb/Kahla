@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Aiursoft.Kahla.SDK.Models;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.SDK.ModelsOBS
+namespace Aiursoft.Kahla.SDK.Models
 {
     public class Message
     {
@@ -19,7 +18,6 @@ namespace Aiursoft.Kahla.SDK.ModelsOBS
 
         public DateTime SendTime { get; set; } = DateTime.UtcNow;
         public required string Content { get; set; }
-        public bool Read { get; set; }
         public bool GroupWithPrevious { get; set; }
     }
 }
