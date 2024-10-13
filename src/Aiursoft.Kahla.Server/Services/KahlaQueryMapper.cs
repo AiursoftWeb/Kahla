@@ -1,7 +1,7 @@
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 
-namespace Aiursoft.Kahla.Server.Services.Repositories;
+namespace Aiursoft.Kahla.Server.Services;
 
 public static class KahlaQueryMapper
 {
