@@ -6,7 +6,7 @@ public class KahlaUserMappedOthersView
 {
     public required KahlaUser User { get; init; }
     
-    public bool? Online { get; set; }
+    public required bool? Online { get; init; }
     
     public required bool IsKnownContact { get; init; }
     

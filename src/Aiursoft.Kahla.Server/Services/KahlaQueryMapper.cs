@@ -6,25 +6,25 @@ namespace Aiursoft.Kahla.Server.Services;
 
 public static class KahlaQueryMapper
 {
-    public static IQueryable<KahlaUserMappedOthersView> MapUsersOthersView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId)
+    public static IQueryable<KahlaUserMappedOthersView> MapUsersOthersView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, OnlineJudger onlineJudger)
     {
         return filteredUsers
             .Select(t => new KahlaUserMappedOthersView
             {
                 User = t,
-                Online = null, // This needed to be calculated in real-time.
+                Online = onlineJudger.IsOnline(t.Id, t.EnableHideMyOnlineStatus),
                 IsKnownContact = t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
                 IsBlockedByYou = t.BlockedBy.Any(p => p.CreatorId == viewingUserId)
             });
     }
     
-    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, int threadId)
+    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, int threadId, OnlineJudger onlineJudger)
     {
         return filteredUsers
             .Select(u => new KahlaUserMappedInThreadView
             {
                 User = u,
-                Online = null, // This needed to be calculated in real-time.
+                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
                 IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
                 IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
                 IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == threadId).UserThreadRole == UserThreadRole.Admin,

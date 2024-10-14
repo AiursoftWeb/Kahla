@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Aiursoft.Kahla.Server.Services.AppService;
 
 public class UserOthersViewAppService(
-    OnlineJudger judger,
     UserOthersViewRepo repo)
 {
     public async Task<(int totalCount, List<KahlaUserMappedOthersView> contacts)> GetMyContactsPagedAsync(string viewingUserId, int skip, int take)
@@ -13,7 +12,6 @@ public class UserOthersViewAppService(
         var query = repo.QueryMyContacts(viewingUserId);
         var totalCount = await query.CountAsync();
         var contacts = await query.Skip(skip).Take(take).ToListAsync();
-        contacts.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
         return (totalCount, contacts);
     }
         
@@ -22,7 +20,6 @@ public class UserOthersViewAppService(
         var query = repo.QueryMyBlocksPaged(viewingUserId);
         var totalCount = await query.CountAsync();
         var blocks = await query.Skip(skip).Take(take).ToListAsync();
-        blocks.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
         return (totalCount, blocks);
     }
 
@@ -31,7 +28,6 @@ public class UserOthersViewAppService(
         var query = repo.SearchUsers(searchInput, viewingUserId);
         var totalCount = await query.CountAsync();
         var users = await query.Skip(skip).Take(take).ToListAsync();
-        users.ForEach(t => t.Online = judger.IsOnline(t.User.Id, t.User.EnableHideMyOnlineStatus));
         return (totalCount, users);
     }
     
@@ -41,10 +37,6 @@ public class UserOthersViewAppService(
                 targetUserId: targetUserId,
                 viewingUserId: viewingUserId)
             .FirstOrDefaultAsync();
-        if (user != null)
-        {
-            user.Online = judger.IsOnline(user.User.Id, user.User.EnableHideMyOnlineStatus);
-        }
         return user;
     }
 }

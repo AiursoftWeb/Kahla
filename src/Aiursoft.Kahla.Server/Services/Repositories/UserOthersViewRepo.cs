@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
-public class UserOthersViewRepo(KahlaDbContext dbContext)
+public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJudger)
 {
     public IOrderedQueryable<KahlaUserMappedOthersView> QueryMyContacts(string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId))
-            .MapUsersOthersView(viewingUserId)
+            .MapUsersOthersView(viewingUserId, onlineJudger)
             .OrderBy(t => t.User.NickName);
     }
         
@@ -20,7 +20,7 @@ public class UserOthersViewRepo(KahlaDbContext dbContext)
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId))
-            .MapUsersOthersView(viewingUserId)
+            .MapUsersOthersView(viewingUserId, onlineJudger)
             .OrderBy(t => t.User.NickName);
     }
 
@@ -33,7 +33,7 @@ public class UserOthersViewRepo(KahlaDbContext dbContext)
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
                 t.Id == searchInput)
-            .MapUsersOthersView(viewingUserId)
+            .MapUsersOthersView(viewingUserId, onlineJudger)
             .OrderBy(t => t.User.NickName);
     }
     
@@ -42,6 +42,6 @@ public class UserOthersViewRepo(KahlaDbContext dbContext)
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.Id == targetUserId)
-            .MapUsersOthersView(viewingUserId);
+            .MapUsersOthersView(viewingUserId, onlineJudger);
     }
 }
