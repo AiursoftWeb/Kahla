@@ -31,4 +31,11 @@ public class ThreadJoinedViewAppService(
         return (totalCount, threads);
     }
 
+    public async Task<KahlaThreadMappedJoinedView?> GetThreadAsync(int threadId, string viewingUserId)
+    {
+        var thread = await repo
+            .QueryThreadById(threadId, viewingUserId)
+            .FirstOrDefaultAsync();
+        return thread;
+    }
 }

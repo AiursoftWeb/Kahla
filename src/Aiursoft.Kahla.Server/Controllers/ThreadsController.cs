@@ -5,6 +5,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -46,7 +47,7 @@ public class ThreadsController(
     }
     
     [HttpGet]
-    [Route("members/{id}")]
+    [Route("members/{id:int}")]
     [Produces<ThreadMembersViewModel>]
     public async Task<IActionResult> Members([FromRoute]int id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
@@ -71,6 +72,33 @@ public class ThreadsController(
             Message = $"Successfully get the first {take} members of the thread and skipped {skip} members.",
             Members = members,
             TotalCount = count
+        });
+    }
+
+    [HttpGet]
+    [Route("details/{id:int}")]
+    public async Task<IActionResult> Details([FromRoute] int id)
+    {
+        var currentUserId = User.GetUserId();
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        var thread = await threadService.GetThreadAsync(id, currentUserId);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        return this.Protocol(new ThreadDetailsViewModel
+        {
+            Code = Code.ResultShown,
+            Message = "Successfully get the thread details.",
+            Thread = thread,
         });
     }
     
@@ -223,4 +251,9 @@ public class ThreadsController(
             }
         });
     }
+}
+
+public class ThreadDetailsViewModel : AiurResponse
+{
+    public required KahlaThreadMappedJoinedView? Thread { get; set; }
 }

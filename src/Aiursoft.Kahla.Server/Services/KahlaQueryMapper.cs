@@ -94,7 +94,11 @@ public static class KahlaQueryMapper
                 ImInIt = t.Members.Any(u => u.UserId == viewingUserId),
                 ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole == UserThreadRole.Admin,
                 ImOwner = t.OwnerRelation.UserId == viewingUserId,
-                CreateTime = t.CreateTime
+                CreateTime = t.CreateTime,
+                AllowMemberSoftInvitation = t.AllowMemberSoftInvitation,
+                AllowMembersSendMessages = t.AllowMembersSendMessages,
+                AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
+                AllowSearchByName = t.AllowSearchByName
             });
     }
 }
