@@ -29,10 +29,13 @@ public class ThreadsController(
 {
     [HttpGet]
     [Route("mine")]
+    [Produces<MyThreadsViewModel>]
     public async Task<IActionResult> Mine([FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get all his known threads.", currentUserId);
         var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUserId, skip, take);
+        logger.LogInformation("User with Id: {Id} successfully get all his known threads with total {Count}.", currentUserId, threads.Count);
         return this.Protocol(new MyThreadsViewModel
         {
             Code = Code.ResultShown,
@@ -42,8 +45,27 @@ public class ThreadsController(
         });
     }
     
+    [HttpPost]
+    [Route("search")]
+    [Produces<MyThreadsViewModel>]
+    public async Task<IActionResult> Search([FromForm]SearchEverythingAddressModel model)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to search his threads with keyword: {Search}.", currentUserId, model.SearchInput);
+        var (count, threads) = await threadService.SearchThreadsIJoinedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        logger.LogInformation("User with Id: {Id} successfully searched his threads with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, threads.Count);
+        return this.Protocol(new MyThreadsViewModel
+        {
+            Code = Code.ResultShown,
+            Message = $"Successfully get your first {model.Take} threads from search result and skipped {model.Skip} threads.",
+            KnownThreads = threads,
+            TotalCount = count
+        });
+    }
+    
     [HttpGet]
     [Route("members/{id}")]
+    [Produces<ThreadMembersViewModel>]
     public async Task<IActionResult> Members([FromRoute]int id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currentUserId = User.GetUserId();
@@ -129,6 +151,7 @@ public class ThreadsController(
         
     [HttpPost]
     [Route("hard-invite/{id}")]
+    [Produces<CreateNewThreadViewModel>]
     public async Task<IActionResult> HardInvite([FromRoute]string id)
     {
         var currentUserId = User.GetUserId();

@@ -12,6 +12,5 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         public int Skip { get; init; }
         
         public int Take { get; init; } = 20;
-        
     }
 }

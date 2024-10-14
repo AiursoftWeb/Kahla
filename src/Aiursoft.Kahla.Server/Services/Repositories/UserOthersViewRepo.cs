@@ -14,12 +14,40 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
             .MapUsersOthersView(viewingUserId, onlineJudger)
             .OrderBy(t => t.User.NickName);
     }
+    
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyContactsAsync(string searchInput, string viewingUserId)
+    {
+        return dbContext.Users
+            .AsNoTracking()
+            .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId))
+            .Where(t => t.AllowSearchByName || t.Id == searchInput)
+            .Where(t =>
+                t.Email.Contains(searchInput) ||
+                t.NickName.Contains(searchInput) ||
+                t.Id == searchInput)
+            .MapUsersOthersView(viewingUserId, onlineJudger)
+            .OrderBy(t => t.User.NickName);
+    }
         
     public IOrderedQueryable<KahlaUserMappedOthersView> QueryMyBlocksPaged(string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId))
+            .MapUsersOthersView(viewingUserId, onlineJudger)
+            .OrderBy(t => t.User.NickName);
+    }
+    
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyBlocksAsync(string searchInput, string viewingUserId)
+    {
+        return dbContext.Users
+            .AsNoTracking()
+            .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId))
+            .Where(t => t.AllowSearchByName || t.Id == searchInput)
+            .Where(t =>
+                t.Email.Contains(searchInput) ||
+                t.NickName.Contains(searchInput) ||
+                t.Id == searchInput)
             .MapUsersOthersView(viewingUserId, onlineJudger)
             .OrderBy(t => t.User.NickName);
     }

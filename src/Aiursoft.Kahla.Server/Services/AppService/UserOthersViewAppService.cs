@@ -14,10 +14,26 @@ public class UserOthersViewAppService(
         var contacts = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, contacts);
     }
+    
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> contacts)> SearchMyContactsPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    {
+        var query = repo.SearchMyContactsAsync(searchInput, viewingUserId);
+        var totalCount = await query.CountAsync();
+        var contacts = await query.Skip(skip).Take(take).ToListAsync();
+        return (totalCount, contacts);
+    }
         
     public async Task<(int totalCount, List<KahlaUserMappedOthersView> blocks)> GetMyBlocksPagedAsync(string viewingUserId, int skip, int take)
     {
         var query = repo.QueryMyBlocksPaged(viewingUserId);
+        var totalCount = await query.CountAsync();
+        var blocks = await query.Skip(skip).Take(take).ToListAsync();
+        return (totalCount, blocks);
+    }
+
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> blocks)> SearchMyBlocksPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    {
+        var query = repo.SearchMyBlocksAsync(searchInput, viewingUserId);
         var totalCount = await query.CountAsync();
         var blocks = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, blocks);

@@ -46,6 +46,25 @@ public class ContactsController(
             TotalKnownContacts = totalCount
         });
     }
+    
+    [HttpPost]
+    [Route("search")]
+    [Produces<MyContactsViewModel>]
+    public async Task<IActionResult> Search([FromForm]SearchEverythingAddressModel model)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to search his contacts with keyword: {Search}.", currentUserId, model.SearchInput);
+        
+        var (totalCount, knownContacts) = await userAppService.SearchMyContactsPagedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        logger.LogInformation("User with Id: {Id} successfully searched his contacts with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, knownContacts.Count);
+        return this.Protocol(new MyContactsViewModel
+        {
+            Code = Code.ResultShown,
+            Message = $"Successfully searched your first {model.Take} known contacts and skipped {model.Skip} contacts.",
+            KnownContacts = knownContacts,
+            TotalKnownContacts = totalCount
+        });
+    }
 
     [HttpGet]
     [Route("details/{id}")]
