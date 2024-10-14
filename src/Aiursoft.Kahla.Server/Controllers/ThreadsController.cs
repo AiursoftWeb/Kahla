@@ -170,7 +170,21 @@ public class ThreadsController(
         logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId, updatedPropertiesName);
         return this.Protocol(Code.JobDone, $"Successfully updated the thread's properties: {updatedPropertiesName}.");
     }
-    
+
+    // Directly join a thread without an invitation. (Only when AllowDirectJoinWithoutInvitation is true)
+
+    // Transfer the ownership of the thread to another member. (Only the owner can do this)
+
+    // Prompt a member as an admin. (Or demote an admin to a member) (Only the owner can do this)
+
+    // Kick a member from the thread. (Only the admin can do this)
+
+    // Ban a member from the thread. (Or unban a member) (Only the admin can do this)
+
+    // Leave the thread. (The owner can not leave the thread)
+
+    // Dissolve the thread. (Only the owner can do this)
+
     [HttpPost]
     [Route("create-scratch")]
     public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)
