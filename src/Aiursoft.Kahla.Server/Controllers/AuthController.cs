@@ -43,7 +43,7 @@ public class AuthController(
         if (result.IsLockedOut)
         {
             logger.LogWarning("User account locked out with email: {Email}", model.Email);
-            return this.Protocol(Code.NoActionTaken, "User account locked out!");
+            return this.Protocol(Code.TooManyRequests, "User account locked out!");
         }
         else
         {
