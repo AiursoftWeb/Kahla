@@ -19,8 +19,7 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
     {
         return dbContext.Users
             .AsNoTracking()
-            .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId))
-            .Where(t => t.AllowSearchByName || t.Id == searchInput)
+            .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId)) // Allow searching for users even he disabled search by name.
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
@@ -42,8 +41,7 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
     {
         return dbContext.Users
             .AsNoTracking()
-            .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId))
-            .Where(t => t.AllowSearchByName || t.Id == searchInput)
+            .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId)) // Allow searching for users even he disabled search by name.
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
@@ -56,7 +54,7 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
     {
         return dbContext.Users
             .AsNoTracking()
-            .Where(t => t.AllowSearchByName || t.Id == searchInput)
+            .Where(t => t.AllowSearchByName || t.Id == searchInput) // Only allow searching for users who allow search by name.
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
