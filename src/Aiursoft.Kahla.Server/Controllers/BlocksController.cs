@@ -49,7 +49,7 @@ public class BlocksController(
     [HttpPost]
     [Route("search")]
     [Produces<MyBlocksViewModel>]
-    public async Task<IActionResult> Search([FromForm]SearchEverythingAddressModel model)
+    public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his blocks with keyword: {Search}.", currentUserId, model.SearchInput);

@@ -50,7 +50,7 @@ public class ContactsController(
     [HttpPost]
     [Route("search")]
     [Produces<MyContactsViewModel>]
-    public async Task<IActionResult> Search([FromForm]SearchEverythingAddressModel model)
+    public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his contacts with keyword: {Search}.", currentUserId, model.SearchInput);

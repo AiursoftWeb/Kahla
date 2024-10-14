@@ -48,7 +48,7 @@ public class ThreadsController(
     [HttpPost]
     [Route("search")]
     [Produces<MyThreadsViewModel>]
-    public async Task<IActionResult> Search([FromForm]SearchEverythingAddressModel model)
+    public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his threads with keyword: {Search}.", currentUserId, model.SearchInput);

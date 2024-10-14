@@ -2,7 +2,7 @@
 
 namespace Aiursoft.Kahla.SDK.Models.AddressModels
 {
-    public class SearchEverythingAddressModel
+    public class SearchAddressModel
     {
         [MinLength(1)]
         [MaxLength(50)]
