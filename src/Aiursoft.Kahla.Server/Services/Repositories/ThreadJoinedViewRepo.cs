@@ -15,7 +15,7 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
-            .WhereWhen(searchInput, t => t.Name.Contains(searchInput!) || t.Messages.Any(p => p.Content.Contains(searchInput!)))
+            .WhereWhen(searchInput, t => t.Name.Contains(searchInput!))
             .MapThreadsJoinedView(viewingUserId)
             .OrderByDescending(t => t.LastMessageTime);
     }
