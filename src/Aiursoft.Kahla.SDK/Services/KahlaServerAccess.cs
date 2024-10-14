@@ -159,14 +159,14 @@ public class KahlaServerAccess(
 
     public async Task<SearchEverythingViewModel> SearchServerAsync(string searchInput, string? excluding, int skip = 0, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-server", param: new {  });
-        var result = await http.Post<SearchEverythingViewModel>(url, new AiurApiPayload(new SearchAddressModel
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-server", param: new SearchAddressModel
         {
             SearchInput = searchInput,
             Excluding = excluding,
             Skip = skip,
             Take = take
-        }));
+        });
+        var result = await http.Get<SearchEverythingViewModel>(url);
         return result;
     }
     
