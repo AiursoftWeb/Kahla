@@ -24,7 +24,7 @@ public class BlocksController(
     KahlaDbContext dbContext,
     ILogger<BlocksController> logger) : ControllerBase
 {
-    // This lock is used to prevent blocking the same user multiple times.
+    // This lock is used to avoid blocking the same user multiple times.
     private static readonly SemaphoreSlim BlockUserLock = new(1, 1);
     
     [HttpGet]

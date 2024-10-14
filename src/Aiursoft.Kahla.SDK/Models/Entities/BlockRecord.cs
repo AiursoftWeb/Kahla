@@ -22,6 +22,4 @@ public class BlockRecord
     public KahlaUser? Target { get; init; }
     
     public DateTime AddTime { get; init; } = DateTime.UtcNow;
-    
-    public DateTime BlockTo { get; init; } = DateTime.MaxValue;
 }

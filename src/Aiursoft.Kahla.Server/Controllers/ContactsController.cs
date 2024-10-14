@@ -26,7 +26,7 @@ public class ContactsController(
     ILogger<ContactsController> logger,
     KahlaDbContext dbContext) : ControllerBase
 {
-    // This lock is used to prevent adding the same friend twice.
+    // This lock is used to avoid adding the same contact multiple times.
     private static readonly SemaphoreSlim AddFriendLock = new(1, 1);
 
     [HttpGet]
