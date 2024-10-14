@@ -13,6 +13,7 @@ public class ThreadJoinedViewAppService(
         var totalCount = await query.CountAsync();
         var threads = await query
             .OrderByDescending(t => t.LastMessageTime)
+            .Skip(skip)
             .Take(take)
             .ToListAsync();
         return (totalCount, threads);
@@ -24,6 +25,7 @@ public class ThreadJoinedViewAppService(
         var totalCount = await query.CountAsync();
         var threads = await query
             .OrderByDescending(t => t.LastMessageTime)
+            .Skip(skip)
             .Take(take)
             .ToListAsync();
         return (totalCount, threads);
