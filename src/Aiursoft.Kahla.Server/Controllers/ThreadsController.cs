@@ -51,6 +51,7 @@ public class ThreadsController(
     public async Task<IActionResult> Members([FromRoute]int id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
     {
         var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.", currentUserId, id);
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -65,6 +66,7 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members.");
         }
         var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);
+        logger.LogInformation("User with Id: {Id} successfully get the members of the thread. Thread ID: {ThreadID}. Total members: {Count}.", currentUserId, id, members.Count);
         return this.Protocol(new ThreadMembersViewModel
         {
             Code = Code.ResultShown,
@@ -79,6 +81,7 @@ public class ThreadsController(
     public async Task<IActionResult> Details([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -93,6 +96,7 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+        logger.LogInformation("User with Id: {Id} successfully get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(new ThreadDetailsViewModel
         {
             Code = Code.ResultShown,
@@ -106,6 +110,7 @@ public class ThreadsController(
     public async Task<IActionResult> UpdateThread([FromRoute]int id, [FromForm]UpdateThreadAddressModel model)
     {
         var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to update the thread's properties. Thread ID: {ThreadID}.", currentUserId, id);
         var thread = await dbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
@@ -171,6 +176,7 @@ public class ThreadsController(
     public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)
     {
         var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to create a new thread from scratch.", currentUserId);
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -206,6 +212,8 @@ public class ThreadsController(
                 
                 // Commit the transaction if everything is successful
                 await transaction.CommitAsync();
+                
+                logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.", currentUserId);
                 return this.Protocol(new CreateNewThreadViewModel
                 {
                     NewThreadId = thread.Id,
@@ -298,7 +306,7 @@ public class ThreadsController(
                 await dbContext.SaveChangesAsync(); // Save the targetRelation
                 
                 await transaction.CommitAsync();
-                logger.LogInformation("The thread has been created successfully.");
+                logger.LogInformation("A new thread has been created successfully. Thread ID is {ID}.", thread.Id);
                 return this.Protocol(new CreateNewThreadViewModel
                 {
                     NewThreadId = thread.Id,
