@@ -8,6 +8,9 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         [MaxLength(50)]
         [Required]
         public required string SearchInput { get; init; }
+        
+        [MaxLength(50)]
+        public string? Excluding { get; init; }
 
         public int Skip { get; init; }
         

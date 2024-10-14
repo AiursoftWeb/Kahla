@@ -55,7 +55,12 @@ public class ContactsController(
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his contacts with keyword: {Search}.", currentUserId, model.SearchInput);
         
-        var (totalCount, knownContacts) = await userAppService.SearchMyContactsPagedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        var (totalCount, knownContacts) = await userAppService.SearchMyContactsPagedAsync(
+            model.SearchInput, 
+            model.Excluding,
+            currentUserId, 
+            model.Skip, 
+            model.Take);
         logger.LogInformation("User with Id: {Id} successfully searched his contacts with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, knownContacts.Count);
         return this.Protocol(new MyContactsViewModel
         {

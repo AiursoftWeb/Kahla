@@ -15,11 +15,15 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .OrderByDescending(t => t.LastMessageTime);
     }
 
-    public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
+        string searchInput,
+        string? excluding,
+        string viewingUserId)
     {
         return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
+            .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
             .Where(t => t.Name.Contains(searchInput) || t.Messages.Any(p => p.Content.Contains(searchInput)))
             .MapThreadsJoinedView(viewingUserId)
             .OrderByDescending(t => t.LastMessageTime);

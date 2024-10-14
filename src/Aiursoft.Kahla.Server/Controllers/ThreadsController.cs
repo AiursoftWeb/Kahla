@@ -52,7 +52,7 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his threads with keyword: {Search}.", currentUserId, model.SearchInput);
-        var (count, threads) = await threadService.SearchThreadsIJoinedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        var (count, threads) = await threadService.SearchThreadsIJoinedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
         logger.LogInformation("User with Id: {Id} successfully searched his threads with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, threads.Count);
         return this.Protocol(new MyThreadsViewModel
         {

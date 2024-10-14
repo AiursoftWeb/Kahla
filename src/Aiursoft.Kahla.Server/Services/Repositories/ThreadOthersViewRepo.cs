@@ -6,12 +6,18 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class ThreadOthersViewRepo(KahlaDbContext dbContext)
 {
-    public IOrderedQueryable<KahlaThreadMappedOthersView> SearchThreads(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaThreadMappedOthersView> SearchThreads(
+        string searchInput, 
+        string? excluding,
+        string viewingUserId)
     {
         return dbContext
             .ChatThreads
             .AsNoTracking()
             .Where(t => t.AllowSearchByName || t.Id.ToString() == searchInput)
+            .WhereWhen(excluding, t => 
+                !t.Name.Contains(excluding!) &&
+                t.Id.ToString() != excluding!)
             .Where(t => 
                 t.Name.Contains(searchInput) ||
                 t.Id.ToString() == searchInput)

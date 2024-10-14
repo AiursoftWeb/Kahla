@@ -30,10 +30,10 @@ public class SearchController(
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search for {SearchInput}. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
         
-        var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
         logger.LogInformation("User with Id: {Id} successfully got {Count} users from search result.", currentUserId, users.Count);
         
-        var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
         logger.LogInformation("User with Id: {Id} successfully got {Count} threads from search result.", currentUserId, threads.Count);
     
         return this.Protocol(new SearchEverythingViewModel

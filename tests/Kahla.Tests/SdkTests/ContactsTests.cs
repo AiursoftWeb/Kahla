@@ -19,7 +19,7 @@ public class ContactsTests : KahlaTestBase
         Assert.AreEqual(0, myContacts.KnownContacts.Count);
 
         // Search me.
-        var searchResult = await Sdk.SearchServerAsync("user12");
+        var searchResult = await Sdk.SearchServerAsync("user12", excluding: null);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         Assert.AreEqual("user12", searchResult.Users.First().User.NickName);
@@ -71,7 +71,7 @@ public class ContactsTests : KahlaTestBase
     {
         // Register
         await Sdk.RegisterAsync("user13@domain.com", "password");
-        var searchResult = await Sdk.SearchServerAsync("user13");
+        var searchResult = await Sdk.SearchServerAsync("user13", excluding: null);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.Users.Count);
         
@@ -89,7 +89,7 @@ public class ContactsTests : KahlaTestBase
         await Sdk.RegisterAsync("user14@domain.com", "password");
         
         // Search bad guy.
-        var searchResult = await Sdk.SearchServerAsync("bad");
+        var searchResult = await Sdk.SearchServerAsync("bad", excluding: null);
         
         // Report
         var reportResult = await Sdk.ReportUserAsync(searchResult.Users.First().User.Id, "reason1");

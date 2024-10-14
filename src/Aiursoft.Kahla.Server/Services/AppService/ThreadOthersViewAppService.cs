@@ -6,9 +6,9 @@ namespace Aiursoft.Kahla.Server.Services.AppService;
 
 public class ThreadOthersViewAppService(ThreadOthersViewRepo repo)
 {
-    public async Task<(int count, List<KahlaThreadMappedOthersView> threads)> SearchThreadsPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    public async Task<(int count, List<KahlaThreadMappedOthersView> threads)> SearchThreadsPagedAsync(string searchInput, string? excluding, string viewingUserId, int skip, int take)
     {
-        var query = repo.SearchThreads(searchInput, viewingUserId);
+        var query = repo.SearchThreads(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
         var threads = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, threads);

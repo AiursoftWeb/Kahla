@@ -15,11 +15,18 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
             .OrderBy(t => t.User.NickName);
     }
     
-    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyContactsAsync(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyContactsAsync(
+        string searchInput,
+        string? excluding,
+        string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId)) // Allow searching for users even he disabled search by name.
+            .WhereWhen(excluding, t => 
+                !t.Email.Contains(excluding!) &&
+                !t.NickName.Contains(excluding!) &&
+                t.Id != excluding!)
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
@@ -37,11 +44,18 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
             .OrderBy(t => t.User.NickName);
     }
     
-    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyBlocksAsync(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyBlocksAsync(
+        string searchInput,
+        string? excluding,
+        string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.BlockedBy.Any(p => p.CreatorId == viewingUserId)) // Allow searching for users even he disabled search by name.
+            .WhereWhen(excluding, t => 
+                !t.Email.Contains(excluding!) &&
+                !t.NickName.Contains(excluding!) &&
+                t.Id != excluding!)
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||
@@ -50,11 +64,18 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
             .OrderBy(t => t.User.NickName);
     }
 
-    public IOrderedQueryable<KahlaUserMappedOthersView> SearchUsers(string searchInput, string viewingUserId)
+    public IOrderedQueryable<KahlaUserMappedOthersView> SearchUsers(
+        string searchInput,
+        string? excluding,
+        string viewingUserId)
     {
         return dbContext.Users
             .AsNoTracking()
             .Where(t => t.AllowSearchByName || t.Id == searchInput) // Only allow searching for users who allow search by name.
+            .WhereWhen(excluding, t => 
+                !t.Email.Contains(excluding!) &&
+                !t.NickName.Contains(excluding!) &&
+                t.Id != excluding!)
             .Where(t =>
                 t.Email.Contains(searchInput) ||
                 t.NickName.Contains(searchInput) ||

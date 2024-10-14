@@ -54,7 +54,7 @@ public class BlocksController(
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his blocks with keyword: {Search}.", currentUserId, model.SearchInput);
         
-        var (totalCount, knownBlocks) = await userAppService.SearchMyBlocksPagedAsync(model.SearchInput, currentUserId, model.Skip, model.Take);
+        var (totalCount, knownBlocks) = await userAppService.SearchMyBlocksPagedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
         logger.LogInformation("User with Id: {Id} successfully searched his blocks with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, knownBlocks.Count);
         return this.Protocol(new MyBlocksViewModel
         {

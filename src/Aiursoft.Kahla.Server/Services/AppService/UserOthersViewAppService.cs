@@ -15,9 +15,14 @@ public class UserOthersViewAppService(
         return (totalCount, contacts);
     }
     
-    public async Task<(int totalCount, List<KahlaUserMappedOthersView> contacts)> SearchMyContactsPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> contacts)> SearchMyContactsPagedAsync(
+        string searchInput, 
+        string? excluding,
+        string viewingUserId, 
+        int skip, 
+        int take)
     {
-        var query = repo.SearchMyContactsAsync(searchInput, viewingUserId);
+        var query = repo.SearchMyContactsAsync(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
         var contacts = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, contacts);
@@ -31,17 +36,17 @@ public class UserOthersViewAppService(
         return (totalCount, blocks);
     }
 
-    public async Task<(int totalCount, List<KahlaUserMappedOthersView> blocks)> SearchMyBlocksPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> blocks)> SearchMyBlocksPagedAsync(string searchInput, string? excluding, string viewingUserId, int skip, int take)
     {
-        var query = repo.SearchMyBlocksAsync(searchInput, viewingUserId);
+        var query = repo.SearchMyBlocksAsync(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
         var blocks = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, blocks);
     }
 
-    public async Task<(int totalCount, List<KahlaUserMappedOthersView> users)> SearchUsersPagedAsync(string searchInput, string viewingUserId, int skip, int take)
+    public async Task<(int totalCount, List<KahlaUserMappedOthersView> users)> SearchUsersPagedAsync(string searchInput, string? excluding, string viewingUserId, int skip, int take)
     {
-        var query = repo.SearchUsers(searchInput, viewingUserId);
+        var query = repo.SearchUsers(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
         var users = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, users);
