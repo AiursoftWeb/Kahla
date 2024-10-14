@@ -66,7 +66,7 @@ public class AuthController(
         var result = await userManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
         {
-            await signInManager.SignInAsync(user, isPersistent: false);
+            await signInManager.SignInAsync(user, isPersistent: true);
             logger.LogInformation("User with Id: {Id} created.", model.Email);
             return this.Protocol(Code.JobDone, "User created!");
         }
