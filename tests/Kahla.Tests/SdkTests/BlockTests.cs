@@ -12,14 +12,14 @@ public class BlockTests : KahlaTestBase
     public async Task BlockAndUnblock()
     {
         await Sdk.RegisterAsync("user15@domain.com", "password");
-        var myBlocks = await Sdk.MyBlocksAsync();
+        var myBlocks = await Sdk.ListBlocksAsync();
         Assert.AreEqual(0, myBlocks.TotalKnownBlocks);
 
         var me = await Sdk.MeAsync();
         var blockMySelf = await Sdk.BlockNewAsync(me.User.Id);
         Assert.AreEqual(Code.JobDone, blockMySelf.Code);
         
-        var myBlocks2 = await Sdk.MyBlocksAsync();
+        var myBlocks2 = await Sdk.ListBlocksAsync();
         Assert.AreEqual(1, myBlocks2.TotalKnownBlocks);
         Assert.AreEqual(me.User.Id, myBlocks2.KnownBlocks.First().User.Id);
 
@@ -36,7 +36,7 @@ public class BlockTests : KahlaTestBase
         var unblockResult = await Sdk.UnblockAsync(me.User.Id);
         Assert.AreEqual(Code.JobDone, unblockResult.Code);
         
-        var myBlocks3 = await Sdk.MyBlocksAsync();
+        var myBlocks3 = await Sdk.ListBlocksAsync();
         Assert.AreEqual(0, myBlocks3.TotalKnownBlocks);
     }
 

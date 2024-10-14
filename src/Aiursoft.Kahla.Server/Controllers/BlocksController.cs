@@ -31,25 +31,7 @@ public class BlocksController(
     [HttpGet]
     [Route("list")]
     [Produces<MyBlocksViewModel>]
-    public async Task<IActionResult> List([FromQuery]int skip = 0, [FromQuery]int take = 20)
-    {
-        var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get all his known blocks.", currentUserId);
-        var (totalCount, knownBlocks) = await userAppService.GetMyBlocksPagedAsync(currentUserId, skip, take);
-        logger.LogInformation("User with Id: {Id} successfully get all his known blocks with total {Count}.", currentUserId, knownBlocks.Count);
-        return this.Protocol(new MyBlocksViewModel
-        {
-            Code = Code.ResultShown,
-            Message = $"Successfully get your first {take} known blocks and skipped {skip} blocks.",
-            KnownBlocks = knownBlocks,
-            TotalKnownBlocks = totalCount
-        });
-    }
-    
-    [HttpPost]
-    [Route("search")]
-    [Produces<MyBlocksViewModel>]
-    public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
+    public async Task<IActionResult> List([FromQuery]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his blocks with keyword: {Search}.", currentUserId, model.SearchInput);

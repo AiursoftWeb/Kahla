@@ -157,13 +157,6 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<MyContactsViewModel> MineAsync(int skip = 0, int take = 20)
-    {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/mine", param: new { skip, take });
-        var result = await http.Get<MyContactsViewModel>(url);
-        return result;
-    }
-    
     public async Task<SearchEverythingViewModel> SearchServerAsync(string searchInput, string? excluding, int skip = 0, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-server", param: new {  });
@@ -174,6 +167,19 @@ public class KahlaServerAccess(
             Skip = skip,
             Take = take
         }));
+        return result;
+    }
+    
+    public async Task<MyContactsViewModel> ListContactsAsync(string? search = null, string? excluding = null, int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/list", param: new SearchAddressModel
+        {
+            SearchInput = search,
+            Excluding = excluding,
+            Skip = skip,
+            Take = take
+        });
+        var result = await http.Get<MyContactsViewModel>(url);
         return result;
     }
     
@@ -212,9 +218,15 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<MyBlocksViewModel> MyBlocksAsync(int skip = 0, int take = 20)
+    public async Task<MyBlocksViewModel> ListBlocksAsync(string? search = null, string? excluding = null, int skip = 0, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/list", param: new { skip, take });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/list", param: new SearchAddressModel
+        {
+            SearchInput = search,
+            Excluding = excluding,
+            Skip = skip,
+            Take = take
+        });
         var result = await http.Get<MyBlocksViewModel>(url);
         return result;
     }

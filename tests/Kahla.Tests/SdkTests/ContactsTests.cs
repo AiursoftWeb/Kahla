@@ -15,7 +15,7 @@ public class ContactsTests : KahlaTestBase
         await Sdk.RegisterAsync("user12@domain.com", "password");
         
         // No contacts.
-        var myContacts = await Sdk.MineAsync(take: 2);
+        var myContacts = await Sdk.ListContactsAsync(take: 2);
         Assert.AreEqual(0, myContacts.KnownContacts.Count);
 
         // Search me.
@@ -41,7 +41,7 @@ public class ContactsTests : KahlaTestBase
         }
 
         // I should have one contact now.
-        var myContacts2 = await Sdk.MineAsync(take: 2);
+        var myContacts2 = await Sdk.ListContactsAsync(take: 2);
         Assert.AreEqual(1, myContacts2.KnownContacts.Count);
         Assert.AreEqual("user12", myContacts2.KnownContacts.First().User.NickName);
         Assert.AreEqual(true, myContacts2.KnownContacts.First().IsKnownContact);
@@ -62,7 +62,7 @@ public class ContactsTests : KahlaTestBase
         }
         
         // I should have no contact now.
-        var myContacts3 = await Sdk.MineAsync(take: 2);
+        var myContacts3 = await Sdk.ListContactsAsync(take: 2);
         Assert.AreEqual(0, myContacts3.KnownContacts.Count);
     }
 

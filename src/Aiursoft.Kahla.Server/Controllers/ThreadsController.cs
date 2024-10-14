@@ -27,26 +27,8 @@ public class ThreadsController(
     UserInThreadViewAppService userAppService,
     KahlaDbContext dbContext) : ControllerBase
 {
-    [HttpGet]
-    [Route("mine")]
-    [Produces<MyThreadsViewModel>]
-    public async Task<IActionResult> Mine([FromQuery]int skip = 0, [FromQuery]int take = 20)
-    {
-        var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get all his known threads.", currentUserId);
-        var (count, threads) = await threadService.QueryThreadsIJoinedAsync(currentUserId, skip, take);
-        logger.LogInformation("User with Id: {Id} successfully get all his known threads with total {Count}.", currentUserId, threads.Count);
-        return this.Protocol(new MyThreadsViewModel
-        {
-            Code = Code.ResultShown,
-            Message = $"Successfully get your first {take} joined threads and skipped {skip} threads.",
-            KnownThreads = threads,
-            TotalCount = count
-        });
-    }
-    
     [HttpPost]
-    [Route("search")]
+    [Route("list")]
     [Produces<MyThreadsViewModel>]
     public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
     {

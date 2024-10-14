@@ -30,27 +30,9 @@ public class ContactsController(
     private static readonly SemaphoreSlim AddFriendLock = new(1, 1);
 
     [HttpGet]
-    [Route("mine")]
+    [Route("list")]
     [Produces<MyContactsViewModel>]
-    public async Task<IActionResult> Mine([FromQuery]int skip = 0, [FromQuery]int take = 20)
-    {
-        var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get all his known contacts.", currentUserId);
-        var (totalCount, knownContacts) = await userAppService.GetMyContactsPagedAsync(currentUserId, skip, take);
-        logger.LogInformation("User with Id: {Id} successfully get all his known contacts with total {Count}.", currentUserId, knownContacts.Count);
-        return this.Protocol(new MyContactsViewModel
-        {
-            Code = Code.ResultShown,
-            Message = $"Successfully get your first {take} known contacts and skipped {skip} contacts.",
-            KnownContacts = knownContacts,
-            TotalKnownContacts = totalCount
-        });
-    }
-    
-    [HttpPost]
-    [Route("search")]
-    [Produces<MyContactsViewModel>]
-    public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
+    public async Task<IActionResult> List([FromQuery]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search his contacts with keyword: {Search}.", currentUserId, model.SearchInput);

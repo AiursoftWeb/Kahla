@@ -19,19 +19,7 @@ public class ThreadJoinedViewAppService(
         return (totalCount, threads);
     }
     
-    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> QueryThreadsIJoinedAsync(string viewingUserId, int skip, int take)
-    {
-        var query = repo.QueryThreadsIJoined(viewingUserId);
-        var totalCount = await query.CountAsync();
-        var threads = await query
-            .OrderByDescending(t => t.LastMessageTime)
-            .Skip(skip)
-            .Take(take)
-            .ToListAsync();
-        return (totalCount, threads);
-    }
-
-    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> SearchThreadsIJoinedAsync(string searchInput, string? excluding, string viewingUserId, int skip, int take)
+    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> SearchThreadsIJoinedAsync(string? searchInput, string? excluding, string viewingUserId, int skip, int take)
     {
         var query = repo.SearchThreadsIJoined(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();

@@ -6,17 +6,8 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
 {
-    public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryThreadsIJoined(string viewingUserId)
-    {
-        return dbContext.ChatThreads
-            .AsNoTracking()
-            .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
-            .MapThreadsJoinedView(viewingUserId)
-            .OrderByDescending(t => t.LastMessageTime);
-    }
-
     public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
-        string searchInput,
+        string? searchInput,
         string? excluding,
         string viewingUserId)
     {
@@ -24,7 +15,7 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
-            .Where(t => t.Name.Contains(searchInput) || t.Messages.Any(p => p.Content.Contains(searchInput)))
+            .WhereWhen(searchInput, t => t.Name.Contains(searchInput!) || t.Messages.Any(p => p.Content.Contains(searchInput!)))
             .MapThreadsJoinedView(viewingUserId)
             .OrderByDescending(t => t.LastMessageTime);
     }
