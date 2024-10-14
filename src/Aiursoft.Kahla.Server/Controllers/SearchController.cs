@@ -22,10 +22,10 @@ public class SearchController(
     ThreadOthersViewAppService threadsAppService,
     ILogger<ContactsController> logger) : ControllerBase
 {
-    [HttpPost]
+    [HttpGet]
     [Route("search-server")]
     [Produces(typeof(SearchEverythingViewModel))]
-    public async Task<IActionResult> SearchEverything([FromForm]SearchAddressModel model)
+    public async Task<IActionResult> SearchEverything([FromQuery]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to search for {SearchInput}. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
