@@ -101,6 +101,61 @@ public class ThreadsController(
         });
     }
     
+    [HttpPatch]
+    [Route("update-thread/{id:int}")]
+    public async Task<IActionResult> UpdateThread([FromRoute]int id, [FromForm]UpdateThreadAddressModel model)
+    {
+        var currentUserId = User.GetUserId();
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (myRelation.UserThreadRole != UserThreadRole.Admin)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread.");
+        }
+        if (model.Name != null)
+        {
+            thread.Name = model.Name;
+        }
+        if (model.IconFilePath != null)
+        {
+            thread.IconFilePath = model.IconFilePath;
+        }
+        if (model.AllowDirectJoinWithoutInvitation.HasValue)
+        {
+            thread.AllowDirectJoinWithoutInvitation = model.AllowDirectJoinWithoutInvitation == true;
+        }
+        if (model.AllowMemberSoftInvitation.HasValue)
+        {
+            thread.AllowMemberSoftInvitation = model.AllowMemberSoftInvitation == true;
+        }
+        if (model.AllowMembersSendMessages.HasValue)
+        {
+            thread.AllowMembersSendMessages = model.AllowMembersSendMessages == true;
+        }
+        if (model.AllowMembersEnlistAllMembers.HasValue)
+        {
+            thread.AllowMembersEnlistAllMembers = model.AllowMembersEnlistAllMembers == true;
+        }
+        if (model.AllowSearchByName.HasValue)
+        {
+            thread.AllowSearchByName = model.AllowSearchByName == true;
+        }
+        await dbContext.SaveChangesAsync();
+        return this.Protocol(Code.JobDone, "Successfully updated the thread.");
+    }
+    
     [HttpPost]
     [Route("create-scratch")]
     public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)

@@ -15,7 +15,7 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    [StringLength(256)] public string Name { get; init; } = "{THE OTHER USER}";
+    [StringLength(256)] public string Name { get; set; } = "{THE OTHER USER}";
     
     [InverseProperty(nameof(Message.Thread))]
     public IEnumerable<Message> Messages { get; init; } = new List<Message>();
@@ -26,7 +26,7 @@ public class ChatThread
     /// Admins can change this value.
     /// </summary>
     [StringLength(512)]
-    public string IconFilePath { get; init; } = "{THE OTHER USER ICON}";
+    public string IconFilePath { get; set; } = "{THE OTHER USER ICON}";
     
     [InverseProperty(nameof(UserThreadRelation.Thread))]
     public IEnumerable<UserThreadRelation> Members { get; init; } = new List<UserThreadRelation>();
@@ -49,14 +49,14 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    public bool AllowDirectJoinWithoutInvitation { get; init; } = false;
+    public bool AllowDirectJoinWithoutInvitation { get; set; } = false;
     
     /// <summary>
     /// Indicating if allowing a user to search this thread by name. By default, this is false.
     ///
     /// Admins can change this value.
     /// </summary>
-    public bool AllowSearchByName { get; init; } = false;
+    public bool AllowSearchByName { get; set; } = false;
     
     /// <summary>
     /// If this is true, then a member can invite a user to join this thread via SoftInvitation. By default, this is false.
@@ -65,7 +65,7 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    public bool AllowMemberSoftInvitation { get; init; } = false;
+    public bool AllowMemberSoftInvitation { get; set; } = false;
     
     /// <summary>
     /// If this is true, then all members can send messages to this thread. By default, this is true.
@@ -74,7 +74,7 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    public bool AllowMembersSendMessages { get; init; } = true;
+    public bool AllowMembersSendMessages { get; set; } = true;
     
     /// <summary>
     /// If this is true, then all members can see all the other members in this thread. By default, this is true.
@@ -85,7 +85,7 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    public bool AllowMembersEnlistAllMembers { get; init; } = true;
+    public bool AllowMembersEnlistAllMembers { get; set; } = true;
     
     public DateTime CreateTime { get; init; } = DateTime.UtcNow;
 }
