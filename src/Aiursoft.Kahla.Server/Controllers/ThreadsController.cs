@@ -27,7 +27,7 @@ public class ThreadsController(
     UserInThreadViewAppService userAppService,
     KahlaDbContext dbContext) : ControllerBase
 {
-    [HttpPost]
+    [HttpGet]
     [Route("list")]
     [Produces<MyThreadsViewModel>]
     public async Task<IActionResult> Search([FromForm]SearchAddressModel model)
