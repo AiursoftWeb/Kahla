@@ -10,8 +10,10 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         [MaxLength(50)]
         public string? Excluding { get; init; }
 
+        [Range(0, int.MaxValue)]
         public int Skip { get; init; }
         
+        [Range(1, 50)]
         public int Take { get; init; } = 20;
     }
 }
