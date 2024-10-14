@@ -124,36 +124,46 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not the admin of this thread.");
         }
+        var updatedProperties = new List<string>();
         if (model.Name != null)
         {
             thread.Name = model.Name;
+            updatedProperties.Add(nameof(thread.Name));
         }
         if (model.IconFilePath != null)
         {
             thread.IconFilePath = model.IconFilePath;
+            updatedProperties.Add(nameof(thread.IconFilePath));
         }
         if (model.AllowDirectJoinWithoutInvitation.HasValue)
         {
             thread.AllowDirectJoinWithoutInvitation = model.AllowDirectJoinWithoutInvitation == true;
+            updatedProperties.Add(nameof(thread.AllowDirectJoinWithoutInvitation));
         }
         if (model.AllowMemberSoftInvitation.HasValue)
         {
             thread.AllowMemberSoftInvitation = model.AllowMemberSoftInvitation == true;
+            updatedProperties.Add(nameof(thread.AllowMemberSoftInvitation));
         }
         if (model.AllowMembersSendMessages.HasValue)
         {
             thread.AllowMembersSendMessages = model.AllowMembersSendMessages == true;
+            updatedProperties.Add(nameof(thread.AllowMembersSendMessages));
         }
         if (model.AllowMembersEnlistAllMembers.HasValue)
         {
             thread.AllowMembersEnlistAllMembers = model.AllowMembersEnlistAllMembers == true;
+            updatedProperties.Add(nameof(thread.AllowMembersEnlistAllMembers));
         }
         if (model.AllowSearchByName.HasValue)
         {
             thread.AllowSearchByName = model.AllowSearchByName == true;
+            updatedProperties.Add(nameof(thread.AllowSearchByName));
         }
         await dbContext.SaveChangesAsync();
-        return this.Protocol(Code.JobDone, "Successfully updated the thread.");
+        var updatedPropertiesName = string.Join(", ", updatedProperties); 
+        logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId, updatedPropertiesName);
+        return this.Protocol(Code.JobDone, $"Successfully updated the thread's properties: {updatedPropertiesName}.");
     }
     
     [HttpPost]
