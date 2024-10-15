@@ -254,7 +254,7 @@ public class ThreadsController(
         return this.Protocol(Code.JobDone, "Successfully transferred the ownership of the thread.");
     }
 
-    // Prompt a member as an admin. (Or demote an admin to a member) (Only the owner can do this)
+    // Promote a member as an admin. (Or demote an admin to a member) (Only the owner can do this)
     [HttpPost]
     [Route("promote-admin/{id:int}")]
     public async Task<IActionResult> PromoteAdmin(
@@ -293,7 +293,7 @@ public class ThreadsController(
         targetRelation.UserThreadRole = promote ? UserThreadRole.Admin : UserThreadRole.Member;
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully changed a member's role. Thread ID: {ThreadID}. User ID: {UserId}. New role: {Role}.", currentUserId, id, targetUserId, targetRelation.UserThreadRole);
-        return this.Protocol(Code.JobDone, "Successfully promoted the member as an admin.");
+        return this.Protocol(Code.JobDone, $"Successfully set the user's role to {targetRelation.UserThreadRole}.");
     }
 
     // Kick a member from the thread. (Only the admin can do this) (Can not kick the owner)
