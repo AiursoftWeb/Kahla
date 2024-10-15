@@ -278,9 +278,16 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<ThreadDetailsViewModel> ThreadDetailsAsync(int id)
+    public async Task<ThreadAnonymousViewModel> ThreadDetailsAnonymousAsync(int id)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/details/{id}", param: new { id });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/details-anonymous/{id}", param: new { id });
+        var result = await http.Get<ThreadAnonymousViewModel>(url);
+        return result;
+    }
+    
+    public async Task<ThreadDetailsViewModel> ThreadDetailsJoinedAsync(int id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/details-joined/{id}", param: new { id });
         var result = await http.Get<ThreadDetailsViewModel>(url);
         return result;
     }

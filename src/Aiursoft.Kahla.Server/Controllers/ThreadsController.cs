@@ -25,6 +25,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 public class ThreadsController(
     ILogger<ThreadsController> logger,
     ThreadJoinedViewAppService threadService,
+    ThreadOthersViewAppService threadOthersViewAppService,
     UserInThreadViewAppService userAppService,
     KahlaDbContext dbContext) : ControllerBase
 {
@@ -76,9 +77,31 @@ public class ThreadsController(
             TotalCount = count
         });
     }
+    
+    [HttpGet]
+    [Route("details-anonymous/{id:int}")]
+    [Produces<ThreadAnonymousViewModel>]
+    public async Task<IActionResult> DetailsAnonymous([FromRoute] int id)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId, id);
+
+        var thread = await threadOthersViewAppService.GetThreadAsync(id, currentUserId);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, $"The thread with ID {id} does not exist.");
+        }
+        logger.LogInformation("User with Id: {Id} successfully get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(new ThreadAnonymousViewModel
+        {
+            Code = Code.ResultShown,
+            Message = "Successfully get the thread details.",
+            Thread = thread,
+        });
+    }
 
     [HttpGet]
-    [Route("details/{id:int}")]
+    [Route("details-joined/{id:int}")]
     [Produces<ThreadDetailsViewModel>]
     public async Task<IActionResult> Details([FromRoute] int id)
     {
@@ -101,7 +124,7 @@ public class ThreadsController(
             Thread = thread,
         });
     }
-    
+
     [HttpPatch]
     [Route("update-thread/{id:int}")]
     public async Task<IActionResult> UpdateThread([FromRoute]int id, [FromForm]UpdateThreadAddressModel model)

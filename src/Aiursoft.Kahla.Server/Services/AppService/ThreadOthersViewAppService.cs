@@ -18,4 +18,12 @@ public class ThreadOthersViewAppService(ThreadOthersViewRepo repo)
         var threads = await query.Skip(skip).Take(take).ToListAsync();
         return (totalCount, threads);
     }
+    
+    public async Task<KahlaThreadMappedOthersView?> GetThreadAsync(int threadId, string viewingUserId)
+    {
+        var thread = await repo
+            .QueryThreadById(threadId, viewingUserId)
+            .FirstOrDefaultAsync();
+        return thread;
+    }
 }

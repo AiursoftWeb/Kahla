@@ -7,3 +7,8 @@ public class ThreadDetailsViewModel : AiurResponse
 {
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
+
+public class ThreadAnonymousViewModel : AiurResponse
+{
+    public required KahlaThreadMappedOthersView Thread { get; init; }
+}
