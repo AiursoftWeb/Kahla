@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
@@ -127,7 +128,7 @@ public class ThreadsController(
         }
         if (myRelation.UserThreadRole != UserThreadRole.Admin)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. Only the admin can update the thread's properties.");
         }
         var updatedProperties = new List<string>();
         if (model.Name != null)
@@ -172,18 +173,241 @@ public class ThreadsController(
     }
 
     // Directly join a thread without an invitation. (Only when AllowDirectJoinWithoutInvitation is true)
+    [HttpPost]
+    [Route("direct-join/{id:int}")]
+    public async Task<IActionResult> DirectJoin([FromRoute]int id)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to directly join a thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        if (!thread.AllowDirectJoinWithoutInvitation)
+        {
+            return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (myRelation != null)
+        {
+            return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+        }
+        var newRelation = new UserThreadRelation
+        {
+            UserId = currentUserId,
+            ThreadId = id,
+            UserThreadRole = UserThreadRole.Member
+        };
+        dbContext.UserThreadRelations.Add(newRelation);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(Code.JobDone, "Successfully joined the thread.");
+    }
 
     // Transfer the ownership of the thread to another member. (Only the owner can do this)
+    [HttpPost]
+    [Route("transfer-ownership/{id:int}")]
+    public async Task<IActionResult> TransferOwnership([FromRoute]int id, [FromForm][Required]string targetUserId)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to transfer the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (thread.OwnerRelationId != myRelation.Id)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can transfer the ownership.");
+        }
+        var targetUser = await dbContext.Users.FindAsync(targetUserId);
+        if (targetUser == null)
+        {
+            return this.Protocol(Code.NotFound, "The target user does not exist.");
+        }
+        var targetRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == targetUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (targetRelation == null)
+        {
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+        }
+        thread.OwnerRelationId = targetRelation.Id;
+        // Also set the target user as an admin
+        targetRelation.UserThreadRole = UserThreadRole.Admin;
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully transferred the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(Code.JobDone, "Successfully transferred the ownership of the thread.");
+    }
 
     // Prompt a member as an admin. (Or demote an admin to a member) (Only the owner can do this)
+    [HttpPost]
+    [Route("promote-admin/{id:int}")]
+    public async Task<IActionResult> PromoteAdmin(
+        [FromRoute]int id, 
+        [FromForm][Required]string targetUserId,
+        [FromForm][Required]bool promote)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to promote a member as an admin. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (thread.OwnerRelationId != myRelation.Id)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can promote a member as an admin.");
+        }
+        var targetRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == targetUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (targetRelation == null)
+        {
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+        }
+        targetRelation.UserThreadRole = promote ? UserThreadRole.Admin : UserThreadRole.Member;
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully changed a member's role. Thread ID: {ThreadID}. User ID: {UserId}. New role: {Role}.", currentUserId, id, targetUserId, targetRelation.UserThreadRole);
+        return this.Protocol(Code.JobDone, "Successfully promoted the member as an admin.");
+    }
 
-    // Kick a member from the thread. (Only the admin can do this)
+    // Kick a member from the thread. (Only the admin can do this) (Can not kick the owner)
+    [HttpPost]
+    [Route("kick-member/{id:int}")]
+    public async Task<IActionResult> KickMember([FromRoute]int id, [FromForm][Required]string targetUserId)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to kick a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (myRelation.UserThreadRole != UserThreadRole.Admin)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. Only the admin can kick a member.");
+        }
+        var targetRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == targetUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (targetRelation == null)
+        {
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+        }
+        if (thread.OwnerRelationId == targetRelation.Id)
+        {
+            return this.Protocol(Code.Unauthorized, "The owner of the thread can not be kicked.");
+        }
+        dbContext.UserThreadRelations.Remove(targetRelation);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
+    }
 
     // Ban a member from the thread. (Or unban a member) (Only the admin can do this)
 
     // Leave the thread. (The owner can not leave the thread)
+    [HttpPost]
+    [Route("leave/{id:int}")]
+    public async Task<IActionResult> LeaveThread([FromRoute]int id)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to leave the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (thread.OwnerRelationId == myRelation.Id)
+        {
+            return this.Protocol(Code.Conflict, "You are the owner of this thread. You can not leave the thread. If you don't want to own this thread anymore, please transfer the ownership to another member first. If you want to delete the thread, please dissolve the thread.");
+        }
+        dbContext.UserThreadRelations.Remove(myRelation);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(Code.JobDone, "Successfully left the thread.");
+    }
 
     // Dissolve the thread. (Only the owner can do this)
+    [HttpPost]
+    [Route("dissolve/{id:int}")]
+    public async Task<IActionResult> DissolveThread([FromRoute]int id)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to dissolve the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        if (thread.OwnerRelationId != myRelation.Id)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can dissolve the thread.");
+        }
+        
+        // Remove all the relations.
+        dbContext.UserThreadRelations.RemoveRange(dbContext.UserThreadRelations.Where(t => t.ThreadId == id));
+        await dbContext.SaveChangesAsync();
+        
+        // Remove the thread.
+        dbContext.ChatThreads.Remove(thread);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
+    }
 
     [HttpPost]
     [Route("create-scratch")]

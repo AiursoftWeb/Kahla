@@ -14,7 +14,7 @@ public class UserThreadRelation
     public int Id { get; init; }
     public DateTime JoinTime { get; init; } = DateTime.UtcNow;
 
-    public UserThreadRole UserThreadRole { get; init; } = UserThreadRole.Member;
+    public UserThreadRole UserThreadRole { get; set; } = UserThreadRole.Member;
     
     public bool Muted { get; init; }
     
