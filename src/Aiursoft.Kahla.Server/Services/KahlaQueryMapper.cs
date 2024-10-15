@@ -80,10 +80,6 @@ public static class KahlaQueryMapper
                     .FirstOrDefault(),
                 LastMessageTime = t.Messages.Any() ? t.Messages
                     .Max(p => p.SendTime) : t.CreateTime,
-                    // t.Messages.Any() ? t.Messages
-                    // .OrderByDescending(p => p.SendTime)
-                    // .Select(m => m.SendTime)
-                    // .FirstOrDefault() : t.CreateTime,
                 LatestMessageSender = t.Messages.Any() ? t.Messages
                     .OrderByDescending(p => p.SendTime)
                     .Select(m => m.Sender)
