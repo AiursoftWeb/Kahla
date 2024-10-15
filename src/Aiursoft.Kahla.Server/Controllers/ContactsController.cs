@@ -72,12 +72,19 @@ public class ContactsController(
             skip: skip,
             take: take);
         
+        var defaultThreadId = await threadService.QueryDefaultAsync(
+            viewingUserId: currentUserId,
+            targetUserId: id,
+            skip: skip,
+            take: take);
+        
         logger.LogInformation("User with Id: {Id} successfully downloaded the detailed info with a contact with id: {TargetId}.", currentUserId, id);
         return this.Protocol(new UserDetailViewModel 
         {
             SearchedUser = searchedUser,
             CommonThreadsCount = commonThreadsCount,
             CommonThreads = commonThreads,
+            DefaultThread = defaultThreadId,
             Code = Code.ResultShown,
             Message = $"User detail with first {take} common threads and skipped {skip} threads successfully downloaded."
         });

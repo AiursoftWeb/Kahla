@@ -7,5 +7,6 @@ public class UserDetailViewModel : AiurResponse
 {
     public required KahlaUserMappedOthersView SearchedUser { get; init; }
     public required List<KahlaThreadMappedJoinedView> CommonThreads { get; init; } = new();
+    public required int? DefaultThread { get; init; }
     public required int CommonThreadsCount { get; init; }
 }
