@@ -384,10 +384,10 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<AiurResponse> HardInviteAsync(string id)
+    public async Task<CreateNewThreadViewModel> HardInviteAsync(string id)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/hard-invite/{id}", param: new { id });
-        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        var result = await http.Post<CreateNewThreadViewModel>(url, new AiurApiPayload(new {}));
         return result;
     }
 }

@@ -5,6 +5,6 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class MyBlocksViewModel : AiurResponse
 {
-    public required List<KahlaUserMappedOthersView> KnownBlocks { get; set; } = new();
-    public required int TotalKnownBlocks { get; set; }
+    public required List<KahlaUserMappedOthersView> KnownBlocks { get; init; } = new();
+    public required int TotalKnownBlocks { get; init; }
 }

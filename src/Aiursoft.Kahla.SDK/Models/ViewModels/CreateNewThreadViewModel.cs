@@ -4,5 +4,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class CreateNewThreadViewModel : AiurResponse
 {
-    public required int NewThreadId { get; set; }
+    public required int NewThreadId { get; init; }
 }

@@ -5,5 +5,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 
 public class ThreadDetailsViewModel : AiurResponse
 {
-    public required KahlaThreadMappedJoinedView? Thread { get; set; }
+    public required KahlaThreadMappedJoinedView Thread { get; init; }
 }

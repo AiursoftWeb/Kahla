@@ -87,17 +87,12 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
-        var thread = await threadService.GetThreadAsync(id, currentUserId);
-        if (thread == null)
-        {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
-        }
+        var thread = await threadService.GetJoinedThreadAsync(id, currentUserId);
         logger.LogInformation("User with Id: {Id} successfully get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(new ThreadDetailsViewModel
         {
@@ -121,7 +116,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -224,7 +218,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -273,7 +266,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -312,7 +304,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -357,7 +348,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -388,7 +378,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -410,7 +399,7 @@ public class ThreadsController(
         return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
     }
     
-    // Set muted (Or unmuted) for current user. (Any member can do this)
+    // Set muted (Or unmute) for current user. (Any member can do this)
     [HttpPost]
     [Route("set-mute/{id:int}")]
     public async Task<IActionResult> SetMute([FromRoute]int id, [FromForm][Required]bool mute)
@@ -425,7 +414,6 @@ public class ThreadsController(
         var myRelation = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .Include(t => t.Thread)
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
@@ -439,6 +427,7 @@ public class ThreadsController(
 
     [HttpPost]
     [Route("create-scratch")]
+    [Produces<CreateNewThreadViewModel>]
     public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)
     {
         var currentUserId = User.GetUserId();
