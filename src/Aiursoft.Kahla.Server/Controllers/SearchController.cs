@@ -28,10 +28,10 @@ public class SearchController(
     public async Task<IActionResult> SearchUsers([FromQuery]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to search for {SearchInput}. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
+        logger.LogInformation("User with Id: {Id} is trying to search for users with '{SearchInput}' globally. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
         
         var (totalUsersCount, users) = await usersAppAppService.SearchUsersPagedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
-        logger.LogInformation("User with Id: {Id} successfully got {Count} users from search result.", currentUserId, users.Count);
+        logger.LogInformation("User with Id: {Id} successfully got {Count} users from global search result.", currentUserId, users.Count);
         
         return this.Protocol(new SearchUsersViewModel
         {
@@ -48,10 +48,10 @@ public class SearchController(
     public async Task<IActionResult> SearchThreads([FromQuery]SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to search for {SearchInput}. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
+        logger.LogInformation("User with Id: {Id} is trying to search for threads with '{SearchInput}' globally. Take: {Take}.", currentUserId, model.SearchInput, model.Take);
         
         var (totalThreadsCount, threads) = await threadsAppService.SearchThreadsPagedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
-        logger.LogInformation("User with Id: {Id} successfully got {Count} threads from search result.", currentUserId, threads.Count);
+        logger.LogInformation("User with Id: {Id} successfully got {Count} threads from global search result.", currentUserId, threads.Count);
     
         return this.Protocol(new SearchThreadsViewModel
         {
