@@ -5,15 +5,15 @@ namespace Aiursoft.Kahla.SDK.Models.Mapped;
 public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 {
     // Top ten members.
-    public required IEnumerable<KahlaUser> TopTenMembers { get; set; } = new List<KahlaUser>();
+    public required IEnumerable<KahlaUser> TopTenMembers { get; init; }
 
     // Unread amount.
-    public required int UnReadAmount { get; set; }
+    public required int UnReadAmount { get; init; }
     
     // Last message.
-    public required Message? LatestMessage { get; set; }
+    public required Message? LatestMessage { get; init; }
     // Last message sender.
-    public required KahlaUser? LatestMessageSender { get; set; }
+    public required KahlaUser? LatestMessageSender { get; init; }
     // If Last message is null, this is the last message time. Or it is the creation time of this thread.
     public required DateTime LastMessageTime { get; init; }
     // Muted.
