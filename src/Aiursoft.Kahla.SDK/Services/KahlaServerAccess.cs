@@ -244,4 +244,137 @@ public class KahlaServerAccess(
         var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
         return result;
     }
+    
+    public async Task<MyThreadsViewModel> MyThreadsAsync(string? search = null, string? excluding = null, int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/my-threads", param: new SearchAddressModel
+        {
+            SearchInput = search,
+            Excluding = excluding,
+            Skip = skip,
+            Take = take
+        });
+        var result = await http.Get<MyThreadsViewModel>(url);
+        return result;
+    }
+    
+    public async Task<ThreadMembersViewModel> ThreadMembersAsync(int id, int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/members/{id}", param: new { id, skip, take });
+        var result = await http.Get<ThreadMembersViewModel>(url);
+        return result;
+    }
+    
+    public async Task<ThreadDetailsViewModel> ThreadDetailsAsync(int id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/details/{id}", param: new { id });
+        var result = await http.Get<ThreadDetailsViewModel>(url);
+        return result;
+    }
+    
+    public async Task<AiurResponse> UpdateThreadAsync(int id, string? name = null, string? iconFilePath = null, bool? allowDirectJoinWithoutInvitation = null, bool? allowMemberSoftInvitation = null, bool? allowMembersSendMessages = null, bool? allowMembersEnlistAllMembers = null, bool? allowSearchByName = null)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/update-thread/{id}", param: new { id });
+        var model = new AiurApiPayload(new UpdateThreadAddressModel
+        {
+            Name = name,
+            IconFilePath = iconFilePath,
+            AllowDirectJoinWithoutInvitation = allowDirectJoinWithoutInvitation,
+            AllowMemberSoftInvitation = allowMemberSoftInvitation,
+            AllowMembersSendMessages = allowMembersSendMessages,
+            AllowMembersEnlistAllMembers = allowMembersEnlistAllMembers,
+            AllowSearchByName = allowSearchByName
+        });
+        var result = await http.Patch<AiurResponse>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> DirectJoinAsync(int id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/direct-join/{id}", param: new { id });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
+    
+    public async Task<AiurResponse> TransferOwnershipAsync(int id, string targetUserId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/transfer-ownership/{id}", param: new { id });
+        var model = new AiurApiPayload(new
+        {
+            targetUserId
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> PromoteAdminAsync(int id, string targetUserId, bool promote)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/promote-admin/{id}", param: new { id });
+        var model = new AiurApiPayload(new
+        {
+            targetUserId,
+            promote
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> KickMemberAsync(int id, string targetUserId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/kick-member/{id}", param: new { id });
+        var model = new AiurApiPayload(new
+        {
+            targetUserId
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> LeaveThreadAsync(int id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/leave/{id}", param: new { id });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
+    
+    public async Task<AiurResponse> DissolveThreadAsync(int id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/dissolve/{id}", param: new { id });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
+    
+    public async Task<AiurResponse> SetMuteAsync(int id, bool mute)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/set-mute/{id}", param: new { id });
+        var model = new AiurApiPayload(new
+        {
+            mute
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
+    
+    public async Task<CreateNewThreadViewModel> CreateFromScratchAsync(string name, bool allowSearchByName, bool allowDirectJoinWithoutInvitation, bool allowMemberSoftInvitation, bool allowMembersSendMessages, bool allowMembersEnlistAllMembers)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/create-scratch", param: new {});
+        var model = new AiurApiPayload(new CreateThreadAddressModel
+        {
+            Name = name,
+            AllowSearchByName = allowSearchByName,
+            AllowDirectJoinWithoutInvitation = allowDirectJoinWithoutInvitation,
+            AllowMemberSoftInvitation = allowMemberSoftInvitation,
+            AllowMembersSendMessages = allowMembersSendMessages,
+            AllowMembersEnlistAllMembers = allowMembersEnlistAllMembers
+        });
+        var result = await http.Post<CreateNewThreadViewModel>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> HardInviteAsync(string id)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/hard-invite/{id}", param: new { id });
+        var result = await http.Post<AiurResponse>(url, new AiurApiPayload(new {}));
+        return result;
+    }
 }
