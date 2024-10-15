@@ -64,7 +64,7 @@ public static class KahlaQueryMapper
             });
     }
     
-    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(this IQueryable<ChatThread> filteredThreads, string viewingUserId)
+    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(this IQueryable<ChatThread> filteredThreads, string viewingUserId, OnlineJudger onlineJudger)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedJoinedView
@@ -79,9 +79,11 @@ public static class KahlaQueryMapper
                     .OrderByDescending(p => p.SendTime)
                     .FirstOrDefault(),
                 LastMessageTime = t.Messages.Any() ? t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .Select(m => m.SendTime)
-                    .FirstOrDefault() : t.CreateTime,
+                    .Max(p => p.SendTime) : t.CreateTime,
+                    // t.Messages.Any() ? t.Messages
+                    // .OrderByDescending(p => p.SendTime)
+                    // .Select(m => m.SendTime)
+                    // .FirstOrDefault() : t.CreateTime,
                 LatestMessageSender = t.Messages.Any() ? t.Messages
                     .OrderByDescending(p => p.SendTime)
                     .Select(m => m.Sender)
@@ -90,6 +92,13 @@ public static class KahlaQueryMapper
                 TopTenMembers = t.Members
                     .OrderBy(p => p.JoinTime)
                     .Select(p => p.User)
+                    .Select(u => new KahlaUserMappedOthersView
+                    {
+                        User = u,
+                        Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
+                        IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                        IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId)
+                    })
                     .Take(10),
                 ImInIt = t.Members.Any(u => u.UserId == viewingUserId),
                 ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole == UserThreadRole.Admin,

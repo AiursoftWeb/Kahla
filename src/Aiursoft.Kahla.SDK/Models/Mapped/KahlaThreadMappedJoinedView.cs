@@ -5,7 +5,7 @@ namespace Aiursoft.Kahla.SDK.Models.Mapped;
 public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 {
     // Top ten members.
-    public required IEnumerable<KahlaUser> TopTenMembers { get; init; }
+    public required IEnumerable<KahlaUserMappedOthersView> TopTenMembers { get; init; }
 
     // Unread amount.
     public required int UnReadAmount { get; init; }

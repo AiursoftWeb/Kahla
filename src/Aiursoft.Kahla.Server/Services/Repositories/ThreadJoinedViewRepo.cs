@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
-public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
+public class ThreadJoinedViewRepo(KahlaDbContext dbContext, OnlineJudger judger)
 {
     public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
         string? searchInput,
@@ -16,7 +16,7 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
             .WhereWhen(searchInput, t => t.Name.Contains(searchInput!))
-            .MapThreadsJoinedView(viewingUserId)
+            .MapThreadsJoinedView(viewingUserId, judger)
             .OrderByDescending(t => t.LastMessageTime);
     }
 
@@ -26,7 +26,7 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId)
+            .MapThreadsJoinedView(viewingUserId, judger)
             .OrderByDescending(t => t.LastMessageTime);
     }
 
@@ -36,6 +36,6 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext)
             .ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)
-            .MapThreadsJoinedView(currentUserId);
+            .MapThreadsJoinedView(currentUserId, judger);
     }
 }
