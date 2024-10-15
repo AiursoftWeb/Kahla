@@ -408,6 +408,33 @@ public class ThreadsController(
         logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
     }
+    
+    // Set muted (Or unmuted) for current user. (Any member can do this)
+    [HttpPost]
+    [Route("set-mute/{id:int}")]
+    public async Task<IActionResult> SetMute([FromRoute]int id, [FromForm][Required]bool mute)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to set mute for the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .Include(t => t.Thread)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        myRelation.Muted = mute;
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId, mute, id);
+        return this.Protocol(Code.JobDone, "Successfully set mute for the thread.");
+    }
 
     [HttpPost]
     [Route("create-scratch")]

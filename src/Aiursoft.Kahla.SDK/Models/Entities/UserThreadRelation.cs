@@ -16,7 +16,7 @@ public class UserThreadRelation
 
     public UserThreadRole UserThreadRole { get; set; } = UserThreadRole.Member;
     
-    public bool Muted { get; init; }
+    public bool Muted { get; set; }
     
     /// <summary>
     /// If a user is banned from a group, this will be true, and he won't be able to send messages to this group. However, he is still able to read messages.
