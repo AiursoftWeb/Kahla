@@ -157,16 +157,29 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<SearchEverythingViewModel> SearchServerAsync(string searchInput, string? excluding, int skip = 0, int take = 20)
+    public async Task<SearchUsersViewModel> SearchUsersGloballyAsync(string searchInput, string? excluding, int skip = 0, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-server", param: new SearchAddressModel
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-users", param: new SearchAddressModel
         {
             SearchInput = searchInput,
             Excluding = excluding,
             Skip = skip,
             Take = take
         });
-        var result = await http.Get<SearchEverythingViewModel>(url);
+        var result = await http.Get<SearchUsersViewModel>(url);
+        return result;
+    }
+    
+    public async Task<SearchThreadsViewModel> SearchThreadsGloballyAsync(string searchInput, string? excluding, int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/search/search-threads", param: new SearchAddressModel
+        {
+            SearchInput = searchInput,
+            Excluding = excluding,
+            Skip = skip,
+            Take = take
+        });
+        var result = await http.Get<SearchThreadsViewModel>(url);
         return result;
     }
     
@@ -247,7 +260,7 @@ public class KahlaServerAccess(
     
     public async Task<MyThreadsViewModel> MyThreadsAsync(string? search = null, string? excluding = null, int skip = 0, int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/my-threads", param: new SearchAddressModel
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/list", param: new SearchAddressModel
         {
             SearchInput = search,
             Excluding = excluding,
