@@ -8,18 +8,6 @@ namespace Aiursoft.Kahla.Server.Services;
 
 public static class KahlaQueryMapper
 {
-    public static IQueryable<T> WhereWhen<T>(
-        this IQueryable<T> query,
-        string? condition,
-        Expression<Func<T, bool>> predicate)
-    {
-        if (string.IsNullOrWhiteSpace(condition))
-        {
-            return query;
-        }
-        return query.Where(predicate);
-    }
-    
     public static IQueryable<KahlaUserMappedOthersView> MapUsersOthersView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, OnlineJudger onlineJudger)
     {
         return filteredUsers

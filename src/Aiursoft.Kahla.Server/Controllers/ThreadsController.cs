@@ -56,6 +56,7 @@ public class ThreadsController(
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.", currentUserId, id);
         var myRelation = await dbContext.UserThreadRelations
+            .AsSplitQuery()
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .Include(t => t.Thread)

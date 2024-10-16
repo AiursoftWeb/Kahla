@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
@@ -33,24 +34,16 @@ public static class Extensions
         return user;
     }
     
-    public static async Task<List<T2>> SelectAsListAsync<T1, T2>(this IEnumerable<T1> source, Func<T1, Task<T2>> selector)
+    public static IQueryable<T> WhereWhen<T>(
+        this IQueryable<T> query,
+        string? condition,
+        Expression<Func<T, bool>> predicate)
     {
-        var result = new List<T2>();
-        foreach (var item in source)
+        if (string.IsNullOrWhiteSpace(condition))
         {
-            result.Add(await selector(item));
+            return query;
         }
-        return result;
-    }
-    
-    public static async Task<List<T2>> SelectAsListAsync<T1, T2, T3>(this IEnumerable<T1> source, Func<T1, T3, Task<T2>> selector, T3 arg1)
-    {
-        var result = new List<T2>();
-        foreach (var item in source)
-        {
-            result.Add(await selector(item, arg1));
-        }
-        return result;
+        return query.Where(predicate);
     }
     
     public static IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
