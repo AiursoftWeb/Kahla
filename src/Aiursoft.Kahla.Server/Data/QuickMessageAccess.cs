@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Data;
@@ -177,7 +178,7 @@ public class QuickMessageAccess(
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="userId"></param>
-    public void ClearUserUnReadAmount(int threadId, string userId)
+    public void ClearUserUnReadAmountForUser(int threadId, string userId)
     {
         var threadCache = CachedThreads[threadId];
         lock (threadCache)
@@ -208,24 +209,13 @@ public class QuickMessageAccess(
         CachedThreads.TryRemove(threadId, out _);
     }
 
-    /// <summary>
-    /// Retrieves the message context of a thread based on the provided thread ID, creation time, and viewing user ID.
-    /// </summary>
-    /// <param name="threadId">The ID of the thread for which the message context is to be retrieved.</param>
-    /// <param name="viewingUserId">The ID of the user viewing the thread.</param>
-    /// <returns>The mapped thread message context containing the latest message, sender of the last message, and time of the last message.</returns>
-    public uint GetThreadUnReadAmount(int threadId,string viewingUserId)
+    public MessageContext GetMessageContext(int tId, string viewingUserId)
     {
-        return CachedThreads[threadId].GetUserUnReadAmount(viewingUserId);
-    }
-
-    public Message? GetThreadLatestMessage(int tId)
-    {
-        return CachedThreads[tId].LastMessage;
-    }
-    
-    public DateTime GetThreadLastUpdateTime(int threadId, DateTime creationTime)
-    {
-        return CachedThreads[threadId].LastMessage?.SendTime ?? creationTime;
+        var chatThread = CachedThreads[tId];
+        return new MessageContext
+        {
+            UnReadAmount = chatThread.GetUserUnReadAmount(viewingUserId),
+            LatestMessage = chatThread.LastMessage
+        };
     }
 }

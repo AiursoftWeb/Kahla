@@ -88,4 +88,6 @@ public class ChatThread
     public bool AllowMembersEnlistAllMembers { get; set; } = true;
     
     public DateTime CreateTime { get; init; } = DateTime.UtcNow;
+    
+    public DateTime LastMessageTime { get; set; } = DateTime.UtcNow;
 }

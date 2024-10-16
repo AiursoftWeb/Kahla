@@ -28,14 +28,13 @@ public static class KahlaQueryMapper
                 User = t,
                 IsKnownContact = t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
                 IsBlockedByYou = t.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                
-                // Unable to translate the following group by query to SQL
-                Online = onlineJudger.IsOnline(t.Id, t.EnableHideMyOnlineStatus)
+                Online = onlineJudger.IsOnline(t.Id, t.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
     
     public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, int threadId, OnlineJudger onlineJudger)
     {
+        // low efficiency
         return filteredUsers
             .Select(u => new KahlaUserMappedInThreadView
             {
@@ -48,9 +47,7 @@ public static class KahlaQueryMapper
                     .Select(p => p.Thread)
                     .First().OwnerRelation!.UserId == viewingUserId,
                 JoinTime = u.ThreadsRelations.First(p => p.ThreadId == threadId).JoinTime,
-                
-                // Unable to translate the following group by query to SQL
-                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus)
+                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
     
@@ -85,7 +82,6 @@ public static class KahlaQueryMapper
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
                 Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
-                    .OrderBy(u => u.JoinTime)
                     .Select(u => new KahlaUserMappedInThreadView
                     {
                         User = u.User,
@@ -94,8 +90,7 @@ public static class KahlaQueryMapper
                         IsAdmin = u.UserThreadRole == UserThreadRole.Admin,
                         IsOwner = t.OwnerRelationId == u.Id,
                         JoinTime = u.JoinTime,
-                        // Unable to translate the following group by query to SQL
-                        Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus)
+                        Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus) // Client side evaluate.
                     })
                     .OrderBy(u => u.JoinTime)
                     .Take(10),
@@ -108,11 +103,8 @@ public static class KahlaQueryMapper
                 AllowMembersSendMessages = t.AllowMembersSendMessages,
                 AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
                 AllowSearchByName = t.AllowSearchByName,
-                
-                // Unable to translate the following group by query to SQL
-                UnReadAmount = quickMessageAccess.GetThreadUnReadAmount(t.Id, viewingUserId),
-                LatestMessage = quickMessageAccess.GetThreadLatestMessage(t.Id),
-                LastUpdateTime = default, //quickMessageAccess.GetThreadLastUpdateTime(t.Id, t.CreateTime),
+                LastMessageTime = t.LastMessageTime,
+                MessageContext = quickMessageAccess.GetMessageContext(t.Id, viewingUserId) // Client side evaluate.
             });
     }
 }

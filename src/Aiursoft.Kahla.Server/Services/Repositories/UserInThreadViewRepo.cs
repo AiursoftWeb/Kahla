@@ -12,6 +12,6 @@ public class UserInThreadViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJ
             .AsNoTracking()
             .Where(t => t.ThreadsRelations.Any(p => p.ThreadId == threadId))
             .MapUsersInThreadView(viewingUserId, threadId, onlineJudger)
-            .OrderBy(t => t.User.NickName);
+            .OrderBy(t => t.JoinTime);
     }
 }
