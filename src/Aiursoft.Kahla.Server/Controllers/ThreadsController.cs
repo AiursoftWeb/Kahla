@@ -206,11 +206,11 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var iMJoined = await dbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
-            .FirstOrDefaultAsync();
-        if (myRelation != null)
+            .AnyAsync();
+        if (iMJoined)
         {
             return this.Protocol(Code.Conflict, "You are already a member of this thread.");
         }
