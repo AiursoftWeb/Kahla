@@ -87,19 +87,15 @@ public static class KahlaQueryMapper
                 Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
                     .OrderBy(p => p.JoinTime)
-                    .Select(p => p.User)
                     .Select(u => new KahlaUserMappedInThreadView
                     {
-                        User = u,
-                        Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
-                        IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
-                        IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                        IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == t.Id).UserThreadRole == UserThreadRole.Admin,
-                        IsOwner = u.ThreadsRelations
-                            .Where(p => p.ThreadId == t.Id)
-                            .Select(p => p.Thread)
-                            .First().OwnerRelation!.UserId == viewingUserId,
-                        JoinTime = u.ThreadsRelations.First(p => p.ThreadId == t.Id).JoinTime
+                        User = u.User,
+                        Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus),
+                        IsKnownContact = u.User.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                        IsBlockedByYou = u.User.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                        IsAdmin = u.UserThreadRole == UserThreadRole.Admin, 
+                        IsOwner = t.OwnerRelationId == u.Id, 
+                        JoinTime = u.JoinTime
                     })
                     .OrderBy(p => p.JoinTime)
                     .Take(10),
