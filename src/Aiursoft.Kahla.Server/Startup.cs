@@ -23,6 +23,7 @@ namespace Aiursoft.Kahla.Server
             // Database
             services.AddMemoryCache();
             services.AddSingleton<InMemoryDataContext>();
+            services.AddSingleton<QuickMessageAccess>();
             services.AddDatabase(connectionString);
             
             // Identity

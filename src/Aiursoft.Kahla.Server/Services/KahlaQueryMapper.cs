@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
+using Aiursoft.Kahla.Server.Data;
 
 namespace Aiursoft.Kahla.Server.Services;
 
@@ -64,7 +65,11 @@ public static class KahlaQueryMapper
             });
     }
     
-    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(this IQueryable<ChatThread> filteredThreads, string viewingUserId, OnlineJudger onlineJudger)
+    public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(
+        this IQueryable<ChatThread> filteredThreads, 
+        string viewingUserId, 
+        OnlineJudger onlineJudger,
+        QuickMessageAccess quickMessageAccess)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedJoinedView
@@ -74,16 +79,7 @@ public static class KahlaQueryMapper
                 ImagePath = t.IconFilePath,
                 OwnerId = t.OwnerRelation!.UserId,
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
-                UnReadAmount = t.Messages.Count(m => m.SendTime > t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.ReadTimeStamp),
-                LatestMessage = t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .FirstOrDefault(),
-                LastMessageTime = t.Messages.Any() ? t.Messages
-                    .Max(p => p.SendTime) : t.CreateTime,
-                LatestMessageSender = t.Messages.Any() ? t.Messages
-                    .OrderByDescending(p => p.SendTime)
-                    .Select(m => m.Sender)
-                    .FirstOrDefault() : null,
+                MessageContext = quickMessageAccess.GetThreadMessageContext(t.Id, t.CreateTime, viewingUserId),
                 Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
                     .OrderBy(p => p.JoinTime)

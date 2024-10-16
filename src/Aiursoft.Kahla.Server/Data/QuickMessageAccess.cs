@@ -1,0 +1,234 @@
+using System.Collections.Concurrent;
+using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
+using Microsoft.EntityFrameworkCore;
+
+namespace Aiursoft.Kahla.Server.Data;
+
+/// <summary>
+/// The ThreadsInMemoryCache class is responsible for providing an in-memory caching layer to efficiently track
+/// and manage message threads and users' unread message counts. It combines database initialization data with
+/// real-time message tracking to ensure accurate unread message counts without relying solely on the database for
+/// every query.
+/// 
+/// ### Essential Properties and Methods:
+/// - `LastMessage`: Gets or sets the last message in the thread.
+/// - `AppendedMessageSinceBootCount`: Returns the count of new messages appended to the thread since the application started.
+/// - `UserUnReadAmountSinceBoot`: Gets the dictionary that stores users' unread message count since application boot.
+/// 
+/// ### Functions for Unread Message Count Calculation:
+/// 
+/// - `GetUserUnReadAmountSinceBoot(string userId)`: Retrieves the unread message count for a specific user or handles
+/// unknown users by returning 0 subtracted by the appended message count.
+/// - `ClearUserUnReadAmountSinceBoot(string userId)`: Clears the unread message count for a user by updating it to 0
+/// subtracted by the appended message count.
+/// - `AppendMessage()`: Increments the count of new messages appended to the thread since the application started.
+/// </summary>
+public class ThreadsInMemoryCache
+{
+    public required Message? LastMessage { get; set; }
+    
+    private int _appendedMessageSinceBootCount;
+
+    // Every time a message is appended to this thread, this count will increase.
+    public int AppendedMessageSinceBootCount => _appendedMessageSinceBootCount;
+
+    public required ConcurrentDictionary<string, int> UserUnReadAmountSinceBoot { private get; init; }
+    
+    public int GetUserUnReadAmountSinceBoot(string userId)
+    {
+        // It's possible that the user is not in the thread when the app is booting.
+        // If found unknown user, return 0 - appended message count.
+        return UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - _appendedMessageSinceBootCount);
+    }
+    
+    public void ClearUserUnReadAmountSinceBoot(string userId)
+    {
+        if (UserUnReadAmountSinceBoot.ContainsKey(userId))
+        {
+            UserUnReadAmountSinceBoot[userId] = 0 - _appendedMessageSinceBootCount;
+        }
+        else
+        {
+            UserUnReadAmountSinceBoot.TryAdd(userId, 0 - _appendedMessageSinceBootCount);
+        }
+    }
+    
+    public void AppendMessage()
+    {
+        Interlocked.Increment(ref _appendedMessageSinceBootCount);
+    }
+}
+
+/// <summary>
+/// The QuickMessageAccess class is responsible for providing an in-memory caching layer to 
+/// efficiently track and manage message threads and users' unread message counts. 
+/// It combines database initialization data with real-time message tracking to ensure accurate 
+/// unread message counts without relying solely on the database for every query.
+///
+/// ### How Unread Message Count Calculation Works:
+/// 1. **Initialization (`BuildAsync`)**:
+///    - When the application starts, `BuildAsync` loads the initial state of all message threads 
+///      from the database, including the last message in each thread and each user's unread message count.
+///    - This unread message count is stored in the `UserUnReadAmountSinceBoot` dictionary, where each user's 
+///      unread count reflects the state at the time of the application boot (or restart).
+///
+/// 2. **Tracking New Messages (`_appendedMessageSinceBootCount`)**:
+///    - The `_appendedMessageSinceBootCount` tracks how many new messages have been added to the thread 
+///      since the application started.
+///    - Each time a new message is added to the thread, the counter is incremented. This allows the system 
+///      to calculate how many new messages each user has not seen since the last time they checked.
+///
+/// 3. **Unread Message Calculation**:
+///    - To determine the total number of unread messages for a specific user, the system combines two components:
+///      - **Startup Unread Messages**: This is the count of unread messages at the time of application start, 
+///        stored in `UserUnReadAmountSinceBoot[UserId]`.
+///      - **New Messages Since Boot**: This is the count of messages added to the thread since the application started, 
+///        tracked by `_appendedMessageSinceBootCount`.
+///    - The sum of these two values gives the total number of unread messages for the user:
+///      - `UnreadCount = UserUnReadAmountSinceBoot[UserId] + _appendedMessageSinceBootCount`.
+///
+/// ### Behavior on Application Restart:
+/// - When the application restarts, all caches are rebuilt by reloading the message and thread state from the database.
+/// - `UserUnReadAmountSinceBoot` is re-initialized based on the user's current unread messages in the database.
+/// - `_appendedMessageSinceBootCount` is reset to zero and starts tracking new messages since the restart.
+/// - Since both components are correctly re-initialized after a restart, the unread message count remains accurate 
+///   across restarts.
+///
+/// ### Limitations:
+/// - **Cross-Application Restarts**: Since `_appendedMessageSinceBootCount` is reset upon restart, any dynamic 
+///   message count tracking is lost between restarts. However, the system recalculates unread counts from the 
+///   database, ensuring no data is lost.
+/// - **Distributed Systems**: In distributed scenarios where multiple application instances are running, the cache 
+///   is stored in-memory on each node, meaning that each instance must ensure cache consistency across nodes. 
+///   This design is currently optimal for single-instance environments or environments with synchronized caches.
+///
+/// Overall, the QuickMessageAccess class ensures an efficient and accurate method for tracking unread messages, 
+/// leveraging a hybrid of in-memory cache and database-backed initialization to provide real-time message updates 
+/// and consistency even in the case of application restarts.
+/// </summary>
+public class QuickMessageAccess(
+    IServiceScopeFactory scopeFactory,
+    ILogger<QuickMessageAccess> logger)
+{
+    public ConcurrentDictionary<int, ThreadsInMemoryCache> Threads { get; } = new();
+
+    public async Task BuildAsync()
+    {
+        var scope = scopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+        logger.LogInformation("Building quick message access cache.");
+        foreach (var thread in dbContext.ChatThreads)
+        {
+            logger.LogInformation("Building cache for thread with ID {ThreadId}.", thread.Id);
+            var lastMessage = await dbContext.Messages
+                .AsNoTracking()
+                .Where(t => t.ThreadId == thread.Id)
+                .Include(t => t.Sender)
+                .OrderByDescending(t => t.SendTime)
+                .FirstOrDefaultAsync();
+            var membersInThread = await dbContext
+                .UserThreadRelations
+                .AsNoTracking()
+                .Where(t => t.ThreadId == thread.Id)
+                .ToListAsync();
+            var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
+            foreach (var member in membersInThread)
+            {
+                var unReadMessages = await dbContext
+                    .Messages
+                    .AsNoTracking()
+                    .Where(t => t.ThreadId == thread.Id)
+                    .Where(t => t.SendTime > member.ReadTimeStamp)
+                    .CountAsync();
+                logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
+                userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
+            }
+            
+            var threadInMemoryCache = new ThreadsInMemoryCache
+            {
+                LastMessage = lastMessage,
+                UserUnReadAmountSinceBoot = userUnReadAmountSinceBoot
+            };
+            Threads.TryAdd(thread.Id, threadInMemoryCache);
+            logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.", thread.Id, lastMessage?.SendTime);
+        }
+        logger.LogInformation("Quick message access cache built. Totally {ThreadCount} threads cached.", Threads.Count);
+    }
+
+    /// <summary>
+    /// This method will update the in-memory cache of a thread.
+    ///
+    /// To call this message, please make sure the message is already saved in the database. And the Sender of the message is already loaded.
+    /// </summary>
+    /// <param name="message"></param>
+    public void OnNewMessageSent(Message message)
+    {
+        var threadCache = Threads[message.ThreadId];
+        lock (threadCache)
+        {
+            // Set as new last message.
+            threadCache.LastMessage = message;
+        }
+        
+        // Increase the appended message count. So all users will see this message as unread.
+        threadCache.AppendMessage();
+    }
+    
+    /// <summary>
+    /// This should be called if the user has read all messages in this thread.
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="userId"></param>
+    public void ClearUserUnReadAmount(int threadId, string userId)
+    {
+        var threadCache = Threads[threadId];
+        lock (threadCache)
+        {
+            //threadCache.UserUnReadAmountSinceBoot[userId] = 0 - threadCache.AppendedMessageSinceBootCount;
+            threadCache.ClearUserUnReadAmountSinceBoot(userId);
+        }
+    }
+    
+    /// <summary>
+    /// This should be called when a new thread is created.
+    /// </summary>
+    /// <param name="threadId"></param>
+    public void OnNewThreadCreated(int threadId)
+    {
+        Threads.TryAdd(threadId, new ThreadsInMemoryCache
+        {
+            LastMessage = null,
+            UserUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>()
+        });
+    }
+    
+    /// <summary>
+    /// This should be called when a thread is deleted.
+    /// </summary>
+    /// <param name="threadId"></param>
+    public void OnThreadDropped(int threadId)
+    {
+        Threads.TryRemove(threadId, out _);
+    }
+
+    /// <summary>
+    /// Retrieves the message context of a thread based on the provided thread ID, creation time, and viewing user ID.
+    /// </summary>
+    /// <param name="threadId">The ID of the thread for which the message context is to be retrieved.</param>
+    /// <param name="threadCreationTime">The creation time of the thread.</param>
+    /// <param name="viewingUserId">The ID of the user viewing the thread.</param>
+    /// <returns>The mapped thread message context containing the latest message, sender of the last message, and time of the last message.</returns>
+    public MappedThreadMessageContext GetThreadMessageContext(int threadId, DateTime threadCreationTime,
+        string viewingUserId)
+    {
+        return new MappedThreadMessageContext
+        {
+            LastMessageTime = Threads[threadId].LastMessage?.SendTime ?? threadCreationTime,
+            LastMessageSender  = Threads[threadId].LastMessage?.Sender,
+            LatestMessage = Threads[threadId].LastMessage,
+            //UnReadAmount = Threads[threadId].UserUnReadAmountSinceBoot[viewingUserId] + Threads[threadId].AppendedMessageSinceBootCount
+            UnReadAmount = Threads[threadId].GetUserUnReadAmountSinceBoot(viewingUserId) + Threads[threadId].AppendedMessageSinceBootCount
+        };
+    }
+}

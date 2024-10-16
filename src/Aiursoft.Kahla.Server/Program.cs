@@ -9,6 +9,7 @@ namespace Aiursoft.Kahla.Server
         {
             var app = await WebTools.Extends.AppAsync<Startup>(args);
             await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
+            await app.Services.GetRequiredService<QuickMessageAccess>().BuildAsync();
             await app.RunAsync();
         }
     }

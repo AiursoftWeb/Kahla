@@ -23,6 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
+    QuickMessageAccess quickMessageAccess,
     ILogger<ThreadsController> logger,
     ThreadJoinedViewAppService threadService,
     ThreadOthersViewAppService threadOthersViewAppService,
@@ -418,6 +419,10 @@ public class ThreadsController(
         // Remove the thread.
         dbContext.ChatThreads.Remove(thread);
         await dbContext.SaveChangesAsync();
+        
+        // Remove the thread from the cache.
+        quickMessageAccess.OnThreadDropped(id);
+        
         logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
     }
@@ -490,6 +495,9 @@ public class ThreadsController(
                 
                 // Commit the transaction if everything is successful
                 await transaction.CommitAsync();
+                
+                // Save to cache.
+                quickMessageAccess.OnNewThreadCreated(thread.Id);
                 
                 logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.", currentUserId);
                 return this.Protocol(new CreateNewThreadViewModel
@@ -582,8 +590,11 @@ public class ThreadsController(
                 // Commit the transaction if everything is successful
                 logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUserId, targetUser.Id);
                 await dbContext.SaveChangesAsync(); // Save the targetRelation
-                
                 await transaction.CommitAsync();
+                
+                // Save to cache.
+                quickMessageAccess.OnNewThreadCreated(thread.Id);
+                
                 logger.LogInformation("A new thread has been created successfully. Thread ID is {ID}.", thread.Id);
                 return this.Protocol(new CreateNewThreadViewModel
                 {

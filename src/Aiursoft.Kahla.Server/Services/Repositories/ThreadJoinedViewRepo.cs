@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
-public class ThreadJoinedViewRepo(KahlaDbContext dbContext, OnlineJudger judger)
+public class ThreadJoinedViewRepo(
+    KahlaDbContext dbContext, 
+    OnlineJudger judger,
+    QuickMessageAccess quickMessageAccess)
 {
     public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
         string? searchInput,
@@ -16,8 +19,8 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext, OnlineJudger judger)
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
             .WhereWhen(searchInput, t => t.Name.Contains(searchInput!))
-            .MapThreadsJoinedView(viewingUserId, judger)
-            .OrderByDescending(t => t.LastMessageTime);
+            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
+            .OrderByDescending(t => t.MessageContext.LastMessageTime);
     }
 
     public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
@@ -26,8 +29,8 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext, OnlineJudger judger)
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId, judger)
-            .OrderByDescending(t => t.LastMessageTime);
+            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
+            .OrderByDescending(t => t.MessageContext.LastMessageTime);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)
@@ -36,6 +39,6 @@ public class ThreadJoinedViewRepo(KahlaDbContext dbContext, OnlineJudger judger)
             .ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)
-            .MapThreadsJoinedView(currentUserId, judger);
+            .MapThreadsJoinedView(currentUserId, judger, quickMessageAccess);
     }
 }
