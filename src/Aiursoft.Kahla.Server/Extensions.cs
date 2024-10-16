@@ -63,4 +63,9 @@ public static class Extensions
         
         return services;
     }
+
+    public static int GetLimitedNumber(int min, int max, int suggested)
+    {
+        return Math.Max(min, Math.Min(max, suggested));
+    }
 }

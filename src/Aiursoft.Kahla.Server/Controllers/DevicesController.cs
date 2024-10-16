@@ -9,7 +9,6 @@ using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,19 +26,18 @@ public class DevicesController(
     WebSocketPushService wsPusher,
     CanonPool canonPool, // Transient service.
     ILogger<DevicesController> logger,
-    UserManager<KahlaUser> userManager,
     KahlaDbContext dbContext) : ControllerBase
 {
     [HttpGet]
     [Route("my-devices")]
     public async Task<IActionResult> MyDevices()
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with Id: {Id} is trying to get all his devices.", user.Email);
+        var userId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to get all his devices.", userId);
         var devices = await dbContext
             .Devices
             .AsNoTracking()
-            .Where(t => t.OwnerId == user.Id)
+            .Where(t => t.OwnerId == userId)
             .OrderByDescending(t => t.AddTime)
             .ToListAsync();
         return this.Protocol(Code.ResultShown, "Successfully get all your devices.", devices);
@@ -49,24 +47,24 @@ public class DevicesController(
     [Route("add-device")]
     public async Task<IActionResult> AddDevice([FromForm]AddDeviceAddressModel model)
     {
-        var user = await this.GetCurrentUser(userManager);
+        var userId = User.GetUserId();
         var existingDevice = await dbContext.Devices.FirstOrDefaultAsync(t => t.PushP256Dh == model.PushP256Dh);
         if (existingDevice != null)
         {
             logger.LogInformation(
                 "User with Id: {Id} is trying to add a device that already exists. It's ID is: {DeviceId}",
-                user.Email, existingDevice.Id);
+                userId, existingDevice.Id);
             dbContext.Devices.Remove(existingDevice);
             await dbContext.SaveChangesAsync();
         }
 
-        var devicesExists = await dbContext.Devices.Where(t => t.OwnerId == user.Id).ToListAsync();
+        var devicesExists = await dbContext.Devices.Where(t => t.OwnerId == userId).ToListAsync();
         if (devicesExists.Count >= 20)
         {
             var toDrop = devicesExists.OrderBy(t => t.AddTime).First();
             logger.LogWarning(
                 "User with Id: {Id} is trying to add a device but he already has 20 devices! Trying to delete the oldest one with id: {DeviceId}",
-                user.Email, toDrop.Id);
+                userId, toDrop.Id);
             dbContext.Devices.Remove(toDrop);
             await dbContext.SaveChangesAsync();
         }
@@ -74,7 +72,7 @@ public class DevicesController(
         var device = new Device
         {
             Name = model.Name,
-            OwnerId = user.Id,
+            OwnerId = userId,
             PushAuth = model.PushAuth,
             PushEndpoint = model.PushEndpoint,
             PushP256Dh = model.PushP256Dh,
@@ -83,7 +81,7 @@ public class DevicesController(
         await dbContext.Devices.AddAsync(device);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully added a new device with id: {DeviceId}",
-            user.Email, device.Id);
+            userId, device.Id);
         return this.Protocol(Code.JobDone, "Successfully created your new device with id: " + device.Id,
             value: device.Id);
     }
@@ -92,11 +90,11 @@ public class DevicesController(
     [Route("drop-device/{id:int}")]
     public async Task<IActionResult> DropDevice([FromRoute] int id)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with Id: {Id} is trying to drop a device with id: {DeviceId}", user.Email, id);
+        var userId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to drop a device with id: {DeviceId}", userId, id);
         var device = await dbContext
             .Devices
-            .Where(t => t.OwnerId == user.Id)
+            .Where(t => t.OwnerId == userId)
             .SingleOrDefaultAsync(t => t.Id == id);
         if (device == null)
         {
@@ -106,7 +104,7 @@ public class DevicesController(
         dbContext.Devices.Remove(device);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully dropped a device with id: {DeviceId}",
-            user.Email, device.Id);
+            userId, device.Id);
         return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
     }
 
@@ -114,11 +112,11 @@ public class DevicesController(
     [Route("update-device/{id:int}")]
     public async Task<IActionResult> UpdateDevice([FromRoute] int id, [FromForm] AddDeviceAddressModel model)
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with Id: {Id} is trying to patch a device with id: {DeviceId}", user.Email, id);
+        var userId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to patch a device with id: {DeviceId}", userId, id);
         var device = await dbContext
             .Devices
-            .Where(t => t.OwnerId == user.Id)
+            .Where(t => t.OwnerId == userId)
             .SingleOrDefaultAsync(t => t.Id == id);
         if (device == null)
         {
@@ -132,7 +130,7 @@ public class DevicesController(
         dbContext.Devices.Update(device);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully patched a device with id: {DeviceId}",
-            user.Email, device.Id);
+            userId, device.Id);
         return this.Protocol(Code.JobDone, "Successfully updated your new device with id: " + device.Id,
             value: device.Id);
     }
@@ -171,8 +169,10 @@ public class DevicesController(
             canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, messageEvent); });
         }
 
-        await canonPool.RunAllTasksInPoolAsync(Environment
-            .ProcessorCount); // Execute tasks in pool, running tasks should be max at 8.
+        await canonPool.RunAllTasksInPoolAsync(Extensions.GetLimitedNumber(
+            min: 8,
+            max: 32, 
+            suggested: Environment.ProcessorCount));
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");
