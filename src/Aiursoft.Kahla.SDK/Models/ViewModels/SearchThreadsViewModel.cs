@@ -6,5 +6,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 public class SearchThreadsViewModel : AiurResponse
 {
     public required int TotalThreadsCount { get; init; }
-    public required List<KahlaThreadMappedOthersView> Threads { get; init; } = new();
+    public required List<KahlaThreadMappedOthersView> Threads { get; init; }
 }

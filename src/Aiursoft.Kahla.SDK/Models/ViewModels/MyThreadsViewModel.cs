@@ -6,5 +6,5 @@ namespace Aiursoft.Kahla.SDK.Models.ViewModels;
 public class MyThreadsViewModel : AiurResponse
 {
     public required int TotalCount { get; init; }
-    public required List<KahlaThreadMappedJoinedView> KnownThreads { get; init; } = new();
+    public required List<KahlaThreadMappedJoinedView> KnownThreads { get; init; }
 }
