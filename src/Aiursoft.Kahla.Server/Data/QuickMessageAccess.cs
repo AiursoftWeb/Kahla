@@ -109,7 +109,7 @@ public class QuickMessageAccess(
     IServiceScopeFactory scopeFactory,
     ILogger<QuickMessageAccess> logger)
 {
-    public ConcurrentDictionary<int, ThreadsInMemoryCache> Threads { get; } = new();
+    public ConcurrentDictionary<int, ThreadsInMemoryCache> CachedThreads { get; } = new();
 
     public async Task LoadAsync()
     {
@@ -148,10 +148,10 @@ public class QuickMessageAccess(
                 LastMessage = lastMessage,
                 UserUnReadAmountSinceBoot = userUnReadAmountSinceBoot
             };
-            Threads.TryAdd(thread.Id, threadInMemoryCache);
+            CachedThreads.TryAdd(thread.Id, threadInMemoryCache);
             logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.", thread.Id, lastMessage?.SendTime);
         }
-        logger.LogInformation("Quick message access cache built. Totally {ThreadCount} threads cached.", Threads.Count);
+        logger.LogInformation("Quick message access cache built. Totally {ThreadCount} threads cached.", CachedThreads.Count);
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ public class QuickMessageAccess(
     /// <param name="message"></param>
     public void OnNewMessageSent(Message message)
     {
-        var threadCache = Threads[message.ThreadId];
+        var threadCache = CachedThreads[message.ThreadId];
         lock (threadCache)
         {
             // Set as new last message.
@@ -180,7 +180,7 @@ public class QuickMessageAccess(
     /// <param name="userId"></param>
     public void ClearUserUnReadAmount(int threadId, string userId)
     {
-        var threadCache = Threads[threadId];
+        var threadCache = CachedThreads[threadId];
         lock (threadCache)
         {
             threadCache.ClearUserUnReadAmountSinceBoot(userId);
@@ -193,7 +193,7 @@ public class QuickMessageAccess(
     /// <param name="threadId"></param>
     public void OnNewThreadCreated(int threadId)
     {
-        Threads.TryAdd(threadId, new ThreadsInMemoryCache
+        CachedThreads.TryAdd(threadId, new ThreadsInMemoryCache
         {
             LastMessage = null,
             UserUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>()
@@ -206,7 +206,7 @@ public class QuickMessageAccess(
     /// <param name="threadId"></param>
     public void OnThreadDropped(int threadId)
     {
-        Threads.TryRemove(threadId, out _);
+        CachedThreads.TryRemove(threadId, out _);
     }
 
     /// <summary>
@@ -221,10 +221,10 @@ public class QuickMessageAccess(
     {
         return new MappedThreadMessageContext
         {
-            LastMessageTime = Threads[threadId].LastMessage?.SendTime ?? threadCreationTime,
-            LastMessageSender  = Threads[threadId].LastMessage?.Sender,
-            LatestMessage = Threads[threadId].LastMessage,
-            UnReadAmount = Threads[threadId].GetUserUnReadAmount(viewingUserId)
+            LastMessageTime = CachedThreads[threadId].LastMessage?.SendTime ?? threadCreationTime,
+            LastMessageSender  = CachedThreads[threadId].LastMessage?.Sender,
+            LatestMessage = CachedThreads[threadId].LastMessage,
+            UnReadAmount = CachedThreads[threadId].GetUserUnReadAmount(viewingUserId)
         };
     }
 }

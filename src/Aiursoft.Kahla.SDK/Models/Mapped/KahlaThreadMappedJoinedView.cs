@@ -7,7 +7,7 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
     // Top ten members.
     public required IEnumerable<KahlaUserMappedOthersView> TopTenMembers { get; init; }
 
-    public required MappedThreadMessageContext MessageContext { get; init; }
+    public required MappedThreadMessageContext? MessageContext { get; init; }
 
     // Muted.
     public required bool Muted { get; init; }
