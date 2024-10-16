@@ -6,6 +6,7 @@ namespace Aiursoft.Kahla.Server.Data
 {
     public class KahlaDbContext(DbContextOptions<KahlaDbContext> options) : IdentityDbContext<KahlaUser>(options)
     {
+        // TODO: This entity will be migrated to InfluxDB in the future.
         public DbSet<Message> Messages => Set<Message>();
         public DbSet<ChatThread> ChatThreads => Set<ChatThread>();
         public DbSet<ContactRecord> ContactRecords => Set<ContactRecord>();

@@ -12,7 +12,7 @@ public class ThreadJoinedViewAppService(
         var query = repo.QueryCommonThreads(viewingUserId, targetUserId);
         var totalCount = await query.CountAsync();
         var threads = await query
-            .OrderByDescending(t => t.LastMessageTime)
+            .OrderByDescending(t => t.MessageContext.LastMessageTime)
             .Skip(skip)
             .Take(take)
             .ToListAsync();
@@ -33,7 +33,7 @@ public class ThreadJoinedViewAppService(
         var query = repo.SearchThreadsIJoined(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
         var threads = await query
-            .OrderByDescending(t => t.LastMessageTime)
+            .OrderByDescending(t => t.MessageContext.LastMessageTime)
             .Skip(skip)
             .Take(take)
             .ToListAsync();
