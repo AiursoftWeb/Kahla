@@ -183,7 +183,6 @@ public class QuickMessageAccess(
         var threadCache = Threads[threadId];
         lock (threadCache)
         {
-            //threadCache.UserUnReadAmountSinceBoot[userId] = 0 - threadCache.AppendedMessageSinceBootCount;
             threadCache.ClearUserUnReadAmountSinceBoot(userId);
         }
     }
@@ -225,7 +224,6 @@ public class QuickMessageAccess(
             LastMessageTime = Threads[threadId].LastMessage?.SendTime ?? threadCreationTime,
             LastMessageSender  = Threads[threadId].LastMessage?.Sender,
             LatestMessage = Threads[threadId].LastMessage,
-            //UnReadAmount = Threads[threadId].UserUnReadAmountSinceBoot[viewingUserId] + Threads[threadId].AppendedMessageSinceBootCount
             UnReadAmount = Threads[threadId].GetUserUnReadAmount(viewingUserId)
         };
     }
