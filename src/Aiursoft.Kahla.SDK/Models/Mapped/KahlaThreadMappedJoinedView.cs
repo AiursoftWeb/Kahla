@@ -36,8 +36,6 @@ public class MappedThreadMessageContext
     public required uint UnReadAmount { get; init; }
     // Last message.
     public required Message? LatestMessage { get; init; }
-    // Last message sender.
-    public required KahlaUser? LastMessageSender { get; init; }
     // If Last message is null, this is the last message time. Or it is the creation time of this thread.
-    public required DateTime LastMessageTime { get; init; }
+    public required DateTime LastUpdateTime { get; init; }
 }

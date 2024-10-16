@@ -219,12 +219,12 @@ public class QuickMessageAccess(
     public MappedThreadMessageContext GetThreadMessageContext(int threadId, DateTime threadCreationTime,
         string viewingUserId)
     {
+        var cachedThread = CachedThreads[threadId];
         return new MappedThreadMessageContext
         {
-            LastMessageTime = CachedThreads[threadId].LastMessage?.SendTime ?? threadCreationTime,
-            LastMessageSender  = CachedThreads[threadId].LastMessage?.Sender,
-            LatestMessage = CachedThreads[threadId].LastMessage,
-            UnReadAmount = CachedThreads[threadId].GetUserUnReadAmount(viewingUserId)
+            LastUpdateTime = cachedThread.LastMessage?.SendTime ?? threadCreationTime,
+            LatestMessage = cachedThread.LastMessage,
+            UnReadAmount = cachedThread.GetUserUnReadAmount(viewingUserId)
         };
     }
 }

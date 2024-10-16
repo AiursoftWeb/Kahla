@@ -82,27 +82,26 @@ public static class KahlaQueryMapper
                 
                 // How to let EF know that this line is not translated to SQL?
                 // 
-                MessageContext = null, 
-                    //quickMessageAccess.GetThreadMessageContext(t.Id, t.CreateTime, viewingUserId),
+                MessageContext =  
+                    quickMessageAccess.GetThreadMessageContext(t.Id, t.CreateTime, viewingUserId),
                 Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
                     .OrderBy(p => p.JoinTime)
                     .Select(p => p.User)
-                    .AsQueryable()
-                    .MapUsersInThreadView(viewingUserId, t.Id, onlineJudger)
-                    // .Select(u => new KahlaUserMappedInThreadView
-                    // {
-                    //     User = u,
-                    //     Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
-                    //     IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
-                    //     IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                    //     IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == t.Id).UserThreadRole == UserThreadRole.Admin,
-                    //     IsOwner = u.ThreadsRelations
-                    //         .Where(p => p.ThreadId == t.Id)
-                    //         .Select(p => p.Thread)
-                    //         .First().OwnerRelation!.UserId == viewingUserId,
-                    //     JoinTime = u.ThreadsRelations.First(p => p.ThreadId == t.Id).JoinTime
-                    // })
+                    .Select(u => new KahlaUserMappedInThreadView
+                    {
+                        User = u,
+                        Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
+                        IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                        IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                        IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == t.Id).UserThreadRole == UserThreadRole.Admin,
+                        IsOwner = u.ThreadsRelations
+                            .Where(p => p.ThreadId == t.Id)
+                            .Select(p => p.Thread)
+                            .First().OwnerRelation!.UserId == viewingUserId,
+                        JoinTime = u.ThreadsRelations.First(p => p.ThreadId == t.Id).JoinTime
+                    })
+                    .OrderBy(p => p.JoinTime)
                     .Take(10),
                 ImInIt = t.Members.Any(u => u.UserId == viewingUserId),
                 ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole == UserThreadRole.Admin,
