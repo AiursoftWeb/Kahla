@@ -33,7 +33,7 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 public class MappedThreadMessageContext
 {
     // Unread amount.
-    public required int UnReadAmount { get; init; }
+    public required uint UnReadAmount { get; init; }
     // Last message.
     public required Message? LatestMessage { get; init; }
     // Last message sender.

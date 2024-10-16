@@ -29,26 +29,26 @@ public class ThreadsInMemoryCache
     public required Message? LastMessage { get; set; }
     
     // Every time a message is appended to this thread, this count will increase.
-    private int _appendedMessageSinceBootCount;
+    private uint _appendedMessageSinceBootCount;
 
     public required ConcurrentDictionary<string, int> UserUnReadAmountSinceBoot { private get; init; }
     
-    public int GetUserUnReadAmount(string userId)
+    public uint GetUserUnReadAmount(string userId)
     {
         // It's possible that the user is not in the thread when the app is booting.
         // If found unknown user, return 0 - appended message count.
-        return UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - _appendedMessageSinceBootCount) + _appendedMessageSinceBootCount;
+        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => (0 - (int)_appendedMessageSinceBootCount)) + _appendedMessageSinceBootCount);
     }
     
     public void ClearUserUnReadAmountSinceBoot(string userId)
     {
         if (UserUnReadAmountSinceBoot.ContainsKey(userId))
         {
-            UserUnReadAmountSinceBoot[userId] = 0 - _appendedMessageSinceBootCount;
+            UserUnReadAmountSinceBoot[userId] = 0 - (int)_appendedMessageSinceBootCount;
         }
         else
         {
-            UserUnReadAmountSinceBoot.TryAdd(userId, 0 - _appendedMessageSinceBootCount);
+            UserUnReadAmountSinceBoot.TryAdd(userId, 0 - (int)_appendedMessageSinceBootCount);
         }
     }
     
