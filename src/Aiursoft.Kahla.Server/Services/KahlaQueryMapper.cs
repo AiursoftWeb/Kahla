@@ -26,9 +26,11 @@ public static class KahlaQueryMapper
             .Select(t => new KahlaUserMappedOthersView
             {
                 User = t,
-                Online = onlineJudger.IsOnline(t.Id, t.EnableHideMyOnlineStatus),
                 IsKnownContact = t.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
-                IsBlockedByYou = t.BlockedBy.Any(p => p.CreatorId == viewingUserId)
+                IsBlockedByYou = t.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                
+                // Unable to translate the following group by query to SQL
+                Online = onlineJudger.IsOnline(t.Id, t.EnableHideMyOnlineStatus)
             });
     }
     
@@ -38,7 +40,6 @@ public static class KahlaQueryMapper
             .Select(u => new KahlaUserMappedInThreadView
             {
                 User = u,
-                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus),
                 IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
                 IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
                 IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == threadId).UserThreadRole == UserThreadRole.Admin,
@@ -46,7 +47,10 @@ public static class KahlaQueryMapper
                     .Where(p => p.ThreadId == threadId)
                     .Select(p => p.Thread)
                     .First().OwnerRelation!.UserId == viewingUserId,
-                JoinTime = u.ThreadsRelations.First(p => p.ThreadId == threadId).JoinTime
+                JoinTime = u.ThreadsRelations.First(p => p.ThreadId == threadId).JoinTime,
+                
+                // Unable to translate the following group by query to SQL
+                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus)
             });
     }
     
@@ -79,34 +83,36 @@ public static class KahlaQueryMapper
                 ImagePath = t.IconFilePath,
                 OwnerId = t.OwnerRelation!.UserId,
                 AllowDirectJoinWithoutInvitation = t.AllowDirectJoinWithoutInvitation,
-                
-                // How to let EF know that this line is not translated to SQL?
-                // 
-                MessageContext =  
-                    quickMessageAccess.GetThreadMessageContext(t.Id, t.CreateTime, viewingUserId),
                 Muted = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.Muted,
                 TopTenMembers = t.Members
-                    .OrderBy(p => p.JoinTime)
+                    .OrderBy(u => u.JoinTime)
                     .Select(u => new KahlaUserMappedInThreadView
                     {
                         User = u.User,
-                        Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus),
                         IsKnownContact = u.User.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
                         IsBlockedByYou = u.User.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                        IsAdmin = u.UserThreadRole == UserThreadRole.Admin, 
-                        IsOwner = t.OwnerRelationId == u.Id, 
-                        JoinTime = u.JoinTime
+                        IsAdmin = u.UserThreadRole == UserThreadRole.Admin,
+                        IsOwner = t.OwnerRelationId == u.Id,
+                        JoinTime = u.JoinTime,
+                        // Unable to translate the following group by query to SQL
+                        Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus)
                     })
-                    .OrderBy(p => p.JoinTime)
+                    .OrderBy(u => u.JoinTime)
                     .Take(10),
                 ImInIt = t.Members.Any(u => u.UserId == viewingUserId),
-                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole == UserThreadRole.Admin,
+                ImAdmin = t.Members.SingleOrDefault(u => u.UserId == viewingUserId)!.UserThreadRole ==
+                          UserThreadRole.Admin,
                 ImOwner = t.OwnerRelation.UserId == viewingUserId,
                 CreateTime = t.CreateTime,
                 AllowMemberSoftInvitation = t.AllowMemberSoftInvitation,
                 AllowMembersSendMessages = t.AllowMembersSendMessages,
                 AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
-                AllowSearchByName = t.AllowSearchByName
+                AllowSearchByName = t.AllowSearchByName,
+                
+                // Unable to translate the following group by query to SQL
+                UnReadAmount = quickMessageAccess.GetThreadUnReadAmount(t.Id, viewingUserId),
+                LatestMessage = quickMessageAccess.GetThreadLatestMessage(t.Id),
+                LastUpdateTime = quickMessageAccess.GetThreadLastUpdateTime(t.Id, t.CreateTime),
             });
     }
 }

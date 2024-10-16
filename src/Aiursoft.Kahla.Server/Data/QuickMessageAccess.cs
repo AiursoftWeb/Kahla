@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using Aiursoft.Kahla.SDK.Models.Entities;
-using Aiursoft.Kahla.SDK.Models.Mapped;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Data;
@@ -37,7 +36,7 @@ public class ThreadsInMemoryCache
     {
         // It's possible that the user is not in the thread when the app is booting.
         // If found unknown user, return 0 - appended message count.
-        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => (0 - (int)_appendedMessageSinceBootCount)) + _appendedMessageSinceBootCount);
+        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - (int)_appendedMessageSinceBootCount) + _appendedMessageSinceBootCount);
     }
     
     public void ClearUserUnReadAmountSinceBoot(string userId)
@@ -213,18 +212,20 @@ public class QuickMessageAccess(
     /// Retrieves the message context of a thread based on the provided thread ID, creation time, and viewing user ID.
     /// </summary>
     /// <param name="threadId">The ID of the thread for which the message context is to be retrieved.</param>
-    /// <param name="threadCreationTime">The creation time of the thread.</param>
     /// <param name="viewingUserId">The ID of the user viewing the thread.</param>
     /// <returns>The mapped thread message context containing the latest message, sender of the last message, and time of the last message.</returns>
-    public MappedThreadMessageContext GetThreadMessageContext(int threadId, DateTime threadCreationTime,
-        string viewingUserId)
+    public uint GetThreadUnReadAmount(int threadId,string viewingUserId)
     {
-        var cachedThread = CachedThreads[threadId];
-        return new MappedThreadMessageContext
-        {
-            LastUpdateTime = cachedThread.LastMessage?.SendTime ?? threadCreationTime,
-            LatestMessage = cachedThread.LastMessage,
-            UnReadAmount = cachedThread.GetUserUnReadAmount(viewingUserId)
-        };
+        return CachedThreads[threadId].GetUserUnReadAmount(viewingUserId);
+    }
+
+    public Message? GetThreadLatestMessage(int tId)
+    {
+        return CachedThreads[tId].LastMessage;
+    }
+    
+    public DateTime GetThreadLastUpdateTime(int threadId, DateTime creationTime)
+    {
+        return CachedThreads[threadId].LastMessage?.SendTime ?? creationTime;
     }
 }

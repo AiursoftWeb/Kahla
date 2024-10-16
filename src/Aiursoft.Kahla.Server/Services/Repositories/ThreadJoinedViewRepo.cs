@@ -20,7 +20,7 @@ public class ThreadJoinedViewRepo(
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
             .WhereWhen(searchInput, t => t.Name.Contains(searchInput!))
             .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
-            .OrderByDescending(t => t.MessageContext!.LastUpdateTime);
+            .OrderByDescending(t => t.LastUpdateTime);
     }
 
     public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
@@ -30,13 +30,12 @@ public class ThreadJoinedViewRepo(
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
             .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
-            .OrderByDescending(t => t.MessageContext!.LastUpdateTime);
+            .OrderByDescending(t => t.LastUpdateTime);
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)
     {
-        return dbContext
-            .ChatThreads
+        return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)
             .MapThreadsJoinedView(currentUserId, judger, quickMessageAccess);
