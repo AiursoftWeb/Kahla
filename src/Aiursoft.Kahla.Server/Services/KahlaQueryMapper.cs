@@ -32,22 +32,18 @@ public static class KahlaQueryMapper
             });
     }
     
-    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, int threadId, OnlineJudger onlineJudger)
+    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<UserThreadRelation> filteredRelations, string viewingUserId, OnlineJudger onlineJudger)
     {
-        // low efficiency
-        return filteredUsers
+        return filteredRelations
             .Select(u => new KahlaUserMappedInThreadView
             {
-                User = u,
-                IsKnownContact = u.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
-                IsBlockedByYou = u.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                IsAdmin = u.ThreadsRelations.First(p => p.ThreadId == threadId).UserThreadRole == UserThreadRole.Admin,
-                IsOwner = u.ThreadsRelations
-                    .Where(p => p.ThreadId == threadId)
-                    .Select(p => p.Thread)
-                    .First().OwnerRelation!.UserId == viewingUserId,
-                JoinTime = u.ThreadsRelations.First(p => p.ThreadId == threadId).JoinTime,
-                Online = onlineJudger.IsOnline(u.Id, u.EnableHideMyOnlineStatus) // Client side evaluate.
+                User = u.User,
+                IsKnownContact = u.User.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                IsBlockedByYou = u.User.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                IsAdmin = u.UserThreadRole == UserThreadRole.Admin,
+                IsOwner = u.Thread.OwnerRelation!.UserId == viewingUserId,
+                JoinTime = u.JoinTime,
+                Online = onlineJudger.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
     

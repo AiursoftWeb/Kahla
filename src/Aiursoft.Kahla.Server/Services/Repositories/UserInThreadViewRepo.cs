@@ -8,10 +8,10 @@ public class UserInThreadViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJ
 {
     public IOrderedQueryable<KahlaUserMappedInThreadView> QueryMembersInThread(int threadId, string viewingUserId)
     {
-        return dbContext.Users
+        return dbContext.UserThreadRelations
             .AsNoTracking()
-            .Where(t => t.ThreadsRelations.Any(p => p.ThreadId == threadId))
-            .MapUsersInThreadView(viewingUserId, threadId, onlineJudger)
+            .Where(t => t.ThreadId == threadId)
+            .MapUsersInThreadView(viewingUserId, onlineJudger)
             .OrderBy(t => t.JoinTime);
     }
 }
