@@ -28,18 +28,16 @@ public class ThreadsInMemoryCache
 {
     public required Message? LastMessage { get; set; }
     
-    private int _appendedMessageSinceBootCount;
-
     // Every time a message is appended to this thread, this count will increase.
-    public int AppendedMessageSinceBootCount => _appendedMessageSinceBootCount;
+    private int _appendedMessageSinceBootCount;
 
     public required ConcurrentDictionary<string, int> UserUnReadAmountSinceBoot { private get; init; }
     
-    public int GetUserUnReadAmountSinceBoot(string userId)
+    public int GetUserUnReadAmount(string userId)
     {
         // It's possible that the user is not in the thread when the app is booting.
         // If found unknown user, return 0 - appended message count.
-        return UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - _appendedMessageSinceBootCount);
+        return UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - _appendedMessageSinceBootCount) + _appendedMessageSinceBootCount;
     }
     
     public void ClearUserUnReadAmountSinceBoot(string userId)
@@ -113,7 +111,7 @@ public class QuickMessageAccess(
 {
     public ConcurrentDictionary<int, ThreadsInMemoryCache> Threads { get; } = new();
 
-    public async Task BuildAsync()
+    public async Task LoadAsync()
     {
         var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
@@ -228,7 +226,7 @@ public class QuickMessageAccess(
             LastMessageSender  = Threads[threadId].LastMessage?.Sender,
             LatestMessage = Threads[threadId].LastMessage,
             //UnReadAmount = Threads[threadId].UserUnReadAmountSinceBoot[viewingUserId] + Threads[threadId].AppendedMessageSinceBootCount
-            UnReadAmount = Threads[threadId].GetUserUnReadAmountSinceBoot(viewingUserId) + Threads[threadId].AppendedMessageSinceBootCount
+            UnReadAmount = Threads[threadId].GetUserUnReadAmount(viewingUserId)
         };
     }
 }
