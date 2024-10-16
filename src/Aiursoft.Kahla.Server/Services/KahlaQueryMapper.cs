@@ -112,7 +112,7 @@ public static class KahlaQueryMapper
                 // Unable to translate the following group by query to SQL
                 UnReadAmount = quickMessageAccess.GetThreadUnReadAmount(t.Id, viewingUserId),
                 LatestMessage = quickMessageAccess.GetThreadLatestMessage(t.Id),
-                LastUpdateTime = quickMessageAccess.GetThreadLastUpdateTime(t.Id, t.CreateTime),
+                LastUpdateTime = default, //quickMessageAccess.GetThreadLastUpdateTime(t.Id, t.CreateTime),
             });
     }
 }
