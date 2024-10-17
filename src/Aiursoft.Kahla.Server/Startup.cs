@@ -38,8 +38,10 @@ namespace Aiursoft.Kahla.Server
                 })
                 .AddEntityFrameworkStores<KahlaDbContext>()
                 .AddDefaultTokenProviders();
-
-            services.ConfigureApplicationCookie(t => t.Cookie.SameSite = SameSiteMode.None);
+            
+            // Persist login status
+            services.ConfigureApplicationCookie(t => t.ExpireTimeSpan = TimeSpan.FromDays(30)); 
+            services.ConfigureApplicationCookie(t => t.SlidingExpiration = true); 
             
             // Repositories
             services.AddScoped<UserOthersViewRepo>();
