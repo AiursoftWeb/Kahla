@@ -13,7 +13,7 @@
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fkahla.aiursoft.cn%2F)](https://kahla.aiursoft.cn)
 [![Docker](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://hub.aiursoft.cn/#!/taglist/aiursoft/kahla)
 
-Kahla is a cross platform business chat application. It is written in C# and TypeScript. It uses ASP.NET Core and Angular. It is a part of the Aiursoft project.
+Kahla is a cross-platform business chat application. It is written in C# and TypeScript. It uses ASP.NET Core and Angular. It is a part of the Aiursoft project.
 
 This is the server project of Kahla.
 
