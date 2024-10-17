@@ -716,7 +716,7 @@ public class ThreadsController(
         }
         if (tokenObject.ExpireTime < DateTime.UtcNow)
         {
-            return this.Protocol(Code.Unauthorized, "The token has expired.");
+            return this.Protocol(Code.Unauthorized, "The invitation was expired.");
         }
         logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.", currentUserId, threadId);
         
