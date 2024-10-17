@@ -11,6 +11,7 @@ using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using WebPush;
 
 namespace Aiursoft.Kahla.Server
@@ -71,13 +72,19 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
             services.AddScoped<OnlineJudger>();
-
             services.AddTaskCanon();
 
+            // Controllers and web
             services
                 .AddControllers()
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .AddAiurProtocol();
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+            });
         }
 
         public void Configure(WebApplication app)
@@ -88,6 +95,7 @@ namespace Aiursoft.Kahla.Server
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMiddleware<OnlineDetectorMiddleware>();
+            app.UseResponseCompression();
             app.MapDefaultControllerRoute();
             app.UseAiursoftDocGenerator(options =>
             {
