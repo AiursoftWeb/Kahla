@@ -38,7 +38,7 @@ public class SoftInviteToken
             var threadId = parts[0].Split(':')[1];
             var inviterId = parts[1].Split(':')[1];
             var invitedUserId = parts[2].Split(':')[1];
-            var expireTime = parts[3].Split(':')[1];
+            var expireTime = parts[3].Substring(3);
             return new SoftInviteToken
             {
                 ThreadId = Convert.ToInt32(threadId),
