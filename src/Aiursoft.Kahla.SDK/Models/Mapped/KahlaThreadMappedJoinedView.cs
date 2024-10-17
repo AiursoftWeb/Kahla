@@ -1,5 +1,3 @@
-using Aiursoft.Kahla.SDK.Models.Entities;
-
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
 public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
@@ -38,5 +36,5 @@ public class MessageContext
     // Unread amount.
     public required uint UnReadAmount { get; init; }
     // Last message.
-    public required Message? LatestMessage { get; init; }
+    public required KahlaMessageMappedSentView? LatestMessage { get; init; }
 }

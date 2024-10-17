@@ -59,10 +59,6 @@ public class KahlaUser : IdentityUser
     public IEnumerable<BlockRecord> BlockedBy { get; set; } = new List<BlockRecord>();
 
     [JsonIgnore]
-    [InverseProperty(nameof(Message.Sender))]
-    public IEnumerable<Message> MessagesSent { get; set; } = new List<Message>();
-
-    [JsonIgnore]
     [InverseProperty(nameof(Report.Trigger))]
     public IEnumerable<Report> Reported { get; set; } = new List<Report>();
 

@@ -63,6 +63,12 @@ public static class Extensions
         
         return services;
     }
+    
+    public static IServiceCollection AddInfluxDatabase(this IServiceCollection services, string connectionString)
+    {
+        services.AddSingleton(new InfluxDbClient(connectionString));
+        return services;
+    }
 
     public static int GetLimitedNumber(int min, int max, int suggested)
     {

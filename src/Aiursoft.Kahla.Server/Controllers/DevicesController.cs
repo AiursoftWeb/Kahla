@@ -6,6 +6,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services;
@@ -148,15 +149,15 @@ public class DevicesController(
             .ToListAsync();
         var messageEvent = new NewMessageEvent
         {
-            Message = new Message
+            Message = new KahlaMessageMappedSentView
             {
+                Id = Guid.NewGuid(),
                 ThreadId = -1,
                 Sender = new KahlaUser
                 {
                     IconFilePath = null,
                     NickName = "Aiursoft Push System",
                 },
-                SenderId = "<Example user>",
                 Content = "Sample message",
                 SendTime = DateTime.UtcNow,
             },

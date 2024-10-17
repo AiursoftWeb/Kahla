@@ -17,9 +17,6 @@ public class ChatThread
     /// </summary>
     [StringLength(256)] public string Name { get; set; } = "{THE OTHER USER}";
     
-    [InverseProperty(nameof(Message.Thread))]
-    public IEnumerable<Message> Messages { get; init; } = new List<Message>();
-    
     /// <summary>
     /// The icon of this thread. This icon will be shown in the chat list.
     ///

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +25,7 @@ namespace Aiursoft.Kahla.Server.Data;
 /// </summary>
 public class ThreadsInMemoryCache
 {
-    public required Message? LastMessage { get; set; }
+    public required KahlaMessageMappedSentView? LastMessage { get; set; }
     
     // Every time a message is appended to this thread, this count will increase.
     private uint _appendedMessageSinceBootCount;
@@ -119,12 +118,13 @@ public class QuickMessageAccess(
         foreach (var thread in dbContext.ChatThreads)
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}.", thread.Id);
-            var lastMessage = await dbContext.Messages
-                .AsNoTracking()
-                .Where(t => t.ThreadId == thread.Id)
-                .Include(t => t.Sender)
-                .OrderByDescending(t => t.SendTime)
-                .FirstOrDefaultAsync();
+            // var lastMessage = await dbContext.Messages
+            //     .AsNoTracking()
+            //     .Where(t => t.ThreadId == thread.Id)
+            //     .Include(t => t.Sender)
+            //     .OrderByDescending(t => t.SendTime)
+            //     .FirstOrDefaultAsync();
+            KahlaMessageMappedSentView? lastMessage = null; // TODO: Load from InfluxDB
             var membersInThread = await dbContext
                 .UserThreadRelations
                 .AsNoTracking()
@@ -133,12 +133,13 @@ public class QuickMessageAccess(
             var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
             foreach (var member in membersInThread)
             {
-                var unReadMessages = await dbContext
-                    .Messages
-                    .AsNoTracking()
-                    .Where(t => t.ThreadId == thread.Id)
-                    .Where(t => t.SendTime > member.ReadTimeStamp)
-                    .CountAsync();
+                // var unReadMessages = await dbContext
+                //     .Messages
+                //     .AsNoTracking()
+                //     .Where(t => t.ThreadId == thread.Id)
+                //     .Where(t => t.SendTime > member.ReadTimeStamp)
+                //     .CountAsync();
+                var unReadMessages = 0; // TODO: Load from InfluxDB
                 logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
                 userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
             }
@@ -160,7 +161,7 @@ public class QuickMessageAccess(
     /// To call this message, please make sure the message is already saved in the database. And the Sender of the message is already loaded.
     /// </summary>
     /// <param name="message"></param>
-    public void OnNewMessageSent(Message message)
+    public void OnNewMessageSent(KahlaMessageMappedSentView message)
     {
         var threadCache = CachedThreads[message.ThreadId];
         lock (threadCache)
