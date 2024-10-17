@@ -11,14 +11,14 @@ namespace Aiursoft.Kahla.Tests.TestBase;
 
 public abstract class KahlaTestBase
 {
-    protected IHost? Server;
-    protected readonly int Port;
+    private IHost? _server;
+    private readonly int _port;
     protected readonly KahlaServerAccess Sdk;
 
     protected KahlaTestBase()
     {
-        Port = Network.GetAvailablePort();
-        var endpointUrl = $"http://localhost:{Port}";
+        _port = Network.GetAvailablePort();
+        var endpointUrl = $"http://localhost:{_port}";
 
         var services = new ServiceCollection();
         services.AddKahlaService(endpointUrl);
@@ -29,17 +29,17 @@ public abstract class KahlaTestBase
     [TestInitialize]
     public async Task CreateServer()
     {
-        Server = await AppAsync<Startup>([], port: Port);
-        await Server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
-        await Server.StartAsync();
+        _server = await AppAsync<Startup>([], port: _port);
+        await _server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
+        await _server.StartAsync();
     }
 
     [TestCleanup]
     public async Task CleanServer()
     {
-        if (Server == null) return;
-        await Server.StopAsync();
-        Server.Dispose();
+        if (_server == null) return;
+        await _server.StopAsync();
+        _server.Dispose();
     }
 
 }
