@@ -27,7 +27,7 @@ public class SoftInviteToken
 
     public string SerializeObject()
     {
-        return $"tid:{ThreadId},iid:{InviterId},uid:{InvitedUserId},et:{ExpireTime:O}";
+        return $"tid={ThreadId},iid={InviterId},uid={InvitedUserId},et={ExpireTime:O}";
     }
 
     public static SoftInviteToken DeserializeObject(string token)
@@ -35,10 +35,10 @@ public class SoftInviteToken
         try
         {
             var parts = token.Split(',');
-            var threadId = parts[0].Split(':')[1];
-            var inviterId = parts[1].Split(':')[1];
-            var invitedUserId = parts[2].Split(':')[1];
-            var expireTime = parts[3].Substring(3);
+            var threadId = parts[0].Split('=')[1];
+            var inviterId = parts[1].Split('=')[1];
+            var invitedUserId = parts[2].Split('=')[1];
+            var expireTime = parts[3].Split('=')[1];
             return new SoftInviteToken
             {
                 ThreadId = Convert.ToInt32(threadId),
