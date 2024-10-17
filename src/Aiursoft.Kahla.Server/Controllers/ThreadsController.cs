@@ -635,6 +635,7 @@ public class ThreadsController(
     // Admin can always invite a user. Members can only invite a user if the thread allows member soft invitation.
     [HttpPost]
     [Route("soft-invite-init/{id:int}")]
+    [Produces<CreateSoftInviteTokenViewModel>]
     public async Task<IActionResult> CreateSoftInviteToken([FromRoute] int id, [FromForm][Required]string invitedUserId)
     {
         var currentUserId = User.GetUserId();

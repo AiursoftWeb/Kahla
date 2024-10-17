@@ -397,4 +397,26 @@ public class KahlaServerAccess(
         var result = await http.Post<CreateNewThreadViewModel>(url, new AiurApiPayload(new {}));
         return result;
     }
+    
+    public async Task<CreateSoftInviteTokenViewModel> CreateSoftInviteTokenAsync(int id, string invitedUserId)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/soft-invite-init/{id}", param: new { id });
+        var model = new AiurApiPayload(new
+        {
+            InvitedUserId = invitedUserId
+        });
+        var result = await http.Post<CreateSoftInviteTokenViewModel>(url, model);
+        return result;
+    }
+    
+    public async Task<AiurResponse> CompleteSoftInviteAsync(string token)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/soft-invite-complete", param: new {});
+        var model = new AiurApiPayload(new
+        {
+            Token = token
+        });
+        var result = await http.Post<AiurResponse>(url, model);
+        return result;
+    }
 }

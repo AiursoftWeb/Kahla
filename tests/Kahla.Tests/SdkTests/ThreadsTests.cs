@@ -277,4 +277,103 @@ public class ThreadsTests : KahlaTestBase
             Assert.AreEqual(Code.Unauthorized, e.Response.Code);
         }
     }
+    
+    [TestMethod]
+    public async Task GetThreadInfoAnonymousNotFound()
+    {
+        await Sdk.RegisterAsync("user36@domain.com", "password");
+        try
+        {
+            await Sdk.ThreadDetailsAnonymousAsync(999);
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(Code.NotFound, e.Response.Code);
+        }
+    }
+
+    [TestMethod]
+    public async Task UpdateThreadNotFound()
+    {
+        await Sdk.RegisterAsync("user37@domain.com", "password");
+        try
+        {
+            await Sdk.UpdateThreadAsync(999);
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(Code.NotFound, e.Response.Code);
+        }
+    }
+    
+    [TestMethod]
+    public async Task UpdateThreadNotJoined()
+    {
+        await Sdk.RegisterAsync("user39@domain.com", "password");
+        var user39Id = (await Sdk.MeAsync()).User.Id;
+        await Sdk.SignoutAsync();
+        await Sdk.RegisterAsync("user38@domain.com", "password");
+        var thread = await Sdk.HardInviteAsync(user39Id);
+        
+        // Update should be successful.
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, allowSearchByName: true);
+        
+        // Transfer ownership to user 38 (I'm still admin)
+        await Sdk.TransferOwnershipAsync(thread.NewThreadId, user39Id);
+        
+        // Kick me
+        await Sdk.KickMemberAsync(thread.NewThreadId, (await Sdk.MeAsync()).User.Id);
+        try
+        {
+            await Sdk.UpdateThreadAsync(thread.NewThreadId, allowSearchByName: false);
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(Code.Unauthorized, e.Response.Code);
+        }
+    }
+
+    [TestMethod]
+    public async Task UpdateThreadImNotAdmin()
+    {
+        await Sdk.RegisterAsync("user40@domain.com", "password");
+        var user40Id = (await Sdk.MeAsync()).User.Id;
+        await Sdk.SignoutAsync();
+
+        await Sdk.RegisterAsync("user41@domain.com", "password");
+        var user41Id = (await Sdk.MeAsync()).User.Id;
+        var thread = await Sdk.HardInviteAsync(user40Id);
+
+        // Update should be successful.
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, name: "New name");
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, iconFilePath: "New name");
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, allowDirectJoinWithoutInvitation: true);
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, allowMemberSoftInvitation: true);
+        await Sdk.UpdateThreadAsync(thread.NewThreadId, allowMembersSendMessages: true);
+        
+        // info should be updated.
+        var details = await Sdk.ThreadDetailsJoinedAsync(thread.NewThreadId);
+        Assert.AreEqual("New name", details.Thread.Name);
+        Assert.AreEqual("New name", details.Thread.ImagePath);
+        Assert.AreEqual(true, details.Thread.AllowDirectJoinWithoutInvitation);
+        Assert.AreEqual(true, details.Thread.AllowMemberSoftInvitation);
+        Assert.AreEqual(true, details.Thread.AllowMembersSendMessages);
+
+        // Demote user 41
+        await Sdk.PromoteAdminAsync(thread.NewThreadId, user41Id, false);
+
+        // User 41 can not update thread
+        try
+        {
+            await Sdk.UpdateThreadAsync(thread.NewThreadId, name: "New name 2");
+            Assert.Fail();
+        }
+        catch (AiurUnexpectedServerResponseException e)
+        {
+            Assert.AreEqual(Code.Unauthorized, e.Response.Code);
+        }
+    }
 }
