@@ -47,9 +47,9 @@ public class SoftInviteToken
                 ExpireTime = Convert.ToDateTime(expireTime)
             };
         }
-        catch
+        catch (Exception e)
         {
-            throw new AiurServerException(Code.Unauthorized, "Invalid token format.");
+            throw new AiurServerException(Code.Unauthorized, $"Invalid token format. Inner exception: {e.Message}");
         }
     }
 }
