@@ -2,15 +2,36 @@
 
 namespace Aiursoft.Kahla.Server.Data.Models;
 
-public class MessageInfluxEntity
+public class MessageInfluxInsertingEntity
 {
-    [Column(IsTimestamp = true)] public required DateTime Time { get; init; }
+    public required Guid MessageId { get; init; }
 
-    [Column(nameof(MessageId))] public required Guid MessageId { get; init; }
+    public required Guid SenderId { get; init; }
 
-    [Column(nameof(SenderId), IsTag = true)] public required Guid SenderId { get; init; }
+    public required int ThreadId { get; init; }
+    
+    public required DateTime SendTime { get; init; }
 
-    [Column(nameof(ThreadId), IsTag = true)] public required int ThreadId { get; init; }
+    public required string InnerContent { get; init; }
 
-    [Column(nameof(Content))] public required string Content { get; init; }
+    public string ToInfluxField()
+    {
+        return $"{MessageId}|{InnerContent}";
+    }
+}
+
+[Measurement(nameof(MessageInfluxInsertingEntity))]
+public class MessageInfluxReadingEntity
+{
+    [Column(nameof(MessageInfluxInsertingEntity.ThreadId), IsTag = true)]
+    public required int ThreadId { get; init; }
+    
+    [Column(nameof(MessageInfluxInsertingEntity.SenderId), IsTag = true)]
+    public required string SenderId { get; init; }
+
+    [Column("_value")]
+    public required string Content { get; init; }
+
+    [Column(IsTimestamp = true)] // 时间戳
+    public required DateTime Time { get; init; }
 }
