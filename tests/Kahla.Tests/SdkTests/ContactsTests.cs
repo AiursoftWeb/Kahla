@@ -78,6 +78,41 @@ public class ContactsTests : KahlaTestBase
         var details = await Sdk.UserDetailAsync(searchResult.Users.First().User.Id);
         Assert.AreEqual("user13", details.SearchedUser.User.NickName);
     }
+    
+    [TestMethod]
+    public async Task GetMyBriefDetailsTest()
+    {
+        // Register
+        await Sdk.RegisterAsync("user13@domain.com", "password");
+        var searchResult = await Sdk.SearchUsersGloballyAsync("user13", excluding: null);
+        Assert.AreEqual(Code.ResultShown, searchResult.Code);
+        Assert.AreEqual(1, searchResult.Users.Count);
+        
+        var details = await Sdk.UserBriefAsync(searchResult.Users.First().User.Id);
+        Assert.AreEqual("user13", details.BriefUser.NickName);
+    }
+
+    [TestMethod]
+    public async Task GetDefaultThread()
+    {
+        // Register
+        await Sdk.RegisterAsync("usera1@domain.com", "password");
+        var usera1Id = (await Sdk.MeAsync()).User.Id;
+        await Sdk.SignoutAsync();
+        await Sdk.RegisterAsync("usera2@domain.com", "password");
+        var usera2Id = (await Sdk.MeAsync()).User.Id;
+        
+        // Create a thread between usera1 and usera2.
+        var sharedThread = await Sdk.HardInviteAsync(usera1Id);
+        
+        // default thread should be created.
+        var defaultThread = await Sdk.UserDetailAsync(usera1Id);
+        Assert.AreEqual(sharedThread.NewThreadId, defaultThread.DefaultThread);
+        
+        // Check myself.
+        var self = await Sdk.UserDetailAsync(usera2Id);
+        Assert.AreEqual(null, self.DefaultThread);
+    }
 
     [TestMethod]
     public async Task ReportTwiceTest()

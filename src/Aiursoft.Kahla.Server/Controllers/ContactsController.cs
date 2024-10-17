@@ -94,9 +94,7 @@ public class ContactsController(
         
         var defaultThreadId = await threadService.QueryDefaultAsync(
             viewingUserId: currentUserId,
-            targetUserId: id,
-            skip: skip,
-            take: take);
+            targetUserId: id);
         
         logger.LogInformation("User with Id: {Id} successfully downloaded the detailed info with a contact with id: {TargetId}.", currentUserId, id);
         return this.Protocol(new UserDetailViewModel 

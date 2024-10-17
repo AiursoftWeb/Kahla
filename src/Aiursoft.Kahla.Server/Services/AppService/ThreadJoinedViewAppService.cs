@@ -18,10 +18,10 @@ public class ThreadJoinedViewAppService(
         return (totalCount, threads);
     }
     
-    public async Task<int?> QueryDefaultAsync(string viewingUserId, string targetUserId, int skip, int take)
+    public async Task<int?> QueryDefaultAsync(string viewingUserId, string targetUserId)
     {
         var firstDefaultThread = await repo
-            .QueryCommonThreads(viewingUserId, targetUserId)
+            .QueryOnlyUsThreads(viewingUserId, targetUserId)
             .FirstOrDefaultAsync(t => t.TopTenMembers.Count() <= 2);
       
         return firstDefaultThread?.Id;

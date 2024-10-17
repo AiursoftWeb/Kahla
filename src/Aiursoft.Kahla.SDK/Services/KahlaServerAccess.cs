@@ -196,6 +196,16 @@ public class KahlaServerAccess(
         return result;
     }
     
+    public async Task<UserBriefViewModel> UserBriefAsync(string userId, int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/info/{userId}", param: new
+        {
+            userId, skip, take
+        });
+        var result = await http.Get<UserBriefViewModel>(url);
+        return result;
+    }
+    
     public async Task<UserDetailViewModel> UserDetailAsync(string userId, int skip = 0, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/contacts/details/{userId}", param: new

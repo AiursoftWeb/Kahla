@@ -32,6 +32,15 @@ public class ThreadJoinedViewRepo(
             .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
             .OrderByDescending(t => t.LastMessageTime);
     }
+    
+    public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryOnlyUsThreads(string viewingUserId, string targetUserId)
+    {
+        return dbContext.ChatThreads
+            .AsNoTracking()
+            .Where(t => t.Members.All(p => p.UserId == viewingUserId || p.UserId == targetUserId))
+            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
+            .OrderByDescending(t => t.LastMessageTime);
+    }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)
     {
