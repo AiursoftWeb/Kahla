@@ -22,14 +22,12 @@ namespace Aiursoft.Kahla.Server
         {
             var keysPath = Path.Combine(configuration["Storage:Path"]!, "Keys");
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            var influxDbConnectionString = configuration.GetConnectionString("InfluxDB") ?? throw new InvalidOperationException("Connection string 'InfluxDB' not found.");
             if (!Directory.Exists(keysPath)) Directory.CreateDirectory(keysPath);
 
             // Database
             services.AddMemoryCache();
             services.AddSingleton<InMemoryDataContext>();
             services.AddSingleton<QuickMessageAccess>();
-            services.AddInfluxDatabase(influxDbConnectionString);
             services.AddDatabase(connectionString);
             
             // Identity
@@ -61,7 +59,6 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
-            services.AddSingleton<MessagesRepository>();
             
             // App services
             services.AddScoped<UserOthersViewAppService>();

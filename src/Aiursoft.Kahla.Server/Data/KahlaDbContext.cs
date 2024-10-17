@@ -6,6 +6,8 @@ namespace Aiursoft.Kahla.Server.Data
 {
     public class KahlaDbContext(DbContextOptions<KahlaDbContext> options) : IdentityDbContext<KahlaUser>(options)
     {
+        // This table will be migrated to other higher performance database.
+        public DbSet<Message> Messages => Set<Message>();
         public DbSet<ChatThread> ChatThreads => Set<ChatThread>();
         public DbSet<ContactRecord> ContactRecords => Set<ContactRecord>();
         public DbSet<BlockRecord> BlockRecords => Set<BlockRecord>();

@@ -1,10 +1,15 @@
+using Aiursoft.Canon;
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
-public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJudger)
+public class UserOthersViewRepo(
+    KahlaDbContext dbContext, 
+    CacheService cache,
+    OnlineJudger onlineJudger)
 {
     public IOrderedQueryable<KahlaUserMappedOthersView> SearchMyContactsAsync(
         string? searchInput,
@@ -72,5 +77,15 @@ public class UserOthersViewRepo(KahlaDbContext dbContext, OnlineJudger onlineJud
             .AsNoTracking()
             .Where(t => t.Id == targetUserId)
             .MapUsersOthersView(viewingUserId, onlineJudger);
+    }
+    
+    public Task<KahlaUser?> GetUserByIdWithCacheAsync(string userId)
+    {
+        return cache.RunWithCache($"kahla-user-entity-{userId}", () =>
+        {
+            return dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == userId);
+        });
     }
 }

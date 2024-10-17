@@ -6,6 +6,7 @@ using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools.InMemory;
 using Aiursoft.DbTools.MySql;
 using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -64,14 +65,20 @@ public static class Extensions
         return services;
     }
     
-    public static IServiceCollection AddInfluxDatabase(this IServiceCollection services, string connectionString)
-    {
-        services.AddSingleton(new InfluxDbClient(connectionString));
-        return services;
-    }
-
     public static int GetLimitedNumber(int min, int max, int suggested)
     {
         return Math.Max(min, Math.Min(max, suggested));
+    }
+    
+    public static KahlaMessageMappedSentView Map(this Message message, KahlaUser? sender)
+    {
+        return new KahlaMessageMappedSentView
+        {
+            Id = message.MessageId,
+            ThreadId = message.ThreadId,
+            Content = message.Content,
+            SendTime = message.SendTime,
+            Sender = sender
+        };
     }
 }

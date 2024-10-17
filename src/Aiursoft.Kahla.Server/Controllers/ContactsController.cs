@@ -8,6 +8,7 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
+using Aiursoft.Kahla.Server.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/contacts")]
 public class ContactsController(
     UserOthersViewAppService userAppService,
+    UserOthersViewRepo userRepo,
     ThreadJoinedViewAppService threadService,
     ILogger<ContactsController> logger,
     KahlaDbContext dbContext) : ControllerBase
@@ -50,6 +52,24 @@ public class ContactsController(
             Message = $"Successfully searched your first {model.Take} known contacts and skipped {model.Skip} contacts.",
             KnownContacts = knownContacts,
             TotalKnownContacts = totalCount
+        });
+    }
+    
+    [HttpGet]
+    [Route("info/{id}")]
+    public async Task<IActionResult> Info([FromRoute]string id)
+    {
+        logger.LogInformation("User with Id: {Id} is trying to download the brief info with a contact with id: {TargetId}.", User.GetUserId(), id);
+        var searchedUser = await userRepo.GetUserByIdWithCacheAsync(id);
+        if (searchedUser == null)
+        {
+            return this.Protocol(Code.NotFound, $"The target user with id `{id}` does not exist.");
+        }
+        return this.Protocol(new UserBriefViewModel 
+        {
+            BriefUser = searchedUser,
+            Code = Code.ResultShown,
+            Message = $"User brief info successfully downloaded."
         });
     }
 

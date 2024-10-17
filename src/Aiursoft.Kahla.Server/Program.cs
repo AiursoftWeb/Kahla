@@ -10,7 +10,6 @@ public abstract class Program
         var app = await WebTools.Extends.AppAsync<Startup>(args);
         await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
         await app.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
-        await app.Services.GetRequiredService<InfluxDbClient>().EnsureDatabaseCreatedAsync();
         await app.RunAsync();
     }
 }

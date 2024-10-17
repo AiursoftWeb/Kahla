@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Aiursoft.Kahla.SDK.Models.Mapped;
+using Aiursoft.Kahla.Server.Services.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Data;
@@ -114,17 +115,18 @@ public class QuickMessageAccess(
     {
         var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaDbContext>();
+        var userOthersViewRepo = scope.ServiceProvider.GetRequiredService<UserOthersViewRepo>();
         logger.LogInformation("Building quick message access cache.");
         foreach (var thread in dbContext.ChatThreads)
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}.", thread.Id);
-            // var lastMessage = await dbContext.Messages
-            //     .AsNoTracking()
-            //     .Where(t => t.ThreadId == thread.Id)
-            //     .Include(t => t.Sender)
-            //     .OrderByDescending(t => t.SendTime)
-            //     .FirstOrDefaultAsync();
-            KahlaMessageMappedSentView? lastMessage = null; // TODO: Load from InfluxDB
+            var lastMessageEntity = await dbContext.Messages
+                .AsNoTracking()
+                .Where(t => t.ThreadId == thread.Id)
+                .OrderByDescending(t => t.SendTime)
+                .FirstOrDefaultAsync();
+            var lastMessage = lastMessageEntity?.Map(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId));
+            
             var membersInThread = await dbContext
                 .UserThreadRelations
                 .AsNoTracking()
@@ -133,13 +135,12 @@ public class QuickMessageAccess(
             var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
             foreach (var member in membersInThread)
             {
-                // var unReadMessages = await dbContext
-                //     .Messages
-                //     .AsNoTracking()
-                //     .Where(t => t.ThreadId == thread.Id)
-                //     .Where(t => t.SendTime > member.ReadTimeStamp)
-                //     .CountAsync();
-                var unReadMessages = 0; // TODO: Load from InfluxDB
+                var unReadMessages = await dbContext
+                    .Messages
+                    .AsNoTracking()
+                    .Where(t => t.ThreadId == thread.Id)
+                    .Where(t => t.SendTime > member.ReadTimeStamp)
+                    .CountAsync();
                 logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
                 userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
             }
