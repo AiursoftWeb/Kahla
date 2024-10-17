@@ -22,7 +22,7 @@ public class ThreadJoinedViewAppService(
     {
         var firstDefaultThread = await repo
             .QueryOnlyUsThreads(viewingUserId, targetUserId)
-            .FirstOrDefaultAsync(t => t.TopTenMembers.Count() <= 2);
+            .FirstOrDefaultAsync(t => t.Members.Count() <= 2);
       
         return firstDefaultThread?.Id;
     }

@@ -1,3 +1,4 @@
+using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.EntityFrameworkCore;
@@ -33,12 +34,11 @@ public class ThreadJoinedViewRepo(
             .OrderByDescending(t => t.LastMessageTime);
     }
     
-    public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryOnlyUsThreads(string viewingUserId, string targetUserId)
+    public IOrderedQueryable<ChatThread> QueryOnlyUsThreads(string viewingUserId, string targetUserId)
     {
         return dbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.All(p => p.UserId == viewingUserId || p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
             .OrderByDescending(t => t.LastMessageTime);
     }
 

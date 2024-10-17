@@ -69,7 +69,7 @@ public class ContactsController(
         {
             BriefUser = searchedUser,
             Code = Code.ResultShown,
-            Message = $"User brief info successfully downloaded."
+            Message = $"User brief info successfully downloaded. (Cached)"
         });
     }
 
