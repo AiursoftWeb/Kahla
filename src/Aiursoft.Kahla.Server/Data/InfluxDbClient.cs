@@ -30,7 +30,7 @@ public class InfluxDbClient(string connectionString)
         return client.GetWriteApiAsync();
     }
 
-    public async Task<WriteApiAsync> GetWriteApi()
+    public async Task<WriteApiAsync> GetWriteApiWithCache()
     {
         return _cachedWriteApi ??= await GetWriteApiInternal();
     }
@@ -48,30 +48,6 @@ public class InfluxDbClient(string connectionString)
     
     public async Task EnsureDatabaseCreatedAsync()
     {
-        await GetWriteApi();
-
-        // Sample insert
-        //for (int i = 0; i < 10000; i++)
-        // {
-        //     var entity = new MessageInfluxInsertingEntity
-        //     {
-        //         InnerContent = "Hello, world!",
-        //         MessageId = Guid.NewGuid(),
-        //         SenderId = Guid.NewGuid(),
-        //         ThreadId = 123,
-        //         SendTime = DateTime.UtcNow
-        //     };
-        //     var point = PointData.Measurement(nameof(MessageInfluxInsertingEntity))
-        //         .Tag(nameof(MessageInfluxInsertingEntity.ThreadId), entity.ThreadId.ToString())
-        //         .Tag(nameof(MessageInfluxInsertingEntity.SenderId), entity.SenderId.ToString())
-        //         .Field(nameof(MessageInfluxReadingEntity.Content), entity.ToInfluxField())
-        //         .Timestamp(entity.SendTime, WritePrecision.Ns);
-        //     await writeApi.WritePointAsync(point, Bucket, Org);
-        // }
-        //
-        // Sample query
-        // var queryApi = await GetQueryApi();
-        // var query = $"from(bucket: \"{Bucket}\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"{nameof(MessageInfluxInsertingEntity)}\")";
-        // var tables = await queryApi.QueryAsync<MessageInfluxReadingEntity>(query, Org);
+        await GetWriteApiWithCache();
     }
 }

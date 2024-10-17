@@ -61,6 +61,7 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
+            services.AddSingleton<MessagesRepository>();
             
             // App services
             services.AddScoped<UserOthersViewAppService>();
