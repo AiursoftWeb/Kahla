@@ -9,6 +9,7 @@ using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.WebTools.Abstractions.Models;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
 
@@ -18,7 +19,9 @@ namespace Aiursoft.Kahla.Server
     {
         public void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
+            var keysPath = Path.Combine(configuration["Storage:Path"]!, "Keys");
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            if (!Directory.Exists(keysPath)) Directory.CreateDirectory(keysPath);
 
             // Database
             services.AddMemoryCache();
@@ -40,8 +43,15 @@ namespace Aiursoft.Kahla.Server
                 .AddDefaultTokenProviders();
             
             // Persist login status
-            services.ConfigureApplicationCookie(t => t.ExpireTimeSpan = TimeSpan.FromDays(30)); 
-            services.ConfigureApplicationCookie(t => t.SlidingExpiration = true); 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.SlidingExpiration = true;
+            });
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+                .SetApplicationName("Kahla");
             
             // Repositories
             services.AddScoped<UserOthersViewRepo>();
