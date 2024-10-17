@@ -27,7 +27,7 @@ public class SoftInviteToken
 
     public string SerializeObject()
     {
-        return $"tid:{ThreadId},iid:{InviterId},uid:{InvitedUserId},et:{ExpireTime}";   
+        return $"tid:{ThreadId},iid:{InviterId},uid:{InvitedUserId},et:{ExpireTime:O}";
     }
 
     public static SoftInviteToken DeserializeObject(string token)
