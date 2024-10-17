@@ -109,7 +109,7 @@ public class QuickMessageAccess(
     IServiceScopeFactory scopeFactory,
     ILogger<QuickMessageAccess> logger)
 {
-    public ConcurrentDictionary<int, ThreadsInMemoryCache> CachedThreads { get; } = new();
+    private ConcurrentDictionary<int, ThreadsInMemoryCache> CachedThreads { get; } = new();
 
     public async Task LoadAsync()
     {

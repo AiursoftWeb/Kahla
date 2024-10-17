@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
+using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
@@ -10,6 +11,7 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +25,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
+    IDataProtectionProvider dataProtectionProvider,
     QuickMessageAccess quickMessageAccess,
     ILogger<ThreadsController> logger,
     ThreadJoinedViewAppService threadService,
@@ -612,5 +615,122 @@ public class ThreadsController(
                     "Failed to create the thread. Might because of a database error.");
             }
         });
+    }
+    
+    // Soft Invite, allowing users to invite new users into an existing conversation.
+    //
+    // * Administrators can initiate a soft invite at any time. The invited user will become a regular member.
+    // * Regular users can only initiate a soft invite in conversations where members are allowed to initiate soft invites. The invited user will become a regular member.
+    //
+    // In this case, the server needs to issue an invitation token, which will be sent to the target user. After the target user clicks on the token, they will automatically join the conversation.
+    //
+    // The token is a string divided by dots, with the first part being a JSON and the second part being the digital signature of the first part.
+    //
+    // The JSON in the first part contains:
+    //
+    // * The ID of the conversation the user is being invited to
+    //     * The conversation name (considering that some conversations do not allow anonymous queries)
+    // * The ID of the user being invited
+    //     * Expiration time
+    // Admin can always invite a user. Members can only invite a user if the thread allows member soft invitation.
+    [HttpPost]
+    [Route("soft-invite-init/{id:int}")]
+    public async Task<IActionResult> CreateSoftInviteToken([FromRoute] int id, [FromForm][Required]string invitedUserId)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to create a soft invite token for the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        var thread = await dbContext.ChatThreads.FindAsync(id); 
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == id)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }   
+        if (myRelation.UserThreadRole != UserThreadRole.Admin && !thread.AllowMemberSoftInvitation)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. In this thread, only the admin can invite a user."); 
+        }
+
+        var tokenObject = new SoftInviteToken
+        {
+            ThreadId = id,
+            InviterId = currentUserId,
+            InvitedUserId = invitedUserId,
+            ExpireTime = DateTime.UtcNow.AddDays(5)
+        };
+        var tokenRaw = tokenObject.SerializeObject().StringToBase64();
+        var encryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Protect(tokenRaw);
+        var tokenFinal = $"{tokenRaw}.{encryptedToken}";
+        logger.LogInformation("User with Id: {Id} successfully created a soft invite token for the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        return this.Protocol(new CreateSoftInviteTokenViewModel
+        {
+            Code = Code.JobDone,
+            Message = "Successfully created the soft invite token.",
+            Token = tokenFinal
+        });
+    }
+    
+    // Complete the soft invite.
+    // This will add the current user to the thread.
+    [HttpPost]
+    [Route("soft-invite-complete")]
+    public async Task<IActionResult> CompleteSoftInvite([FromForm] string token)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to complete a soft invite.", currentUserId);
+        var tokenParts = token.Split('.');
+        if (tokenParts.Length != 2)
+        {
+            return this.Protocol(Code.InvalidInput, "Invalid token format. Valid token should be in the format of 'rawToken.encryptedToken'.");
+        }
+        var decryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Unprotect(tokenParts[1]).Base64ToString();
+        var rawToken = tokenParts[0].Base64ToString();
+        if (decryptedToken != rawToken)
+        {
+            return this.Protocol(Code.InvalidInput, "Invalid token! The token is tampered.");
+        }
+        var tokenObject = SoftInviteToken.DeserializeObject(rawToken);
+        var threadId = tokenObject.ThreadId;
+        var thread = await dbContext.ChatThreads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+        var myRelation = await dbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == threadId)
+            .FirstOrDefaultAsync();
+        if (myRelation != null)
+        {
+            return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+        }
+        if (tokenObject.InvitedUserId != currentUserId)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not the invited user.");
+        }
+        if (tokenObject.ExpireTime < DateTime.UtcNow)
+        {
+            return this.Protocol(Code.Unauthorized, "The token has expired.");
+        }
+        logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.", currentUserId, threadId);
+        
+        // Add the user to the thread.
+        var newRelation = new UserThreadRelation
+        {
+            UserId = currentUserId,
+            ThreadId = threadId,
+            UserThreadRole = UserThreadRole.Member
+        };
+        dbContext.UserThreadRelations.Add(newRelation);
+        await dbContext.SaveChangesAsync();
+        
+        logger.LogInformation("User with Id: {Id} successfully completed the soft invite. Thread ID: {ThreadID}.", currentUserId, threadId);
+        return this.Protocol(Code.JobDone, "Successfully joined the thread.");
     }
 }
