@@ -22,9 +22,11 @@ public class ThreadJoinedViewAppService(
     {
         var firstDefaultThread = await repo
             .QueryOnlyUsThreads(viewingUserId, targetUserId)
-            .FirstOrDefaultAsync(t => t.Members.Count() <= 2);
+            .OrderByDescending(t => t.LastMessageTime)
+            .Select(t => t.Id)
+            .FirstOrDefaultAsync();
       
-        return firstDefaultThread?.Id;
+        return firstDefaultThread == 0 ? null : firstDefaultThread;
     }
     
     public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> SearchThreadsIJoinedAsync(string? searchInput, string? excluding, string viewingUserId, int skip, int take)
