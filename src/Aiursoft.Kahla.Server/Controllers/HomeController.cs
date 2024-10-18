@@ -3,10 +3,12 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[LimitPerMin]
 [GenerateDoc]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true, 

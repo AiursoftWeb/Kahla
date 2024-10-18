@@ -8,11 +8,13 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.AppService;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[LimitPerMin]
 [KahlaForceAuth]
 [GenerateDoc]
 [ApiExceptionHandler(

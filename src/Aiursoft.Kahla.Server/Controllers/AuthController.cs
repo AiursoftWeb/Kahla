@@ -7,12 +7,14 @@ using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[LimitPerMin]
 [GenerateDoc]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true, 

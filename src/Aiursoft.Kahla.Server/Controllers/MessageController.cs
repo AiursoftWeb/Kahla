@@ -8,10 +8,12 @@ using Aiursoft.AiurObserver.Extensions;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Identity;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+[LimitPerMin]
 [ApiExceptionHandler(
     PassthroughRemoteErrors = true,
     PassthroughAiurServerException = true)]
