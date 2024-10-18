@@ -15,15 +15,15 @@ public class ChatThread
     ///
     /// Admins can change this value.
     /// </summary>
-    [StringLength(256)] public string Name { get; set; } = "{THE OTHER USER}";
-    
+    [StringLength(256)] public string Name { get; set; } = Consts.DefaultThreadName;
+
     /// <summary>
     /// The icon of this thread. This icon will be shown in the chat list.
     ///
     /// Admins can change this value.
     /// </summary>
     [StringLength(512)]
-    public string IconFilePath { get; set; } = "{THE OTHER USER ICON}";
+    public string IconFilePath { get; set; } = Consts.DefaultIconFilePath;
     
     [InverseProperty(nameof(UserThreadRelation.Thread))]
     public IEnumerable<UserThreadRelation> Members { get; init; } = new List<UserThreadRelation>();
