@@ -46,6 +46,7 @@ public class MessageController(
         });
     }
 
+    [EnforceWebSocket]
     [Route("websocket/{userId}")]
     public async Task<IActionResult> WebSocket([FromRoute] string userId, [FromQuery] string otp)
     {
