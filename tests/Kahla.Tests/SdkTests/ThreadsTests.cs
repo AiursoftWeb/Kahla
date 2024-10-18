@@ -38,6 +38,34 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
+    public async Task SearchThreadByUserName()
+    {
+        // Prepare user1
+        await Sdk.RegisterAsync("user1@domain.com", "password");
+        var user1Id = (await Sdk.MeAsync()).User.Id;
+        await Sdk.SignoutAsync();
+
+        // Prepare user2
+        await Sdk.RegisterAsync("user2@domain.com", "password");
+
+        // Create a thread
+        var createdThread = await Sdk.HardInviteAsync(user1Id);
+
+        // Set the name.
+        await Sdk.UpdateThreadAsync(createdThread.NewThreadId, name: "Patched_name");
+
+        // Search the thread by name
+        var searchThread = await Sdk.ListThreadsAsync("Patched_name");
+        Assert.AreEqual(1, searchThread.KnownThreads.Count);
+        Assert.AreEqual(createdThread.NewThreadId, searchThread.KnownThreads.First().Id);
+
+        // Search the thread by username
+        var searchThread2 = await Sdk.ListThreadsAsync("user1");
+        Assert.AreEqual(1, searchThread2.KnownThreads.Count);
+        Assert.AreEqual(createdThread.NewThreadId, searchThread2.KnownThreads.First().Id);
+    }
+
+    [TestMethod]
     public async Task ListNewThreadOnlyMeAsMember()
     {
         await Sdk.RegisterAsync("user23@domain.com", "password");

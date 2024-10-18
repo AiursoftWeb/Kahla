@@ -19,7 +19,12 @@ public class ThreadJoinedViewRepo(
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
-            .WhereWhen(searchInput, t => t.Name.Contains(searchInput!))
+            .WhereWhen(searchInput, t => 
+                t.Name.Contains(searchInput!) ||
+                t.Id.ToString() == searchInput ||
+                t.Members.Any(p => p.User.NickName.Contains(searchInput!)) ||
+                t.Members.Any(p => p.User.Email.Contains(searchInput!)) ||
+                t.Members.Any(p => p.User.Id == searchInput))
             .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
             .OrderByDescending(t => t.LastMessageTime);
     }
