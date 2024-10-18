@@ -4,6 +4,7 @@ using Aiursoft.Kahla.SDK;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Aiursoft.WebTools.Extends;
 
@@ -32,6 +33,7 @@ public abstract class KahlaTestBase
         _server = await AppAsync<Startup>([], port: _port);
         await _server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
         await _server.StartAsync();
+        LimitPerMin.GlobalEnabled = false;
     }
 
     [TestCleanup]
