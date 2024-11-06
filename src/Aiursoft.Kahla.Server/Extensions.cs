@@ -47,7 +47,7 @@ public static class Extensions
         return query.Where(predicate);
     }
     
-    public static IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddRelationalDatabase(this IServiceCollection services, string connectionString)
     {
         if (EntryExtends.IsInUnitTests())
         {
@@ -70,14 +70,14 @@ public static class Extensions
         return Math.Max(min, Math.Min(max, suggested));
     }
     
-    public static KahlaMessageMappedSentView Map(this Message message, KahlaUser? sender)
+    public static KahlaMessageMappedSentView Map(this MessageInDatabaseEntity messageInDatabaseEntity, KahlaUser? sender)
     {
         return new KahlaMessageMappedSentView
         {
-            Id = message.MessageId,
-            ThreadId = message.ThreadId,
-            Content = message.Content,
-            SendTime = message.SendTime,
+            Id = messageInDatabaseEntity.MessageId,
+            ThreadId = messageInDatabaseEntity.ThreadId,
+            Content = messageInDatabaseEntity.Content,
+            SendTime = messageInDatabaseEntity.SendTime,
             Sender = sender
         };
     }

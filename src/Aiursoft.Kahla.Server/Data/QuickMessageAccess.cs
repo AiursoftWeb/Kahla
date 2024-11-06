@@ -106,6 +106,7 @@ public class ThreadsInMemoryCache
 /// and consistency even in the case of application restarts.
 /// </summary>
 public class QuickMessageAccess(
+    ArrayDbContext arrayDbContext,
     IServiceScopeFactory scopeFactory,
     ILogger<QuickMessageAccess> logger)
 {
@@ -120,11 +121,7 @@ public class QuickMessageAccess(
         foreach (var thread in dbContext.ChatThreads)
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}.", thread.Id);
-            var lastMessageEntity = await dbContext.Messages
-                .AsNoTracking()
-                .Where(t => t.ThreadId == thread.Id)
-                .OrderByDescending(t => t.SendTime)
-                .FirstOrDefaultAsync();
+            var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
             var lastMessage = lastMessageEntity?.Map(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId));
             
             var membersInThread = await dbContext
@@ -135,11 +132,7 @@ public class QuickMessageAccess(
             var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
             foreach (var member in membersInThread)
             {
-                var totalMessages = await dbContext
-                    .Messages
-                    .AsNoTracking()
-                    .Where(t => t.ThreadId == thread.Id)
-                    .CountAsync();
+                var totalMessages = arrayDbContext.GetTotalMessagesCount(thread.Id);
                 var unReadMessages = totalMessages - member.ReadMessageIndex;
                 logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
                 userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);

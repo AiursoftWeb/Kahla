@@ -1,4 +1,5 @@
 ﻿using Aiursoft.AiurProtocol.Server;
+using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.Kahla.SDK.Models.Entities;
@@ -25,7 +26,16 @@ namespace Aiursoft.Kahla.Server
             services.AddMemoryCache();
             services.AddSingleton<InMemoryDataContext>();
             services.AddSingleton<QuickMessageAccess>();
-            services.AddDatabase(connectionString);
+            services.AddRelationalDatabase(connectionString);
+            
+            // ArrayDb
+            services.AddSingleton<ArrayDbContext>();
+            services.AddSingleton<PartitionedObjectBucket<MessageInDatabaseEntity, int>>(_ =>
+            {
+                var dbPath = Path.Combine(configuration["Storage:Path"]!, "MessagesDbFiles");
+                if (!Directory.Exists(dbPath)) Directory.CreateDirectory(dbPath);
+                return new PartitionedObjectBucket<MessageInDatabaseEntity, int>("kahla", dbPath);
+            });
             
             // Identity
             services.AddIdentity<KahlaUser, IdentityRole>(options => options.Password = new PasswordOptions

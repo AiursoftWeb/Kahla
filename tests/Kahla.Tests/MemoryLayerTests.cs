@@ -23,6 +23,10 @@ public class MemoryLayerTests
             .CreateScope()
             .ServiceProvider
             .GetRequiredService<KahlaDbContext>();
+        
+        var arrayDbContext = server
+            .Services
+            .GetRequiredService<ArrayDbContext>();
         // Add a user.
         var user = new KahlaUser
         {
@@ -47,7 +51,7 @@ public class MemoryLayerTests
             ThreadId = thread.Id,
         });
 
-        await dbContext.Messages.AddAsync(new Message
+        arrayDbContext.AddMessage(new MessageInDatabaseEntity
         {
             MessageId = Guid.NewGuid(),
             ThreadId = thread.Id,
