@@ -34,5 +34,5 @@ public class UserThreadRelation
     [NotNull]
     public ChatThread? Thread { get; init; }
 
-    public DateTime ReadTimeStamp { get; init; } = DateTime.UtcNow;
+    public int ReadMessageIndex { get; init; }
 }

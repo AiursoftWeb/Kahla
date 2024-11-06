@@ -135,12 +135,12 @@ public class QuickMessageAccess(
             var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
             foreach (var member in membersInThread)
             {
-                var unReadMessages = await dbContext
+                var totalMessages = await dbContext
                     .Messages
                     .AsNoTracking()
                     .Where(t => t.ThreadId == thread.Id)
-                    .Where(t => t.SendTime > member.ReadTimeStamp)
                     .CountAsync();
+                var unReadMessages = totalMessages - member.ReadMessageIndex;
                 logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
                 userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
             }
