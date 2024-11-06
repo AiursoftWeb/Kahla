@@ -29,4 +29,19 @@ public class ArrayDbContext(PartitionedObjectBucket<MessageInDatabaseEntity, int
     {
         bucket.Add(message);
     }
+    
+    public async Task DeleteThreadAsync(int threadId)
+    {
+        await bucket.DeletePartitionAsync(threadId);
+    }
+    
+    public void CreateNewThread(int threadId)
+    {
+        var newThread = bucket.GetPartitionById(threadId);
+        var zeroMessagesCount = newThread.InnerBucket.ArchivedItemsCount;
+        if (zeroMessagesCount != 0)
+        {
+            throw new InvalidOperationException("The thread should be empty when created!");
+        }
+    }
 }

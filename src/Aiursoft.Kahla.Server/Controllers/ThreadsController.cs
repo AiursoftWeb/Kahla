@@ -27,6 +27,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
+    ArrayDbContext arrayDbContext,
     IDataProtectionProvider dataProtectionProvider,
     QuickMessageAccess quickMessageAccess,
     ILogger<ThreadsController> logger,
@@ -429,6 +430,9 @@ public class ThreadsController(
         // Remove the thread from the cache.
         quickMessageAccess.OnThreadDropped(id);
         
+        // Remove the thread from the array database.
+        await arrayDbContext.DeleteThreadAsync(id);
+        
         logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
     }
@@ -504,6 +508,9 @@ public class ThreadsController(
                 
                 // Save to cache.
                 quickMessageAccess.OnNewThreadCreated(thread.Id);
+                
+                // Save in array database.
+                arrayDbContext.CreateNewThread(thread.Id);
                 
                 logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.", currentUserId);
                 return this.Protocol(new CreateNewThreadViewModel
@@ -600,6 +607,9 @@ public class ThreadsController(
                 
                 // Save to cache.
                 quickMessageAccess.OnNewThreadCreated(thread.Id);
+                
+                // Save in array database.
+                arrayDbContext.CreateNewThread(thread.Id);
                 
                 logger.LogInformation("A new thread has been created successfully. Thread ID is {ID}.", thread.Id);
                 return this.Protocol(new CreateNewThreadViewModel
