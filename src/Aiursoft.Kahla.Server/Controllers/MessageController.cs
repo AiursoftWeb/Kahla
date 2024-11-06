@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server.Attributes;
@@ -9,6 +10,7 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.WebTools.Attributes;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 
 namespace Aiursoft.Kahla.Server.Controllers;
@@ -20,29 +22,29 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/messages")]
 public class MessageController(
+    IDataProtectionProvider dataProtectionProvider,
     InMemoryDataContext context,
     KahlaDbContext dbContext,
     ILogger<MessageController> logger,
     UserManager<KahlaUser> userManager) : ControllerBase
 {
+    private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("WebSocketOTP");
+    
     [KahlaForceAuth]
     [Route("init-websocket")]
     public async Task<IActionResult> InitWebSocket()
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} is trying to init a websocket OTP.", user.Email);
-        var otp = Guid.NewGuid().ToString("N");
-        var otpValidTo = DateTime.UtcNow.AddMinutes(5);
-        user.PushOtp = otp;
-        user.PushOtpValidTo = otpValidTo;
-        await userManager.UpdateAsync(user);
+        var validTo = DateTime.UtcNow.AddMinutes(5);
+        var otpRaw = $"uid={user.Id},vlt={validTo}";
+        var protectedOtp = _protector.Protect(otpRaw);
         return this.Protocol(new InitPusherViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully generated a new OTP. It will be valid for 5 minutes.",
-            Otp = otp,
-            OtpValidTo = otpValidTo,
-            WebSocketEndpoint = $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{user.Id}?otp={otp}"
+            Otp = protectedOtp,
+            WebSocketEndpoint = $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{user.Id}?otp={protectedOtp}"
         });
     }
 
@@ -58,18 +60,30 @@ public class MessageController(
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
 
-        if (!string.Equals(user.PushOtp, otp, StringComparison.OrdinalIgnoreCase))
+        try
         {
-            logger.LogWarning("User with Id: {Id} is trying to get a websocket with invalid OTP {HisOTP}.",
-                user.Email, otp);
-            return this.Protocol(Code.Unauthorized, "Invalid OTP.");
+            var otpRaw = _protector.Unprotect(otp);
+            var parts = otpRaw.Split(',');
+            var userIdInOtp = parts[0].Split('=')[1];
+            var validTo = DateTime.Parse(parts[1].Split('=')[1]);
+            if (userIdInOtp != userId)
+            {
+                logger.LogWarning("User with ID: {UserId} is trying to get a websocket with invalid OTP {HisOTP}.",
+                    userId, otp);
+                return this.Protocol(Code.Unauthorized, "Invalid OTP.");
+            }
+            if (validTo < DateTime.UtcNow)
+            {
+                logger.LogWarning("User with ID: {UserId} is trying to get a websocket with expired OTP {HisOTP}.",
+                    userId, otp);
+                return this.Protocol(Code.Unauthorized, "Expired OTP.");
+            }
         }
-        
-        if (user.PushOtpValidTo < DateTime.UtcNow)
+        catch (CryptographicException)
         {
-            logger.LogWarning("User with Id: {Id} is trying to get a websocket with expired OTP {HisOTP}.",
-                user.Email, otp);
-            return this.Protocol(Code.Unauthorized, "Expired OTP.");
+            logger.LogWarning("User with ID: {UserId} is trying to get a websocket with invalid OTP {HisOTP}.",
+                userId, otp);
+            return this.Protocol(Code.Unauthorized, "Invalid OTP.");
         }
 
         logger.LogInformation("User with Id: {Id} is trying to get a websocket. And he provided the correct OTP.",

@@ -33,6 +33,13 @@ public abstract class KahlaTestBase
         _server = await AppAsync<Startup>([], port: _port);
         await _server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
         await _server.StartAsync();
+        
+        var serverConfig = _server.Services.GetRequiredService<IConfiguration>();
+        var storePath = serverConfig.GetSection("Storage:Path").Value;
+        if (Directory.Exists(storePath))
+        {
+            Directory.Delete(storePath, true);
+        }
         LimitPerMin.GlobalEnabled = false;
     }
 

@@ -82,9 +82,4 @@ public class KahlaUser : IdentityUser
     [JsonIgnore] public bool EnableEnterToSendMessage { get; set; } = true;
     
     [JsonIgnore] public bool EnableHideMyOnlineStatus { get; set; }
-
-    // Pusher OTP
-    [JsonIgnore] public DateTime PushOtpValidTo { get; set; } = DateTime.MinValue;
-
-    [JsonIgnore] [StringLength(36)] public string? PushOtp { get; set; } // Guid
 }
