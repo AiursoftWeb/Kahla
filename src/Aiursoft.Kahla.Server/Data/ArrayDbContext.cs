@@ -38,7 +38,7 @@ public class ArrayDbContext(PartitionedObjectBucket<MessageInDatabaseEntity, int
     public void CreateNewThread(int threadId)
     {
         var newThread = bucket.GetPartitionById(threadId);
-        var zeroMessagesCount = newThread.InnerBucket.ArchivedItemsCount;
+        var zeroMessagesCount = newThread.Count;
         if (zeroMessagesCount != 0)
         {
             throw new InvalidOperationException("The thread should be empty when created!");
