@@ -8,6 +8,8 @@ files:
     contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/.gitlab-ci.yml
   - name: LICENSE
     contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/LICENSE
+  - name: CODE_OF_CONDUCT.md
+    contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/CODE_OF_CONDUCT.md
   - name: ninja.yaml
     contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/ninja.yaml
   - name: nuget.config
