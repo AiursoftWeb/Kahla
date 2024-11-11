@@ -13,4 +13,9 @@ public class LocksDb(NamedLruMemoryStoreProvider<SemaphoreSlim, string> memorySt
     {
         return memoryStoreProvider.GetStore("BlockOperationLocks").GetOrAdd(lockId);
     }
+    
+    public SemaphoreSlim GetJoinThreadOperationLock(string userId, int threadId)
+    {
+        return memoryStoreProvider.GetStore("JoinThreadOperationLocks").GetOrAdd($"thread-join-{userId}-{threadId}");
+    }
 }

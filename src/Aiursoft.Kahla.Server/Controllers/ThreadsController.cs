@@ -27,6 +27,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
+    LocksDb locksDb,
     ArrayDbContext arrayDbContext,
     IDataProtectionProvider dataProtectionProvider,
     QuickMessageAccess quickMessageAccess,
@@ -214,22 +215,33 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
         }
-        var iMJoined = await dbContext.UserThreadRelations
-            .Where(t => t.UserId == currentUserId)
-            .Where(t => t.ThreadId == id)
-            .AnyAsync();
-        if (iMJoined)
+
+        var joinThreadLock = locksDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: id);
+        await joinThreadLock.WaitAsync();
+        try
         {
-            return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+            var iMJoined = await dbContext.UserThreadRelations
+                .Where(t => t.UserId == currentUserId)
+                .Where(t => t.ThreadId == id)
+                .AnyAsync();
+            if (iMJoined)
+            {
+                return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+            }
+
+            var newRelation = new UserThreadRelation
+            {
+                UserId = currentUserId,
+                ThreadId = id,
+                UserThreadRole = UserThreadRole.Member
+            };
+            dbContext.UserThreadRelations.Add(newRelation);
+            await dbContext.SaveChangesAsync();
         }
-        var newRelation = new UserThreadRelation
+        finally
         {
-            UserId = currentUserId,
-            ThreadId = id,
-            UserThreadRole = UserThreadRole.Member
-        };
-        dbContext.UserThreadRelations.Add(newRelation);
-        await dbContext.SaveChangesAsync();
+            joinThreadLock.Release();
+        }
         logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully joined the thread.");
     }
@@ -715,14 +727,6 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
-            .Where(t => t.UserId == currentUserId)
-            .Where(t => t.ThreadId == threadId)
-            .FirstOrDefaultAsync();
-        if (myRelation != null)
-        {
-            return this.Protocol(Code.Conflict, "You are already a member of this thread.");
-        }
         if (tokenObject.InvitedUserId != currentUserId)
         {
             return this.Protocol(Code.Unauthorized, "You are not the invited user.");
@@ -732,17 +736,36 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "The invitation was expired.");
         }
         logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.", currentUserId, threadId);
-        
-        // Add the user to the thread.
-        var newRelation = new UserThreadRelation
+
+        var joinThreadLock = locksDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: threadId);
+        await joinThreadLock.WaitAsync();
+        try
         {
-            UserId = currentUserId,
-            ThreadId = threadId,
-            UserThreadRole = UserThreadRole.Member
-        };
-        dbContext.UserThreadRelations.Add(newRelation);
-        await dbContext.SaveChangesAsync();
-        
+            // Ensure the user is not already a member of the thread.
+            var myRelation = await dbContext.UserThreadRelations
+                .Where(t => t.UserId == currentUserId)
+                .Where(t => t.ThreadId == threadId)
+                .FirstOrDefaultAsync();
+            if (myRelation != null)
+            {
+                return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+            }
+            
+            // Add the user to the thread.
+            var newRelation = new UserThreadRelation
+            {
+                UserId = currentUserId,
+                ThreadId = threadId,
+                UserThreadRole = UserThreadRole.Member
+            };
+            dbContext.UserThreadRelations.Add(newRelation);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            joinThreadLock.Release();
+        }
+
         logger.LogInformation("User with Id: {Id} successfully completed the soft invite. Thread ID: {ThreadID}.", currentUserId, threadId);
         return this.Protocol(Code.JobDone, "Successfully joined the thread.");
     }
