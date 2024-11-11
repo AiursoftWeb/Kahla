@@ -23,13 +23,11 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/blocks")]
 public class BlocksController(
+    LocksDb locksDb,
     UserOthersViewAppService userAppService,
     KahlaDbContext dbContext,
     ILogger<BlocksController> logger) : ControllerBase
 {
-    // This lock is used to avoid blocking the same user multiple times.
-    private static readonly SemaphoreSlim BlockUserLock = new(1, 1);
-    
     [HttpGet]
     [Route("list")]
     [Produces<MyBlocksViewModel>]
@@ -63,7 +61,8 @@ public class BlocksController(
         }
         
         logger.LogTrace("Waiting for the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, target.Id);
-        await BlockUserLock.WaitAsync();
+        var blockOperationLock = locksDb.GetBlockOperationLock($"BlockUser-{currentUserId}-{target.Id}");
+        await blockOperationLock.WaitAsync();
         try
         {
             var duplicated =
@@ -86,7 +85,7 @@ public class BlocksController(
         }
         finally
         {
-            BlockUserLock.Release();
+            blockOperationLock.Release();
             logger.LogTrace("Released the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, id);
         }
         logger.LogInformation("User with Id: {Id} successfully blocked a user with id: {TargetId}.", currentUserId, id);

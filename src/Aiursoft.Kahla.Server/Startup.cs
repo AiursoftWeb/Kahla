@@ -2,6 +2,7 @@
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
+using Aiursoft.InMemoryKvDb;
 using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -23,7 +24,11 @@ namespace Aiursoft.Kahla.Server
 
             // Database
             services.AddMemoryCache();
-            services.AddSingleton<InMemoryDataContext>();
+            services.AddSingleton<ChannelsInMemoryDb>();
+            services.AddSingleton<LocksDb>();
+            services.AddNamedLruMemoryStore<SemaphoreSlim, string>(
+                onNotFound: _ => new SemaphoreSlim(1, 1),
+                maxCachedItemsCount: 0x1000); // 4096
             services.AddSingleton<QuickMessageAccess>();
             services.AddRelationalDatabase(connectionString);
             

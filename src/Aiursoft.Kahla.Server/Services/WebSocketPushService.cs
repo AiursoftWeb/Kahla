@@ -7,7 +7,7 @@ namespace Aiursoft.Kahla.Server.Services;
 
 public class WebSocketPushService(
     ILogger<WebSocketPushService> logger,
-    InMemoryDataContext context)
+    ChannelsInMemoryDb context)
 {
     public async Task PushAsync(string userId, object payload)
     {

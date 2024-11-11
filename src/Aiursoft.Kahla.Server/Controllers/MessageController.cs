@@ -23,7 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/messages")]
 public class MessageController(
     IDataProtectionProvider dataProtectionProvider,
-    InMemoryDataContext context,
+    ChannelsInMemoryDb context,
     KahlaDbContext dbContext,
     ILogger<MessageController> logger,
     UserManager<KahlaUser> userManager) : ControllerBase

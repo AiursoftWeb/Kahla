@@ -3,7 +3,7 @@ using Aiursoft.AiurObserver;
 
 namespace Aiursoft.Kahla.Server.Data;
 
-public class InMemoryDataContext
+public class ChannelsInMemoryDb
 {
     public ConcurrentDictionary<string, AsyncObservable<string>> UserListenChannels { get; } = new();
     

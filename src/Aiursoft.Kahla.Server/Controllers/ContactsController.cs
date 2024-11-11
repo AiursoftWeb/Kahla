@@ -24,15 +24,13 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/contacts")]
 public class ContactsController(
+    LocksDb locks,
     UserOthersViewAppService userAppService,
     UserOthersViewRepo userRepo,
     ThreadJoinedViewAppService threadService,
     ILogger<ContactsController> logger,
     KahlaDbContext dbContext) : ControllerBase
 {
-    // This lock is used to avoid adding the same contact multiple times.
-    private static readonly SemaphoreSlim AddFriendLock = new(1, 1);
-
     [HttpGet]
     [Route("list")]
     [Produces<MyContactsViewModel>]
@@ -124,7 +122,8 @@ public class ContactsController(
         }
         
         logger.LogTrace("Waiting for the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUserId, target.Id);
-        await AddFriendLock.WaitAsync();
+        var addFriendLock = locks.GetFriendsOperationLock($"AddFriend-{currentUserId}-{target.Id}");
+        await addFriendLock.WaitAsync();
         try
         {
             var duplicated =
@@ -148,7 +147,7 @@ public class ContactsController(
         }
         finally
         {
-            AddFriendLock.Release();
+            addFriendLock.Release();
             logger.LogTrace("Released the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUserId, id);
         }
         logger.LogInformation("User with Id: {Id} successfully added a new contact with id: {TargetId}.", currentUserId, id);
