@@ -712,13 +712,13 @@ public class ThreadsController(
         var tokenParts = token.Split('.');
         if (tokenParts.Length != 2)
         {
-            return this.Protocol(Code.InvalidInput, "Invalid token format. Valid token should be in the format of 'rawToken.encryptedToken'.");
+            return this.Protocol(Code.Unauthorized, "Invalid token format. Valid token should be in the format of 'rawToken.encryptedToken'.");
         }
         var decryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Unprotect(tokenParts[1]).Base64ToString();
         var rawToken = tokenParts[0].Base64ToString();
         if (decryptedToken != rawToken)
         {
-            return this.Protocol(Code.InvalidInput, "Invalid token! The token is tampered.");
+            return this.Protocol(Code.Unauthorized, "Invalid token! The token is tampered.");
         }
         var tokenObject = SoftInviteToken.DeserializeObject(rawToken);
         var threadId = tokenObject.ThreadId;
