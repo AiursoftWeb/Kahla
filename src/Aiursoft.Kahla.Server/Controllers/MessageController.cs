@@ -29,6 +29,7 @@ public class MessageController(
     UserManager<KahlaUser> userManager) : ControllerBase
 {
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("WebSocketOTP");
+    public static TimeSpan TokenTimeout = TimeSpan.FromMinutes(5);
     
     [KahlaForceAuth]
     [Route("init-websocket")]
@@ -36,7 +37,7 @@ public class MessageController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} is trying to init a websocket OTP.", user.Email);
-        var validTo = DateTime.UtcNow.AddMinutes(5);
+        var validTo = DateTime.UtcNow.Add(TokenTimeout);
         var otpRaw = $"uid={user.Id},vlt={validTo}";
         var protectedOtp = _protector.Protect(otpRaw);
         return this.Protocol(new InitPusherViewModel
