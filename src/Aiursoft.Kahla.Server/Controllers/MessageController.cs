@@ -252,6 +252,10 @@ public class MessageController(
         return new EmptyResult();
     }
 
+    // TODO: New API: Query commit id with offset.
+    
+    // TODO: New API: Reset my unread messages count in a thread.
+    
     private async Task EnsureUserJoined(int threadId, string userId, string otp)
     {
         try
