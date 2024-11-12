@@ -8,7 +8,6 @@ using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Mvc;
-using Aiursoft.AiurObserver.Extensions;
 using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
