@@ -377,17 +377,20 @@ public class ClientPushConsumer(
             await threadReflector.BroadcastAsync(messagesToAddToDb);
 
             // Reflect in quick message access layer.
-            var lastMessage = messagesToAddToDb.Last();
-            quickMessageAccess.OnNewMessagesSent(
-                lastMessage: new KahlaMessageMappedSentView
-                {
-                    Id = lastMessage.Id,
-                    ThreadId = threadId,
-                    Content = lastMessage.Content,
-                    SendTime = lastMessage.CreationTime,
-                    Sender = userView
-                },
-                messagesCount: (uint)messagesToAddToDb.Length);
+            if (messagesToAddToDb.Any())
+            {
+                var lastMessage = messagesToAddToDb.Last();
+                quickMessageAccess.OnNewMessagesSent(
+                    lastMessage: new KahlaMessageMappedSentView
+                    {
+                        Id = lastMessage.Id,
+                        ThreadId = threadId,
+                        Content = lastMessage.Content,
+                        SendTime = lastMessage.CreationTime,
+                        Sender = userView
+                    },
+                    messagesCount: (uint)messagesToAddToDb.Length);
+            }
 
             // Save to database.
             messagesDb.Add(messagesToAddToDb);
