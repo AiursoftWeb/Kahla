@@ -57,7 +57,6 @@ public class MessageController(
         {
             Code = Code.ResultShown,
             Message = "Successfully generated a new OTP. It will be valid for 5 minutes.",
-            Otp = protectedOtp,
             WebSocketEndpoint =
                 $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{userId}?otp={protectedOtp}"
         });
@@ -92,7 +91,6 @@ public class MessageController(
         {
             Code = Code.ResultShown,
             Message = $"Successfully generated a new OTP for thread with id: '{id}'. It will be valid for 5 minutes.",
-            Otp = protectedOtp,
             WebSocketEndpoint =
                 $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket-thread/{id}/{currentUserId}/{protectedOtp}"
         });
