@@ -159,7 +159,7 @@ public class KahlaServerAccess(
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/messages/init-websocket",
             param: new { });
-        var result = await http.Get<InitPusherViewModel>(url);
+        var result = await http.Post<InitPusherViewModel>(url, new AiurApiPayload(new { }));
         return result;
     }
 
@@ -168,7 +168,7 @@ public class KahlaServerAccess(
         var url = new AiurApiEndpoint(_demoServerLocator.Instance,
             route: "/api/messages/init-thread-websocket/{threadId}", param:
             new { threadId });
-        var result = await http.Get<InitPusherViewModel>(url);
+        var result = await http.Post<InitPusherViewModel>(url, new AiurApiPayload(new { }));
         return result;
     }
 

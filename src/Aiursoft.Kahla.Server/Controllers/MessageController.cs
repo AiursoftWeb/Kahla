@@ -43,6 +43,7 @@ public class MessageController(
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("WebSocketOTP");
     public static TimeSpan TokenTimeout = TimeSpan.FromMinutes(5);
 
+    [HttpPost]
     [KahlaForceAuth]
     [Route("init-websocket")]
     public IActionResult InitWebSocket()
@@ -61,7 +62,8 @@ public class MessageController(
                 $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{userId}?otp={protectedOtp}"
         });
     }
-
+    
+    [HttpPost]
     [KahlaForceAuth]
     [Route("init-thread-websocket/{id}")]
     public async Task<IActionResult> InitWebSocketForThread([FromRoute] int id)
