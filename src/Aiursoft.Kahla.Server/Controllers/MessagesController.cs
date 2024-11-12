@@ -30,14 +30,14 @@ namespace Aiursoft.Kahla.Server.Controllers;
     PassthroughAiurServerException = true)]
 [ApiModelStateChecker]
 [Route("api/messages")]
-public class MessageController(
+public class MessagesController(
     QuickMessageAccess quickMessageAccess,
     LocksInMemoryDb locksInMemory,
     PartitionedObjectBucket<MessageInDatabaseEntity, int> messages,
     IDataProtectionProvider dataProtectionProvider,
     ChannelsInMemoryDb memoryDb,
     KahlaRelationalDbContext relationalDbContext,
-    ILogger<MessageController> logger) : ControllerBase
+    ILogger<MessagesController> logger) : ControllerBase
 {
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("WebSocketOTP");
     public static TimeSpan TokenTimeout = TimeSpan.FromMinutes(5);
@@ -348,7 +348,7 @@ public class ClientPushConsumer(
     KahlaUserMappedPublicView userView,
     int threadId,
     QuickMessageAccess quickMessageAccess,
-    ILogger<MessageController> logger,
+    ILogger<MessagesController> logger,
     ReaderWriterLockSlim lockObject,
     Guid userIdGuid,
     AsyncObservable<MessageInDatabaseEntity[]> threadReflector,
@@ -410,7 +410,7 @@ public class ClientPushConsumer(
 
 public class ThreadReflectConsumer(
     string listeningUserId,
-    ILogger<MessageController> logger,
+    ILogger<MessagesController> logger,
     ObservableWebSocket socket)
     : IConsumer<MessageInDatabaseEntity[]>
 {

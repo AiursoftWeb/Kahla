@@ -28,7 +28,7 @@ public class WebSocketTests : KahlaTestBase
     [TestMethod]
     public async Task WebSocketInitWithExpiredOtpTest()
     {
-        MessageController.TokenTimeout = TimeSpan.FromSeconds(-1);
+        MessagesController.TokenTimeout = TimeSpan.FromSeconds(-1);
 
         await Sdk.RegisterAsync("userExpired@domain.com", "password");
         var pusher = await Sdk.InitPusherAsync();
@@ -46,7 +46,7 @@ public class WebSocketTests : KahlaTestBase
         }
 
         Assert.IsTrue(exceptionThrown, "应当抛出异常，因为 OTP 已经过期。");
-        MessageController.TokenTimeout = TimeSpan.FromMinutes(5);
+        MessagesController.TokenTimeout = TimeSpan.FromMinutes(5);
     }
     
     [TestMethod]
