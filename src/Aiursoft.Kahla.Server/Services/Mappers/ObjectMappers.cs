@@ -9,10 +9,10 @@ public static class ObjectMappers
     {
         return new KahlaMessageMappedSentView
         {
-            Id = messageInDatabaseEntity.MessageId,
+            Id = messageInDatabaseEntity.Id,
             ThreadId = messageInDatabaseEntity.ThreadId,
             Content = messageInDatabaseEntity.Content,
-            SendTime = messageInDatabaseEntity.SendTime,
+            SendTime = messageInDatabaseEntity.CreationTime,
             Sender = sender == null ? null : new KahlaUserMappedPublicView
             {
                 Id = sender.Id,

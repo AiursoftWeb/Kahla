@@ -53,11 +53,11 @@ public class MemoryLayerTests
 
         arrayDbContext.AddMessage(new MessageInDatabaseEntity
         {
-            MessageId = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             ThreadId = thread.Id,
             SenderId = user.Id,
             Content = "Test",
-            SendTime = DateTime.UtcNow
+            CreationTime = DateTime.UtcNow
         });
         await dbContext.SaveChangesAsync();
         await server.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();

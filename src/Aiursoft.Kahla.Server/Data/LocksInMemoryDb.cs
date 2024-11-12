@@ -2,7 +2,9 @@ using Aiursoft.InMemoryKvDb.AutoCreate;
 
 namespace Aiursoft.Kahla.Server.Data;
 
-public class LocksInMemoryDb(NamedLruMemoryStoreProvider<SemaphoreSlim, string> memoryStoreProvider)
+public class LocksInMemoryDb(
+    NamedLruMemoryStoreProvider<SemaphoreSlim, string> memoryStoreProvider,
+    NamedLruMemoryStoreProvider<ReaderWriterLockSlim, int> rwMemoryStoreProvider)
 {
     public SemaphoreSlim GetFriendsOperationLock(string lockId)
     {
@@ -17,5 +19,10 @@ public class LocksInMemoryDb(NamedLruMemoryStoreProvider<SemaphoreSlim, string> 
     public SemaphoreSlim GetJoinThreadOperationLock(string userId, int threadId)
     {
         return memoryStoreProvider.GetStore("JoinThreadOperationLocks").GetOrAdd($"thread-join-{userId}-{threadId}");
+    }
+    
+    public ReaderWriterLockSlim GetThreadMessagesLock(int threadId)
+    {
+        return rwMemoryStoreProvider.GetStore("ThreadMessagesLock").GetOrAdd(threadId);
     }
 }

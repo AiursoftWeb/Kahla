@@ -22,14 +22,21 @@ namespace Aiursoft.Kahla.Server
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // Database
+            // In Memory Databases.
             services.AddMemoryCache();
             services.AddSingleton<ChannelsInMemoryDb>();
             services.AddSingleton<LocksInMemoryDb>();
             services.AddNamedLruMemoryStore<SemaphoreSlim, string>(
                 onNotFound: _ => new SemaphoreSlim(1, 1),
                 maxCachedItemsCount: 0x1000); // 4096
+            services.AddNamedLruMemoryStore<ReaderWriterLockSlim, int>(
+                onNotFound: _ => new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion),
+                maxCachedItemsCount: 0x8000); // 32768
+            
+            // Memory acceleration layers
             services.AddSingleton<QuickMessageAccess>();
+            
+            // Relational Database
             services.AddRelationalDatabase(connectionString);
             
             // ArrayDb

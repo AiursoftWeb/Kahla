@@ -1,5 +1,6 @@
 using Aiursoft.ArrayDb.ObjectBucket;
 using Aiursoft.ArrayDb.Partitions;
+using Aiursoft.Kahla.SDK.Models;
 
 namespace Aiursoft.Kahla.Server.Models.Entities;
 
@@ -15,9 +16,16 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         set => ThreadId = value;
     }
     
-    public Guid MessageId { get; init; } = Guid.NewGuid();
     public string Content { get; init; } = string.Empty;
-    public DateTime SendTime { get; init; } = DateTime.UtcNow;
-
     public string SenderId { get; init; } = string.Empty;
+    public Guid Id { get; init; } = Guid.NewGuid();
+    
+    public ChatMessage ToClientView()
+    {
+        return new ChatMessage
+        {
+            Content = Content,
+            SenderId = SenderId
+        };
+    }
 }
