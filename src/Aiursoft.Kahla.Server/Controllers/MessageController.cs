@@ -19,10 +19,9 @@ using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -65,7 +64,7 @@ public class MessageController(
 
     [KahlaForceAuth]
     [Route("init-thread-websocket/{id}")]
-    public async Task<IActionResult> InitWebSocketForChannel([FromRoute] int id)
+    public async Task<IActionResult> InitWebSocketForThread([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to init a channel websocket OTP.", currentUserId);
@@ -142,6 +141,10 @@ public class MessageController(
         {
             // Ignore. This happens when the client closes the connection.
         }
+        catch (ConnectionAbortedException)
+        {
+            // Ignore. This happens when the client closes the connection.
+        }
         finally
         {
             logger.LogInformation("User with Id: {Id} closed the websocket.", userId);
@@ -158,7 +161,7 @@ public class MessageController(
         [FromRoute] int threadId,
         [FromRoute] string userId,
         [FromRoute] string otp,
-        [FromQuery] string start)
+        [FromQuery] string? start)
     {
         await EnsureUserJoined(threadId, userId, otp);
 
@@ -184,6 +187,7 @@ public class MessageController(
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed 
             },
+            threadId,
             quickMessageAccess,
             logger,
             lockObject,
@@ -204,7 +208,7 @@ public class MessageController(
                     "User with ID: {UserId} is trying to pull {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
                     userId, readLength, threadId, startLocation);
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
-                await socket.Send(JsonTools.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
+                await socket.Send(Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
                 {
                     Item = t.ToClientView(),
                     Id = t.Id.ToString("D"),
@@ -230,11 +234,18 @@ public class MessageController(
         {
             // Ignore. This happens when the client closes the connection.
         }
+        catch (ConnectionAbortedException)
+        {
+            // Ignore. This happens when the client closes the connection.
+        }
         finally
         {
             reflectorSubscription.Unsubscribe();
             clientSubscription.Unsubscribe();
-            await socket.Close(HttpContext.RequestAborted);
+            if (socket.Connected)
+            {
+                await socket.Close(HttpContext.RequestAborted);
+            }
         }
 
         return new EmptyResult();
@@ -295,7 +306,7 @@ public class MessageController(
 
     private static (int startOffset, int readLength) GetInitialReadLocation(
         IObjectBucket<MessageInDatabaseEntity> messagesDb,
-        string start)
+        string? start)
     {
         var startLocation = 0;
         var found = false;
@@ -331,6 +342,7 @@ public class MessageController(
 
 public class ClientPushConsumer(
     KahlaUserMappedPublicView userView,
+    int threadId,
     QuickMessageAccess quickMessageAccess,
     ILogger<MessageController> logger,
     ReaderWriterLockSlim lockObject,
@@ -347,7 +359,7 @@ public class ClientPushConsumer(
         {
             // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
-            var model = JsonTools.Deserialize<PushModel<ChatMessage>>(clientPushed);
+            var model = Extensions.Deserialize<PushModel<ChatMessage>>(clientPushed);
             var serverTime = DateTime.UtcNow;
             var messagesToAddToDb = model.Commits
                 .Select(messageIncoming => new MessageInDatabaseEntity
@@ -369,7 +381,7 @@ public class ClientPushConsumer(
                 lastMessage: new KahlaMessageMappedSentView
                 {
                     Id = lastMessage.Id,
-                    ThreadId = lastMessage.ThreadId,
+                    ThreadId = threadId,
                     Content = lastMessage.Content,
                     SendTime = lastMessage.CreationTime,
                     Sender = userView
@@ -379,7 +391,7 @@ public class ClientPushConsumer(
             // Save to database.
             messagesDb.Add(messagesToAddToDb);
             logger.LogInformation(
-                "User with ID: {UserId} pushed {Count} messages. Successfully broadcast to other clients and saved to database.",
+                "User with ID: {UserId} pushed {Count} messages. We have successfully broadcast to other clients and saved to database.",
                 userIdGuid, messagesToAddToDb.Length);
         }
         finally
@@ -397,31 +409,11 @@ public class ThreadReflectConsumer(
     public async Task Consume(MessageInDatabaseEntity[] newCommits)
     {
         logger.LogInformation("Reflecting {Count} new messages to the client.", newCommits.Length);
-        await socket.Send(JsonTools.Serialize(newCommits.Select(t => new Commit<ChatMessage>
+        await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
             Item = t.ToClientView(),
             Id = t.Id.ToString("D"),
             CommitTime = t.CreationTime
         })));
-    }
-}
-
-public static class JsonTools
-{
-    private static readonly JsonSerializerSettings Settings = new()
-    {
-        TypeNameHandling = TypeNameHandling.Auto,
-        DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-    };
-
-    public static string Serialize<T>(T model)
-    {
-        return JsonConvert.SerializeObject(model, Settings);
-    }
-
-    public static T Deserialize<T>(string json)
-    {
-        return JsonConvert.DeserializeObject<T>(json, Settings)!;
     }
 }
