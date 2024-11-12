@@ -50,9 +50,9 @@ public class ThreadsInMemoryCache
         }
     }
     
-    public void AppendMessage(uint appenedMessageCount)
+    public void AppendMessage(uint messagesCount)
     {
         //Interlocked.Increment(ref _appendedMessageSinceBootCount);
-        Interlocked.Add(ref _appendedMessageSinceBootCount, appenedMessageCount);
+        Interlocked.Add(ref _appendedMessageSinceBootCount, messagesCount);
     }
 }
