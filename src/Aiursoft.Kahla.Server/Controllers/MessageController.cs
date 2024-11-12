@@ -195,6 +195,7 @@ public class MessageController(
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
+            userId,
             logger,
             socket);
 
@@ -402,13 +403,14 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
+    string listeningUserId,
     ILogger<MessageController> logger,
     ObservableWebSocket socket)
     : IConsumer<MessageInDatabaseEntity[]>
 {
     public async Task Consume(MessageInDatabaseEntity[] newCommits)
     {
-        logger.LogInformation("Reflecting {Count} new messages to the client.", newCommits.Length);
+        logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
         await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
             Item = t.ToClientView(),

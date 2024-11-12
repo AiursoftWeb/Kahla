@@ -66,7 +66,7 @@ public class MessagesTests : KahlaTestBase
         });
 
         // Reflect to client 2.
-        await Task.Delay(1500);
+        await WaitTillRepoHas(repo2, 1);
         Assert.AreEqual(1, repo2.Commits.Count);
         Assert.AreEqual("Hello, world!", repo2.Head.Item.Content);
 
@@ -76,7 +76,7 @@ public class MessagesTests : KahlaTestBase
             .AttachAsync(repo3);
 
         // Client 3 gets the message.
-        await Task.Delay(1500);
+        await WaitTillRepoHas(repo3, 1);
         Assert.AreEqual(1, repo3.Commits.Count);
         Assert.AreEqual("Hello, world!", repo3.Head.Item.Content);
 
@@ -91,7 +91,7 @@ public class MessagesTests : KahlaTestBase
         });
 
         // Reflect to client 1.
-        await Task.Delay(1500);
+        await WaitTillRepoHas(repo1, 2);
         Assert.AreEqual(2, repo1.Commits.Count);
         Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
 
@@ -111,7 +111,7 @@ public class MessagesTests : KahlaTestBase
         });
 
         // Not reflect to client 1 and client 3.
-        await Task.Delay(1500);
+        await Task.Delay(300);
         Assert.AreEqual(2, repo1.Commits.Count);
         Assert.AreEqual(3, repo2.Commits.Count);
         Assert.AreEqual(2, repo3.Commits.Count);
@@ -122,8 +122,10 @@ public class MessagesTests : KahlaTestBase
         // Client 2 reconnect.
         await wsr2.AttachAsync(repo2);
 
-        // All has 3 messages: Hw, Hw2, Hw3
-        await Task.Delay(1500);
+        // All has 4 messages: Hw, Hw2, Hw3, Hw4.
+        await WaitTillRepoHas(repo1, 4);
+        await WaitTillRepoHas(repo2, 4);
+        await WaitTillRepoHas(repo3, 4);
         Assert.AreEqual(4, repo1.Commits.Count);
         Assert.AreEqual(4, repo2.Commits.Count);
         Assert.AreEqual(4, repo3.Commits.Count);
@@ -133,6 +135,23 @@ public class MessagesTests : KahlaTestBase
         Assert.AreEqual(Guid.Parse(ui2), repo1.Head.Item.SenderId);
         Assert.AreEqual(Guid.Parse(ui2), repo2.Head.Item.SenderId);
         Assert.AreEqual(Guid.Parse(ui2), repo3.Head.Item.SenderId);
+    }
+    
+    private async Task WaitTillRepoHas(Repository<ChatMessage> repo, int count)
+    {
+        var timeoutTask = Task.Delay(500);
+        var waitTask = Task.Run(async () =>
+        {
+            while (repo.Commits.Count < count)
+            {
+                await Task.Delay(100);
+            }
+        });
+        await Task.WhenAny(timeoutTask, waitTask);
+        if (timeoutTask.IsCompleted)
+        {
+            Assert.Fail("Timeout.");
+        }
     }
 
     private async Task RunUnderUser(string userId, Func<Task> action)
