@@ -13,10 +13,7 @@ public class ArrayDbContext(PartitionedObjectBucket<MessageInDatabaseEntity, int
             return null;
         }
         
-        // TODO: Refactor the SDK.
-#pragma warning disable CS0618 // Type or member is obsolete
         var lastMessage = bucket.Read(partitionKey: threadId, index: count - 1);
-#pragma warning restore CS0618 // Type or member is obsolete
         return lastMessage;
     }
     
