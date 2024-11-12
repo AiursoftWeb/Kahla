@@ -7,11 +7,9 @@ using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Mvc;
 using Aiursoft.AiurObserver.Extensions;
 using Aiursoft.AiurProtocol.Server;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -24,28 +22,27 @@ namespace Aiursoft.Kahla.Server.Controllers;
 public class MessageController(
     IDataProtectionProvider dataProtectionProvider,
     ChannelsInMemoryDb context,
-    KahlaDbContext dbContext,
-    ILogger<MessageController> logger,
-    UserManager<KahlaUser> userManager) : ControllerBase
+    KahlaRelationalDbContext relationalDbContext,
+    ILogger<MessageController> logger) : ControllerBase
 {
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("WebSocketOTP");
     public static TimeSpan TokenTimeout = TimeSpan.FromMinutes(5);
     
     [KahlaForceAuth]
     [Route("init-websocket")]
-    public async Task<IActionResult> InitWebSocket()
+    public IActionResult InitWebSocket()
     {
-        var user = await this.GetCurrentUser(userManager);
-        logger.LogInformation("User with Id: {Id} is trying to init a websocket OTP.", user.Email);
+        var userId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to init a websocket OTP.", userId);
         var validTo = DateTime.UtcNow.Add(TokenTimeout);
-        var otpRaw = $"uid={user.Id},vlt={validTo}";
+        var otpRaw = $"uid={userId},vlt={validTo}";
         var protectedOtp = _protector.Protect(otpRaw);
         return this.Protocol(new InitPusherViewModel
         {
             Code = Code.ResultShown,
             Message = "Successfully generated a new OTP. It will be valid for 5 minutes.",
             Otp = protectedOtp,
-            WebSocketEndpoint = $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{user.Id}?otp={protectedOtp}"
+            WebSocketEndpoint = $"{HttpContext.Request.Scheme.Replace("http", "ws")}://{HttpContext.Request.Host}/api/messages/websocket/{userId}?otp={protectedOtp}"
         });
     }
 
@@ -53,7 +50,7 @@ public class MessageController(
     [Route("websocket/{userId}")]
     public async Task<IActionResult> WebSocket([FromRoute] string userId, [FromQuery] string otp)
     {
-        var user = await dbContext.Users.FindAsync(userId);
+        var user = await relationalDbContext.Users.FindAsync(userId);
         if (user == null)
         {
             logger.LogWarning("User with ID: {UserId} is trying to get a websocket but the user does not exist.",

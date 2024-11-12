@@ -1,17 +1,18 @@
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
-public class ThreadOthersViewRepo(KahlaDbContext dbContext)
+public class ThreadOthersViewRepo(KahlaRelationalDbContext relationalDbContext)
 {
     public IOrderedQueryable<KahlaThreadMappedOthersView> SearchThreads(
         string? searchInput, 
         string? excluding,
         string viewingUserId)
     {
-        return dbContext
+        return relationalDbContext
             .ChatThreads
             .AsNoTracking()
             .Where(t => t.AllowSearchByName || t.Id.ToString() == searchInput)
@@ -27,7 +28,7 @@ public class ThreadOthersViewRepo(KahlaDbContext dbContext)
     
     public IQueryable<KahlaThreadMappedOthersView> QueryThreadById(int threadId, string viewingUserId)
     {
-        return dbContext
+        return relationalDbContext
             .ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)

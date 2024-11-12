@@ -3,10 +3,10 @@ using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.InMemoryKvDb;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.Repositories;
@@ -25,7 +25,7 @@ namespace Aiursoft.Kahla.Server
             // Database
             services.AddMemoryCache();
             services.AddSingleton<ChannelsInMemoryDb>();
-            services.AddSingleton<LocksDb>();
+            services.AddSingleton<LocksInMemoryDb>();
             services.AddNamedLruMemoryStore<SemaphoreSlim, string>(
                 onNotFound: _ => new SemaphoreSlim(1, 1),
                 maxCachedItemsCount: 0x1000); // 4096
@@ -51,7 +51,7 @@ namespace Aiursoft.Kahla.Server
                     RequireLowercase = false,
                     RequireUppercase = false
                 })
-                .AddEntityFrameworkStores<KahlaDbContext>()
+                .AddEntityFrameworkStores<KahlaRelationalDbContext>()
                 .AddDefaultTokenProviders();
             
             // Repositories
@@ -59,6 +59,7 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
+            services.AddScoped<DeviceOwnerViewRepo>();
             
             // App services
             services.AddScoped<UserOthersViewAppService>();
@@ -71,7 +72,7 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
-            services.AddScoped<OnlineJudger>();
+            services.AddScoped<OnlineDetector>();
             services.AddTaskCanon();
 
             // Controllers and web

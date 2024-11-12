@@ -3,10 +3,10 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +23,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/blocks")]
 public class BlocksController(
-    LocksDb locksDb,
+    LocksInMemoryDb locksInMemoryDb,
     UserOthersViewAppService userAppService,
-    KahlaDbContext dbContext,
+    KahlaRelationalDbContext relationalDbContext,
     ILogger<BlocksController> logger) : ControllerBase
 {
     [HttpGet]
@@ -53,7 +53,7 @@ public class BlocksController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to block a user with id: {TargetId}.", currentUserId, id);
-        var target = await dbContext.Users.FindAsync(id);
+        var target = await relationalDbContext.Users.FindAsync(id);
         if (target == null)
         {
             logger.LogWarning("User with Id: {Id} is trying to block a user with id: {TargetId} but the target does not exist.", currentUserId, id);
@@ -61,12 +61,12 @@ public class BlocksController(
         }
         
         logger.LogTrace("Waiting for the lock to block a user from id {SourceId} with id: {TargetId}.", currentUserId, target.Id);
-        var blockOperationLock = locksDb.GetBlockOperationLock($"BlockUser-{currentUserId}-{target.Id}");
+        var blockOperationLock = locksInMemoryDb.GetBlockOperationLock($"BlockUser-{currentUserId}-{target.Id}");
         await blockOperationLock.WaitAsync();
         try
         {
             var duplicated =
-                await dbContext.BlockRecords.AnyAsync(t => t.CreatorId == currentUserId && t.TargetId == target.Id);
+                await relationalDbContext.BlockRecords.AnyAsync(t => t.CreatorId == currentUserId && t.TargetId == target.Id);
             if (duplicated)
             {
                 logger.LogWarning(
@@ -80,8 +80,8 @@ public class BlocksController(
                 TargetId = target.Id,
                 AddTime = DateTime.UtcNow
             };
-            await dbContext.BlockRecords.AddAsync(blockRecord);
-            await dbContext.SaveChangesAsync();
+            await relationalDbContext.BlockRecords.AddAsync(blockRecord);
+            await relationalDbContext.SaveChangesAsync();
         }
         finally
         {
@@ -98,14 +98,14 @@ public class BlocksController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to remove a block record with id: {TargetId}.", currentUserId, id);
-        var blockRecord = await dbContext.BlockRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUserId && t.TargetId == id);
+        var blockRecord = await relationalDbContext.BlockRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUserId && t.TargetId == id);
         if (blockRecord == null)
         {
             logger.LogWarning("User with Id: {Id} is trying to remove a block record with id: {TargetId} but the target is not in the block list.", currentUserId, id);
             return this.Protocol(Code.NotFound, "The target user is not in your block list.");
         }
-        dbContext.BlockRecords.Remove(blockRecord);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.BlockRecords.Remove(blockRecord);
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully removed a block record with id: {TargetId}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully removed the target user from your block list.");
     }

@@ -2,7 +2,7 @@ using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Services;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Microsoft.Extensions.Options;
 
@@ -101,10 +101,10 @@ public class KahlaServerAccess(
         return result;
     }
     
-    public async Task<AiurCollection<Device>> MyDevicesAsync()
+    public async Task<AiurCollection<DeviceMappedOwnerView>> MyDevicesAsync()
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/devices/my-devices", param: new {});
-        var result = await http.Get<AiurCollection<Device>>(url);
+        var result = await http.Get<AiurCollection<DeviceMappedOwnerView>>(url);
         return result;
     }
     

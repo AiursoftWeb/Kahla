@@ -1,13 +1,14 @@
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.Repositories;
 
 public class ThreadJoinedViewRepo(
-    KahlaDbContext dbContext, 
-    OnlineJudger judger,
+    KahlaRelationalDbContext relationalDbContext, 
+    OnlineDetector detector,
     QuickMessageAccess quickMessageAccess)
 {
     public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
@@ -15,7 +16,7 @@ public class ThreadJoinedViewRepo(
         string? excluding,
         string viewingUserId)
     {
-        return dbContext.ChatThreads
+        return relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .WhereWhen(excluding, t => !t.Name.Contains(excluding!))
@@ -25,32 +26,32 @@ public class ThreadJoinedViewRepo(
                 t.Members.Any(p => p.User.NickName.Contains(searchInput!)) ||
                 t.Members.Any(p => p.User.Email.Contains(searchInput!)) ||
                 t.Members.Any(p => p.User.Id == searchInput))
-            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess)
             .OrderByDescending(t => t.LastMessageTime);
     }
 
     public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)
     {
-        return dbContext.ChatThreads
+        return relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId, judger, quickMessageAccess)
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess)
             .OrderByDescending(t => t.LastMessageTime);
     }
     
     public IQueryable<ChatThread> QueryOnlyUsThreads(string viewingUserId, string targetUserId)
     {
-        return dbContext.ChatThreads
+        return relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Members.All(p => p.UserId == viewingUserId || p.UserId == targetUserId));
     }
 
     public IQueryable<KahlaThreadMappedJoinedView> QueryThreadById(int threadId, string currentUserId)
     {
-        return dbContext.ChatThreads
+        return relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)
-            .MapThreadsJoinedView(currentUserId, judger, quickMessageAccess);
+            .MapThreadsJoinedView(currentUserId, detector, quickMessageAccess);
     }
 }

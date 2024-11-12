@@ -1,8 +1,8 @@
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,13 +16,13 @@ public class MemoryLayerTests
     {
         var port = Network.GetAvailablePort();
         var server = await Extends.AppAsync<Startup>([], port: port);
-        await server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
+        await server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
         var dbContext = server
             .Services
             .GetRequiredService<IServiceScopeFactory>()
             .CreateScope()
             .ServiceProvider
-            .GetRequiredService<KahlaDbContext>();
+            .GetRequiredService<KahlaRelationalDbContext>();
         
         var arrayDbContext = server
             .Services

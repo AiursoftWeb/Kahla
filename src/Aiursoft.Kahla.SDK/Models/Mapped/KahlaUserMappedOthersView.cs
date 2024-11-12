@@ -1,10 +1,9 @@
-using Aiursoft.Kahla.SDK.Models.Entities;
 
 namespace Aiursoft.Kahla.SDK.Models.Mapped;
 
 public class KahlaUserMappedOthersView
 {
-    public required KahlaUser User { get; init; }
+    public required KahlaUserMappedPublicView User { get; init; }
     
     public required bool? Online { get; init; }
     

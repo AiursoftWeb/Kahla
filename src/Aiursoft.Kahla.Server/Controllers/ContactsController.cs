@@ -3,10 +3,11 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.WebTools.Attributes;
@@ -24,12 +25,12 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/contacts")]
 public class ContactsController(
-    LocksDb locks,
+    LocksInMemoryDb locksInMemory,
     UserOthersViewAppService userAppService,
     UserOthersViewRepo userRepo,
     ThreadJoinedViewAppService threadService,
     ILogger<ContactsController> logger,
-    KahlaDbContext dbContext) : ControllerBase
+    KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
     [HttpGet]
     [Route("list")]
@@ -67,7 +68,16 @@ public class ContactsController(
         }
         return this.Protocol(new UserBriefViewModel 
         {
-            BriefUser = searchedUser,
+            BriefUser = new KahlaUserMappedPublicView
+            {
+                Id = searchedUser.Id,
+                NickName = searchedUser.NickName,
+                Bio = searchedUser.Bio,
+                IconFilePath = searchedUser.IconFilePath,
+                AccountCreateTime = searchedUser.AccountCreateTime,
+                EmailConfirmed = searchedUser.EmailConfirmed,
+                Email = searchedUser.Email
+            },
             Code = Code.ResultShown,
             Message = $"User brief info successfully downloaded. (Cached)"
         });
@@ -114,7 +124,7 @@ public class ContactsController(
     {
         var currentUserId = User.GetUserId(); 
         logger.LogInformation("User with Id: {Id} is trying to add a new contact with id: {TargetId}.", currentUserId, id);
-        var target = await dbContext.Users.FindAsync(id);
+        var target = await relationalDbContext.Users.FindAsync(id);
         if (target == null)
         {
             logger.LogWarning("User with Id: {Id} is trying to add a contact with id: {TargetId} but the target does not exist.", currentUserId, id);
@@ -122,12 +132,12 @@ public class ContactsController(
         }
         
         logger.LogTrace("Waiting for the lock to add a new contact from id {SourceId} with id: {TargetId}.", currentUserId, target.Id);
-        var addFriendLock = locks.GetFriendsOperationLock($"AddFriend-{currentUserId}-{target.Id}");
+        var addFriendLock = locksInMemory.GetFriendsOperationLock($"AddFriend-{currentUserId}-{target.Id}");
         await addFriendLock.WaitAsync();
         try
         {
             var duplicated =
-                await dbContext.ContactRecords.AnyAsync(t => t.CreatorId == currentUserId && t.TargetId == target.Id);
+                await relationalDbContext.ContactRecords.AnyAsync(t => t.CreatorId == currentUserId && t.TargetId == target.Id);
             if (duplicated)
             {
                 logger.LogWarning(
@@ -142,8 +152,8 @@ public class ContactsController(
                 TargetId = target.Id,
                 AddTime = DateTime.UtcNow
             };
-            await dbContext.ContactRecords.AddAsync(contactRecord);
-            await dbContext.SaveChangesAsync();
+            await relationalDbContext.ContactRecords.AddAsync(contactRecord);
+            await relationalDbContext.SaveChangesAsync();
         }
         finally
         {
@@ -160,14 +170,14 @@ public class ContactsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to remove a contact with id: {TargetId}.", currentUserId, id);
-        var contactRecord = await dbContext.ContactRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUserId && t.TargetId == id);
+        var contactRecord = await relationalDbContext.ContactRecords.SingleOrDefaultAsync(t => t.CreatorId == currentUserId && t.TargetId == id);
         if (contactRecord == null)
         {
             logger.LogWarning("User with Id: {Id} is trying to remove a contact with id: {TargetId} but the target is not his contact.", currentUserId, id);
             return this.Protocol(Code.NotFound, "The target user is not your known contact.");
         }
-        dbContext.ContactRecords.Remove(contactRecord);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.ContactRecords.Remove(contactRecord);
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully removed a contact with id: {TargetId}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully removed the target user from your contacts.");
     }
@@ -177,7 +187,7 @@ public class ContactsController(
     public async Task<IActionResult> ReportHim([FromForm]ReportHimAddressModel model)
     {
         var currentUserId = User.GetUserId();
-        var targetUser = await dbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
+        var targetUser = await relationalDbContext.Users.SingleOrDefaultAsync(t => t.Id == model.TargetUserId);
         if (targetUser == null)
         {
             return this.Protocol(Code.NotFound, $"Could not find target user with id `{model.TargetUserId}`!");
@@ -186,7 +196,7 @@ public class ContactsController(
         {
             return this.Protocol(Code.Conflict, "You can not report yourself!");
         }
-        var exists = await dbContext
+        var exists = await relationalDbContext
             .Reports
             .AnyAsync((t) => t.TriggerId == currentUserId && t.TargetId == targetUser.Id && t.Status == ReportStatus.Pending);
         if (exists)
@@ -194,13 +204,13 @@ public class ContactsController(
             return this.Protocol(Code.NoActionTaken, "You have already reported the target user!");
         }
         // All check passed. Report him now!
-        await dbContext.Reports.AddAsync(new Report
+        await relationalDbContext.Reports.AddAsync(new Report
         {
             TargetId = targetUser.Id,
             TriggerId = currentUserId,
             Reason = model.Reason
         });
-        await dbContext.SaveChangesAsync();
+        await relationalDbContext.SaveChangesAsync();
         return this.Protocol(Code.JobDone, "Successfully reported target user!");
     }
 }

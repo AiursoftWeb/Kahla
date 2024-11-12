@@ -5,7 +5,7 @@ namespace Aiursoft.Kahla.Server.Data;
 
 public class ChannelsInMemoryDb
 {
-    public ConcurrentDictionary<string, AsyncObservable<string>> UserListenChannels { get; } = new();
+    private ConcurrentDictionary<string, AsyncObservable<string>> UserListenChannels { get; } = new();
     
     public AsyncObservable<string> GetMyChannel(string userId)
     {

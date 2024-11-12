@@ -5,9 +5,8 @@ using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools.InMemory;
 using Aiursoft.DbTools.MySql;
-using Aiursoft.Kahla.SDK.Models.Entities;
-using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,11 +39,7 @@ public static class Extensions
         string? condition,
         Expression<Func<T, bool>> predicate)
     {
-        if (string.IsNullOrWhiteSpace(condition))
-        {
-            return query;
-        }
-        return query.Where(predicate);
+        return string.IsNullOrWhiteSpace(condition) ? query : query.Where(predicate);
     }
     
     public static IServiceCollection AddRelationalDatabase(this IServiceCollection services, string connectionString)
@@ -52,14 +47,15 @@ public static class Extensions
         if (EntryExtends.IsInUnitTests())
         {
             Console.WriteLine("Unit test detected, using in-memory database.");
-            services.AddAiurInMemoryDb<KahlaDbContext>();
+            services.AddAiurInMemoryDb<KahlaRelationalDbContext>();
         }
         else
         {
             Console.WriteLine("Production environment detected, using MySQL database.");
             
             // As tested, splitQuery: false has better performance.
-            services.AddAiurMySqlWithCache<KahlaDbContext>(connectionString, splitQuery: false);
+            // This is because splitQuery = false can reduce the number of queries sent to the database from O(n) to O(1).
+            services.AddAiurMySqlWithCache<KahlaRelationalDbContext>(connectionString, splitQuery: false);
         }
         
         return services;
@@ -68,17 +64,5 @@ public static class Extensions
     public static int GetLimitedNumber(int min, int max, int suggested)
     {
         return Math.Max(min, Math.Min(max, suggested));
-    }
-    
-    public static KahlaMessageMappedSentView Map(this MessageInDatabaseEntity messageInDatabaseEntity, KahlaUser? sender)
-    {
-        return new KahlaMessageMappedSentView
-        {
-            Id = messageInDatabaseEntity.MessageId,
-            ThreadId = messageInDatabaseEntity.ThreadId,
-            Content = messageInDatabaseEntity.Content,
-            SendTime = messageInDatabaseEntity.SendTime,
-            Sender = sender
-        };
     }
 }

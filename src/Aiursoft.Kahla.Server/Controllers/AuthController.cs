@@ -3,10 +3,11 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Entities;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/auth")]
 public class AuthController(
-    KahlaDbContext dbContext,
+    KahlaRelationalDbContext relationalDbContext,
     UserManager<KahlaUser> userManager,
     SignInManager<KahlaUser> signInManager,
     ILogger<AuthController> logger) : ControllerBase
@@ -101,7 +102,7 @@ public class AuthController(
     {
         var user = await this.GetCurrentUser(userManager);
         logger.LogInformation("User with Id: {Id} requested to sign out.", user.Email);
-        var device = await dbContext
+        var device = await relationalDbContext
             .Devices
             .Where(t => t.OwnerId == user.Id)
             .SingleOrDefaultAsync(t => t.Id == model.DeviceId);
@@ -116,8 +117,8 @@ public class AuthController(
                 "Successfully signed you off, but we could not find device with id: " + model.DeviceId +" in your account.");
         }
 
-        dbContext.Devices.Remove(device);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.Devices.Remove(device);
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} signed out and removed device with id: {DeviceId}.", user.Email, model.DeviceId);
         return this.Protocol(Code.JobDone, "Success. And the device with id: " + model.DeviceId + " is removed from your account.");
     }
@@ -133,7 +134,16 @@ public class AuthController(
         {
             Code = Code.ResultShown,
             Message = "Got your user!",
-            User = user,
+            User = new KahlaUserMappedPublicView
+            {
+                Id = user.Id,
+                NickName = user.NickName,
+                Bio = user.Bio,
+                IconFilePath = user.IconFilePath,
+                AccountCreateTime = user.AccountCreateTime,
+                EmailConfirmed = user.EmailConfirmed,
+                Email = user.Email
+            },
             PrivateSettings = new PrivateSettings
             {
                 ThemeId = user.ThemeId,

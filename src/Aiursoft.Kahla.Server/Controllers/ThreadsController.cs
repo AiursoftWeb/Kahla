@@ -6,10 +6,10 @@ using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Entities;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
@@ -27,7 +27,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
-    LocksDb locksDb,
+    LocksInMemoryDb locksInMemoryDb,
     ArrayDbContext arrayDbContext,
     IDataProtectionProvider dataProtectionProvider,
     QuickMessageAccess quickMessageAccess,
@@ -35,7 +35,7 @@ public class ThreadsController(
     ThreadJoinedViewAppService threadService,
     ThreadOthersViewAppService threadOthersViewAppService,
     UserInThreadViewAppService userAppService,
-    KahlaDbContext dbContext) : ControllerBase
+    KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
     [HttpGet]
     [Route("list")]
@@ -62,7 +62,7 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .AsSplitQuery()
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -116,7 +116,7 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -140,12 +140,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to update the thread's properties. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -193,7 +193,7 @@ public class ThreadsController(
             thread.AllowSearchByName = model.AllowSearchByName == true;
             updatedProperties.Add(nameof(thread.AllowSearchByName));
         }
-        await dbContext.SaveChangesAsync();
+        await relationalDbContext.SaveChangesAsync();
         var updatedPropertiesName = string.Join(", ", updatedProperties); 
         logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId, updatedPropertiesName);
         return this.Protocol(Code.JobDone, $"Successfully updated the thread's properties: {updatedPropertiesName}.");
@@ -206,7 +206,7 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to directly join a thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
@@ -216,11 +216,11 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
         }
 
-        var joinThreadLock = locksDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: id);
+        var joinThreadLock = locksInMemoryDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: id);
         await joinThreadLock.WaitAsync();
         try
         {
-            var iMJoined = await dbContext.UserThreadRelations
+            var iMJoined = await relationalDbContext.UserThreadRelations
                 .Where(t => t.UserId == currentUserId)
                 .Where(t => t.ThreadId == id)
                 .AnyAsync();
@@ -235,8 +235,8 @@ public class ThreadsController(
                 ThreadId = id,
                 UserThreadRole = UserThreadRole.Member
             };
-            dbContext.UserThreadRelations.Add(newRelation);
-            await dbContext.SaveChangesAsync();
+            relationalDbContext.UserThreadRelations.Add(newRelation);
+            await relationalDbContext.SaveChangesAsync();
         }
         finally
         {
@@ -253,12 +253,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to transfer the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -270,12 +270,12 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can transfer the ownership.");
         }
-        var targetUser = await dbContext.Users.FindAsync(targetUserId);
+        var targetUser = await relationalDbContext.Users.FindAsync(targetUserId);
         if (targetUser == null)
         {
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
-        var targetRelation = await dbContext.UserThreadRelations
+        var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -286,7 +286,7 @@ public class ThreadsController(
         thread.OwnerRelationId = targetRelation.Id;
         // Also set the target user as an admin
         targetRelation.UserThreadRole = UserThreadRole.Admin;
-        await dbContext.SaveChangesAsync();
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully transferred the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully transferred the ownership of the thread.");
     }
@@ -301,12 +301,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to promote a member as an admin. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -318,7 +318,7 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can promote a member as an admin.");
         }
-        var targetRelation = await dbContext.UserThreadRelations
+        var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -327,7 +327,7 @@ public class ThreadsController(
             return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
         }
         targetRelation.UserThreadRole = promote ? UserThreadRole.Admin : UserThreadRole.Member;
-        await dbContext.SaveChangesAsync();
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully changed a member's role. Thread ID: {ThreadID}. User ID: {UserId}. New role: {Role}.", currentUserId, id, targetUserId, targetRelation.UserThreadRole);
         return this.Protocol(Code.JobDone, $"Successfully set the user's role to {targetRelation.UserThreadRole}.");
     }
@@ -339,12 +339,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to kick a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -356,7 +356,7 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. Only the admin can kick a member.");
         }
-        var targetRelation = await dbContext.UserThreadRelations
+        var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -368,8 +368,8 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "The owner of the thread can not be kicked.");
         }
-        dbContext.UserThreadRelations.Remove(targetRelation);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.UserThreadRelations.Remove(targetRelation);
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
     }
@@ -383,12 +383,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to leave the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -400,8 +400,8 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Conflict, "You are the owner of this thread. You can not leave the thread. If you don't want to own this thread anymore, please transfer the ownership to another member first. If you want to delete the thread, please dissolve the thread.");
         }
-        dbContext.UserThreadRelations.Remove(myRelation);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.UserThreadRelations.Remove(myRelation);
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully left the thread.");
     }
@@ -413,12 +413,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to dissolve the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -432,12 +432,12 @@ public class ThreadsController(
         }
         
         // Remove all the relations.
-        dbContext.UserThreadRelations.RemoveRange(dbContext.UserThreadRelations.Where(t => t.ThreadId == id));
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.UserThreadRelations.RemoveRange(relationalDbContext.UserThreadRelations.Where(t => t.ThreadId == id));
+        await relationalDbContext.SaveChangesAsync();
         
         // Remove the thread.
-        dbContext.ChatThreads.Remove(thread);
-        await dbContext.SaveChangesAsync();
+        relationalDbContext.ChatThreads.Remove(thread);
+        await relationalDbContext.SaveChangesAsync();
         
         // Remove the thread from the cache.
         quickMessageAccess.OnThreadDropped(id);
@@ -456,12 +456,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to set mute for the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -470,7 +470,7 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
         myRelation.Muted = mute;
-        await dbContext.SaveChangesAsync();
+        await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId, mute, id);
         return this.Protocol(Code.JobDone, "Successfully set mute for the thread.");
     }
@@ -482,10 +482,10 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to create a new thread from scratch.", currentUserId);
-        var strategy = dbContext.Database.CreateExecutionStrategy();
+        var strategy = relationalDbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await relationalDbContext.Database.BeginTransactionAsync();
             try
             {
                 // Step 1: Create a new thread without setting OwnerRelationId initially.
@@ -498,8 +498,8 @@ public class ThreadsController(
                     AllowMembersSendMessages = model.AllowMembersSendMessages,
                     AllowMembersEnlistAllMembers = model.AllowMembersEnlistAllMembers
                 };
-                dbContext.ChatThreads.Add(thread);
-                await dbContext.SaveChangesAsync();
+                relationalDbContext.ChatThreads.Add(thread);
+                await relationalDbContext.SaveChangesAsync();
                 
                 // Step 2: Add myself to the thread with role Admin
                 var myRelation = new UserThreadRelation
@@ -508,12 +508,12 @@ public class ThreadsController(
                     ThreadId = thread.Id,
                     UserThreadRole = UserThreadRole.Admin
                 };
-                dbContext.UserThreadRelations.Add(myRelation);
-                await dbContext.SaveChangesAsync();
+                relationalDbContext.UserThreadRelations.Add(myRelation);
+                await relationalDbContext.SaveChangesAsync();
                 
                 // Step 3: Set the owner of the thread after myRelation is saved
                 thread.OwnerRelationId = myRelation.Id;
-                await dbContext.SaveChangesAsync();
+                await relationalDbContext.SaveChangesAsync();
                 
                 // Commit the transaction if everything is successful
                 await transaction.CommitAsync();
@@ -548,7 +548,7 @@ public class ThreadsController(
     public async Task<IActionResult> HardInvite([FromRoute]string id)
     {
         var currentUserId = User.GetUserId();
-        var targetUser = await dbContext.Users.FindAsync(id);
+        var targetUser = await relationalDbContext.Users.FindAsync(id);
         if (targetUser == null)
         {
             return this.Protocol(Code.NotFound, $"The target user with ID {id} does not exist.");
@@ -557,7 +557,7 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "The target user does not allow hard invitation.");
         }
-        var targetUserBlockedMe = await dbContext.BlockRecords
+        var targetUserBlockedMe = await relationalDbContext.BlockRecords
             .Where(t => t.CreatorId == targetUser.Id)
             .Where(t => t.TargetId == currentUserId)
             .AnyAsync();
@@ -566,17 +566,17 @@ public class ThreadsController(
             return this.Protocol(Code.Conflict, "The target user has blocked you so you can not create a thread with him/her.");
         }
         
-        var strategy = dbContext.Database.CreateExecutionStrategy();
+        var strategy = relationalDbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await relationalDbContext.Database.BeginTransactionAsync();
             try
             {
                 // Step 1: Create a new thread without setting OwnerRelationId initially.
                 var thread = new ChatThread();
-                dbContext.ChatThreads.Add(thread);
+                relationalDbContext.ChatThreads.Add(thread);
                 logger.LogInformation("Creating a new thread...");
-                await dbContext.SaveChangesAsync(); // This will generate the thread's id
+                await relationalDbContext.SaveChangesAsync(); // This will generate the thread's id
 
                 // Step 2: Add myself to the thread with role Admin
                 var myRelation = new UserThreadRelation
@@ -585,13 +585,13 @@ public class ThreadsController(
                     ThreadId = thread.Id,
                     UserThreadRole = UserThreadRole.Admin
                 };
-                dbContext.UserThreadRelations.Add(myRelation);
+                relationalDbContext.UserThreadRelations.Add(myRelation);
                 logger.LogInformation("Adding myself (ID is {ID}) to the thread...", currentUserId);
-                await dbContext.SaveChangesAsync(); // This will generate myRelation's id
+                await relationalDbContext.SaveChangesAsync(); // This will generate myRelation's id
 
                 // Step 3: Set the owner of the thread after myRelation is saved
                 thread.OwnerRelationId = myRelation.Id;
-                dbContext.ChatThreads.Update(thread);
+                relationalDbContext.ChatThreads.Update(thread);
                 // Don't call SaveChangesAsync here for better performance.
 
                 if (currentUserId != targetUser.Id)
@@ -603,7 +603,7 @@ public class ThreadsController(
                         ThreadId = thread.Id,
                         UserThreadRole = UserThreadRole.Member
                     };
-                    dbContext.UserThreadRelations.Add(targetRelation);
+                    relationalDbContext.UserThreadRelations.Add(targetRelation);
                     // Don't call SaveChangesAsync here for better performance.
                 }
                 else
@@ -614,7 +614,7 @@ public class ThreadsController(
 
                 // Commit the transaction if everything is successful
                 logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUserId, targetUser.Id);
-                await dbContext.SaveChangesAsync(); // Save the targetRelation
+                await relationalDbContext.SaveChangesAsync(); // Save the targetRelation
                 await transaction.CommitAsync();
                 
                 // Save to cache.
@@ -664,12 +664,12 @@ public class ThreadsController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to create a soft invite token for the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await dbContext.ChatThreads.FindAsync(id); 
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id); 
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
-        var myRelation = await dbContext.UserThreadRelations
+        var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
             .FirstOrDefaultAsync();
@@ -722,7 +722,7 @@ public class ThreadsController(
         }
         var tokenObject = SoftInviteToken.DeserializeObject(rawToken);
         var threadId = tokenObject.ThreadId;
-        var thread = await dbContext.ChatThreads.FindAsync(threadId);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(threadId);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
@@ -737,12 +737,12 @@ public class ThreadsController(
         }
         logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.", currentUserId, threadId);
 
-        var joinThreadLock = locksDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: threadId);
+        var joinThreadLock = locksInMemoryDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: threadId);
         await joinThreadLock.WaitAsync();
         try
         {
             // Ensure the user is not already a member of the thread.
-            var myRelation = await dbContext.UserThreadRelations
+            var myRelation = await relationalDbContext.UserThreadRelations
                 .Where(t => t.UserId == currentUserId)
                 .Where(t => t.ThreadId == threadId)
                 .FirstOrDefaultAsync();
@@ -758,8 +758,8 @@ public class ThreadsController(
                 ThreadId = threadId,
                 UserThreadRole = UserThreadRole.Member
             };
-            dbContext.UserThreadRelations.Add(newRelation);
-            await dbContext.SaveChangesAsync();
+            relationalDbContext.UserThreadRelations.Add(newRelation);
+            await relationalDbContext.SaveChangesAsync();
         }
         finally
         {

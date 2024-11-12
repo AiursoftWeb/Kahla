@@ -31,7 +31,7 @@ public abstract class KahlaTestBase
     public async Task CreateServer()
     {
         _server = await AppAsync<Startup>([], port: _port);
-        await _server.UpdateDbAsync<KahlaDbContext>(UpdateMode.RecreateThenUse);
+        await _server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
         await _server.StartAsync();
         
         var serverConfig = _server.Services.GetRequiredService<IConfiguration>();

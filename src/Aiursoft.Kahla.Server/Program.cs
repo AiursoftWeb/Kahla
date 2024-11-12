@@ -8,7 +8,7 @@ public abstract class Program
     public static async Task Main(string[] args)
     {
         var app = await WebTools.Extends.AppAsync<Startup>(args);
-        await app.UpdateDbAsync<KahlaDbContext>(UpdateMode.MigrateThenUse);
+        await app.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.MigrateThenUse);
         await app.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
         await app.RunAsync();
     }

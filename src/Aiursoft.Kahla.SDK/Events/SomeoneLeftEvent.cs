@@ -1,4 +1,5 @@
-using Aiursoft.Kahla.SDK.Models.Entities;
+
+using Aiursoft.Kahla.SDK.Models.Mapped;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
@@ -9,5 +10,5 @@ public class SomeoneLeftEvent : KahlaEvent
         Type = EventType.SomeoneLeftEvent;
     }
     public required int ConversationId { get; set; }
-    public required KahlaUser LeftUser { get; set; }
+    public required KahlaUserMappedPublicView LeftUser { get; set; }
 }

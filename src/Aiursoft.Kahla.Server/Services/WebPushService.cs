@@ -1,5 +1,5 @@
-﻿using Aiursoft.Kahla.SDK.Models.Entities;
-using Aiursoft.Kahla.Server.Data;
+﻿using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebPush;
@@ -10,7 +10,7 @@ public class WebPushService(
     IConfiguration configuration,
     WebPushClient webPushClient,
     ILogger<WebPushService> logger,
-    KahlaDbContext dbContext)
+    KahlaRelationalDbContext relationalDbContext)
 {
     public async Task PushAsync(IEnumerable<Device> devices, object payload,
         string triggerEmail = "postermaster@aiursoft.com")
@@ -42,16 +42,16 @@ public class WebPushService(
         }
         catch (WebPushException e)
         {
-            dbContext.Devices.Remove(device);
-            await dbContext.SaveChangesAsync();
+            relationalDbContext.Devices.Remove(device);
+            await relationalDbContext.SaveChangesAsync();
             logger.LogCritical(e,
                 "A  WebPush error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
                 device.Id);
         }
         catch (Exception e)
         {
-            dbContext.Devices.Remove(device);
-            await dbContext.SaveChangesAsync();
+            relationalDbContext.Devices.Remove(device);
+            await relationalDbContext.SaveChangesAsync();
             logger.LogCritical(e,
                 "An unknown error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
                 device.Id);
