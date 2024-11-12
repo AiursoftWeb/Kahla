@@ -187,7 +187,7 @@ public class MessageController(
             quickMessageAccess,
             logger,
             lockObject,
-            Guid.Parse(userId).ToString(),
+            Guid.Parse(userId),
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
@@ -207,7 +207,7 @@ public class MessageController(
                 await socket.Send(JsonTools.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
                 {
                     Item = t.ToClientView(),
-                    Id = t.Id,
+                    Id = t.Id.ToString("D"),
                     CommitTime = t.CreationTime
                 })));
             }
@@ -302,13 +302,14 @@ public class MessageController(
 
         if (!string.IsNullOrWhiteSpace(start))
         {
+            var startGuid = Guid.Parse(start);
             startLocation = messagesDb.Count;
 
             // TODO: Really really bad performance. O(n) search.
             // Refactor required. Replace this with a hash table with LRU.
             foreach (var message in messagesDb.AsReverseEnumerable())
             {
-                if (message.Id == start)
+                if (message.Id == startGuid)
                 {
                     found = true;
                     break;
@@ -333,7 +334,7 @@ public class ClientPushConsumer(
     QuickMessageAccess quickMessageAccess,
     ILogger<MessageController> logger,
     ReaderWriterLockSlim lockObject,
-    string userIdGuid,
+    Guid userIdGuid,
     AsyncObservable<MessageInDatabaseEntity[]> threadReflector,
     IObjectBucket<MessageInDatabaseEntity> messagesDb)
     : IConsumer<string>
@@ -352,7 +353,7 @@ public class ClientPushConsumer(
                 .Select(messageIncoming => new MessageInDatabaseEntity
                 {
                     Content = messageIncoming.Item.Content,
-                    Id = messageIncoming.Id,
+                    Id = Guid.Parse(messageIncoming.Id),
                     CreationTime = serverTime,
                     SenderId = userIdGuid,
                 })
@@ -399,7 +400,7 @@ public class ThreadReflectConsumer(
         await socket.Send(JsonTools.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
             Item = t.ToClientView(),
-            Id = t.Id,
+            Id = t.Id.ToString("D"),
             CommitTime = t.CreationTime
         })));
     }

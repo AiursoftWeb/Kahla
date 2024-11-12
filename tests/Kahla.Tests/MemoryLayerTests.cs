@@ -27,6 +27,7 @@ public class MemoryLayerTests
         var arrayDbContext = server
             .Services
             .GetRequiredService<ArrayDbContext>();
+        
         // Add a user.
         var user = new KahlaUser
         {
@@ -53,9 +54,9 @@ public class MemoryLayerTests
 
         arrayDbContext.AddMessage(new MessageInDatabaseEntity
         {
-            Id = Guid.NewGuid().ToString("D"),
+            Id = Guid.NewGuid(),
             ThreadId = thread.Id,
-            SenderId = user.Id,
+            SenderId = Guid.Parse(user.Id),
             Content = "Test",
             CreationTime = DateTime.UtcNow
         });

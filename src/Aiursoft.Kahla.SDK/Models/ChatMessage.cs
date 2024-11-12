@@ -7,5 +7,5 @@ public class ChatMessage
     /// <summary>
     /// Server doesn't trust this value. Only for client side archive.
     /// </summary>
-    public string SenderId { get; set; } = string.Empty;
+    public Guid SenderId { get; set; } = Guid.Empty;
 }

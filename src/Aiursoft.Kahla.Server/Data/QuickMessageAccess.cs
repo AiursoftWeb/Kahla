@@ -71,7 +71,7 @@ public class QuickMessageAccess(
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}.", thread.Id);
             var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
-            var lastMessage = lastMessageEntity?.Map(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId));
+            var lastMessage = lastMessageEntity?.Map(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
             
             var membersInThread = await dbContext
                 .UserThreadRelations

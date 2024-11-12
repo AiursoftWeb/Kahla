@@ -150,7 +150,7 @@ public class DevicesController(
         {
             Message = new KahlaMessageMappedSentView
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 ThreadId = -1,
                 Sender = new KahlaUserMappedPublicView
                 {

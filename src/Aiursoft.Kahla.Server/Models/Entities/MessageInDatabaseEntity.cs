@@ -18,11 +18,9 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     
     public string Content { get; init; } = string.Empty;
     
-    // TODO: Replace to type: Guid
-    public string SenderId { get; init; } = string.Empty;
+    public Guid SenderId { get; init; } = Guid.Empty;
     
-    // TODO: Replace to type: Guid
-    public string Id { get; init; } = Guid.Empty.ToString("D");
+    public Guid Id { get; init; } = Guid.Empty;
     
     public ChatMessage ToClientView()
     {
