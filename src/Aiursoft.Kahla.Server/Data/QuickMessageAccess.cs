@@ -103,18 +103,19 @@ public class QuickMessageAccess(
     ///
     /// To call this message, please make sure the message is already saved in the database. And the Sender of the message is already loaded.
     /// </summary>
-    /// <param name="message"></param>
-    public void OnNewMessageSent(KahlaMessageMappedSentView message)
+    /// <param name="lastMessage"></param>
+    /// <param name="messagesCount"></param>
+    public void OnNewMessagesSent(KahlaMessageMappedSentView lastMessage, uint messagesCount)
     {
-        var threadCache = CachedThreads[message.ThreadId];
+        var threadCache = CachedThreads[lastMessage.ThreadId];
         lock (threadCache)
         {
             // Set as new last message.
-            threadCache.LastMessage = message;
+            threadCache.LastMessage = lastMessage;
         }
         
         // Increase the appended message count. So all users will see this message as unread.
-        threadCache.AppendMessage();
+        threadCache.AppendMessage(messagesCount);
     }
     
     /// <summary>

@@ -53,7 +53,7 @@ public class MemoryLayerTests
 
         arrayDbContext.AddMessage(new MessageInDatabaseEntity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString("D"),
             ThreadId = thread.Id,
             SenderId = user.Id,
             Content = "Test",

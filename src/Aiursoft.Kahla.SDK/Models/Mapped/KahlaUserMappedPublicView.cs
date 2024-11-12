@@ -13,5 +13,6 @@ public class KahlaUserMappedPublicView
     public required DateTime AccountCreateTime { get; init; }
 
     public required bool EmailConfirmed { get; init; }
+    
     public required string? Email { get; init; }
 }
