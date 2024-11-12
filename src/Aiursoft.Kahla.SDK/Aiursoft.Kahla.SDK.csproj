@@ -30,8 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurProtocol" Version="8.0.13" />
-    <!-- TODO: Move the database partitions to the server project.-->
-    <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="1.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
   </ItemGroup>
 </Project>
