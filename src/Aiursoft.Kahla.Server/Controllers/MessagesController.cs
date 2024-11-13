@@ -166,14 +166,11 @@ public class MessagesController(
 
         var messagesDb = messages.GetPartitionById(threadId);
         var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
-        var lockObject = locksInMemory.GetThreadMessagesLock(threadId);
+        var threadMessagesLock = locksInMemory.GetThreadMessagesLock(threadId);
         var user = await relationalDbContext.Users.FindAsync(userId);
 
         logger.LogInformation("User with ID: {UserId} is trying to connect to thread {ThreadId}.", userId, threadId);
         var socket = await HttpContext.AcceptWebSocketClient();
-
-        ISubscription? reflectorSubscription;
-        ISubscription? clientSubscription;
 
         var clientPushConsumer = new ClientPushConsumer(
             new KahlaUserMappedPublicView
@@ -189,7 +186,7 @@ public class MessagesController(
             threadId,
             quickMessageAccess,
             logger,
-            lockObject,
+            threadMessagesLock,
             Guid.Parse(userId),
             threadReflector,
             messagesDb);
@@ -198,7 +195,7 @@ public class MessagesController(
             logger,
             socket);
 
-        lockObject.EnterReadLock();
+        threadMessagesLock.EnterReadLock();
         try
         {
             var (startLocation, readLength) = GetInitialReadLocation(messagesDb, start);
@@ -216,38 +213,17 @@ public class MessagesController(
                 })));
             }
 
-            reflectorSubscription = threadReflector.Subscribe(reflectorConsumer);
-            clientSubscription = socket.Subscribe(clientPushConsumer);
+            threadReflector.Subscribe(reflectorConsumer);
+            socket.Subscribe(clientPushConsumer);
         }
         finally
         {
-            lockObject.ExitReadLock();
+            threadMessagesLock.ExitReadLock();
         }
 
-        try
-        {
-            logger.LogInformation("User with ID: {UserId} connected to thread {ThreadId} and listening for new events.",
-                userId, threadId);
-            await socket.Listen(HttpContext.RequestAborted);
-        }
-        catch (TaskCanceledException)
-        {
-            // Ignore. This happens when the client closes the connection.
-        }
-        catch (ConnectionAbortedException)
-        {
-            // Ignore. This happens when the client closes the connection.
-        }
-        finally
-        {
-            reflectorSubscription.Unsubscribe();
-            clientSubscription.Unsubscribe();
-            if (socket.Connected)
-            {
-                await socket.Close(HttpContext.RequestAborted);
-            }
-        }
-
+        logger.LogInformation("User with ID: {UserId} connected to thread {ThreadId} and listening for new events.",
+            userId, threadId);
+        await socket.Listen(HttpContext.RequestAborted);
         return new EmptyResult();
     }
 
@@ -379,6 +355,10 @@ public class ClientPushConsumer(
             // Reflect to other clients.
             await threadReflector.BroadcastAsync(messagesToAddToDb);
 
+            // TODO: Push to his own channel.
+            
+            // TODO: Update thread's last message time.
+            
             // Reflect in quick message access layer.
             if (messagesToAddToDb.Any())
             {
