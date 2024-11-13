@@ -13,6 +13,9 @@ before_script:
   - 'echo "Hostname: $(hostname)"'
   - 'dotnet --info'
 
+variables:
+  GIT_CLONE_PATH: '$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID'
+
 restore:
   stage: build
   script:
@@ -30,7 +33,8 @@ lint:
   needs: 
     - build
   script:
-    - jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml
+    # 3 times retry because sometimes the first time will fail
+    - jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml || jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml || jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml
     # Remove the warning of UnusedAutoPropertyAccessor InconsistentNaming
     - sed -i '/InconsistentNaming/d' analyze_output.xml
     - sed -i '/AssignNullToNotNullAttribute/d' analyze_output.xml # This is because jetbrains is not smart enough to understand the nullability of C# 8.0
