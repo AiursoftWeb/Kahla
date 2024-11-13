@@ -130,7 +130,7 @@ public class ThreadsController(
         var thread = await threadOthersViewAppService.GetThreadAsync(id, currentUserId);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, $"The thread with ID {id} does not exist.");
+            return this.Protocol(Code.NotFound, $"The thread with ID {id} does not exist. It might have been dissolved.");
         }
 
         logger.LogInformation(
@@ -158,7 +158,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not get the details.");
         }
 
         var thread = await threadService.GetThreadIJoinedAsync(id, currentUserId);
@@ -167,7 +167,7 @@ public class ThreadsController(
         return this.Protocol(new ThreadDetailsViewModel
         {
             Code = Code.ResultShown,
-            Message = "Successfully get the thread details.",
+            Message = "Successfully get the details of the thread.",
             Thread = thread,
         });
     }
@@ -182,7 +182,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -191,7 +191,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not update it.");
         }
 
         if (myRelation.UserThreadRole != UserThreadRole.Admin)
@@ -261,12 +261,12 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         if (!thread.AllowDirectJoinWithoutInvitation)
         {
-            return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
+            return this.Protocol(Code.Unauthorized, "This thread does not allow joining without an invitation. Please try to contact the owner or an admin to get an invitation.");
         }
 
         var joinThreadLock = locksInMemoryDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: id);
@@ -279,7 +279,7 @@ public class ThreadsController(
                 .AnyAsync();
             if (iMJoined)
             {
-                return this.Protocol(Code.Conflict, "You are already a member of this thread.");
+                return this.Protocol(Code.Conflict, "You are already a member of this thread. No need to join again.");
             }
 
             var newRelation = new UserThreadRelation
@@ -316,7 +316,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -325,7 +325,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not transfer the ownership.");
         }
 
         if (thread.OwnerRelationId != myRelation.Id)
@@ -337,7 +337,7 @@ public class ThreadsController(
         var targetUser = await relationalDbContext.Users.FindAsync(targetUserId);
         if (targetUser == null)
         {
-            return this.Protocol(Code.NotFound, "The target user does not exist.");
+            return this.Protocol(Code.NotFound, "The target user does not exist. You can not transfer the ownership.");
         }
 
         var targetRelation = await relationalDbContext.UserThreadRelations
@@ -346,7 +346,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (targetRelation == null)
         {
-            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread. So you can not transfer the ownership.");
         }
 
         thread.OwnerRelationId = targetRelation.Id;
@@ -373,7 +373,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -382,7 +382,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not promote a member.");
         }
 
         if (thread.OwnerRelationId != myRelation.Id)
@@ -397,7 +397,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (targetRelation == null)
         {
-            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread. So you can not promote him/her.");
         }
 
         targetRelation.UserThreadRole = promote ? UserThreadRole.Admin : UserThreadRole.Member;
@@ -419,7 +419,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -428,7 +428,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not kick a member.");
         }
 
         if (myRelation.UserThreadRole != UserThreadRole.Admin)
@@ -443,7 +443,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (targetRelation == null)
         {
-            return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
+            return this.Protocol(Code.NotFound, "The target user is not a member of this thread. So you can not kick him/her.");
         }
 
         if (thread.OwnerRelationId == targetRelation.Id)
@@ -474,7 +474,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -483,7 +483,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not leave it.");
         }
 
         if (thread.OwnerRelationId == myRelation.Id)
@@ -513,7 +513,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might have been dissolved.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -522,7 +522,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not dissolve it.");
         }
 
         if (thread.OwnerRelationId != myRelation.Id)
@@ -665,7 +665,7 @@ public class ThreadsController(
 
         if (!targetUser.AllowHardInvitation)
         {
-            return this.Protocol(Code.Unauthorized, "The target user does not allow hard invitation.");
+            return this.Protocol(Code.Unauthorized, "The target user does not allow others creating a thread with him/her.");
         }
 
         var targetUserBlockedMe = await relationalDbContext.BlockRecords
@@ -789,7 +789,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might be deleted.");
         }
 
         var myRelation = await relationalDbContext.UserThreadRelations
@@ -798,7 +798,7 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread and can not invite a user.");
         }
 
         if (myRelation.UserThreadRole != UserThreadRole.Admin && !thread.AllowMemberSoftInvitation)
@@ -856,7 +856,7 @@ public class ThreadsController(
         var thread = await relationalDbContext.ChatThreads.FindAsync(threadId);
         if (thread == null)
         {
-            return this.Protocol(Code.NotFound, "The thread does not exist.");
+            return this.Protocol(Code.NotFound, "The thread does not exist. It might be deleted.");
         }
 
         if (tokenObject.InvitedUserId != currentUserId)

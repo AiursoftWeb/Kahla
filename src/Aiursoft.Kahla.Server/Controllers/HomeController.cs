@@ -25,7 +25,7 @@ public class HomeController(
         var model = new IndexViewModel
         {
             Code = Code.ResultShown,
-            Message = "Welcome to this API project!",
+            Message = "Welcome to Aiursoft Kahla Server! This is a server for Kahla, a cross-platform business messaging app.",
             ServerName = configuration["ServerName"] ?? "Kahla Server",
             VapidPublicKey = configuration["VapidKeys:PublicKey"] ?? string.Empty
         };
