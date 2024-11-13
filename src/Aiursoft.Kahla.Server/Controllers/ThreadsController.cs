@@ -237,6 +237,9 @@ public class ThreadsController(
             };
             relationalDbContext.UserThreadRelations.Add(newRelation);
             await relationalDbContext.SaveChangesAsync();
+            
+            // Save to cache.
+            quickMessageAccess.OnUserJoinedThread(id, currentUserId);
         }
         finally
         {
@@ -370,6 +373,9 @@ public class ThreadsController(
         }
         relationalDbContext.UserThreadRelations.Remove(targetRelation);
         await relationalDbContext.SaveChangesAsync();
+        
+        // Remove the thread from the cache.
+        quickMessageAccess.OnUserLeftThread(id, targetUserId);
         logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
     }
@@ -402,6 +408,9 @@ public class ThreadsController(
         }
         relationalDbContext.UserThreadRelations.Remove(myRelation);
         await relationalDbContext.SaveChangesAsync();
+        
+        // Remove the thread from the cache.
+        quickMessageAccess.OnUserLeftThread(id, currentUserId);
         logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully left the thread.");
     }
@@ -519,7 +528,8 @@ public class ThreadsController(
                 await transaction.CommitAsync();
                 
                 // Save to cache.
-                quickMessageAccess.OnNewThreadCreated(thread.Id);
+                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
+                quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
                 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
@@ -618,7 +628,12 @@ public class ThreadsController(
                 await transaction.CommitAsync();
                 
                 // Save to cache.
-                quickMessageAccess.OnNewThreadCreated(thread.Id);
+                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
+                quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
+                if (currentUserId != targetUser.Id)
+                {
+                    quickMessageAccess.OnUserJoinedThread(thread.Id, targetUser.Id);
+                }
                 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
@@ -760,6 +775,9 @@ public class ThreadsController(
             };
             relationalDbContext.UserThreadRelations.Add(newRelation);
             await relationalDbContext.SaveChangesAsync();
+            
+            // Save to cache.
+            quickMessageAccess.OnUserJoinedThread(threadId, currentUserId);
         }
         finally
         {

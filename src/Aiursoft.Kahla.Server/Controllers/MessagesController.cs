@@ -325,7 +325,7 @@ public class ClientPushConsumer(
     int threadId,
     QuickMessageAccess quickMessageAccess,
     ILogger<MessagesController> logger,
-    ReaderWriterLockSlim lockObject,
+    ReaderWriterLockSlim threadMessagesLock,
     Guid userIdGuid,
     AsyncObservable<MessageInDatabaseEntity[]> threadReflector,
     IObjectBucket<MessageInDatabaseEntity> messagesDb)
@@ -334,7 +334,7 @@ public class ClientPushConsumer(
     public async Task Consume(string clientPushed)
     {
         logger.LogInformation("User with ID: {UserId} is trying to push a message.", userIdGuid);
-        lockObject.EnterWriteLock();
+        threadMessagesLock.EnterWriteLock();
         try
         {
             // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
@@ -383,7 +383,7 @@ public class ClientPushConsumer(
         }
         finally
         {
-            lockObject.ExitWriteLock();
+            threadMessagesLock.ExitWriteLock();
         }
     }
 }

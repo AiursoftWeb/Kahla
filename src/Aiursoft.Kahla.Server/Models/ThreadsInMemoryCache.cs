@@ -24,12 +24,17 @@ namespace Aiursoft.Kahla.Server.Models;
 /// </summary>
 public class ThreadsInMemoryCache
 {
+    public required int ThreadId { get; init; }
+    
     public required KahlaMessageMappedSentView? LastMessage { get; set; }
     
     // Every time a message is appended to this thread, this count will increase.
-    private uint _appendedMessageSinceBootCount;
+    // ReSharper disable once RedundantDefaultMemberInitializer
+    private uint _appendedMessageSinceBootCount = 0;
 
     public required ConcurrentDictionary<string, int> UserUnReadAmountSinceBoot { private get; init; }
+    
+    public required DateTime ThreadCreatedTime { get; init; }
     
     public uint GetUserUnReadAmount(string userId)
     {
@@ -54,5 +59,22 @@ public class ThreadsInMemoryCache
     {
         //Interlocked.Increment(ref _appendedMessageSinceBootCount);
         Interlocked.Add(ref _appendedMessageSinceBootCount, messagesCount);
+    }
+    
+    public void OnUserJoined(string userId)
+    {
+        // TODO: Call this function.
+        UserUnReadAmountSinceBoot.TryAdd(userId, 0 - (int)_appendedMessageSinceBootCount);
+    }
+    
+    public void OnUserLeft(string userId)
+    {
+        // TODO: Call this function.
+        UserUnReadAmountSinceBoot.TryRemove(userId, out _);
+    }
+    
+    public bool IsUserInThread(string userId)
+    {
+        return UserUnReadAmountSinceBoot.ContainsKey(userId);
     }
 }
