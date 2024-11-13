@@ -1,13 +1,16 @@
 using Aiursoft.Kahla.SDK.Models.Mapped;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services.AppService;
 
 public class ThreadJoinedViewAppService(
+    QuickMessageAccess quickMessageAccess,
     ThreadJoinedViewRepo repo)
 {
-    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> QueryCommonThreadsAsync(string viewingUserId, string targetUserId, int skip, int take)
+    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> QueryCommonThreadsAsync(
+        string viewingUserId, string targetUserId, int skip, int take)
     {
         var query = repo.QueryCommonThreads(viewingUserId, targetUserId);
         var totalCount = await query.CountAsync();
@@ -17,19 +20,20 @@ public class ThreadJoinedViewAppService(
             .ToListAsync();
         return (totalCount, threads);
     }
-    
+
     public async Task<int?> QueryDefaultAsync(string viewingUserId, string targetUserId)
     {
         var firstDefaultThread = await repo
             .QueryOnlyUsThreads(viewingUserId, targetUserId)
-            .OrderByDescending(t => t.LastMessageTime)
+            .OrderBy(t => t.CreateTime)
             .Select(t => t.Id)
             .FirstOrDefaultAsync();
-      
+
         return firstDefaultThread == 0 ? null : firstDefaultThread;
     }
-    
-    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> SearchThreadsIJoinedAsync(string? searchInput, string? excluding, string viewingUserId, int skip, int take)
+
+    public async Task<(int totalCount, List<KahlaThreadMappedJoinedView> threads)> SearchThreadsIJoinedAsync(
+        string? searchInput, string? excluding, string viewingUserId, int skip, int take)
     {
         var query = repo.SearchThreadsIJoined(searchInput, excluding, viewingUserId);
         var totalCount = await query.CountAsync();
@@ -40,11 +44,19 @@ public class ThreadJoinedViewAppService(
         return (totalCount, threads);
     }
 
-    public async Task<KahlaThreadMappedJoinedView> GetJoinedThreadAsync(int threadId, string viewingUserId)
+    public Task<List<KahlaThreadMappedJoinedView>> GetThreadsIJoinedAsync(string viewingUserId, int skip, int take)
+    {
+        var myThreadIds = quickMessageAccess.GetMyThreadIdsOrderedByLastMessageTimeDesc(viewingUserId, skip, take);
+        var query = repo.GetThreadsIJoined(myThreadIds, viewingUserId);
+        return query.ToListAsync();
+    }
+
+    public async Task<KahlaThreadMappedJoinedView> GetThreadIJoinedAsync(int threadId, string viewingUserId)
     {
         var thread = await repo
             .QueryThreadById(threadId, viewingUserId)
             .FirstOrDefaultAsync();
-        return thread!; // This can NOT be null. Because if the user didn't join the thread, it's already thrown an exception.
+        return
+            thread!; // This can NOT be null. Because if the user didn't join the thread, it's already thrown an exception.
     }
 }

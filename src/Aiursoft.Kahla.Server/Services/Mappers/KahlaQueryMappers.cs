@@ -7,7 +7,8 @@ namespace Aiursoft.Kahla.Server.Services.Mappers;
 
 public static class KahlaQueryMappers
 {
-    public static IQueryable<KahlaUserMappedOthersView> MapUsersOthersView(this IQueryable<KahlaUser> filteredUsers, string viewingUserId, OnlineDetector onlineDetector)
+    public static IQueryable<KahlaUserMappedOthersView> MapUsersOthersView(this IQueryable<KahlaUser> filteredUsers,
+        string viewingUserId, OnlineDetector onlineDetector)
     {
         return filteredUsers
             .Select(t => new KahlaUserMappedOthersView
@@ -27,8 +28,9 @@ public static class KahlaQueryMappers
                 Online = onlineDetector.IsOnline(t.Id, t.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
-    
-    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(this IQueryable<UserThreadRelation> filteredRelations, string viewingUserId, OnlineDetector onlineDetector)
+
+    public static IQueryable<KahlaUserMappedInThreadView> MapUsersInThreadView(
+        this IQueryable<UserThreadRelation> filteredRelations, string viewingUserId, OnlineDetector onlineDetector)
     {
         return filteredRelations
             .Select(u => new KahlaUserMappedInThreadView
@@ -51,8 +53,9 @@ public static class KahlaQueryMappers
                 Online = onlineDetector.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
-    
-    public static IQueryable<KahlaThreadMappedOthersView> MapThreadsOthersView(this IQueryable<ChatThread> filteredThreads, string viewingUserId)
+
+    public static IQueryable<KahlaThreadMappedOthersView> MapThreadsOthersView(
+        this IQueryable<ChatThread> filteredThreads, string viewingUserId)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedOthersView
@@ -66,10 +69,10 @@ public static class KahlaQueryMappers
                 ImInIt = t.Members.Any(u => u.UserId == viewingUserId)
             });
     }
-    
+
     public static IQueryable<KahlaThreadMappedJoinedView> MapThreadsJoinedView(
-        this IQueryable<ChatThread> filteredThreads, 
-        string viewingUserId, 
+        this IQueryable<ChatThread> filteredThreads,
+        string viewingUserId,
         OnlineDetector onlineDetector,
         QuickMessageAccess quickMessageAccess)
     {
@@ -100,7 +103,8 @@ public static class KahlaQueryMappers
                         IsAdmin = u.UserThreadRole == UserThreadRole.Admin,
                         IsOwner = t.OwnerRelationId == u.Id,
                         JoinTime = u.JoinTime,
-                        Online = onlineDetector.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus) // Client side evaluate.
+                        Online = onlineDetector.IsOnline(u.UserId,
+                            u.User.EnableHideMyOnlineStatus) // Client side evaluate.
                     })
                     .OrderBy(u => u.JoinTime)
                     .Take(10),
@@ -113,11 +117,10 @@ public static class KahlaQueryMappers
                 AllowMembersSendMessages = t.AllowMembersSendMessages,
                 AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
                 AllowSearchByName = t.AllowSearchByName,
-                LastMessageTime = t.LastMessageTime,
                 MessageContext = quickMessageAccess.GetMessageContext(t.Id, viewingUserId) // Client side evaluate.
             });
     }
-    
+
     public static IQueryable<DeviceMappedOwnerView> MapDevicesOwnedView(this IQueryable<Device> filteredDevices)
     {
         return filteredDevices

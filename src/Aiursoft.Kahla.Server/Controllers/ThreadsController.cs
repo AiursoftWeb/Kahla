@@ -38,30 +38,55 @@ public class ThreadsController(
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
     [HttpGet]
-    [Route("list")]
+    [Route("mine")]
     [Produces<MyThreadsViewModel>]
-    public async Task<IActionResult> List([FromQuery]SearchAddressModel model)
+    public async Task<IActionResult> Mine([FromQuery] SimpleSearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to search his threads with keyword: {Search}.", currentUserId, model.SearchInput);
-        var (count, threads) = await threadService.SearchThreadsIJoinedAsync(model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
-        logger.LogInformation("User with Id: {Id} successfully searched his threads with keyword: {Search} with total {Count}.", currentUserId, model.SearchInput, threads.Count);
+        logger.LogInformation("User with Id: {Id} is trying to list his threads.", currentUserId);
+        var threads = await threadService.GetThreadsIJoinedAsync(currentUserId, model.Skip, model.Take);
+        logger.LogInformation("User with Id: {Id} successfully list his threads with total {Count}.", currentUserId,
+            threads.Count);
         return this.Protocol(new MyThreadsViewModel
         {
             Code = Code.ResultShown,
-            Message = $"Successfully get your first {model.Take} threads from search result and skipped {model.Skip} threads.",
+            Message = $"Successfully get your first {model.Take} threads sorted by last message time.",
+            KnownThreads = threads,
+            TotalCount = -1
+        });
+    }
+
+    [HttpGet]
+    [Route("list")]
+    [Produces<MyThreadsViewModel>]
+    public async Task<IActionResult> List([FromQuery] SearchAddressModel model)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to search his threads with keyword: {Search}.",
+            currentUserId, model.SearchInput);
+        var (count, threads) = await threadService.SearchThreadsIJoinedAsync(model.SearchInput, model.Excluding,
+            currentUserId, model.Skip, model.Take);
+        logger.LogInformation(
+            "User with Id: {Id} successfully searched his threads with keyword: {Search} with total {Count}.",
+            currentUserId, model.SearchInput, threads.Count);
+        return this.Protocol(new MyThreadsViewModel
+        {
+            Code = Code.ResultShown,
+            Message =
+                $"Successfully get your first {model.Take} threads from search result and skipped {model.Skip} threads.",
             KnownThreads = threads,
             TotalCount = count
         });
     }
-    
+
     [HttpGet]
     [Route("members/{id:int}")]
     [Produces<ThreadMembersViewModel>]
-    public async Task<IActionResult> Members([FromRoute]int id, [FromQuery]int skip = 0, [FromQuery]int take = 20)
+    public async Task<IActionResult> Members([FromRoute] int id, [FromQuery] int skip = 0, [FromQuery] int take = 20)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var myRelation = await relationalDbContext.UserThreadRelations
             .AsSplitQuery()
             .Where(t => t.UserId == currentUserId)
@@ -72,12 +97,17 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
-        if (myRelation.Thread.AllowMembersEnlistAllMembers == false && myRelation.UserThreadRole != UserThreadRole.Admin)
+
+        if (myRelation.Thread.AllowMembersEnlistAllMembers == false &&
+            myRelation.UserThreadRole != UserThreadRole.Admin)
         {
             return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members.");
         }
+
         var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);
-        logger.LogInformation("User with Id: {Id} successfully get the members of the thread. Thread ID: {ThreadID}. Total members: {Count}.", currentUserId, id, members.Count);
+        logger.LogInformation(
+            "User with Id: {Id} successfully get the members of the thread. Thread ID: {ThreadID}. Total members: {Count}.",
+            currentUserId, id, members.Count);
         return this.Protocol(new ThreadMembersViewModel
         {
             Code = Code.ResultShown,
@@ -86,21 +116,26 @@ public class ThreadsController(
             TotalCount = count
         });
     }
-    
+
     [HttpGet]
     [Route("details-anonymous/{id:int}")]
     [Produces<ThreadAnonymousViewModel>]
     public async Task<IActionResult> DetailsAnonymous([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation(
+            "User with Id: {Id} is trying to get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId,
+            id);
 
         var thread = await threadOthersViewAppService.GetThreadAsync(id, currentUserId);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, $"The thread with ID {id} does not exist.");
         }
-        logger.LogInformation("User with Id: {Id} successfully get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId, id);
+
+        logger.LogInformation(
+            "User with Id: {Id} successfully get the thread details anonymously. Thread ID: {ThreadID}.", currentUserId,
+            id);
         return this.Protocol(new ThreadAnonymousViewModel
         {
             Code = Code.ResultShown,
@@ -115,7 +150,8 @@ public class ThreadsController(
     public async Task<IActionResult> Details([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to get the thread details. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -124,8 +160,10 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
-        var thread = await threadService.GetJoinedThreadAsync(id, currentUserId);
-        logger.LogInformation("User with Id: {Id} successfully get the thread details. Thread ID: {ThreadID}.", currentUserId, id);
+
+        var thread = await threadService.GetThreadIJoinedAsync(id, currentUserId);
+        logger.LogInformation("User with Id: {Id} successfully get the thread details. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(new ThreadDetailsViewModel
         {
             Code = Code.ResultShown,
@@ -136,15 +174,17 @@ public class ThreadsController(
 
     [HttpPatch]
     [Route("update-thread/{id:int}")]
-    public async Task<IActionResult> UpdateThread([FromRoute]int id, [FromForm]UpdateThreadAddressModel model)
+    public async Task<IActionResult> UpdateThread([FromRoute] int id, [FromForm] UpdateThreadAddressModel model)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to update the thread's properties. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to update the thread's properties. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -153,64 +193,77 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (myRelation.UserThreadRole != UserThreadRole.Admin)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. Only the admin can update the thread's properties.");
+            return this.Protocol(Code.Unauthorized,
+                "You are not the admin of this thread. Only the admin can update the thread's properties.");
         }
+
         var updatedProperties = new List<string>();
         if (model.Name != null)
         {
             thread.Name = model.Name;
             updatedProperties.Add(nameof(thread.Name));
         }
+
         if (model.IconFilePath != null)
         {
             thread.IconFilePath = model.IconFilePath;
             updatedProperties.Add(nameof(thread.IconFilePath));
         }
+
         if (model.AllowDirectJoinWithoutInvitation.HasValue)
         {
             thread.AllowDirectJoinWithoutInvitation = model.AllowDirectJoinWithoutInvitation == true;
             updatedProperties.Add(nameof(thread.AllowDirectJoinWithoutInvitation));
         }
+
         if (model.AllowMemberSoftInvitation.HasValue)
         {
             thread.AllowMemberSoftInvitation = model.AllowMemberSoftInvitation == true;
             updatedProperties.Add(nameof(thread.AllowMemberSoftInvitation));
         }
+
         if (model.AllowMembersSendMessages.HasValue)
         {
             thread.AllowMembersSendMessages = model.AllowMembersSendMessages == true;
             updatedProperties.Add(nameof(thread.AllowMembersSendMessages));
         }
+
         if (model.AllowMembersEnlistAllMembers.HasValue)
         {
             thread.AllowMembersEnlistAllMembers = model.AllowMembersEnlistAllMembers == true;
             updatedProperties.Add(nameof(thread.AllowMembersEnlistAllMembers));
         }
+
         if (model.AllowSearchByName.HasValue)
         {
             thread.AllowSearchByName = model.AllowSearchByName == true;
             updatedProperties.Add(nameof(thread.AllowSearchByName));
         }
+
         await relationalDbContext.SaveChangesAsync();
-        var updatedPropertiesName = string.Join(", ", updatedProperties); 
-        logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId, updatedPropertiesName);
+        var updatedPropertiesName = string.Join(", ", updatedProperties);
+        logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId,
+            updatedPropertiesName);
         return this.Protocol(Code.JobDone, $"Successfully updated the thread's properties: {updatedPropertiesName}.");
     }
 
     // Directly join a thread without an invitation. (Only when AllowDirectJoinWithoutInvitation is true)
     [HttpPost]
     [Route("direct-join/{id:int}")]
-    public async Task<IActionResult> DirectJoin([FromRoute]int id)
+    public async Task<IActionResult> DirectJoin([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to directly join a thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to directly join a thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         if (!thread.AllowDirectJoinWithoutInvitation)
         {
             return this.Protocol(Code.Unauthorized, "This thread does not allow direct join without an invitation.");
@@ -237,7 +290,7 @@ public class ThreadsController(
             };
             relationalDbContext.UserThreadRelations.Add(newRelation);
             await relationalDbContext.SaveChangesAsync();
-            
+
             // Save to cache.
             quickMessageAccess.OnUserJoinedThread(id, currentUserId);
         }
@@ -245,22 +298,27 @@ public class ThreadsController(
         {
             joinThreadLock.Release();
         }
-        logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.", currentUserId, id);
+
+        logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully joined the thread.");
     }
 
     // Transfer the ownership of the thread to another member. (Only the owner can do this)
     [HttpPost]
     [Route("transfer-ownership/{id:int}")]
-    public async Task<IActionResult> TransferOwnership([FromRoute]int id, [FromForm][Required]string targetUserId)
+    public async Task<IActionResult> TransferOwnership([FromRoute] int id, [FromForm] [Required] string targetUserId)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to transfer the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation(
+            "User with Id: {Id} is trying to transfer the ownership of the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -269,15 +327,19 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (thread.OwnerRelationId != myRelation.Id)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can transfer the ownership.");
+            return this.Protocol(Code.Unauthorized,
+                "You are not the owner of this thread. Only the owner can transfer the ownership.");
         }
+
         var targetUser = await relationalDbContext.Users.FindAsync(targetUserId);
         if (targetUser == null)
         {
             return this.Protocol(Code.NotFound, "The target user does not exist.");
         }
+
         var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
@@ -286,11 +348,14 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
         }
+
         thread.OwnerRelationId = targetRelation.Id;
         // Also set the target user as an admin
         targetRelation.UserThreadRole = UserThreadRole.Admin;
         await relationalDbContext.SaveChangesAsync();
-        logger.LogInformation("User with Id: {Id} successfully transferred the ownership of the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation(
+            "User with Id: {Id} successfully transferred the ownership of the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully transferred the ownership of the thread.");
     }
 
@@ -298,17 +363,19 @@ public class ThreadsController(
     [HttpPost]
     [Route("promote-admin/{id:int}")]
     public async Task<IActionResult> PromoteAdmin(
-        [FromRoute]int id, 
-        [FromForm][Required]string targetUserId,
-        [FromForm][Required]bool promote)
+        [FromRoute] int id,
+        [FromForm] [Required] string targetUserId,
+        [FromForm] [Required] bool promote)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to promote a member as an admin. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to promote a member as an admin. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -317,10 +384,13 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (thread.OwnerRelationId != myRelation.Id)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can promote a member as an admin.");
+            return this.Protocol(Code.Unauthorized,
+                "You are not the owner of this thread. Only the owner can promote a member as an admin.");
         }
+
         var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
@@ -329,24 +399,29 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
         }
+
         targetRelation.UserThreadRole = promote ? UserThreadRole.Admin : UserThreadRole.Member;
         await relationalDbContext.SaveChangesAsync();
-        logger.LogInformation("User with Id: {Id} successfully changed a member's role. Thread ID: {ThreadID}. User ID: {UserId}. New role: {Role}.", currentUserId, id, targetUserId, targetRelation.UserThreadRole);
+        logger.LogInformation(
+            "User with Id: {Id} successfully changed a member's role. Thread ID: {ThreadID}. User ID: {UserId}. New role: {Role}.",
+            currentUserId, id, targetUserId, targetRelation.UserThreadRole);
         return this.Protocol(Code.JobDone, $"Successfully set the user's role to {targetRelation.UserThreadRole}.");
     }
 
     // Kick a member from the thread. (Only the admin can do this) (Can not kick the owner)
     [HttpPost]
     [Route("kick-member/{id:int}")]
-    public async Task<IActionResult> KickMember([FromRoute]int id, [FromForm][Required]string targetUserId)
+    public async Task<IActionResult> KickMember([FromRoute] int id, [FromForm] [Required] string targetUserId)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to kick a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to kick a member from the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -355,10 +430,13 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (myRelation.UserThreadRole != UserThreadRole.Admin)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. Only the admin can kick a member.");
+            return this.Protocol(Code.Unauthorized,
+                "You are not the admin of this thread. Only the admin can kick a member.");
         }
+
         var targetRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == targetUserId)
             .Where(t => t.ThreadId == id)
@@ -367,16 +445,19 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The target user is not a member of this thread.");
         }
+
         if (thread.OwnerRelationId == targetRelation.Id)
         {
             return this.Protocol(Code.Unauthorized, "The owner of the thread can not be kicked.");
         }
+
         relationalDbContext.UserThreadRelations.Remove(targetRelation);
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, targetUserId);
-        logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
     }
 
@@ -385,15 +466,17 @@ public class ThreadsController(
     // Leave the thread. (The owner can not leave the thread)
     [HttpPost]
     [Route("leave/{id:int}")]
-    public async Task<IActionResult> LeaveThread([FromRoute]int id)
+    public async Task<IActionResult> LeaveThread([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to leave the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to leave the thread. Thread ID: {ThreadID}.", currentUserId,
+            id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -402,31 +485,37 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (thread.OwnerRelationId == myRelation.Id)
         {
-            return this.Protocol(Code.Conflict, "You are the owner of this thread. You can not leave the thread. If you don't want to own this thread anymore, please transfer the ownership to another member first. If you want to delete the thread, please dissolve the thread.");
+            return this.Protocol(Code.Conflict,
+                "You are the owner of this thread. You can not leave the thread. If you don't want to own this thread anymore, please transfer the ownership to another member first. If you want to delete the thread, please dissolve the thread.");
         }
+
         relationalDbContext.UserThreadRelations.Remove(myRelation);
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, currentUserId);
-        logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId,
+            id);
         return this.Protocol(Code.JobDone, "Successfully left the thread.");
     }
 
     // Dissolve the thread. (Only the owner can do this)
     [HttpPost]
     [Route("dissolve/{id:int}")]
-    public async Task<IActionResult> DissolveThread([FromRoute]int id)
+    public async Task<IActionResult> DissolveThread([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to dissolve the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to dissolve the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -435,41 +524,47 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         if (thread.OwnerRelationId != myRelation.Id)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the owner of this thread. Only the owner can dissolve the thread.");
+            return this.Protocol(Code.Unauthorized,
+                "You are not the owner of this thread. Only the owner can dissolve the thread.");
         }
-        
+
         // Remove all the relations.
-        relationalDbContext.UserThreadRelations.RemoveRange(relationalDbContext.UserThreadRelations.Where(t => t.ThreadId == id));
+        relationalDbContext.UserThreadRelations.RemoveRange(
+            relationalDbContext.UserThreadRelations.Where(t => t.ThreadId == id));
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Remove the thread.
         relationalDbContext.ChatThreads.Remove(thread);
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Remove the thread from the cache.
         quickMessageAccess.OnThreadDropped(id);
-        
+
         // Remove the thread from the array database.
         await arrayDbContext.DeleteThreadAsync(id);
-        
-        logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.", currentUserId, id);
+
+        logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully dissolved the thread.");
     }
-    
+
     // Set muted (Or unmute) for current user. (Any member can do this)
     [HttpPost]
     [Route("set-mute/{id:int}")]
-    public async Task<IActionResult> SetMute([FromRoute]int id, [FromForm][Required]bool mute)
+    public async Task<IActionResult> SetMute([FromRoute] int id, [FromForm] [Required] bool mute)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to set mute for the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation("User with Id: {Id} is trying to set mute for the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -478,16 +573,19 @@ public class ThreadsController(
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
+
         myRelation.Muted = mute;
         await relationalDbContext.SaveChangesAsync();
-        logger.LogInformation("User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId, mute, id);
+        logger.LogInformation(
+            "User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId,
+            mute, id);
         return this.Protocol(Code.JobDone, "Successfully set mute for the thread.");
     }
 
     [HttpPost]
     [Route("create-scratch")]
     [Produces<CreateNewThreadViewModel>]
-    public async Task<IActionResult> CreateFromScratch([FromForm]CreateThreadAddressModel model)
+    public async Task<IActionResult> CreateFromScratch([FromForm] CreateThreadAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to create a new thread from scratch.", currentUserId);
@@ -509,7 +607,7 @@ public class ThreadsController(
                 };
                 relationalDbContext.ChatThreads.Add(thread);
                 await relationalDbContext.SaveChangesAsync();
-                
+
                 // Step 2: Add myself to the thread with role Admin
                 var myRelation = new UserThreadRelation
                 {
@@ -519,22 +617,23 @@ public class ThreadsController(
                 };
                 relationalDbContext.UserThreadRelations.Add(myRelation);
                 await relationalDbContext.SaveChangesAsync();
-                
+
                 // Step 3: Set the owner of the thread after myRelation is saved
                 thread.OwnerRelationId = myRelation.Id;
                 await relationalDbContext.SaveChangesAsync();
-                
+
                 // Commit the transaction if everything is successful
                 await transaction.CommitAsync();
-                
+
                 // Save to cache.
                 quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
                 quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
-                
+
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
-                
-                logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.", currentUserId);
+
+                logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.",
+                    currentUserId);
                 return this.Protocol(new CreateNewThreadViewModel
                 {
                     NewThreadId = thread.Id,
@@ -551,11 +650,11 @@ public class ThreadsController(
             }
         });
     }
-        
+
     [HttpPost]
     [Route("hard-invite/{id}")]
     [Produces<CreateNewThreadViewModel>]
-    public async Task<IActionResult> HardInvite([FromRoute]string id)
+    public async Task<IActionResult> HardInvite([FromRoute] string id)
     {
         var currentUserId = User.GetUserId();
         var targetUser = await relationalDbContext.Users.FindAsync(id);
@@ -563,19 +662,22 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, $"The target user with ID {id} does not exist.");
         }
+
         if (!targetUser.AllowHardInvitation)
         {
             return this.Protocol(Code.Unauthorized, "The target user does not allow hard invitation.");
         }
+
         var targetUserBlockedMe = await relationalDbContext.BlockRecords
             .Where(t => t.CreatorId == targetUser.Id)
             .Where(t => t.TargetId == currentUserId)
             .AnyAsync();
         if (targetUserBlockedMe)
         {
-            return this.Protocol(Code.Conflict, "The target user has blocked you so you can not create a thread with him/her.");
+            return this.Protocol(Code.Conflict,
+                "The target user has blocked you so you can not create a thread with him/her.");
         }
-        
+
         var strategy = relationalDbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -623,10 +725,12 @@ public class ThreadsController(
                 }
 
                 // Commit the transaction if everything is successful
-                logger.LogInformation("Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...", currentUserId, targetUser.Id);
+                logger.LogInformation(
+                    "Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...",
+                    currentUserId, targetUser.Id);
                 await relationalDbContext.SaveChangesAsync(); // Save the targetRelation
                 await transaction.CommitAsync();
-                
+
                 // Save to cache.
                 quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
                 quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
@@ -634,10 +738,10 @@ public class ThreadsController(
                 {
                     quickMessageAccess.OnUserJoinedThread(thread.Id, targetUser.Id);
                 }
-                
+
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
-                
+
                 logger.LogInformation("A new thread has been created successfully. Thread ID is {ID}.", thread.Id);
                 return this.Protocol(new CreateNewThreadViewModel
                 {
@@ -655,7 +759,7 @@ public class ThreadsController(
             }
         });
     }
-    
+
     // Soft Invite, allowing users to invite new users into an existing conversation.
     //
     // * Administrators can initiate a soft invite at any time. The invited user will become a regular member.
@@ -675,15 +779,19 @@ public class ThreadsController(
     [HttpPost]
     [Route("soft-invite-init/{id:int}")]
     [Produces<CreateSoftInviteTokenViewModel>]
-    public async Task<IActionResult> CreateSoftInviteToken([FromRoute] int id, [FromForm][Required]string invitedUserId)
+    public async Task<IActionResult> CreateSoftInviteToken([FromRoute] int id,
+        [FromForm] [Required] string invitedUserId)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to create a soft invite token for the thread. Thread ID: {ThreadID}.", currentUserId, id);
-        var thread = await relationalDbContext.ChatThreads.FindAsync(id); 
+        logger.LogInformation(
+            "User with Id: {Id} is trying to create a soft invite token for the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         var myRelation = await relationalDbContext.UserThreadRelations
             .Where(t => t.UserId == currentUserId)
             .Where(t => t.ThreadId == id)
@@ -691,10 +799,12 @@ public class ThreadsController(
         if (myRelation == null)
         {
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
-        }   
+        }
+
         if (myRelation.UserThreadRole != UserThreadRole.Admin && !thread.AllowMemberSoftInvitation)
         {
-            return this.Protocol(Code.Unauthorized, "You are not the admin of this thread. In this thread, only the admin can invite a user."); 
+            return this.Protocol(Code.Unauthorized,
+                "You are not the admin of this thread. In this thread, only the admin can invite a user.");
         }
 
         var tokenObject = new SoftInviteToken
@@ -707,7 +817,9 @@ public class ThreadsController(
         var tokenRaw = tokenObject.SerializeObject().StringToBase64();
         var encryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Protect(tokenRaw);
         var tokenFinal = $"{tokenRaw}.{encryptedToken}";
-        logger.LogInformation("User with Id: {Id} successfully created a soft invite token for the thread. Thread ID: {ThreadID}.", currentUserId, id);
+        logger.LogInformation(
+            "User with Id: {Id} successfully created a soft invite token for the thread. Thread ID: {ThreadID}.",
+            currentUserId, id);
         return this.Protocol(new CreateSoftInviteTokenViewModel
         {
             Code = Code.JobDone,
@@ -715,7 +827,7 @@ public class ThreadsController(
             Token = tokenFinal
         });
     }
-    
+
     // Complete the soft invite.
     // This will add the current user to the thread.
     [HttpPost]
@@ -727,14 +839,18 @@ public class ThreadsController(
         var tokenParts = token.Split('.');
         if (tokenParts.Length != 2)
         {
-            return this.Protocol(Code.Unauthorized, "Invalid token format. Valid token should be in the format of 'rawToken.encryptedToken'.");
+            return this.Protocol(Code.Unauthorized,
+                "Invalid token format. Valid token should be in the format of 'rawToken.encryptedToken'.");
         }
-        var decryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Unprotect(tokenParts[1]).Base64ToString();
+
+        var decryptedToken = dataProtectionProvider.CreateProtector("SoftInvite").Unprotect(tokenParts[1])
+            .Base64ToString();
         var rawToken = tokenParts[0].Base64ToString();
         if (decryptedToken != rawToken)
         {
             return this.Protocol(Code.Unauthorized, "Invalid token! The token is tampered.");
         }
+
         var tokenObject = SoftInviteToken.DeserializeObject(rawToken);
         var threadId = tokenObject.ThreadId;
         var thread = await relationalDbContext.ChatThreads.FindAsync(threadId);
@@ -742,15 +858,19 @@ public class ThreadsController(
         {
             return this.Protocol(Code.NotFound, "The thread does not exist.");
         }
+
         if (tokenObject.InvitedUserId != currentUserId)
         {
             return this.Protocol(Code.Unauthorized, "You are not the invited user.");
         }
+
         if (tokenObject.ExpireTime < DateTime.UtcNow)
         {
             return this.Protocol(Code.Unauthorized, "The invitation was expired.");
         }
-        logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.", currentUserId, threadId);
+
+        logger.LogInformation("User with Id: {Id} passed a valid soft invite token. Thread ID: {ThreadID}.",
+            currentUserId, threadId);
 
         var joinThreadLock = locksInMemoryDb.GetJoinThreadOperationLock(userId: currentUserId, threadId: threadId);
         await joinThreadLock.WaitAsync();
@@ -765,7 +885,7 @@ public class ThreadsController(
             {
                 return this.Protocol(Code.Conflict, "You are already a member of this thread.");
             }
-            
+
             // Add the user to the thread.
             var newRelation = new UserThreadRelation
             {
@@ -775,7 +895,7 @@ public class ThreadsController(
             };
             relationalDbContext.UserThreadRelations.Add(newRelation);
             await relationalDbContext.SaveChangesAsync();
-            
+
             // Save to cache.
             quickMessageAccess.OnUserJoinedThread(threadId, currentUserId);
         }
@@ -784,7 +904,8 @@ public class ThreadsController(
             joinThreadLock.Release();
         }
 
-        logger.LogInformation("User with Id: {Id} successfully completed the soft invite. Thread ID: {ThreadID}.", currentUserId, threadId);
+        logger.LogInformation("User with Id: {Id} successfully completed the soft invite. Thread ID: {ThreadID}.",
+            currentUserId, threadId);
         return this.Protocol(Code.JobDone, "Successfully joined the thread.");
     }
 }
