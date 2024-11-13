@@ -95,13 +95,13 @@ public class ThreadsController(
             .FirstOrDefaultAsync();
         if (myRelation == null)
         {
-            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread. So you can not get the members.");
         }
 
         if (myRelation.Thread.AllowMembersEnlistAllMembers == false &&
             myRelation.UserThreadRole != UserThreadRole.Admin)
         {
-            return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members.");
+            return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members. Please contact the admin for more information.");
         }
 
         var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);

@@ -357,8 +357,6 @@ public class ClientPushConsumer(
 
             // TODO: Push to his own channel.
             
-            // TODO: Update thread's last message time.
-            
             // Reflect in quick message access layer.
             if (messagesToAddToDb.Any())
             {

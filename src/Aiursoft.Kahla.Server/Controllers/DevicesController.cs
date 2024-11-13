@@ -105,7 +105,7 @@ public class DevicesController(
         await relationalDbContext.SaveChangesAsync();
         logger.LogInformation("User with Id: {Id} successfully dropped a device with id: {DeviceId}",
             userId, device.Id);
-        return this.Protocol(Code.JobDone, $"Successfully dropped your device with id: '{id}'.");
+        return this.Protocol(Code.JobDone, $"Successfully dropped your device.");
     }
 
     [HttpPut]
