@@ -47,8 +47,7 @@ public class ThreadJoinedViewAppService(
     public Task<List<KahlaThreadMappedJoinedView>> GetThreadsIJoinedAsync(string viewingUserId, int skip, int take)
     {
         var myThreadIds = quickMessageAccess.GetMyThreadIdsOrderedByLastMessageTimeDesc(viewingUserId, skip, take);
-        var query = repo.GetThreadsIJoined(myThreadIds, viewingUserId);
-        return query.ToListAsync();
+        return repo.GetThreadsIJoined(myThreadIds, viewingUserId);
     }
 
     public async Task<KahlaThreadMappedJoinedView> GetThreadIJoinedAsync(int threadId, string viewingUserId)

@@ -49,7 +49,7 @@ public class MessagesTests : KahlaTestBase
         Assert.IsNotNull(ws1);
         Assert.IsNotNull(ws2);
         Assert.IsNotNull(ws3);
-        
+
         var repo1 = new Repository<ChatMessage>();
         await new WebSocketRemote<ChatMessage>(ws1)
             .AttachAsync(repo1);
@@ -118,7 +118,7 @@ public class MessagesTests : KahlaTestBase
         Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
         Assert.AreEqual("Hello, world! 4", repo2.Head.Item.Content);
         Assert.AreEqual("Hello, world! 2", repo3.Head.Item.Content);
-        
+
         // Client 2 reconnect.
         await wsr2.AttachAsync(repo2);
 
@@ -136,7 +136,7 @@ public class MessagesTests : KahlaTestBase
         Assert.AreEqual(Guid.Parse(ui2), repo2.Head.Item.SenderId);
         Assert.AreEqual(Guid.Parse(ui2), repo3.Head.Item.SenderId);
     }
-    
+
     private async Task WaitTillRepoHas(Repository<ChatMessage> repo, int count)
     {
         var timeoutTask = Task.Delay(500);
@@ -152,20 +152,5 @@ public class MessagesTests : KahlaTestBase
         {
             Assert.Fail("Timeout.");
         }
-    }
-
-    private async Task RunUnderUser(string userId, Func<Task> action)
-    {
-        try
-        {
-            await Sdk.RegisterAsync($"{userId}@domain.com", "password");
-        }
-        catch
-        {
-            await Sdk.SignInAsync($"{userId}@domain.com", "password");
-        }
-
-        await action();
-        await Sdk.SignoutAsync();
     }
 }

@@ -30,13 +30,18 @@ public class ThreadJoinedViewRepo(
             .OrderByDescending(t => t.CreateTime);
     }
 
-    public IOrderedQueryable<KahlaThreadMappedJoinedView> GetThreadsIJoined(int[] threadIds, string viewingUserId)
+    public async Task<List<KahlaThreadMappedJoinedView>> GetThreadsIJoined(int[] threadIds, string viewingUserId)
     {
-        return relationalDbContext.ChatThreads
+        var threadsQuery = relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => threadIds.Contains(t.Id))
-            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess)
-            .OrderByDescending(t => t.CreateTime);
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess);
+
+        // Need to order by the order of threadIds.
+        var threads = await threadsQuery.ToListAsync();
+        return threadIds
+            .Select(id => threads.Single(t => t.Id == id))
+            .ToList();
     }
 
     public IOrderedQueryable<KahlaThreadMappedJoinedView> QueryCommonThreads(string viewingUserId, string targetUserId)

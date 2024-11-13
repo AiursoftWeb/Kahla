@@ -310,6 +310,18 @@ public class KahlaServerAccess(
         return result;
     }
 
+    public async Task<MyThreadsViewModel> MyThreadsAsync(int skip = 0, int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/mine",
+            param: new SimpleSearchAddressModel
+            {
+                Skip = skip,
+                Take = take
+            });
+        var result = await http.Get<MyThreadsViewModel>(url);
+        return result;
+    }
+
     public async Task<ThreadMembersViewModel> ThreadMembersAsync(int id, int skip = 0, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/members/{id}",

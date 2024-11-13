@@ -12,9 +12,9 @@ namespace Aiursoft.Kahla.Tests.TestBase;
 
 public abstract class KahlaTestBase
 {
-    private IHost? _server;
     private readonly int _port;
     protected readonly KahlaServerAccess Sdk;
+    protected IHost? Server;
 
     protected KahlaTestBase()
     {
@@ -28,27 +28,46 @@ public abstract class KahlaTestBase
     }
 
     [TestInitialize]
-    public async Task CreateServer()
+    public async Task TestInitialize()
     {
-        _server = await AppAsync<Startup>([], port: _port);
-        await _server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
-        await _server.StartAsync();
-        
-        var serverConfig = _server.Services.GetRequiredService<IConfiguration>();
+        Server = await AppAsync<Startup>([], port: _port);
+        await Server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
+
+        var serverConfig = Server.Services.GetRequiredService<IConfiguration>();
         var storePath = serverConfig.GetSection("Storage:Path").Value;
-        if (Directory.Exists(storePath))
+        var dbPath = Path.Combine(storePath!, "MessagesDbFiles");
+        if (Directory.Exists(dbPath))
         {
-            Directory.Delete(storePath, true);
+            Directory.Delete(dbPath, true);
         }
+
+        Directory.CreateDirectory(dbPath);
         LimitPerMin.GlobalEnabled = false;
+
+        await Server.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
+        await Server.StartAsync();
     }
 
     [TestCleanup]
     public async Task CleanServer()
     {
-        if (_server == null) return;
-        await _server.StopAsync();
-        _server.Dispose();
+        if (Server == null) return;
+        await Server.StopAsync();
+        Server.Dispose();
     }
 
+    protected async Task RunUnderUser(string userId, Func<Task> action)
+    {
+        try
+        {
+            await Sdk.RegisterAsync($"{userId}@domain.com", "password");
+        }
+        catch
+        {
+            await Sdk.SignInAsync($"{userId}@domain.com", "password");
+        }
+
+        await action();
+        await Sdk.SignoutAsync();
+    }
 }

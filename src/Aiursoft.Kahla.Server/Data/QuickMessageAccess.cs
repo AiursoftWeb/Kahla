@@ -60,7 +60,7 @@ public class QuickMessageAccess(
     ILogger<QuickMessageAccess> logger)
 {
     private ConcurrentDictionary<int, ThreadsInMemoryCache> CachedThreads { get; } = new();
-    
+
     /// <summary>
     /// This list is actually sorted by the thread's last message time.
     ///
@@ -69,11 +69,22 @@ public class QuickMessageAccess(
     /// If there is no message in the thread, it will be sorted with its creation time.
     /// </summary>
     private LinkedList<int> ThreadIdsSortedByLastMessageTime { get; } = new();
-    
+
     private ReaderWriterLockSlim ThreadIdsSortedByLastMessageTimeLock { get; } = new();
 
     public async Task LoadAsync()
     {
+        // Clean up.
+        if (CachedThreads.Any())
+        {
+            CachedThreads.Clear();
+        }
+
+        if (ThreadIdsSortedByLastMessageTime.Any())
+        {
+            ThreadIdsSortedByLastMessageTime.Clear();
+        }
+
         var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaRelationalDbContext>();
         var userOthersViewRepo = scope.ServiceProvider.GetRequiredService<UserOthersViewRepo>();
@@ -82,8 +93,10 @@ public class QuickMessageAccess(
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}...", thread.Id);
             var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
-            var lastMessage = lastMessageEntity?.Map(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
-            
+            var lastMessage =
+                lastMessageEntity?.Map(
+                    await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
+
             var membersInThread = await dbContext
                 .UserThreadRelations
                 .AsNoTracking()
@@ -94,10 +107,12 @@ public class QuickMessageAccess(
             foreach (var member in membersInThread)
             {
                 var unReadMessages = totalMessages - member.ReadMessageIndex;
-                logger.LogInformation("Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.", member.UserId, thread.Id, unReadMessages);
+                logger.LogInformation(
+                    "Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.",
+                    member.UserId, thread.Id, unReadMessages);
                 userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
             }
-            
+
             var threadInMemoryCache = new ThreadsInMemoryCache
             {
                 ThreadId = thread.Id,
@@ -106,28 +121,36 @@ public class QuickMessageAccess(
                 ThreadCreatedTime = thread.CreateTime
             };
             CachedThreads[thread.Id] = threadInMemoryCache;
-            logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.", thread.Id, lastMessage?.SendTime);
-            
+            logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.",
+                thread.Id, lastMessage?.SendTime);
+
             // Insert the thread into the linked list.
             var lastMessageTime = lastMessage?.SendTime ?? thread.CreateTime;
             var node = ThreadIdsSortedByLastMessageTime.First;
             while (node != null)
             {
-                var nextThreadLastMessage = CachedThreads[node.Value].LastMessage?.SendTime ?? CachedThreads[node.Value].ThreadCreatedTime;
+                var nextThreadLastMessage = CachedThreads[node.Value].LastMessage?.SendTime ??
+                                            CachedThreads[node.Value].ThreadCreatedTime;
                 if (lastMessageTime > nextThreadLastMessage)
                 {
                     ThreadIdsSortedByLastMessageTime.AddBefore(node, thread.Id);
                     break;
                 }
+
                 node = node.Next;
             }
+
             if (node == null)
             {
                 ThreadIdsSortedByLastMessageTime.AddLast(thread.Id);
             }
+
             logger.LogInformation("Thread with ID {ThreadId} inserted into the sorted list.", thread.Id);
         }
-        logger.LogInformation("Quick message access cache built. Totally {ThreadCount} threads cached. {ListCount} items in sorted linked list.", CachedThreads.Count, ThreadIdsSortedByLastMessageTime.Count);
+
+        logger.LogInformation(
+            "Quick message access cache built. Totally {ThreadCount} threads cached. {ListCount} items in sorted linked list.",
+            CachedThreads.Count, ThreadIdsSortedByLastMessageTime.Count);
     }
 
     /// <summary>
@@ -145,10 +168,10 @@ public class QuickMessageAccess(
             // Set as new last message.
             threadCache.LastMessage = lastMessage;
         }
-        
+
         // Increase the appended message count. So all users will see this message as unread.
-        threadCache.AppendMessage(messagesCount);
-        
+        threadCache.AppendMessagesCount(messagesCount);
+
         // Move the thread to the last of the linked list.
         ThreadIdsSortedByLastMessageTimeLock.EnterWriteLock();
         try
@@ -162,7 +185,7 @@ public class QuickMessageAccess(
             ThreadIdsSortedByLastMessageTimeLock.ExitWriteLock();
         }
     }
-    
+
     /// <summary>
     /// This should be called if the user has read all messages in this thread.
     /// </summary>
@@ -176,7 +199,7 @@ public class QuickMessageAccess(
             threadCache.ClearUserUnReadAmountSinceBoot(userId);
         }
     }
-    
+
     /// <summary>
     /// This should be called when a new thread is created.
     /// </summary>
@@ -204,7 +227,7 @@ public class QuickMessageAccess(
             ThreadIdsSortedByLastMessageTimeLock.ExitWriteLock();
         }
     }
-    
+
     public void OnUserJoinedThread(int threadId, string userId)
     {
         var threadCache = CachedThreads[threadId];
@@ -213,7 +236,7 @@ public class QuickMessageAccess(
             threadCache.OnUserJoined(userId);
         }
     }
-    
+
     public void OnUserLeftThread(int threadId, string userId)
     {
         var threadCache = CachedThreads[threadId];
@@ -222,7 +245,7 @@ public class QuickMessageAccess(
             threadCache.OnUserLeft(userId);
         }
     }
-    
+
     /// <summary>
     /// This should be called when a thread is deleted.
     /// </summary>
@@ -252,7 +275,7 @@ public class QuickMessageAccess(
             LatestMessage = chatThread.LastMessage
         };
     }
-    
+
     public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int skip, int take)
     {
         ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();

@@ -24,25 +24,25 @@ namespace Aiursoft.Kahla.Server.Models;
 /// </summary>
 public class ThreadsInMemoryCache
 {
-    public required int ThreadId { get; init; }
-    
-    public required KahlaMessageMappedSentView? LastMessage { get; set; }
-    
     // Every time a message is appended to this thread, this count will increase.
     // ReSharper disable once RedundantDefaultMemberInitializer
     private uint _appendedMessageSinceBootCount = 0;
+    public required int ThreadId { get; init; }
+
+    public required KahlaMessageMappedSentView? LastMessage { get; set; }
 
     public required ConcurrentDictionary<string, int> UserUnReadAmountSinceBoot { private get; init; }
-    
+
     public required DateTime ThreadCreatedTime { get; init; }
-    
+
     public uint GetUserUnReadAmount(string userId)
     {
         // It's possible that the user is not in the thread when the app is booting.
         // If found unknown user, return 0 - appended message count.
-        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - (int)_appendedMessageSinceBootCount) + _appendedMessageSinceBootCount);
+        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - (int)_appendedMessageSinceBootCount) +
+                      _appendedMessageSinceBootCount);
     }
-    
+
     public void ClearUserUnReadAmountSinceBoot(string userId)
     {
         if (UserUnReadAmountSinceBoot.ContainsKey(userId))
@@ -54,25 +54,25 @@ public class ThreadsInMemoryCache
             UserUnReadAmountSinceBoot.TryAdd(userId, 0 - (int)_appendedMessageSinceBootCount);
         }
     }
-    
-    public void AppendMessage(uint messagesCount)
+
+    public void AppendMessagesCount(uint messagesCount)
     {
         //Interlocked.Increment(ref _appendedMessageSinceBootCount);
         Interlocked.Add(ref _appendedMessageSinceBootCount, messagesCount);
     }
-    
+
     public void OnUserJoined(string userId)
     {
         // TODO: Call this function.
         UserUnReadAmountSinceBoot.TryAdd(userId, 0 - (int)_appendedMessageSinceBootCount);
     }
-    
+
     public void OnUserLeft(string userId)
     {
         // TODO: Call this function.
         UserUnReadAmountSinceBoot.TryRemove(userId, out _);
     }
-    
+
     public bool IsUserInThread(string userId)
     {
         return UserUnReadAmountSinceBoot.ContainsKey(userId);
