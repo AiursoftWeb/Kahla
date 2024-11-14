@@ -195,6 +195,11 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(2, searchedThreads.KnownThreads.Count);
             Assert.AreEqual("Sample thread 3", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[1].Name);
+
+            var myThreadsSkip1Take1 = await Sdk.MyThreadsAsync(skipTillThreadId: myThreads.KnownThreads[0].Id, take: 1);
+            Assert.AreEqual(1, myThreadsSkip1Take1.KnownThreads.Count);
+            Assert.AreEqual("Hello, world!", myThreadsSkip1Take1.KnownThreads[0].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Sample thread 1", myThreadsSkip1Take1.KnownThreads[0].Name);
         }
     }
 }

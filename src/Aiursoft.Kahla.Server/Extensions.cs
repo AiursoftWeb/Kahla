@@ -84,4 +84,21 @@ public static class Extensions
     {
         return JsonConvert.DeserializeObject<T>(json, Settings)!;
     }
+
+    public static IEnumerable<T> SkipUntilEquals<T>(this IEnumerable<T> source, T? target) where T : struct
+    {
+        var shouldReturn = target == null;
+        foreach (var item in source)
+        {
+            switch (shouldReturn)
+            {
+                case true:
+                    yield return item;
+                    break;
+                case false:
+                    shouldReturn = item.Equals(target);
+                    break;
+            }
+        }
+    }
 }

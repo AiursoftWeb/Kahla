@@ -40,11 +40,11 @@ public class ThreadsController(
     [HttpGet]
     [Route("mine")]
     [Produces<MyThreadsViewModel>]
-    public async Task<IActionResult> Mine([FromQuery] SimpleSearchAddressModel model)
+    public async Task<IActionResult> Mine([FromQuery] MyThreadsAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to list his threads.", currentUserId);
-        var threads = await threadService.GetThreadsIJoinedAsync(currentUserId, model.Skip, model.Take);
+        var threads = await threadService.GetThreadsIJoinedAsync(currentUserId, model.SkipTillThreadId, model.Take);
         logger.LogInformation("User with Id: {Id} successfully list his threads with total {Count}.", currentUserId,
             threads.Count);
         return this.Protocol(new MyThreadsViewModel

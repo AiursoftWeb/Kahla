@@ -276,15 +276,15 @@ public class QuickMessageAccess(
         };
     }
 
-    public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int skip, int take)
+    public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int? skipTillThreadId, int take)
     {
         ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();
         try
         {
             return ThreadIdsSortedByLastMessageTime
+                .SkipUntilEquals(skipTillThreadId)
                 .Select(tId => CachedThreads[tId])
                 .Where(t => t.IsUserInThread(userId))
-                .Skip(skip)
                 .Take(take)
                 .Select(t => t.ThreadId)
                 .ToArray();

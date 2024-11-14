@@ -310,12 +310,12 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<MyThreadsViewModel> MyThreadsAsync(int skip = 0, int take = 20)
+    public async Task<MyThreadsViewModel> MyThreadsAsync(int? skipTillThreadId = null, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/mine",
-            param: new SimpleSearchAddressModel
+            param: new MyThreadsAddressModel
             {
-                Skip = skip,
+                SkipTillThreadId = skipTillThreadId,
                 Take = take
             });
         var result = await http.Get<MyThreadsViewModel>(url);
