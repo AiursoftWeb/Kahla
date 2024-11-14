@@ -173,6 +173,7 @@ public class MessagesController(
         logger.LogInformation("User with ID: {UserId} is trying to connect to thread {ThreadId}.", userId, threadId);
         var socket = await HttpContext.AcceptWebSocketClient();
 
+        var threadCache = quickMessageAccess.GetThreadCache(threadId);
         var clientPushConsumer = new ClientPushConsumer(
             new KahlaUserMappedPublicView
             {
@@ -186,13 +187,14 @@ public class MessagesController(
             },
             threadId,
             quickMessageAccess,
-            quickMessageAccess.GetThreadCache(threadId),
+            threadCache,
             logger,
             threadMessagesLock,
             Guid.Parse(userId),
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
+            threadCache,
             userId,
             logger,
             socket);
@@ -401,6 +403,7 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
+    ThreadsInMemoryCache threadCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
     ObservableWebSocket socket)
@@ -408,6 +411,12 @@ public class ThreadReflectConsumer(
 {
     public async Task Consume(MessageInDatabaseEntity[] newCommits)
     {
+        if (!threadCache.IsUserInThread(listeningUserId))
+        {
+            logger.LogWarning("User with ID: {UserId} is trying to listen to a thread that he is not in. Rejected.", listeningUserId);
+            return;
+        }
+        
         logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
         await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {

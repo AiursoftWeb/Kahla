@@ -202,4 +202,88 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual("Sample thread 1", myThreadsSkip1Take1.KnownThreads[0].Name);
         }
     }
+
+    [TestMethod]
+    public async Task TestThreadsUserKicked()
+    {
+        var thread1Id = 0;
+        var user1Ws = string.Empty;
+        var user2Ws = string.Empty;
+        var user1Id = Guid.Empty;
+        var user2Id = Guid.Empty;
+
+        await RunUnderUser("wsuser1", async () =>
+        {
+            //var myId = (await Sdk.MeAsync()).User.Id;
+            var result1 = await Sdk.CreateFromScratchAsync(
+                name: "Sample thread 1",
+                allowSearchByName: true,
+                allowMemberSoftInvitation: true,
+                allowMembersSendMessages: true,
+                allowDirectJoinWithoutInvitation: true,
+                allowMembersEnlistAllMembers: true);
+            thread1Id = result1.NewThreadId;
+            user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+            user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+            await Sdk.DirectJoinAsync(thread1Id);
+            user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+        });
+        
+        var repo1 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user1Ws)
+            .AttachAsync(repo1);
+        var repo2 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user2Ws)
+            .AttachAsync(repo2);
+        
+        // User 1 sends a message. Reflect to user 2.
+        repo1.Commit(new ChatMessage
+        {
+            Content = "Hello, world!",
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+        
+        // User 2 should receive the message.
+        Assert.AreEqual("Hello, world!", repo2.Head.Item.Content);
+        
+        // User 2 sends a message. Reflect to user 1.
+        repo2.Commit(new ChatMessage
+        {
+            Content = "Hello, world! 2",
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+        
+        // User 1 should receive the message.
+        Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
+        
+        // Kick user 2.
+        await RunUnderUser("wsuser1", async () =>
+        {
+           await Sdk.KickMemberAsync(thread1Id, user2Id.ToString());
+        });
+        
+        // User 1 sends a message. User 2 should not receive it.
+        repo1.Commit(new ChatMessage
+        {
+            Content = "Hello, world! After kick!",
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+        Assert.AreEqual("Hello, world! 2", repo2.Head.Item.Content);
+        
+        // User 2 sends a message. User 1 should not receive it.
+        repo2.Commit(new ChatMessage
+        {
+            Content = "Hello, world! 2 After kick!",
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+        Assert.AreEqual("Hello, world! After kick!", repo1.Head.Item.Content);
+    }
 }
