@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurEventSyncer" Version="8.0.3" />
+    <PackageReference Include="Aiursoft.AiurEventSyncer" Version="8.0.4" />
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="8.0.8" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="8.0.22" />
     <PackageReference Include="Aiursoft.DbTools.MySql" Version="8.0.27" />
