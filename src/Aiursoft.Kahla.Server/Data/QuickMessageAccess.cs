@@ -154,31 +154,23 @@ public class QuickMessageAccess(
     }
 
     /// <summary>
-    /// This method will update the in-memory cache of a thread.
+    /// This method will update the in-memory cache of a thread to move it to the front of the sorted list.
     ///
-    /// To call this message, please make sure the message is already saved in the database. And the Sender of the message is already loaded.
+    /// This indicates that this thread has new messages sent.
     /// </summary>
-    /// <param name="lastMessage"></param>
-    /// <param name="messagesCount"></param>
-    public void OnNewMessagesSent(KahlaMessageMappedSentView lastMessage, uint messagesCount)
+    /// <param name="threadId">The thread ID.</param>
+    public void SetThreadAsNewMessageSent(int threadId)
     {
-        var threadCache = CachedThreads[lastMessage.ThreadId];
-        lock (threadCache)
-        {
-            // Set as new last message.
-            threadCache.LastMessage = lastMessage;
-        }
-
-        // Increase the appended message count. So all users will see this message as unread.
-        threadCache.AppendMessagesCount(messagesCount);
-
         // Move the thread to the last of the linked list.
         ThreadIdsSortedByLastMessageTimeLock.EnterWriteLock();
         try
         {
             // Move the id to the front.
-            ThreadIdsSortedByLastMessageTime.Remove(lastMessage.ThreadId);
-            ThreadIdsSortedByLastMessageTime.AddFirst(lastMessage.ThreadId);
+            if (ThreadIdsSortedByLastMessageTime.Remove(threadId))
+            {
+                // Only move to the front if it was in the list.
+                ThreadIdsSortedByLastMessageTime.AddFirst(threadId);
+            }
         }
         finally
         {
@@ -245,7 +237,12 @@ public class QuickMessageAccess(
             threadCache.OnUserLeft(userId);
         }
     }
-
+    
+    public ThreadsInMemoryCache GetThreadCache(int threadId)
+    {
+        return CachedThreads[threadId];
+    }
+    
     /// <summary>
     /// This should be called when a thread is deleted.
     /// </summary>

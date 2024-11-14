@@ -16,6 +16,7 @@ using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Connections;
@@ -162,7 +163,7 @@ public class MessagesController(
         [FromRoute] string otp,
         [FromQuery] string? start)
     {
-        await EnsureUserJoined(threadId, userId, otp);
+        await EnsureUserIsMemberOfThread(threadId, userId, otp);
 
         var messagesDb = messages.GetPartitionById(threadId);
         var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
@@ -185,6 +186,7 @@ public class MessagesController(
             },
             threadId,
             quickMessageAccess,
+            quickMessageAccess.GetThreadCache(threadId),
             logger,
             threadMessagesLock,
             Guid.Parse(userId),
@@ -231,7 +233,7 @@ public class MessagesController(
     
     // TODO: New API: Reset my unread messages count in a thread.
     
-    private async Task EnsureUserJoined(int threadId, string userId, string otp)
+    private async Task EnsureUserIsMemberOfThread(int threadId, string userId, string otp)
     {
         try
         {
@@ -324,6 +326,7 @@ public class ClientPushConsumer(
     KahlaUserMappedPublicView userView,
     int threadId,
     QuickMessageAccess quickMessageAccess,
+    ThreadsInMemoryCache threadCache,
     ILogger<MessagesController> logger,
     ReaderWriterLockSlim threadMessagesLock,
     Guid userIdGuid,
@@ -333,6 +336,12 @@ public class ClientPushConsumer(
 {
     public async Task Consume(string clientPushed)
     {
+        if (!threadCache.IsUserInThread(userIdGuid.ToString()))
+        {
+            logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", userIdGuid);
+            return;
+        }
+        
         logger.LogInformation("User with ID: {UserId} is trying to push a message.", userIdGuid);
         threadMessagesLock.EnterWriteLock();
         try
@@ -360,17 +369,22 @@ public class ClientPushConsumer(
             // Reflect in quick message access layer.
             if (messagesToAddToDb.Any())
             {
+                // Set as new last message in cache.
                 var lastMessage = messagesToAddToDb.Last();
-                quickMessageAccess.OnNewMessagesSent(
-                    lastMessage: new KahlaMessageMappedSentView
-                    {
-                        Id = lastMessage.Id,
-                        ThreadId = threadId,
-                        Content = lastMessage.Content,
-                        SendTime = lastMessage.CreationTime,
-                        Sender = userView
-                    },
-                    messagesCount: (uint)messagesToAddToDb.Length);
+                threadCache.LastMessage = new KahlaMessageMappedSentView
+                {
+                    Id = lastMessage.Id,
+                    ThreadId = threadId,
+                    Content = lastMessage.Content,
+                    SendTime = lastMessage.CreationTime,
+                    Sender = userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
+                };
+
+                // Increase the appended message count. So all users will see this message as unread.
+                threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
+                
+                // Set the thread as new message sent.
+                quickMessageAccess.SetThreadAsNewMessageSent(threadId);
             }
 
             // Save to database.
