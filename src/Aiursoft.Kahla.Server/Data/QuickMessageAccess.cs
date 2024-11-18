@@ -88,7 +88,7 @@ public class QuickMessageAccess(
         var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaRelationalDbContext>();
         var userOthersViewRepo = scope.ServiceProvider.GetRequiredService<UserOthersViewRepo>();
-        logger.LogInformation("Building quick message access cache...");
+        logger.LogInformation("Building quick message access cache...(This happens when the application starts, only once.)");
         foreach (var thread in dbContext.ChatThreads)
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}...", thread.Id);
@@ -149,7 +149,7 @@ public class QuickMessageAccess(
         }
 
         logger.LogInformation(
-            "Quick message access cache built. Totally {ThreadCount} threads cached. {ListCount} items in sorted linked list.",
+            "Quick message access cache built and is ready to be used. Totally {ThreadCount} threads cached. {ListCount} items in sorted linked list.",
             CachedThreads.Count, ThreadIdsSortedByLastMessageTime.Count);
     }
 

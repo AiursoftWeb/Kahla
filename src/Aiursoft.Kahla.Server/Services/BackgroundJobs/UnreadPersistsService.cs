@@ -1,4 +1,5 @@
-﻿using Aiursoft.Kahla.Server.Data;
+﻿using System.Diagnostics;
+using Aiursoft.Kahla.Server.Data;
 
 namespace Aiursoft.Kahla.Server.Services.BackgroundJobs;
 
@@ -25,11 +26,19 @@ public class UnreadPersistsService(
 
     private async Task DoWorkAsync()
     {
+        var watch = new Stopwatch();
+        watch.Start();
         _logger.LogInformation("UnreadPersistsService is working.");
         using var scope = scopeFactory.CreateScope();
         var memoryAccess = scope.ServiceProvider.GetRequiredService<QuickMessageAccess>();
         await memoryAccess.PersistUserUnreadAmount();
-        _logger.LogInformation("UnreadPersistsService is done.");
+        watch.Stop();
+        _logger.LogInformation("UnreadPersistsService is done. Time elapsed: {0}ms", watch.ElapsedMilliseconds);
+        
+        if (watch.ElapsedMilliseconds > 5000)
+        {
+            _logger.LogWarning("UnreadPersistsService is too slow!!! Please check the performance of the service.");
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
