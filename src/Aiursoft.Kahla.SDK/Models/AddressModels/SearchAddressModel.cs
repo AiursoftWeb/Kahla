@@ -11,10 +11,3 @@ public class SearchAddressModel
 
     [MaxLength(50)] public string? Excluding { get; init; }
 }
-
-public class MyThreadsAddressModel
-{
-    [Range(0, int.MaxValue)] public int? SkipTillThreadId { get; init; }
-
-    [Range(1, 50)] public int Take { get; init; } = 20;
-}
