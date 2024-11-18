@@ -13,6 +13,7 @@ namespace Aiursoft.Kahla.Tests.TestBase;
 public abstract class KahlaTestBase
 {
     private readonly int _port;
+    private List<string> _users = new List<string>();
     protected readonly KahlaServerAccess Sdk;
     protected IHost? Server;
 
@@ -58,11 +59,12 @@ public abstract class KahlaTestBase
 
     protected async Task RunUnderUser(string userId, Func<Task> action)
     {
-        try
+        if (!_users.Contains(userId))
         {
             await Sdk.RegisterAsync($"{userId}@domain.com", "password");
+            _users.Add(userId);
         }
-        catch
+        else
         {
             await Sdk.SignInAsync($"{userId}@domain.com", "password");
         }

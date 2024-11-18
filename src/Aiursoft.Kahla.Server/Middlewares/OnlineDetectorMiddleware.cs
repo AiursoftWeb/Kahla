@@ -16,7 +16,7 @@ public class OnlineDetectorMiddleware(
             var userId = context.User.GetUserId();
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                logger.LogInformation($"User with ID {userId} from IP {context.Connection.RemoteIpAddress} is calling an API. Mark him as online.");
+                logger.LogTrace($"User with ID {userId} from IP {context.Connection.RemoteIpAddress} is calling an API. Mark him as online.");
                 lock (Obj)
                 {
                     memoryCache.Set($"last-access-time-{userId}", DateTime.UtcNow);

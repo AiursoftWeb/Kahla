@@ -19,7 +19,6 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
@@ -131,27 +130,9 @@ public class MessagesController(
             userId);
         var pusher = await HttpContext.AcceptWebSocketClient();
         var channel = memoryDb.GetMyChannel(userId);
-        var outSub = channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));
+        channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));
 
-        try
-        {
-            await pusher.Listen(HttpContext.RequestAborted);
-        }
-        catch (TaskCanceledException)
-        {
-            // Ignore. This happens when the client closes the connection.
-        }
-        catch (ConnectionAbortedException)
-        {
-            // Ignore. This happens when the client closes the connection.
-        }
-        finally
-        {
-            logger.LogInformation("User with Id: {Id} closed the websocket.", userId);
-            await pusher.Close(HttpContext.RequestAborted);
-            outSub.Unsubscribe();
-        }
-
+        await pusher.Listen(HttpContext.RequestAborted);
         return new EmptyResult();
     }
 

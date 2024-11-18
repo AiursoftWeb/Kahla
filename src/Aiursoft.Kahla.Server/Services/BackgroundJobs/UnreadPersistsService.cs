@@ -23,7 +23,7 @@ public class UnreadPersistsService(
         DoWorkAsync().GetAwaiter().GetResult();
     }
 
-    public async Task DoWorkAsync()
+    private async Task DoWorkAsync()
     {
         _logger.LogInformation("UnreadPersistsService is working.");
         using var scope = scopeFactory.CreateScope();
