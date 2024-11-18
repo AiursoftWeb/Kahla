@@ -36,5 +36,5 @@ public class UserThreadRelation
     [NotNull]
     public ChatThread? Thread { get; init; }
 
-    public int ReadMessageIndex { get; init; }
+    public int ReadMessageIndex { get; set; }
 }

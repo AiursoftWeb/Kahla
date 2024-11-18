@@ -9,6 +9,7 @@ using Aiursoft.Kahla.Server.Middlewares;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
+using Aiursoft.Kahla.Server.Services.BackgroundJobs;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,9 @@ namespace Aiursoft.Kahla.Server
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+            // Background jobs
+            services.AddSingleton<IHostedService, UnreadPersistsService>();
+            
             // In Memory Databases.
             services.AddMemoryCache();
             services.AddSingleton<ChannelsInMemoryDb>();

@@ -286,4 +286,108 @@ public class MemoryLayerTests : KahlaTestBase
         await Task.Delay(1000);
         Assert.AreEqual("Hello, world! After kick!", repo1.Head.Item.Content);
     }
+
+    [TestMethod]
+    public async Task TestClearUserUnreadAmount()
+    {
+        var thread1Id = 0;
+        var user1Ws = string.Empty;
+        var user2Ws = string.Empty;
+        var user1Id = Guid.Empty;
+
+        await RunUnderUser("wsuser1", async () =>
+        {
+            //var myId = (await Sdk.MeAsync()).User.Id;
+            var result1 = await Sdk.CreateFromScratchAsync(
+                name: "Sample thread 1",
+                allowSearchByName: true,
+                allowMemberSoftInvitation: true,
+                allowMembersSendMessages: true,
+                allowDirectJoinWithoutInvitation: true,
+                allowMembersEnlistAllMembers: true);
+            thread1Id = result1.NewThreadId;
+            user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+            user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            await Sdk.DirectJoinAsync(thread1Id);
+            user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+        });
+        await RunUnderUser("wsuser3", async () =>
+        {
+            await Sdk.DirectJoinAsync(thread1Id);
+        });
+        
+        // User 1 connects while user 2 idle.
+        var repo1 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user1Ws)
+            .AttachAsync(repo1);
+    
+        // User 1 sends a message.
+        repo1.Commit(new ChatMessage
+        {
+            Content = "Hello, world!",
+            SenderId = user1Id
+        });
+        repo1.Commit(new ChatMessage
+        {
+            Content = "Hello, world! 2",
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+        
+        // User 2 should notice there are 2 unread messages.
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
+            Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
+        });
+        
+        // User 2 read the messages.
+        var repo2 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user2Ws)
+            .AttachAsync(repo2);
+        await Task.Delay(1000);
+        
+        // User 2 should notice there are no unread messages.
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
+            Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
+        });
+        
+        // User 1 & 2 keeps sending messages, and user 1 & 2 should not notice any unread messages.
+        for (int i = 0; i < 10; i++)
+        {
+            repo2.Commit(new ChatMessage
+            {
+                Content = "Hello, world from 2! " + i,
+                SenderId = user1Id
+            });
+            repo1.Commit(new ChatMessage
+            {
+                Content = "Hello, world from 1! " + i,
+                SenderId = user1Id
+            });
+        }
+        
+        await Task.Delay(1000);
+        await RunUnderUser("wsuser1", async () =>
+        {
+            var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
+            Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
+            Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
+        });
+        await RunUnderUser("wsuser3", async () =>
+        {
+            var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
+            // User 3 totally has 22 unread messages.
+            Assert.AreEqual((uint)22, threadDetails.Thread.MessageContext.UnReadAmount);
+        });
+    }
 }

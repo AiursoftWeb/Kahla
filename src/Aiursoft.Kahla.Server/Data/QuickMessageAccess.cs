@@ -181,11 +181,10 @@ public class QuickMessageAccess(
     /// <summary>
     /// This should be called if the user has read all messages in this thread.
     /// </summary>
-    /// <param name="threadId"></param>
+    /// <param name="threadCache"></param>
     /// <param name="userId"></param>
-    public void ClearUserUnReadAmountForUser(int threadId, string userId)
+    public void ClearUserUnReadAmountForUser(ThreadsInMemoryCache threadCache, string userId)
     {
-        var threadCache = CachedThreads[threadId];
         lock (threadCache)
         {
             threadCache.ClearUserUnReadAmountSinceBoot(userId);
@@ -271,6 +270,34 @@ public class QuickMessageAccess(
             UnReadAmount = chatThread.GetUserUnReadAmount(viewingUserId),
             LatestMessage = chatThread.LastMessage
         };
+    }
+
+    public async Task PersistUserUnreadAmount()
+    {
+        logger.LogInformation("Persisting user unread amount to the database...");
+        var threads = CachedThreads.Values.ToArray();
+        var scope = scopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KahlaRelationalDbContext>();
+        foreach (var thread in threads)
+        {
+            var threadId = thread.ThreadId;
+            logger.LogInformation("Persisting user unread amount for thread with ID {ThreadId}...", threadId);
+            var userThreadRelations = await dbContext
+                .UserThreadRelations
+                .Where(t => t.ThreadId == threadId)
+                .ToListAsync();
+            foreach (var relation in userThreadRelations)
+            {
+                var unRead = thread.GetUserUnReadAmount(relation.UserId);
+                relation.ReadMessageIndex = arrayDbContext.GetTotalMessagesCount(threadId) - (int)unRead;
+                logger.LogInformation(
+                    "Persisting user unread amount for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.",
+                    relation.UserId, threadId, unRead);
+            }
+
+            logger.LogInformation("Persisting user unread amount for thread with ID {ThreadId} done.", threadId);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int? skipTillThreadId, int take)

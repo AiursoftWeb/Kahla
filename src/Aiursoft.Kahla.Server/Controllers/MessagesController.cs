@@ -194,6 +194,7 @@ public class MessagesController(
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
+            quickMessageAccess,
             threadCache,
             userId,
             logger,
@@ -215,6 +216,9 @@ public class MessagesController(
                     Id = t.Id.ToString("D"),
                     CommitTime = t.CreationTime
                 })));
+                
+                // Clear current user's unread message count.
+                quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, userId);
             }
 
             threadReflector.Subscribe(reflectorConsumer);
@@ -363,9 +367,6 @@ public class ClientPushConsumer(
                 .ToArray();
 
             // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
-            // Reflect to other clients.
-            await threadReflector.BroadcastAsync(messagesToAddToDb);
-
             // TODO: Push to his own channel.
             
             // Reflect in quick message access layer.
@@ -385,6 +386,9 @@ public class ClientPushConsumer(
                 // Increase the appended message count. So all users will see this message as unread.
                 threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
                 
+                // Reflect to other clients.
+                await threadReflector.BroadcastAsync(messagesToAddToDb);
+                
                 // Set the thread as new message sent.
                 quickMessageAccess.SetThreadAsNewMessageSent(threadId);
             }
@@ -403,6 +407,7 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
+    QuickMessageAccess quickMessageAccess,
     ThreadsInMemoryCache threadCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
@@ -411,12 +416,14 @@ public class ThreadReflectConsumer(
 {
     public async Task Consume(MessageInDatabaseEntity[] newCommits)
     {
+        // Ensure the user is in the thread.
         if (!threadCache.IsUserInThread(listeningUserId))
         {
             logger.LogWarning("User with ID: {UserId} is trying to listen to a thread that he is not in. Rejected.", listeningUserId);
             return;
         }
         
+        // Send to the client.
         logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
         await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
@@ -424,5 +431,8 @@ public class ThreadReflectConsumer(
             Id = t.Id.ToString("D"),
             CommitTime = t.CreationTime
         })));
+        
+        // Clear current user's unread message count.
+        quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, listeningUserId);
     }
 }
