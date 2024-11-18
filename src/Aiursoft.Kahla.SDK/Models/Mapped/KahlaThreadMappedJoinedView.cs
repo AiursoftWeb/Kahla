@@ -24,6 +24,8 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
     public required bool AllowMembersEnlistAllMembers { get; init; }
 
     public required bool AllowMemberSoftInvitation { get; init; }
+    
+    public required uint TotalMessages { get; init; }
 
     // Someone at me. TODO.
 }

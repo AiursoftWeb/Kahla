@@ -377,17 +377,20 @@ public class MemoryLayerTests : KahlaTestBase
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
+            Assert.AreEqual((uint)22, threadDetails.Thread.TotalMessages);
         });
         await RunUnderUser("wsuser2", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
+            Assert.AreEqual((uint)22, threadDetails.Thread.TotalMessages);
         });
         await RunUnderUser("wsuser3", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             // User 3 totally has 22 unread messages.
             Assert.AreEqual((uint)22, threadDetails.Thread.MessageContext.UnReadAmount);
+            Assert.AreEqual((uint)22, threadDetails.Thread.TotalMessages);
         });
     }
     

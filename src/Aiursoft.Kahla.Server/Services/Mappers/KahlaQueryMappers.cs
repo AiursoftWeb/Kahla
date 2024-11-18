@@ -74,7 +74,8 @@ public static class KahlaQueryMappers
         this IQueryable<ChatThread> filteredThreads,
         string viewingUserId,
         OnlineDetector onlineDetector,
-        QuickMessageAccess quickMessageAccess)
+        QuickMessageAccess quickMessageAccess,
+        ArrayDbContext arrayDb)
     {
         return filteredThreads
             .Select(t => new KahlaThreadMappedJoinedView
@@ -117,6 +118,7 @@ public static class KahlaQueryMappers
                 AllowMembersSendMessages = t.AllowMembersSendMessages,
                 AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
                 AllowSearchByName = t.AllowSearchByName,
+                TotalMessages = (uint)arrayDb.GetTotalMessagesCount(t.Id),
                 MessageContext = quickMessageAccess.GetMessageContext(t.Id, viewingUserId) // Client side evaluate.
             });
     }

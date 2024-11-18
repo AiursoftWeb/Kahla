@@ -9,7 +9,8 @@ namespace Aiursoft.Kahla.Server.Services.Repositories;
 public class ThreadJoinedViewRepo(
     KahlaRelationalDbContext relationalDbContext,
     OnlineDetector detector,
-    QuickMessageAccess quickMessageAccess)
+    QuickMessageAccess quickMessageAccess,
+    ArrayDbContext arrayDbContext)
 {
     public IOrderedQueryable<KahlaThreadMappedJoinedView> SearchThreadsIJoined(
         string? searchInput,
@@ -26,7 +27,7 @@ public class ThreadJoinedViewRepo(
                 t.Members.Any(p => p.User.NickName.Contains(searchInput!)) ||
                 t.Members.Any(p => p.User.Email.Contains(searchInput!)) ||
                 t.Members.Any(p => p.User.Id == searchInput))
-            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess)
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess, arrayDbContext)
             .OrderByDescending(t => t.CreateTime);
     }
 
@@ -35,7 +36,7 @@ public class ThreadJoinedViewRepo(
         var threadsQuery = relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => threadIds.Contains(t.Id))
-            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess);
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess, arrayDbContext);
 
         // Need to order by the order of threadIds.
         var threads = await threadsQuery.ToListAsync();
@@ -50,7 +51,7 @@ public class ThreadJoinedViewRepo(
             .AsNoTracking()
             .Where(t => t.Members.Any(p => p.UserId == viewingUserId))
             .Where(t => t.Members.Any(p => p.UserId == targetUserId))
-            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess)
+            .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess, arrayDbContext)
             .OrderByDescending(t => t.CreateTime);
     }
 
@@ -66,6 +67,6 @@ public class ThreadJoinedViewRepo(
         return relationalDbContext.ChatThreads
             .AsNoTracking()
             .Where(t => t.Id == threadId)
-            .MapThreadsJoinedView(currentUserId, detector, quickMessageAccess);
+            .MapThreadsJoinedView(currentUserId, detector, quickMessageAccess, arrayDbContext);
     }
 }
