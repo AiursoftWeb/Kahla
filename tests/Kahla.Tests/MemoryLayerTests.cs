@@ -214,7 +214,6 @@ public class MemoryLayerTests : KahlaTestBase
 
         await RunUnderUser("wsuser1", async () =>
         {
-            //var myId = (await Sdk.MeAsync()).User.Id;
             var result1 = await Sdk.CreateFromScratchAsync(
                 name: "Sample thread 1",
                 allowSearchByName: true,
@@ -297,7 +296,6 @@ public class MemoryLayerTests : KahlaTestBase
 
         await RunUnderUser("wsuser1", async () =>
         {
-            //var myId = (await Sdk.MeAsync()).User.Id;
             var result1 = await Sdk.CreateFromScratchAsync(
                 name: "Sample thread 1",
                 allowSearchByName: true,
@@ -404,7 +402,6 @@ public class MemoryLayerTests : KahlaTestBase
 
         await RunUnderUser("wsuser1", async () =>
         {
-            //var myId = (await Sdk.MeAsync()).User.Id;
             var result1 = await Sdk.CreateFromScratchAsync(
                 name: "Sample thread 1",
                 allowSearchByName: true,
@@ -494,5 +491,52 @@ public class MemoryLayerTests : KahlaTestBase
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
+    }
+
+    [TestMethod]
+    public async Task TestLargeTextReflection()
+    {
+        var thread1Id = 0;
+        var user1Ws = string.Empty;
+        var user2Ws = string.Empty;
+        var user1Id = Guid.Empty;
+
+        await RunUnderUser("wsuser1", async () =>
+        {
+            var result1 = await Sdk.CreateFromScratchAsync(
+                name: "Sample thread 1",
+                allowSearchByName: true,
+                allowMemberSoftInvitation: true,
+                allowMembersSendMessages: true,
+                allowDirectJoinWithoutInvitation: true,
+                allowMembersEnlistAllMembers: true);
+            thread1Id = result1.NewThreadId;
+            user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+            user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            await Sdk.DirectJoinAsync(thread1Id);
+            user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+        });
+
+        var repo1 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user1Ws)
+            .AttachAsync(repo1);
+        var repo2 = new Repository<ChatMessage>();
+        await new WebSocketRemote<ChatMessage>(user2Ws)
+            .AttachAsync(repo2);
+
+        // User 1 sends a message. Reflect to user 2.
+        var largeString0xFFFF = new string('a', 0xFFFF);
+        repo1.Commit(new ChatMessage
+        {
+            Content = largeString0xFFFF,
+            SenderId = user1Id
+        });
+        await Task.Delay(1000);
+
+        // User 2 should receive the message.
+        Assert.AreEqual(largeString0xFFFF, repo2.Head.Item.Content);
     }
 }
