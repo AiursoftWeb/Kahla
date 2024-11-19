@@ -528,7 +528,7 @@ public class MemoryLayerTests : KahlaTestBase
             .AttachAsync(repo2);
 
         // User 1 sends a message. Reflect to user 2.
-        var largeString0xFFFF = new string('a', 0xFFFF);
+        var largeString0xFFFF = new string('a', 0xFF00);
         repo1.Commit(new ChatMessage
         {
             Content = largeString0xFFFF,

@@ -321,6 +321,11 @@ public class ClientPushConsumer(
 {
     public async Task Consume(string clientPushed)
     {
+        if (clientPushed.Length > 0xFFFF)
+        {
+            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected.", userIdGuid);
+            return;
+        }
         if (!threadCache.IsUserInThread(userIdGuid.ToString()))
         {
             logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", userIdGuid);
