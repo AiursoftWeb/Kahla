@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Aiursoft.AiurEventSyncer.Abstract;
 using Aiursoft.AiurObserver;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
@@ -16,6 +15,7 @@ using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
@@ -191,7 +191,7 @@ public class MessagesController(
                     "User with ID: {UserId} is trying to pull {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
                     userId, readLength, threadId, startLocation);
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
-                await socket.Send(Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
+                await socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
                 {
                     Item = t.ToClientView(),
                     Id = t.Id.ToString("D"),
@@ -309,7 +309,7 @@ public class ClientPushConsumer(
         {
             // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
-            var model = Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
+            var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
             var messagesToAddToDb = model
                 .Select(messageIncoming => new MessageInDatabaseEntity
@@ -381,7 +381,7 @@ public class ThreadReflectConsumer(
         
         // Send to the client.
         logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
-        await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
+        await socket.Send(SDK.Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
             Item = t.ToClientView(),
             Id = t.Id.ToString("D"),

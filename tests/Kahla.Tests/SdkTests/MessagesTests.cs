@@ -1,4 +1,5 @@
 using Aiursoft.Kahla.SDK.Models;
+using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Tests.TestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
