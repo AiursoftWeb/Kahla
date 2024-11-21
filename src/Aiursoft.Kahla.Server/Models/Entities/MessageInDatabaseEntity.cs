@@ -1,4 +1,6 @@
+using System.Text;
 using Aiursoft.ArrayDb.ObjectBucket;
+using Aiursoft.ArrayDb.ObjectBucket.Attributes;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 
@@ -16,6 +18,9 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         set => ThreadId = value;
     }
     
+    [FixedLengthString(BytesLength = 100)]
+    public byte[] Preview { get; init; } = [];
+    
     public string Content { get; init; } = string.Empty;
     
     public Guid SenderId { get; init; } = Guid.Empty;
@@ -27,6 +32,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         return new ChatMessage
         {
             Content = Content,
+            Preview = Encoding.UTF8.GetString(Preview.TrimEndZeros()),
             SenderId = SenderId
         };
     }

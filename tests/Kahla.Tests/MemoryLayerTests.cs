@@ -113,13 +113,14 @@ public class MemoryLayerTests : KahlaTestBase
             repo1.Commit(new ChatMessage
             {
                 Content = "Hello, world!",
+                Preview = "Hello, world!",
                 SenderId = Guid.Parse(myId)
             });
             await Task.Delay(1000);
 
             // My Threads should return the threads in the order of last message time.
             myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[0].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[0].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 2", myThreads.KnownThreads[1].Name);
 
@@ -141,6 +142,7 @@ public class MemoryLayerTests : KahlaTestBase
             repo2.Commit(new ChatMessage
             {
                 Content = "Hello, world! 2",
+                Preview = "Hello, world! 2",
                 SenderId = Guid.Parse(myId)
             });
             await Task.Delay(1000);
@@ -163,13 +165,13 @@ public class MemoryLayerTests : KahlaTestBase
             var myThreads = await Sdk.MyThreadsAsync();
             Assert.AreEqual(3, myThreads.KnownThreads.Count);
             // Thread 2 should be the first one.
-            Assert.AreEqual("Hello, world! 2", myThreads.KnownThreads[0].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Hello, world! 2", myThreads.KnownThreads[0].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 2", myThreads.KnownThreads[0].Name);
             // Thread 3 should be the second one.
             Assert.AreEqual(null, myThreads.KnownThreads[1].MessageContext.LatestMessage);
             Assert.AreEqual("Sample thread 3", myThreads.KnownThreads[1].Name);
             // Thread 1 should be the last one.
-            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[2].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[2].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[2].Name);
 
             // Search threads should still return the threads in the order of creation.
@@ -187,7 +189,7 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(2, myThreads.KnownThreads.Count);
             Assert.AreEqual(null, myThreads.KnownThreads[0].MessageContext.LatestMessage);
             Assert.AreEqual("Sample thread 3", myThreads.KnownThreads[0].Name);
-            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[1].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Hello, world!", myThreads.KnownThreads[1].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[1].Name);
 
             // Search threads should still return the threads in the order of creation.
@@ -198,7 +200,7 @@ public class MemoryLayerTests : KahlaTestBase
 
             var myThreadsSkip1Take1 = await Sdk.MyThreadsAsync(skipTillThreadId: myThreads.KnownThreads[0].Id, take: 1);
             Assert.AreEqual(1, myThreadsSkip1Take1.KnownThreads.Count);
-            Assert.AreEqual("Hello, world!", myThreadsSkip1Take1.KnownThreads[0].MessageContext.LatestMessage!.Content);
+            Assert.AreEqual("Hello, world!", myThreadsSkip1Take1.KnownThreads[0].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreadsSkip1Take1.KnownThreads[0].Name);
         }
     }
@@ -243,6 +245,7 @@ public class MemoryLayerTests : KahlaTestBase
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world!",
+            Preview = "Hello, world!",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -254,6 +257,7 @@ public class MemoryLayerTests : KahlaTestBase
         repo2.Commit(new ChatMessage
         {
             Content = "Hello, world! 2",
+            Preview = "Hello, world! 2",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -271,6 +275,7 @@ public class MemoryLayerTests : KahlaTestBase
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world! After kick!",
+            Preview = "Hello, world! After kick!",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -280,6 +285,7 @@ public class MemoryLayerTests : KahlaTestBase
         repo2.Commit(new ChatMessage
         {
             Content = "Hello, world! 2 After kick!",
+            Preview = "Hello, world! 2 After kick!",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -326,11 +332,13 @@ public class MemoryLayerTests : KahlaTestBase
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world!",
+            Preview = "Hello, world!",
             SenderId = user1Id
         });
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world! 2",
+            Preview = "Hello, world! 2",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -361,11 +369,13 @@ public class MemoryLayerTests : KahlaTestBase
             repo2.Commit(new ChatMessage
             {
                 Content = "Hello, world from 2! " + i,
+                Preview = "Hello, world from 2! " + i,
                 SenderId = user1Id
             });
             repo1.Commit(new ChatMessage
             {
                 Content = "Hello, world from 1! " + i,
+                Preview = "Hello, world from 1! " + i,
                 SenderId = user1Id
             });
         }
@@ -432,11 +442,13 @@ public class MemoryLayerTests : KahlaTestBase
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world!",
+            Preview = "Hello, world!",
             SenderId = user1Id
         });
         repo1.Commit(new ChatMessage
         {
             Content = "Hello, world! 2",
+            Preview = "Hello, world! 2",
             SenderId = user1Id
         });
         await Task.Delay(1000);
@@ -532,11 +544,13 @@ public class MemoryLayerTests : KahlaTestBase
         repo1.Commit(new ChatMessage
         {
             Content = largeString0xFFFF,
+            Preview = "Preview",
             SenderId = user1Id
         });
         await Task.Delay(1000);
 
         // User 2 should receive the message.
         Assert.AreEqual(largeString0xFFFF, repo2.Head.Item.Content);
+        Assert.AreEqual("Preview", repo2.Head.Item.Preview);
     }
 }

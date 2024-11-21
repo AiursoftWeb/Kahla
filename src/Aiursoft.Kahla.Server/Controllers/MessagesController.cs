@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using Aiursoft.AiurEventSyncer.Abstract;
 using Aiursoft.AiurEventSyncer.ConnectionProviders.Models;
 using Aiursoft.AiurObserver;
@@ -323,7 +324,7 @@ public class ClientPushConsumer(
     {
         if (clientPushed.Length > 0xFFFF)
         {
-            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected.", userIdGuid);
+            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected. Max allowed size is 65535. He pushed {Size} bytes.", userIdGuid, clientPushed.Length);
             return;
         }
         if (!threadCache.IsUserInThread(userIdGuid.ToString()))
@@ -344,6 +345,7 @@ public class ClientPushConsumer(
                 .Select(messageIncoming => new MessageInDatabaseEntity
                 {
                     Content = messageIncoming.Item.Content,
+                    Preview = Encoding.UTF8.GetBytes(messageIncoming.Item.Preview).Take(50).ToArray(),
                     Id = Guid.Parse(messageIncoming.Id),
                     CreationTime = serverTime,
                     SenderId = userIdGuid,
@@ -362,7 +364,7 @@ public class ClientPushConsumer(
                 {
                     Id = lastMessage.Id,
                     ThreadId = threadId,
-                    Content = lastMessage.Content,
+                    Preview = Encoding.UTF8.GetString(lastMessage.Preview.TrimEndZeros()),
                     SendTime = lastMessage.CreationTime,
                     Sender = userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
                 };

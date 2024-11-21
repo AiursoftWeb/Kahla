@@ -23,6 +23,7 @@ public class WebSocketTests : KahlaTestBase
         await Task.Delay(500);
         Assert.IsTrue(socketStage.Stage?.Contains("message"));
         subscription.Unsubscribe();
+        await socket.Close();
     }
     
     [TestMethod]
