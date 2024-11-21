@@ -1,5 +1,3 @@
-using Aiursoft.AiurEventSyncer.Models;
-using Aiursoft.AiurEventSyncer.Remotes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.Tests.TestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -50,107 +48,100 @@ public class MessagesTests : KahlaTestBase
         Assert.IsNotNull(ws2);
         Assert.IsNotNull(ws3);
 
-        var repo1 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(ws1)
-            .AttachAsync(repo1);
-
-        var repo2 = new Repository<ChatMessage>();
-        var wsr2 = await new WebSocketRemote<ChatMessage>(ws2)
-            .AttachAsync(repo2);
+        var repo1 = await new KahlaMessagesRepo(ws1).ConnectAndMonitor();
+        var repo2 = await new KahlaMessagesRepo(ws2).ConnectAndMonitor();
 
         // Client 1 takes action.
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world!",
             SenderId = Guid.Parse(ui1)
         });
 
         // Reflect to client 2.
-        await WaitTillRepoHas(repo2, 1);
-        Assert.AreEqual(1, repo2.Commits.Count);
-        Assert.AreEqual("Hello, world!", repo2.Head.Item.Content);
+        Assert.AreEqual(1, repo2.GetAllMessages().Count());
+        Assert.AreEqual("Hello, world!", repo2.Head()?.Item.Content);
 
         // Prepare client 3.
-        var repo3 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(ws3)
-            .AttachAsync(repo3);
+        var repo3 = await new KahlaMessagesRepo(ws3).ConnectAndMonitor();
+        await Task.Delay(100);
 
         // Client 3 gets the message.
-        await WaitTillRepoHas(repo3, 1);
-        Assert.AreEqual(1, repo3.Commits.Count);
-        Assert.AreEqual("Hello, world!", repo3.Head.Item.Content);
+        Assert.AreEqual(1, repo3.GetAllMessages().Count());
+        Assert.AreEqual("Hello, world!", repo3.Head()?.Item.Content);
 
         // Client 2 drop.
-        await wsr2.DetachAsync();
+        await repo2.Disconnect();
 
         // Client 3 takes action.
-        repo3.Commit(new ChatMessage
+        await repo3.Send(new ChatMessage
         {
             Content = "Hello, world! 2",
             SenderId = Guid.Parse(ui3)
         });
 
         // Reflect to client 1.
-        await WaitTillRepoHas(repo1, 2);
-        Assert.AreEqual(2, repo1.Commits.Count);
-        Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
+        Assert.AreEqual(2, repo1.GetAllMessages().Count());
+        Assert.AreEqual("Hello, world! 2", repo1.Head()?.Item.Content);
 
         // Not reflect to client 2.
-        Assert.AreEqual(1, repo2.Commits.Count);
+        Assert.AreEqual(1, repo2.GetAllMessages().Count());
 
         // Client 2 commit locally (Not sync to server).
-        repo2.Commit(new ChatMessage
+        repo2.CommitOnly(new ChatMessage
         {
             Content = "Hello, world! 3",
             SenderId = Guid.Parse(ui2)
         });
-        repo2.Commit(new ChatMessage
+        repo2.CommitOnly(new ChatMessage
         {
             Content = "Hello, world! 4",
             SenderId = Guid.Parse(ui2)
         });
 
         // Not reflect to client 1 and client 3.
-        await Task.Delay(300);
-        Assert.AreEqual(2, repo1.Commits.Count);
-        Assert.AreEqual(3, repo2.Commits.Count);
-        Assert.AreEqual(2, repo3.Commits.Count);
-        Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
-        Assert.AreEqual("Hello, world! 4", repo2.Head.Item.Content);
-        Assert.AreEqual("Hello, world! 2", repo3.Head.Item.Content);
+        Assert.AreEqual(2, repo1.GetAllMessages().Count());
+        Assert.AreEqual(3, repo2.GetAllMessages().Count());
+        Assert.AreEqual(2, repo3.GetAllMessages().Count());
+        Assert.AreEqual("Hello, world! 2", repo1.Head()?.Item.Content);
+        Assert.AreEqual("Hello, world! 4", repo2.Head()?.Item.Content);
+        Assert.AreEqual("Hello, world! 2", repo3.Head()?.Item.Content);
 
         // Client 2 reconnect.
-        await wsr2.AttachAsync(repo2);
+        await repo2.ConnectAndMonitor();
+        await Task.Delay(100);
 
         // All has 4 messages: Hw, Hw2, Hw3, Hw4.
-        await WaitTillRepoHas(repo1, 4);
-        await WaitTillRepoHas(repo2, 4);
-        await WaitTillRepoHas(repo3, 4);
-        Assert.AreEqual(4, repo1.Commits.Count);
-        Assert.AreEqual(4, repo2.Commits.Count);
-        Assert.AreEqual(4, repo3.Commits.Count);
-        Assert.AreEqual("Hello, world! 4", repo1.Head.Item.Content);
-        Assert.AreEqual("Hello, world! 4", repo2.Head.Item.Content);
-        Assert.AreEqual("Hello, world! 4", repo3.Head.Item.Content);
-        Assert.AreEqual(Guid.Parse(ui2), repo1.Head.Item.SenderId);
-        Assert.AreEqual(Guid.Parse(ui2), repo2.Head.Item.SenderId);
-        Assert.AreEqual(Guid.Parse(ui2), repo3.Head.Item.SenderId);
+        Assert.AreEqual(4, repo1.GetAllMessages().Count());
+        Assert.AreEqual(4, repo2.GetAllMessages().Count());
+        Assert.AreEqual(4, repo3.GetAllMessages().Count());
+        Assert.AreEqual("Hello, world! 4", repo1.Head()?.Item.Content);
+        Assert.AreEqual("Hello, world! 4", repo2.Head()?.Item.Content);
+        Assert.AreEqual("Hello, world! 4", repo3.Head()?.Item.Content);
+        Assert.AreEqual(Guid.Parse(ui2), repo1.Head()?.Item.SenderId);
+        Assert.AreEqual(Guid.Parse(ui2), repo2.Head()?.Item.SenderId);
+        Assert.AreEqual(Guid.Parse(ui2), repo3.Head()?.Item.SenderId);
+        
+        // Clean
+        await repo1.Disconnect();
+        await repo2.Disconnect();
+        await repo3.Disconnect();
     }
 
-    private async Task WaitTillRepoHas(Repository<ChatMessage> repo, int count)
-    {
-        var timeoutTask = Task.Delay(500);
-        var waitTask = Task.Run(async () =>
-        {
-            while (repo.Commits.Count < count)
-            {
-                await Task.Delay(100);
-            }
-        });
-        await Task.WhenAny(timeoutTask, waitTask);
-        if (timeoutTask.IsCompleted)
-        {
-            Assert.Fail("Timeout.");
-        }
-    }
+    // private async Task WaitTillRepoHas(Repository<ChatMessage> repo, int count)
+    // {
+    //     var timeoutTask = Task.Delay(500);
+    //     var waitTask = Task.Run(async () =>
+    //     {
+    //         while (repo.Commits.Count < count)
+    //         {
+    //             await Task.Delay(100);
+    //         }
+    //     });
+    //     await Task.WhenAny(timeoutTask, waitTask);
+    //     if (timeoutTask.IsCompleted)
+    //     {
+    //         Assert.Fail("Timeout.");
+    //     }
+    // }
 }

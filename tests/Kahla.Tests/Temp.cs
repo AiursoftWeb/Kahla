@@ -16,7 +16,9 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
 
     public async Task<KahlaMessagesRepo> ConnectAndMonitor(bool inCurrentThread = false)
     {
-        _webSocket = await webSocketEndpoint.ConnectAsWebSocketServer();
+        var realEndpoint = webSocketEndpoint + "?start=" + _messages.PulledItemsOffset;
+        _webSocket = await realEndpoint.ConnectAsWebSocketServer();
+        await Push();
         _webSocket.Subscribe(OnNewWebSocketMessage);
         var listenTask = _webSocket.Listen();
         if (inCurrentThread)
@@ -38,6 +40,11 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
         {
             await Task.Delay(100);
         }
+    }
+    
+    public void CommitOnly(ChatMessage message)
+    {
+        _messages.Commit(message);
     }
     
     public IEnumerable<Commit<ChatMessage>> GetAllMessages()

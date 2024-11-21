@@ -142,10 +142,9 @@ public class MessagesController(
         [FromRoute] int threadId,
         [FromRoute] string userId,
         [FromRoute] string otp,
-        [FromQuery] string? start)
+        [FromQuery] int? start)
     {
         await EnsureUserIsMemberOfThread(threadId, userId, otp);
-
         var messagesDb = messages.GetPartitionById(threadId);
         var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
         var threadMessagesLock = locksInMemory.GetThreadMessagesLock(threadId);
@@ -184,7 +183,8 @@ public class MessagesController(
         threadMessagesLock.EnterReadLock();
         try
         {
-            var (startLocation, readLength) = GetInitialReadLocation(messagesDb, start);
+            var startLocation = start ?? 0;
+            var readLength = GetReadLength(messagesDb, startLocation);
             if (readLength > 0)
             {
                 logger.LogInformation(
@@ -216,8 +216,6 @@ public class MessagesController(
         return new EmptyResult();
     }
 
-    // TODO: New API: Query commit id with offset.
-    
     private async Task EnsureUserIsMemberOfThread(int threadId, string userId, string otp)
     {
         try
@@ -271,39 +269,12 @@ public class MessagesController(
         }
     }
 
-    private static (int startOffset, int readLength) GetInitialReadLocation(
+    private static int GetReadLength(
         IObjectBucket<MessageInDatabaseEntity> messagesDb,
-        string? start)
+        int startLocation)
     {
-        var startLocation = 0;
-        var found = false;
-
-        if (!string.IsNullOrWhiteSpace(start))
-        {
-            var startGuid = Guid.Parse(start);
-            startLocation = messagesDb.Count;
-
-            // TODO: Really really bad performance. O(n) search.
-            // Refactor required. Replace this with a hash table with LRU.
-            foreach (var message in messagesDb.AsReverseEnumerable())
-            {
-                if (message.Id == startGuid)
-                {
-                    found = true;
-                    break;
-                }
-
-                startLocation--;
-            }
-        }
-
-        if (!found)
-        {
-            startLocation = 0;
-        }
-
         var readLength = messagesDb.Count - startLocation;
-        return (startLocation, readLength);
+        return readLength;
     }
 }
 
