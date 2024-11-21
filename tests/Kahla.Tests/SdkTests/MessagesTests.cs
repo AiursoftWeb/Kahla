@@ -128,21 +128,4 @@ public class MessagesTests : KahlaTestBase
         await repo2.Disconnect();
         await repo3.Disconnect();
     }
-
-    // private async Task WaitTillRepoHas(Repository<ChatMessage> repo, int count)
-    // {
-    //     var timeoutTask = Task.Delay(500);
-    //     var waitTask = Task.Run(async () =>
-    //     {
-    //         while (repo.Commits.Count < count)
-    //         {
-    //             await Task.Delay(100);
-    //         }
-    //     });
-    //     await Task.WhenAny(timeoutTask, waitTask);
-    //     if (timeoutTask.IsCompleted)
-    //     {
-    //         Assert.Fail("Timeout.");
-    //     }
-    // }
 }
