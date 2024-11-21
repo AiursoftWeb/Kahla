@@ -162,7 +162,7 @@ public class DevicesController(
                     Email = "no@domain.com",
                     EmailConfirmed = true
                 },
-                Content = "Sample message",
+                Preview = "Sample message",
                 SendTime = DateTime.UtcNow,
             },
             Muted = false,

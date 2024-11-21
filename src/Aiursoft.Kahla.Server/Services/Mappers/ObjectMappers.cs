@@ -1,3 +1,5 @@
+using System.Text;
+using Aiursoft.ArrayDb.ObjectBucket;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Models.Entities;
 
@@ -11,7 +13,7 @@ public static class ObjectMappers
         {
             Id = messageInDatabaseEntity.Id,
             ThreadId = messageInDatabaseEntity.ThreadId,
-            Content = messageInDatabaseEntity.Content,
+            Preview = Encoding.UTF8.GetString(bytes: messageInDatabaseEntity.Preview.TrimEndZeros()),
             SendTime = messageInDatabaseEntity.CreationTime,
             Sender = sender == null ? null : new KahlaUserMappedPublicView
             {
