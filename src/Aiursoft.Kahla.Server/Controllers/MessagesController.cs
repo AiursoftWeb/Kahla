@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Aiursoft.AiurEventSyncer.Abstract;
-using Aiursoft.AiurEventSyncer.ConnectionProviders.Models;
 using Aiursoft.AiurObserver;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
@@ -339,9 +338,9 @@ public class ClientPushConsumer(
         {
             // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
-            var model = Extensions.Deserialize<PushModel<ChatMessage>>(clientPushed);
+            var model = Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
-            var messagesToAddToDb = model.Commits
+            var messagesToAddToDb = model
                 .Select(messageIncoming => new MessageInDatabaseEntity
                 {
                     Content = messageIncoming.Item.Content,

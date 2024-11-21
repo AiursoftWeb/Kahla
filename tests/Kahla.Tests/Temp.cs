@@ -14,7 +14,7 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
     private Task _listenTask = Task.CompletedTask;
     private readonly KahlaMessagesMemoryStore _messages = new();
 
-    public async Task ConnectAndMonitor(bool inCurrentThread = false)
+    public async Task<KahlaMessagesRepo> ConnectAndMonitor(bool inCurrentThread = false)
     {
         _webSocket = await webSocketEndpoint.ConnectAsWebSocketServer();
         _webSocket.Subscribe(OnNewWebSocketMessage);
@@ -25,8 +25,29 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
         }
         else
         {
-            _listenTask = listenTask;
+            _listenTask = Task.Run(async () => await listenTask);
         }
+        return this;
+    }
+    
+    public async Task Send(ChatMessage message, bool waitShortTime = true)
+    {
+        _messages.Commit(message);
+        await Push();
+        if (waitShortTime)
+        {
+            await Task.Delay(100);
+        }
+    }
+    
+    public IEnumerable<Commit<ChatMessage>> GetAllMessages()
+    {
+        return _messages.GetAllMessagesEnumerable();
+    }
+
+    public Commit<ChatMessage>? Head()
+    {
+        return _messages.GetHead();
     }
 
     public async Task WaitTilListenTaskComplete()
@@ -44,16 +65,17 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
         _webSocket = null;
     }
 
-    private async Task OnNewWebSocketMessage(string content)
+    private Task OnNewWebSocketMessage(string content)
     {
         var commits = Extensions.Deserialize<Commit<ChatMessage>[]>(content);
         foreach (var commit in commits)
         {
             _messages.OnPulledMessage(commit);
         }
+        return Task.CompletedTask;
     }
 
-    public async Task Push()
+    private async Task Push()
     {
         if (_webSocket == null || !_webSocket.Connected)
         {
@@ -73,11 +95,11 @@ public class KahlaMessagesMemoryStore
 {
     private readonly LinkedList<Commit<ChatMessage>> _messages = new();
 
-    public LinkedListNode<Commit<ChatMessage>>? LastPulled = null;
-    public int PulledItemsOffset = 0;
+    public LinkedListNode<Commit<ChatMessage>>? LastPulled;
+    public int PulledItemsOffset;
 
-    public LinkedListNode<Commit<ChatMessage>>? LastPushed = null;
-    public int PushedItemsOffset = 0;
+    public LinkedListNode<Commit<ChatMessage>>? LastPushed;
+    public int PushedItemsOffset;
 
     public void Commit(ChatMessage message)
     {
@@ -97,65 +119,71 @@ public class KahlaMessagesMemoryStore
     public void OnPulledMessage(Commit<ChatMessage> commit)
     {
         bool itemInserted = false;
-        if (_messages.First == null) // Pulling Empty collection
+
+        if (_messages.First == null)
         {
+            // Message store is empty, add the commit as the first message.
             _messages.AddFirst(commit);
-            LastPulled = _messages.Last;
+            LastPulled = _messages.First;
             PulledItemsOffset++;
         }
         else
         {
-            if (LastPulled == null)
+            var nextNode = GetNextNodeForPull();
+            if (nextNode != null && nextNode.Value.Id == commit.Id)
             {
-                var next = _messages.First;
-                if (next.Value.Id == commit.Id)
-                {
-                    LastPulled = next;
-                    PulledItemsOffset++;
-                }
-                else
-                {
-                    _messages.AddBefore(next, commit);
-                    LastPulled = next.Previous;
-                    PulledItemsOffset++;
-                    itemInserted = true;
-                }
+                // The pulled commit matches the next message; advance LastPulled.
+                LastPulled = nextNode;
+                PulledItemsOffset++;
             }
             else
             {
-                var next = LastPulled.Next;
-                if (next == null)
+                // Insert the pulled commit before the next node.
+                if (nextNode != null)
                 {
-                    _messages.AddLast(commit);
-                    LastPulled = _messages.Last;
-                    PulledItemsOffset++;
+                    _messages.AddBefore(nextNode, commit);
+                    LastPulled = nextNode.Previous;
                 }
                 else
                 {
-                    if (next.Value.Id == commit.Id)
-                    {
-                        LastPulled = next;
-                        PulledItemsOffset++;
-                    }
-                    else
-                    {
-                        _messages.AddBefore(next, commit);
-                        LastPulled = next.Previous;
-                        PulledItemsOffset++;
-                        itemInserted = true;
-                    }
+                    // Next node is null, so add at the end.
+                    _messages.AddLast(commit);
+                    LastPulled = _messages.Last;
                 }
+                PulledItemsOffset++;
+                itemInserted = true;
             }
         }
 
+        UpdateLastPushed(itemInserted);
+    }
+    
+    private void UpdateLastPushed(bool itemInserted)
+    {
         if (LastPulled?.Previous == LastPushed)
         {
+            // The LastPulled node is immediately after LastPushed; advance LastPushed.
             LastPushed = LastPulled;
             PushedItemsOffset++;
         }
         else if (itemInserted)
         {
+            // A new item was inserted before LastPushed; adjust PushedItemsOffset.
             PushedItemsOffset++;
+        }
+    }
+
+    private LinkedListNode<Commit<ChatMessage>>? GetNextNodeForPull()
+    {
+        if (LastPulled == null)
+        {
+            // No messages have been pulled yet; start from the first message.
+            return _messages.First;
+        }
+        else
+        {
+            // Start from the node after LastPulled.
+            return LastPulled.Next;
         }
     }
 
@@ -176,9 +204,19 @@ public class KahlaMessagesMemoryStore
         }
     }
 
-    public IEnumerable<Commit<ChatMessage>> GetAllMessages()
+    public Commit<ChatMessage>[] GetAllMessages()
+    {
+        return _messages.ToArray();
+    }
+    
+    public IEnumerable<Commit<ChatMessage>> GetAllMessagesEnumerable()
     {
         return _messages;
+    }
+    
+    public Commit<ChatMessage>? GetHead()
+    {
+        return _messages.Last?.Value;
     }
 }
 
@@ -283,7 +321,7 @@ public class MessageRepoPullTests
         }
 
         // Ensure that no duplicates are created and pointers are advanced correctly
-        var allMessages = messagesStore.GetAllMessages().ToArray();
+        var allMessages = messagesStore.GetAllMessages();
         Assert.AreEqual(3, allMessages.Count());
         Assert.AreEqual("Local message 3", allMessages.Last().Item.Content);
         Assert.AreEqual("Local message 3", messagesStore.LastPulled?.Value.Item.Content);
@@ -550,5 +588,9 @@ public class MessageRepoPullTests
         Assert.AreEqual(9, allMessages.Count());
         Assert.AreEqual(9, messagesStore.PushedItemsOffset);
         Assert.AreEqual(9, messagesStore.PulledItemsOffset);
+        
+        // Push should do nothing.
+        var pushed = messagesStore.Push().ToArray();
+        Assert.AreEqual(0, pushed.Length);
     }
 }

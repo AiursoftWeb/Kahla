@@ -1,8 +1,3 @@
-using Aiursoft.AiurEventSyncer.Abstract;
-using Aiursoft.AiurEventSyncer.Models;
-using Aiursoft.AiurEventSyncer.Remotes;
-using Aiursoft.AiurObserver.WebSocket;
-using Aiursoft.AiurObserver;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK.Models;
@@ -12,7 +7,6 @@ using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Extensions = Aiursoft.Kahla.Server.Extensions;
 
 namespace Aiursoft.Kahla.Tests;
 
@@ -106,21 +100,16 @@ public class MemoryLayerTests : KahlaTestBase
             // Connect to the two threads.
             var ws1 = (await Sdk.InitThreadWebSocketAsync(result1.NewThreadId)).WebSocketEndpoint;
             var ws2 = (await Sdk.InitThreadWebSocketAsync(result2.NewThreadId)).WebSocketEndpoint;
-            var repo1 = new Repository<ChatMessage>();
-            await new WebSocketRemote<ChatMessage>(ws1)
-                .AttachAsync(repo1);
-            var repo2 = new Repository<ChatMessage>();
-            var cn2 = await new WebSocketRemote<ChatMessage>(ws2)
-                .AttachAsync(repo2);
+            var repo1 = await new KahlaMessagesRepo(ws1).ConnectAndMonitor();
+            var repo2 = await new KahlaMessagesRepo(ws2).ConnectAndMonitor();
 
             // Send a mew message to thread 1.
-            repo1.Commit(new ChatMessage
+            await repo1.Send(new ChatMessage
             {
                 Content = "Hello, world!",
                 Preview = "Hello, world!",
                 SenderId = Guid.Parse(myId)
             });
-            await Task.Delay(1000);
 
             // My Threads should return the threads in the order of last message time.
             myThreads = await Sdk.MyThreadsAsync();
@@ -143,13 +132,12 @@ public class MemoryLayerTests : KahlaTestBase
                 allowMembersEnlistAllMembers: true);
 
             // Send a message to thread 2.
-            repo2.Commit(new ChatMessage
+            await repo2.Send(new ChatMessage
             {
                 Content = "Hello, world! 2",
                 Preview = "Hello, world! 2",
                 SenderId = Guid.Parse(myId)
             });
-            await Task.Delay(1000);
 
             // Reload the threads.
             await Ensure3ThreadsCorrect();
@@ -157,10 +145,11 @@ public class MemoryLayerTests : KahlaTestBase
             await Ensure3ThreadsCorrect();
 
             // Leave thread 2.
-            await cn2.DetachAsync();
+            await repo2.Disconnect();
             await Sdk.DissolveThreadAsync(result2.NewThreadId);
 
             await Ensure2ThreadsCorrect();
+            await repo1.Disconnect();
         });
 
         async Task Ensure3ThreadsCorrect()
@@ -238,36 +227,30 @@ public class MemoryLayerTests : KahlaTestBase
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
         });
         
-        var repo1 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user1Ws)
-            .AttachAsync(repo1);
-        var repo2 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user2Ws)
-            .AttachAsync(repo2);
+        var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
+        var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         
         // User 1 sends a message. Reflect to user 2.
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world!",
             Preview = "Hello, world!",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
         
         // User 2 should receive the message.
-        Assert.AreEqual("Hello, world!", repo2.Head.Item.Content);
+        Assert.AreEqual("Hello, world!", repo2.Head()?.Item.Content);
         
         // User 2 sends a message. Reflect to user 1.
-        repo2.Commit(new ChatMessage
+        await repo2.Send(new ChatMessage
         {
             Content = "Hello, world! 2",
             Preview = "Hello, world! 2",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
         
         // User 1 should receive the message.
-        Assert.AreEqual("Hello, world! 2", repo1.Head.Item.Content);
+        Assert.AreEqual("Hello, world! 2", repo1.Head()?.Item.Content);
         
         // Kick user 2.
         await RunUnderUser("wsuser1", async () =>
@@ -276,24 +259,26 @@ public class MemoryLayerTests : KahlaTestBase
         });
         
         // User 1 sends a message. User 2 should not receive it.
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world! After kick!",
             Preview = "Hello, world! After kick!",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
-        Assert.AreEqual("Hello, world! 2", repo2.Head.Item.Content);
+        Assert.AreEqual("Hello, world! 2", repo2.Head()?.Item.Content);
         
         // User 2 sends a message. User 1 should not receive it.
-        repo2.Commit(new ChatMessage
+        await repo2.Send(new ChatMessage
         {
             Content = "Hello, world! 2 After kick!",
             Preview = "Hello, world! 2 After kick!",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
-        Assert.AreEqual("Hello, world! After kick!", repo1.Head.Item.Content);
+        Assert.AreEqual("Hello, world! After kick!", repo1.Head()?.Item.Content);
+        
+        // Clean
+        await repo1.Disconnect();
+        await repo2.Disconnect();
     }
 
     [TestMethod]
@@ -328,24 +313,21 @@ public class MemoryLayerTests : KahlaTestBase
         });
         
         // User 1 connects while user 2 idle.
-        var repo1 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user1Ws)
-            .AttachAsync(repo1);
+        var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
     
         // User 1 sends a message.
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world!",
             Preview = "Hello, world!",
             SenderId = user1Id
         });
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world! 2",
             Preview = "Hello, world! 2",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
         
         // User 2 should notice there are 2 unread messages.
         await RunUnderUser("wsuser2", async () =>
@@ -355,10 +337,7 @@ public class MemoryLayerTests : KahlaTestBase
         });
         
         // User 2 read the messages.
-        var repo2 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user2Ws)
-            .AttachAsync(repo2);
-        await Task.Delay(1000);
+        var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         
         // User 2 should notice there are no unread messages.
         await RunUnderUser("wsuser2", async () =>
@@ -370,13 +349,13 @@ public class MemoryLayerTests : KahlaTestBase
         // User 1 & 2 keeps sending messages, and user 1 & 2 should not notice any unread messages.
         for (int i = 0; i < 10; i++)
         {
-            repo2.Commit(new ChatMessage
+            await repo2.Send(new ChatMessage
             {
                 Content = "Hello, world from 2! " + i,
                 Preview = "Hello, world from 2! " + i,
                 SenderId = user1Id
             });
-            repo1.Commit(new ChatMessage
+            await repo1.Send(new ChatMessage
             {
                 Content = "Hello, world from 1! " + i,
                 Preview = "Hello, world from 1! " + i,
@@ -384,7 +363,6 @@ public class MemoryLayerTests : KahlaTestBase
             });
         }
         
-        await Task.Delay(1000);
         await RunUnderUser("wsuser1", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
@@ -404,6 +382,10 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual((uint)22, threadDetails.Thread.MessageContext.UnReadAmount);
             Assert.AreEqual((uint)22, threadDetails.Thread.TotalMessages);
         });
+        
+        // Clean up.
+        await repo1.Disconnect();
+        await repo2.Disconnect();
     }
     
        [TestMethod]
@@ -438,18 +420,16 @@ public class MemoryLayerTests : KahlaTestBase
         });
         
         // User 1 connects while user 2 idle.
-        var repo1 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user1Ws)
-            .AttachAsync(repo1);
+        var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
     
         // User 1 sends a message.
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world!",
             Preview = "Hello, world!",
             SenderId = user1Id
         });
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = "Hello, world! 2",
             Preview = "Hello, world! 2",
@@ -465,10 +445,8 @@ public class MemoryLayerTests : KahlaTestBase
         });
         
         // User 2 read the messages.
-        var repo2 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user2Ws)
-            .AttachAsync(repo2);
-        await Task.Delay(1000);
+        var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
+        await Task.Delay(200); // Wait for the messages to be reflected.
         
         // User 2 should notice there are no unread messages.
         await RunUnderUser("wsuser2", async () =>
@@ -507,6 +485,10 @@ public class MemoryLayerTests : KahlaTestBase
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
+        
+        // Clean up.
+        await repo1.Disconnect();
+        await repo2.Disconnect();
     }
 
     [TestMethod]
@@ -536,25 +518,24 @@ public class MemoryLayerTests : KahlaTestBase
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
         });
 
-        var repo1 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user1Ws)
-            .AttachAsync(repo1);
-        var repo2 = new Repository<ChatMessage>();
-        await new WebSocketRemote<ChatMessage>(user2Ws)
-            .AttachAsync(repo2);
+        var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
+        var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
 
         // User 1 sends a message. Reflect to user 2.
         var largeString0xFFFF = new string('a', 0xFF00);
-        repo1.Commit(new ChatMessage
+        await repo1.Send(new ChatMessage
         {
             Content = largeString0xFFFF,
             Preview = "Preview",
             SenderId = user1Id
         });
-        await Task.Delay(1000);
 
         // User 2 should receive the message.
-        Assert.AreEqual(largeString0xFFFF, repo2.Head.Item.Content);
-        Assert.AreEqual("Preview", repo2.Head.Item.Preview);
+        Assert.AreEqual(largeString0xFFFF, repo2.Head()?.Item.Content);
+        Assert.AreEqual("Preview", repo2.Head()?.Item.Preview);
+        
+        // Clean
+        await repo1.Disconnect();
+        await repo2.Disconnect();
     }
 }
