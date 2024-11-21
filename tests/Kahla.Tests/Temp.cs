@@ -46,7 +46,7 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
 
     private async Task OnNewWebSocketMessage(string content)
     {
-        var commits = Server.Extensions.Deserialize<Commit<ChatMessage>[]>(content);
+        var commits = Extensions.Deserialize<Commit<ChatMessage>[]>(content);
         foreach (var commit in commits)
         {
             _messages.OnPulledMessage(commit);
@@ -71,12 +71,12 @@ public class KahlaMessagesRepo(string webSocketEndpoint)
 
 public class KahlaMessagesMemoryStore
 {
-    private LinkedList<Commit<ChatMessage>> _messages = new();
+    private readonly LinkedList<Commit<ChatMessage>> _messages = new();
 
-    public LinkedListNode<Commit<ChatMessage>>? lastPulled = null;
+    public LinkedListNode<Commit<ChatMessage>>? LastPulled = null;
     public int PulledItemsOffset = 0;
 
-    public LinkedListNode<Commit<ChatMessage>>? lastPushed = null;
+    public LinkedListNode<Commit<ChatMessage>>? LastPushed = null;
     public int PushedItemsOffset = 0;
 
     public void Commit(ChatMessage message)
@@ -100,47 +100,47 @@ public class KahlaMessagesMemoryStore
         if (_messages.First == null) // Pulling Empty collection
         {
             _messages.AddFirst(commit);
-            lastPulled = _messages.Last;
+            LastPulled = _messages.Last;
             PulledItemsOffset++;
         }
         else
         {
-            if (lastPulled == null)
+            if (LastPulled == null)
             {
                 var next = _messages.First;
                 if (next.Value.Id == commit.Id)
                 {
-                    lastPulled = next;
+                    LastPulled = next;
                     PulledItemsOffset++;
                 }
                 else
                 {
                     _messages.AddBefore(next, commit);
-                    lastPulled = next.Previous;
+                    LastPulled = next.Previous;
                     PulledItemsOffset++;
                     itemInserted = true;
                 }
             }
             else
             {
-                var next = lastPulled.Next;
+                var next = LastPulled.Next;
                 if (next == null)
                 {
                     _messages.AddLast(commit);
-                    lastPulled = _messages.Last;
+                    LastPulled = _messages.Last;
                     PulledItemsOffset++;
                 }
                 else
                 {
                     if (next.Value.Id == commit.Id)
                     {
-                        lastPulled = next;
+                        LastPulled = next;
                         PulledItemsOffset++;
                     }
                     else
                     {
                         _messages.AddBefore(next, commit);
-                        lastPulled = next.Previous;
+                        LastPulled = next.Previous;
                         PulledItemsOffset++;
                         itemInserted = true;
                     }
@@ -148,9 +148,9 @@ public class KahlaMessagesMemoryStore
             }
         }
 
-        if (lastPulled?.Previous == lastPushed)
+        if (LastPulled?.Previous == LastPushed)
         {
-            lastPushed = lastPulled;
+            LastPushed = LastPulled;
             PushedItemsOffset++;
         }
         else if (itemInserted)
@@ -166,11 +166,11 @@ public class KahlaMessagesMemoryStore
         {
             yield break;
         }
-        var pushBegin = lastPushed == null ? _messages.First : lastPushed.Next;
+        var pushBegin = LastPushed == null ? _messages.First : LastPushed.Next;
         while (pushBegin != null)
         {
-            lastPushed = pushBegin;
-            yield return lastPushed.Value;
+            LastPushed = pushBegin;
+            yield return LastPushed.Value;
             pushBegin = pushBegin.Next;
             PushedItemsOffset++;
         }
@@ -286,7 +286,7 @@ public class MessageRepoPullTests
         var allMessages = messagesStore.GetAllMessages().ToArray();
         Assert.AreEqual(3, allMessages.Count());
         Assert.AreEqual("Local message 3", allMessages.Last().Item.Content);
-        Assert.AreEqual("Local message 3", messagesStore.lastPulled?.Value.Item.Content);
+        Assert.AreEqual("Local message 3", messagesStore.LastPulled?.Value.Item.Content);
     }
 
     [TestMethod]
@@ -339,8 +339,8 @@ public class MessageRepoPullTests
         Assert.AreEqual("Local message 2", allMessages[3].Item.Content);
         Assert.AreEqual("Local message 3", allMessages[4].Item.Content);
         
-        Assert.AreEqual("Pulled message 5", messagesStore.lastPulled?.Value.Item.Content);
-        Assert.AreEqual("Local message 3", messagesStore.lastPushed?.Value.Item.Content);
+        Assert.AreEqual("Pulled message 5", messagesStore.LastPulled?.Value.Item.Content);
+        Assert.AreEqual("Local message 3", messagesStore.LastPushed?.Value.Item.Content);
         Assert.AreEqual(2, messagesStore.PulledItemsOffset);
         Assert.AreEqual(5, messagesStore.PushedItemsOffset);
     }
