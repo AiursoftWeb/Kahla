@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Aiursoft.AiurEventSyncer.Abstract;
-using Aiursoft.AiurEventSyncer.ConnectionProviders.Models;
 using Aiursoft.AiurObserver;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
@@ -17,6 +15,7 @@ using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
+using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.WebTools.Attributes;
@@ -143,10 +142,9 @@ public class MessagesController(
         [FromRoute] int threadId,
         [FromRoute] string userId,
         [FromRoute] string otp,
-        [FromQuery] string? start)
+        [FromQuery] int? start)
     {
         await EnsureUserIsMemberOfThread(threadId, userId, otp);
-
         var messagesDb = messages.GetPartitionById(threadId);
         var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
         var threadMessagesLock = locksInMemory.GetThreadMessagesLock(threadId);
@@ -185,14 +183,15 @@ public class MessagesController(
         threadMessagesLock.EnterReadLock();
         try
         {
-            var (startLocation, readLength) = GetInitialReadLocation(messagesDb, start);
+            var startLocation = start ?? 0;
+            var readLength = GetReadLength(messagesDb, startLocation);
             if (readLength > 0)
             {
                 logger.LogInformation(
                     "User with ID: {UserId} is trying to pull {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
                     userId, readLength, threadId, startLocation);
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
-                await socket.Send(Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
+                await socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
                 {
                     Item = t.ToClientView(),
                     Id = t.Id.ToString("D"),
@@ -217,8 +216,6 @@ public class MessagesController(
         return new EmptyResult();
     }
 
-    // TODO: New API: Query commit id with offset.
-    
     private async Task EnsureUserIsMemberOfThread(int threadId, string userId, string otp)
     {
         try
@@ -272,39 +269,12 @@ public class MessagesController(
         }
     }
 
-    private static (int startOffset, int readLength) GetInitialReadLocation(
+    private static int GetReadLength(
         IObjectBucket<MessageInDatabaseEntity> messagesDb,
-        string? start)
+        int startLocation)
     {
-        var startLocation = 0;
-        var found = false;
-
-        if (!string.IsNullOrWhiteSpace(start))
-        {
-            var startGuid = Guid.Parse(start);
-            startLocation = messagesDb.Count;
-
-            // TODO: Really really bad performance. O(n) search.
-            // Refactor required. Replace this with a hash table with LRU.
-            foreach (var message in messagesDb.AsReverseEnumerable())
-            {
-                if (message.Id == startGuid)
-                {
-                    found = true;
-                    break;
-                }
-
-                startLocation--;
-            }
-        }
-
-        if (!found)
-        {
-            startLocation = 0;
-        }
-
         var readLength = messagesDb.Count - startLocation;
-        return (startLocation, readLength);
+        return readLength;
     }
 }
 
@@ -339,9 +309,9 @@ public class ClientPushConsumer(
         {
             // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
-            var model = Extensions.Deserialize<PushModel<ChatMessage>>(clientPushed);
+            var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
-            var messagesToAddToDb = model.Commits
+            var messagesToAddToDb = model
                 .Select(messageIncoming => new MessageInDatabaseEntity
                 {
                     Content = messageIncoming.Item.Content,
@@ -411,7 +381,7 @@ public class ThreadReflectConsumer(
         
         // Send to the client.
         logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
-        await socket.Send(Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
+        await socket.Send(SDK.Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
         {
             Item = t.ToClientView(),
             Id = t.Id.ToString("D"),

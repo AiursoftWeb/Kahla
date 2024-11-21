@@ -9,8 +9,6 @@ using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Aiursoft.Kahla.Server;
 
@@ -68,23 +66,6 @@ public static class Extensions
         return Math.Max(min, Math.Min(max, suggested));
     }
     
-    private static readonly JsonSerializerSettings Settings = new()
-    {
-        TypeNameHandling = TypeNameHandling.Auto,
-        DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-    };
-
-    public static string Serialize<T>(T model)
-    {
-        return JsonConvert.SerializeObject(model, Settings);
-    }
-
-    public static T Deserialize<T>(string json)
-    {
-        return JsonConvert.DeserializeObject<T>(json, Settings)!;
-    }
-
     public static IEnumerable<T> SkipUntilEquals<T>(this IEnumerable<T> source, T? target) where T : struct
     {
         var shouldReturn = target == null;
