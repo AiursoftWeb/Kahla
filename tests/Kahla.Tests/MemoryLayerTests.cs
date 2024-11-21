@@ -1,5 +1,8 @@
+using Aiursoft.AiurEventSyncer.Abstract;
 using Aiursoft.AiurEventSyncer.Models;
 using Aiursoft.AiurEventSyncer.Remotes;
+using Aiursoft.AiurObserver.WebSocket;
+using Aiursoft.AiurObserver;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK.Models;
@@ -9,6 +12,7 @@ using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Extensions = Aiursoft.Kahla.Server.Extensions;
 
 namespace Aiursoft.Kahla.Tests;
 
