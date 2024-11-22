@@ -181,6 +181,7 @@ public class MessagesController(
             logger,
             socket);
 
+        logger.LogInformation("User with ID: {UserId} is trying to get initial pull length from thread {ThreadId}.", userId, threadId);
         threadMessagesLock.EnterReadLock();
         try
         {
