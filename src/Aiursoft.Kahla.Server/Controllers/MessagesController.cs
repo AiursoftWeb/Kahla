@@ -67,7 +67,7 @@ public class MessagesController(
     public async Task<IActionResult> InitWebSocketForThread([FromRoute] int id)
     {
         var currentUserId = User.GetUserId();
-        logger.LogInformation("User with Id: {Id} is trying to init a channel websocket OTP.", currentUserId);
+        logger.LogInformation("User with Id: {Id} is trying to init a channel websocket OTP. Thread ID: {ThreadId}", currentUserId, id);
         var thread = await relationalDbContext.ChatThreads.FindAsync(id);
         if (thread == null)
         {
@@ -152,7 +152,8 @@ public class MessagesController(
 
         logger.LogInformation("User with ID: {UserId} is trying to connect to thread {ThreadId}.", userId, threadId);
         var socket = await HttpContext.AcceptWebSocketClient();
-
+        logger.LogInformation("User with ID: {UserId} is accepted to connect to thread {ThreadId}.", userId, threadId);
+        
         var threadCache = quickMessageAccess.GetThreadCache(threadId);
         var clientPushConsumer = new ClientPushConsumer(
             new KahlaUserMappedPublicView
@@ -188,7 +189,7 @@ public class MessagesController(
             if (readLength > 0)
             {
                 logger.LogInformation(
-                    "User with ID: {UserId} is trying to pull {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
+                    "User with ID: {UserId} is trying to pull initial {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
                     userId, readLength, threadId, startLocation);
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
                 await socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
