@@ -37,6 +37,10 @@ public class ThreadsController(
     UserInThreadViewAppService userAppService,
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
+    // TODO:
+    // When dissolved, direct-joined, benn kicked, leaved, create-scratched
+    // Push to user's websocket so his thread list can be updated.
+    
     [HttpGet]
     [Route("mine")]
     [Produces<MyThreadsViewModel>]

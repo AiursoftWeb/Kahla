@@ -321,6 +321,7 @@ public class QuickMessageAccess(
         }
     }
     
+    // TODO: Use this function.
     public long GetMyTotalUnreadMessages(string userId)
     {
         ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();
