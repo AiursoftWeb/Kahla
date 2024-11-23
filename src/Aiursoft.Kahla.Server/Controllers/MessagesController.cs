@@ -144,7 +144,8 @@ public class MessagesController(
         [FromRoute] string otp,
         [FromQuery] int? start)
     {
-        await EnsureUserIsMemberOfThread(threadId, userId, otp);
+        var threadCache = quickMessageAccess.GetThreadCache(threadId);
+        EnsureUserIsMemberOfThread(threadId, userId, otp, threadCache);
         var messagesDb = messages.GetPartitionById(threadId);
         var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
         var threadMessagesLock = locksInMemory.GetThreadMessagesLock(threadId);
@@ -154,7 +155,6 @@ public class MessagesController(
         var socket = await HttpContext.AcceptWebSocketClient();
         logger.LogInformation("User with ID: {UserId} is accepted to connect to thread {ThreadId}.", userId, threadId);
         
-        var threadCache = quickMessageAccess.GetThreadCache(threadId);
         var clientPushConsumer = new ClientPushConsumer(
             new KahlaUserMappedPublicView
             {
@@ -214,17 +214,21 @@ public class MessagesController(
         quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, userId);
         
         // Configure the reflector and the client push consumer.
-        threadReflector.Subscribe(reflectorConsumer);
-        socket.Subscribe(clientPushConsumer);
+        var refSub = threadReflector.Subscribe(reflectorConsumer);
+        var socSub = socket.Subscribe(clientPushConsumer);
         logger.LogInformation("User with ID: {UserId} finished initial push and connected to thread {ThreadId} and listening for new events.",
             userId, threadId);
         
         // Start listening.
         await socket.Listen(HttpContext.RequestAborted);
+        
+        // Unsubscribe.
+        refSub.Unsubscribe();
+        socSub.Unsubscribe();
         return new EmptyResult();
     }
 
-    private async Task EnsureUserIsMemberOfThread(int threadId, string userId, string otp)
+    private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try
         {
@@ -253,19 +257,10 @@ public class MessagesController(
                     userId, otp);
                 throw new AiurServerException(Code.Unauthorized, "Expired OTP.");
             }
-
-            var thread = await relationalDbContext.ChatThreads.FindAsync(threadIdInOtp);
-            if (thread == null)
+            if (!threadCache.IsUserInThread(userId))
             {
-                throw new AiurServerException(Code.NotFound, "The thread does not exist.");
-            }
-
-            var myRelation = await relationalDbContext.UserThreadRelations
-                .Where(t => t.UserId == userId)
-                .Where(t => t.ThreadId == threadIdInOtp)
-                .FirstOrDefaultAsync();
-            if (myRelation == null)
-            {
+                logger.LogWarning("User with ID: {UserId} is trying to get a websocket for thread {ThreadId} that he is not in.",
+                    userId, threadId);
                 throw new AiurServerException(Code.Unauthorized, "You are not a member of this thread.");
             }
         }
