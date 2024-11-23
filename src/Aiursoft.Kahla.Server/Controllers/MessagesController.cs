@@ -181,6 +181,7 @@ public class MessagesController(
             logger,
             socket);
 
+        // Initial pull. (Lock read, avoid new messages during this time.)
         logger.LogInformation("User with ID: {UserId} is trying to get initial pull length from thread {ThreadId}.", userId, threadId);
         threadMessagesLock.EnterReadLock();
         try
@@ -193,27 +194,32 @@ public class MessagesController(
                     "User with ID: {UserId} is trying to pull initial {ReadLength} messages from thread {ThreadId}. Start Index is {StartIndex}",
                     userId, readLength, threadId, startLocation);
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
-                await socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
+                
+                // Do NOT await here, because the read write lock need the same thread to release the lock.
+                socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
                 {
                     Item = t.ToClientView(),
                     Id = t.Id.ToString("D"),
                     CommitTime = t.CreationTime
-                })));
-                
-                // Clear current user's unread message count.
-                quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, userId);
+                }))).Wait();
             }
 
-            threadReflector.Subscribe(reflectorConsumer);
         }
         finally
         {
             threadMessagesLock.ExitReadLock();
         }
-
+        
+        // Clear current user's unread message count.
+        quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, userId);
+        
+        // Configure the reflector and the client push consumer.
+        threadReflector.Subscribe(reflectorConsumer);
         socket.Subscribe(clientPushConsumer);
         logger.LogInformation("User with ID: {UserId} finished initial push and connected to thread {ThreadId} and listening for new events.",
             userId, threadId);
+        
+        // Start listening.
         await socket.Listen(HttpContext.RequestAborted);
         return new EmptyResult();
     }
