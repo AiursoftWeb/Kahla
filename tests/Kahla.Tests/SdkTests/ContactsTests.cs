@@ -97,30 +97,30 @@ public class ContactsTests : KahlaTestBase
     {
         // Register
         await Sdk.RegisterAsync("usera1@domain.com", "password");
-        var usera1Id = (await Sdk.MeAsync()).User.Id;
+        var user1Id = (await Sdk.MeAsync()).User.Id;
         await Sdk.SignoutAsync();
         await Sdk.RegisterAsync("usera2@domain.com", "password");
-        var usera2Id = (await Sdk.MeAsync()).User.Id;
+        var user2Id = (await Sdk.MeAsync()).User.Id;
         
-        // Create a thread between usera1 and usera2.
-        var sharedThread = await Sdk.HardInviteAsync(usera1Id);
+        // Create a thread between user1 and user2.
+        var sharedThread = await Sdk.HardInviteAsync(user1Id);
         
         // default thread should be created.
-        var defaultThread = await Sdk.UserDetailAsync(usera1Id);
+        var defaultThread = await Sdk.UserDetailAsync(user1Id);
         Assert.AreEqual(sharedThread.NewThreadId, defaultThread.DefaultThread);
         
         // Check myself.
-        var self = await Sdk.UserDetailAsync(usera2Id);
+        var self = await Sdk.UserDetailAsync(user2Id);
         Assert.AreEqual(null, self.DefaultThread);
         
         // User 2 create a thread with himself.
-        var notRightThread = await Sdk.HardInviteAsync(usera2Id);
+        var notRightThread = await Sdk.HardInviteAsync(user2Id);
         
-        var defaultThreadAgain = await Sdk.UserDetailAsync(usera1Id);
+        var defaultThreadAgain = await Sdk.UserDetailAsync(user1Id);
         Assert.AreEqual(sharedThread.NewThreadId, defaultThreadAgain.DefaultThread);
         
         // Check myself.
-        var selfAgain = await Sdk.UserDetailAsync(usera2Id);
+        var selfAgain = await Sdk.UserDetailAsync(user2Id);
         Assert.AreEqual(notRightThread.NewThreadId, selfAgain.DefaultThread);
     }
 
