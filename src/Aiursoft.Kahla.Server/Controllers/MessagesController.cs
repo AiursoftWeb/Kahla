@@ -205,13 +205,13 @@ public class MessagesController(
             }
 
             threadReflector.Subscribe(reflectorConsumer);
-            socket.Subscribe(clientPushConsumer);
         }
         finally
         {
             threadMessagesLock.ExitReadLock();
         }
 
+        socket.Subscribe(clientPushConsumer);
         logger.LogInformation("User with ID: {UserId} connected to thread {ThreadId} and listening for new events.",
             userId, threadId);
         await socket.Listen(HttpContext.RequestAborted);
