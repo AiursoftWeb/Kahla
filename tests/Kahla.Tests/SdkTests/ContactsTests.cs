@@ -112,6 +112,16 @@ public class ContactsTests : KahlaTestBase
         // Check myself.
         var self = await Sdk.UserDetailAsync(usera2Id);
         Assert.AreEqual(null, self.DefaultThread);
+        
+        // User 2 create a thread with himself.
+        var notRightThread = await Sdk.HardInviteAsync(usera2Id);
+        
+        var defaultThreadAgain = await Sdk.UserDetailAsync(usera1Id);
+        Assert.AreEqual(sharedThread.NewThreadId, defaultThreadAgain.DefaultThread);
+        
+        // Check myself.
+        var selfAgain = await Sdk.UserDetailAsync(usera2Id);
+        Assert.AreEqual(notRightThread.NewThreadId, selfAgain.DefaultThread);
     }
 
     [TestMethod]
