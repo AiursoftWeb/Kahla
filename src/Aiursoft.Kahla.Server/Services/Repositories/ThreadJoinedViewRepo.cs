@@ -59,6 +59,7 @@ public class ThreadJoinedViewRepo(
     {
         return relationalDbContext.ChatThreads
             .AsNoTracking()
+            .Where(t => viewingUserId == targetUserId || t.Members.Count() == 2)
             .Where(t => t.Members.All(p => p.UserId == viewingUserId || p.UserId == targetUserId));
     }
 
