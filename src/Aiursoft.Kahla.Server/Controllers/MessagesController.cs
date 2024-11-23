@@ -225,6 +225,8 @@ public class MessagesController(
         // Unsubscribe.
         refSub.Unsubscribe();
         socSub.Unsubscribe();
+        logger.LogInformation("User with ID: {UserId} disconnected from thread {ThreadId}.", userId, threadId);
+        
         return new EmptyResult();
     }
 
