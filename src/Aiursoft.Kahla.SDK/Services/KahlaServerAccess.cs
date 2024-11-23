@@ -264,7 +264,10 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<MyBlocksViewModel> ListBlocksAsync(string? search = null, string? excluding = null, int skip = 0,
+    public async Task<MyBlocksViewModel> ListBlocksAsync(
+        string? search = null, 
+        string? excluding = null, 
+        int skip = 0,
         int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/blocks/list",
@@ -295,27 +298,30 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<MyThreadsViewModel> ListThreadsAsync(string? search = null, string? excluding = null,
-        int skip = 0, int take = 20)
-    {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/list",
-            param: new SearchAddressModel
-            {
-                SearchInput = search,
-                Excluding = excluding,
-                Skip = skip,
-                Take = take
-            });
-        var result = await http.Get<MyThreadsViewModel>(url);
-        return result;
-    }
-
     public async Task<MyThreadsViewModel> MyThreadsAsync(int? skipTillThreadId = null, int take = 20)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/mine",
             param: new MyThreadsAddressModel
             {
                 SkipTillThreadId = skipTillThreadId,
+                Take = take
+            });
+        var result = await http.Get<MyThreadsViewModel>(url);
+        return result;
+    }
+    
+    public async Task<MyThreadsViewModel> SearchThreadsAsync(
+        string? search = null, 
+        string? excluding = null,
+        int skip = 0, 
+        int take = 20)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/search",
+            param: new SearchAddressModel
+            {
+                SearchInput = search,
+                Excluding = excluding,
+                Skip = skip,
                 Take = take
             });
         var result = await http.Get<MyThreadsViewModel>(url);
@@ -346,9 +352,14 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<AiurResponse> UpdateThreadAsync(int id, string? name = null, string? iconFilePath = null,
-        bool? allowDirectJoinWithoutInvitation = null, bool? allowMemberSoftInvitation = null,
-        bool? allowMembersSendMessages = null, bool? allowMembersEnlistAllMembers = null,
+    public async Task<AiurResponse> UpdateThreadAsync(
+        int id, 
+        string? name = null, 
+        string? iconFilePath = null,
+        bool? allowDirectJoinWithoutInvitation = null, 
+        bool? allowMemberSoftInvitation = null,
+        bool? allowMembersSendMessages = null, 
+        bool? allowMembersEnlistAllMembers = null,
         bool? allowSearchByName = null)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/update-thread/{id}",

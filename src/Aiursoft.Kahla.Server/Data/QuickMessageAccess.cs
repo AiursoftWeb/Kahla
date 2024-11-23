@@ -320,4 +320,20 @@ public class QuickMessageAccess(
             ThreadIdsSortedByLastMessageTimeLock.ExitReadLock();
         }
     }
+    
+    public long GetMyTotalUnreadMessages(string userId)
+    {
+        ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();
+        try
+        {
+            return ThreadIdsSortedByLastMessageTime
+                .Select(tId => CachedThreads[tId])
+                .Where(t => t.IsUserInThread(userId))
+                .Sum(t => t.GetUserUnReadAmount(userId));
+        }
+        finally
+        {
+            ThreadIdsSortedByLastMessageTimeLock.ExitReadLock();
+        }
+    }
 }

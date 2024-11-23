@@ -94,7 +94,7 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[1].Name);
 
             // Search threads should return the threads in the order of creation.
-            var searchedThreads = await Sdk.ListThreadsAsync();
+            var searchedThreads = await Sdk.SearchThreadsAsync();
             Assert.AreEqual("Sample thread 2", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[1].Name);
 
@@ -119,7 +119,7 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual("Sample thread 2", myThreads.KnownThreads[1].Name);
 
             // Search threads should still return the threads in the order of creation.
-            searchedThreads = await Sdk.ListThreadsAsync();
+            searchedThreads = await Sdk.SearchThreadsAsync();
             Assert.AreEqual("Sample thread 2", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[1].Name);
 
@@ -169,7 +169,7 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[2].Name);
 
             // Search threads should still return the threads in the order of creation.
-            var searchedThreads = await Sdk.ListThreadsAsync();
+            var searchedThreads = await Sdk.SearchThreadsAsync();
             Assert.AreEqual(3, searchedThreads.KnownThreads.Count);
             Assert.AreEqual("Sample thread 3", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 2", searchedThreads.KnownThreads[1].Name);
@@ -187,7 +187,7 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[1].Name);
 
             // Search threads should still return the threads in the order of creation.
-            var searchedThreads = await Sdk.ListThreadsAsync();
+            var searchedThreads = await Sdk.SearchThreadsAsync();
             Assert.AreEqual(2, searchedThreads.KnownThreads.Count);
             Assert.AreEqual("Sample thread 3", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[1].Name);

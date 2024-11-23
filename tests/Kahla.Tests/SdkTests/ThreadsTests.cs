@@ -22,17 +22,17 @@ public class ThreadsTests : KahlaTestBase
             false);
 
         // Search
-        var searchResult = await Sdk.ListThreadsAsync("Test");
+        var searchResult = await Sdk.SearchThreadsAsync("Test");
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
         Assert.AreEqual(1, searchResult.KnownThreads.Count);
 
         // Search Non-Existed
-        var searchResult2 = await Sdk.ListThreadsAsync("Non-Existed");
+        var searchResult2 = await Sdk.SearchThreadsAsync("Non-Existed");
         Assert.AreEqual(Code.ResultShown, searchResult2.Code);
         Assert.AreEqual(0, searchResult2.KnownThreads.Count);
 
         // Search Non-Existed
-        var searchResult3 = await Sdk.ListThreadsAsync("Test", excluding: "est");
+        var searchResult3 = await Sdk.SearchThreadsAsync("Test", excluding: "est");
         Assert.AreEqual(Code.ResultShown, searchResult3.Code);
         Assert.AreEqual(0, searchResult3.KnownThreads.Count);
     }
@@ -55,12 +55,12 @@ public class ThreadsTests : KahlaTestBase
         await Sdk.UpdateThreadAsync(createdThread.NewThreadId, name: "Patched_name");
 
         // Search the thread by name
-        var searchThread = await Sdk.ListThreadsAsync("Patched_name");
+        var searchThread = await Sdk.SearchThreadsAsync("Patched_name");
         Assert.AreEqual(1, searchThread.KnownThreads.Count);
         Assert.AreEqual(createdThread.NewThreadId, searchThread.KnownThreads.First().Id);
 
         // Search the thread by username
-        var searchThread2 = await Sdk.ListThreadsAsync("user1");
+        var searchThread2 = await Sdk.SearchThreadsAsync("user1");
         Assert.AreEqual(1, searchThread2.KnownThreads.Count);
         Assert.AreEqual(createdThread.NewThreadId, searchThread2.KnownThreads.First().Id);
     }
