@@ -212,7 +212,7 @@ public class MessagesController(
         }
 
         socket.Subscribe(clientPushConsumer);
-        logger.LogInformation("User with ID: {UserId} connected to thread {ThreadId} and listening for new events.",
+        logger.LogInformation("User with ID: {UserId} finished initial push and connected to thread {ThreadId} and listening for new events.",
             userId, threadId);
         await socket.Listen(HttpContext.RequestAborted);
         return new EmptyResult();
