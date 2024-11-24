@@ -1,7 +1,10 @@
-﻿using Aiursoft.Canon;
+﻿using Aiursoft.AiurProtocol.Exceptions;
+using Aiursoft.AiurProtocol.Models;
+using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services;
 
@@ -14,6 +17,7 @@ public enum PushMode
 }
 
 public class BufferedKahlaPushService(
+    KahlaRelationalDbContext context,
     CanonQueue canonQueue)
 {
     public void QueuePushToUser(KahlaUser user, PushMode mode, IEnumerable<KahlaEvent> payloads)
@@ -26,6 +30,29 @@ public class BufferedKahlaPushService(
             }
         });
     }
+
+    private async Task QueuePushToUserAsync(string userId, PushMode mode, IEnumerable<KahlaEvent> payloads)
+    {
+        var user = await context
+            .Users
+            .Include(t => t.HisDevices)
+            .FirstOrDefaultAsync(t => t.Id == userId);
+        if (user == null)
+        {
+            throw new AiurServerException(Code.NotFound, $"The user with ID: '{userId}' was not found in database.");
+        }
+        
+        canonQueue.QueueWithDependency<KahlaPushService>(async p =>
+        {
+            foreach (var payload in payloads)
+            {
+                await p.PushToUser(user, payload, mode);
+            }
+        });
+    }
+    
+    public Task QueuePushToUserAsync(string userId, PushMode mode, KahlaEvent payload) =>
+        QueuePushToUserAsync(userId, mode, new[] { payload });
 }
 
 public class KahlaPushService(

@@ -4,12 +4,14 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
@@ -27,6 +29,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
+    BufferedKahlaPushService kahlaPushService,
     LocksInMemoryDb locksInMemoryDb,
     ArrayDbContext arrayDbContext,
     IDataProtectionProvider dataProtectionProvider,
@@ -301,6 +304,12 @@ public class ThreadsController(
         {
             joinThreadLock.Release();
         }
+        
+        // Push to the client
+        await kahlaPushService.QueuePushToUserAsync(currentUserId, PushMode.OnlyWebSocket, new YouDirectJoinedEvent
+        {
+            Thread = await threadService.GetThreadIJoinedAsync(id, currentUserId)
+        });
 
         logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.",
             currentUserId, id);
