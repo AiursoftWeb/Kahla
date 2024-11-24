@@ -26,6 +26,8 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
+    KahlaRelationalDbContext dbContext,
+    KahlaPushService kahlaPushService,
     WebPushService webPusher,
     WebSocketPushService wsPusher,
     CanonPool canonPool, // Transient service.
@@ -141,11 +143,11 @@ public class DevicesController(
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to push a test message to all his devices.", currentUserId);
-        var devices = await relationalDbContext
-            .Devices
-            .AsNoTracking()
-            .Where(t => t.OwnerId == currentUserId)
-            .ToListAsync();
+        var user = await dbContext.Users.Include(t => t.HisDevices).FirstOrDefaultAsync(t => t.Id == currentUserId);
+        if (user == null)
+        {
+            return this.Protocol(Code.NotFound, "Can not find your user.");
+        }
         var messageEvent = new NewMessageEvent
         {
             Message = new KahlaMessageMappedSentView
@@ -168,16 +170,7 @@ public class DevicesController(
             Muted = false,
         };
         
-        canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(currentUserId, messageEvent); });
-        foreach (var hisDevice in devices)
-        {
-            canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, messageEvent); });
-        }
-
-        await canonPool.RunAllTasksInPoolAsync(Extensions.GetLimitedNumber(
-            min: 8,
-            max: 32, 
-            suggested: Environment.ProcessorCount));
+        await kahlaPushService.PushToUser(user, messageEvent);
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");

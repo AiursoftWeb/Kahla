@@ -1,3 +1,4 @@
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -9,7 +10,7 @@ public class WebSocketPushService(
     ILogger<WebSocketPushService> logger,
     ChannelsInMemoryDb context)
 {
-    public async Task PushAsync(string userId, object payload)
+    public async Task PushAsync(string userId, KahlaEvent payload)
     {
         var channel = context.GetMyChannel(userId);
         try

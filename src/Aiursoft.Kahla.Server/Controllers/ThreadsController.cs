@@ -38,9 +38,8 @@ public class ThreadsController(
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
     // TODO:
-    // When dissolved, direct-joined, benn kicked, leaved, create-scratched
+    // When thread-dissolved, you-direct-joined, you-been-kicked, you-leaved, someone-left, someone-direct-join, someone-soft-invite-finished, create-scratched, new-message, your-hard-invite-finished, you-was-hard-invited, you-completed-software-invited
     // Push to user's websocket so his thread list can be updated.
-    
     [HttpGet]
     [Route("mine")]
     [Produces<MyThreadsViewModel>]

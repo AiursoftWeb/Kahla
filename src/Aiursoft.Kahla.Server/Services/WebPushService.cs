@@ -1,4 +1,5 @@
-﻿using Aiursoft.Kahla.Server.Data;
+﻿using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -12,16 +13,7 @@ public class WebPushService(
     ILogger<WebPushService> logger,
     KahlaRelationalDbContext relationalDbContext)
 {
-    public async Task PushAsync(IEnumerable<Device> devices, object payload,
-        string triggerEmail = "postermaster@aiursoft.com")
-    {
-        foreach (var each in devices)
-        {
-            await PushAsync(each, payload, triggerEmail);
-        }
-    }
-
-    public async Task PushAsync(Device device, object payload, string triggerEmail = "postermaster@aiursoft.com")
+    public async Task PushAsync(Device device, KahlaEvent payload, string triggerEmail = "postermaster@aiursoft.com")
     {
         var vapidPublicKey = configuration.GetSection("VapidKeys")["PublicKey"]!;
         var vapidPrivateKey = configuration.GetSection("VapidKeys")["PrivateKey"]!;
