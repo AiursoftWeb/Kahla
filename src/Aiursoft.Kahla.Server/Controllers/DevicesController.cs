@@ -1,7 +1,6 @@
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
-using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
@@ -28,9 +27,6 @@ namespace Aiursoft.Kahla.Server.Controllers;
 public class DevicesController(
     KahlaRelationalDbContext dbContext,
     KahlaPushService kahlaPushService,
-    WebPushService webPusher,
-    WebSocketPushService wsPusher,
-    CanonPool canonPool, // Transient service.
     ILogger<DevicesController> logger,
     DeviceOwnerViewRepo repo,
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
