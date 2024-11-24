@@ -312,7 +312,7 @@ public class ClientPushConsumer(
             var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
             var messagesToAddToDb = model
-                .Select(messageIncoming => MessageInDatabaseEntity.FromClientPushedCommit(messageIncoming, serverTime, userIdGuid))
+                .Select(messageIncoming => MessageInDatabaseEntity.FromPushedCommit(messageIncoming, serverTime, userIdGuid))
                 .ToArray();
 
             // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.

@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Models;
-using Aiursoft.Kahla.Server.Services.Mappers;
 using Aiursoft.Kahla.Server.Services.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -93,9 +92,7 @@ public class QuickMessageAccess(
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}...", thread.Id);
             var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
-            var lastMessage =
-                lastMessageEntity?.Map(
-                    await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
+            var lastMessage = lastMessageEntity?.ToSentView(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
 
             var membersInThread = await dbContext
                 .UserThreadRelations
