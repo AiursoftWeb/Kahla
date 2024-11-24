@@ -26,7 +26,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [Route("api/devices")]
 public class DevicesController(
     KahlaRelationalDbContext dbContext,
-    KahlaPushService kahlaPushService,
+    BufferedKahlaPushService kahlaPushService,
     ILogger<DevicesController> logger,
     DeviceOwnerViewRepo repo,
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
@@ -166,7 +166,7 @@ public class DevicesController(
             Muted = false,
         };
         
-        await kahlaPushService.PushToUser(user, messageEvent);
+        kahlaPushService.QueuePushToUser(user, PushMode.AllPath, [ messageEvent ]);
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");

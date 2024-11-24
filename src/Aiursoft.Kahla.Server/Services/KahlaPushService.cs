@@ -13,6 +13,21 @@ public enum PushMode
     DryRun
 }
 
+public class BufferedKahlaPushService(
+    CanonQueue canonQueue)
+{
+    public void QueuePushToUser(KahlaUser user, PushMode mode, IEnumerable<KahlaEvent> payloads)
+    {
+        canonQueue.QueueWithDependency<KahlaPushService>(async p =>
+        {
+            foreach (var payload in payloads)
+            {
+                await p.PushToUser(user, payload, mode);
+            }
+        });
+    }
+}
+
 public class KahlaPushService(
     ILogger<KahlaPushService> logger,
     KahlaRelationalDbContext context,
@@ -58,33 +73,4 @@ public class KahlaPushService(
             max: 32, 
             suggested: Environment.ProcessorCount));
     }
-
-    // public void NewMemberEvent(KahlaUser receiver, KahlaUser newMember, int conversationId)
-    // {
-    //     var newMemberEvent = new NewMemberEvent
-    //     {
-    //         NewMember = newMember,
-    //         ConversationId = conversationId
-    //     };
-    //     _canon.FireAsync<WebSocketPushService>(s => s.PushAsync(receiver, newMemberEvent));
-    // }
-    //
-    // public void SomeoneLeftEvent(KahlaUser receiver, KahlaUser leftMember, int conversationId)
-    // {
-    //     var someoneLeftEvent = new SomeoneLeftEvent
-    //     {
-    //         LeftUser = leftMember,
-    //         ConversationId = conversationId
-    //     };
-    //     _canon.FireAsync<WebSocketPushService>(s => s.PushAsync(receiver, someoneLeftEvent));
-    // }
-    //
-    // public void DissolveEvent(KahlaUser receiver, int conversationId)
-    // {
-    //     var dissolveEvent = new DissolveEvent
-    //     {
-    //         ConversationId = conversationId
-    //     };
-    //     _canon.FireAsync<WebSocketPushService>(s => s.PushAsync(receiver, dissolveEvent));
-    // }
 }

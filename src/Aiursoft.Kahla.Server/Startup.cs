@@ -78,13 +78,16 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<ThreadOthersViewAppService>();
             services.AddScoped<ThreadJoinedViewAppService>();
             
-            // Services
+            // Push services
+            services.AddTaskCanon();
             services.AddScoped<WebPushClient>();
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
+            services.AddScoped<BufferedKahlaPushService>();
+            
+            // Online detector
             services.AddScoped<OnlineDetector>();
-            services.AddTaskCanon();
 
             // Controllers and web
             services

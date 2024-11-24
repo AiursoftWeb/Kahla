@@ -196,12 +196,7 @@ public class MessagesController(
                 var firstPullRequest = messagesDb.ReadBulk(startLocation, readLength);
                 
                 // Do NOT await here, because the read write lock need the same thread to release the lock.
-                socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => new Commit<ChatMessage>
-                {
-                    Item = t.ToClientView(),
-                    Id = t.Id.ToString("D"),
-                    CommitTime = t.CreationTime
-                }))).Wait();
+                socket.Send(SDK.Extensions.Serialize(firstPullRequest.Select(t => t.ToCommit()))).Wait();
             }
 
         }
@@ -317,14 +312,7 @@ public class ClientPushConsumer(
             var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
             var messagesToAddToDb = model
-                .Select(messageIncoming => new MessageInDatabaseEntity
-                {
-                    Content = messageIncoming.Item.Content,
-                    Preview = Encoding.UTF8.GetBytes(messageIncoming.Item.Preview).Take(50).ToArray(),
-                    Id = Guid.Parse(messageIncoming.Id),
-                    CreationTime = serverTime,
-                    SenderId = userIdGuid,
-                })
+                .Select(messageIncoming => MessageInDatabaseEntity.FromClientPushedCommit(messageIncoming, serverTime, userIdGuid))
                 .ToArray();
 
             // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
@@ -368,6 +356,8 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
+    //UserOthersViewRepo usersRepo,
+    //BufferedKahlaPushService kahlaPushService,
     QuickMessageAccess quickMessageAccess,
     ThreadsInMemoryCache threadCache,
     string listeningUserId,
@@ -375,7 +365,7 @@ public class ThreadReflectConsumer(
     ObservableWebSocket socket)
     : IConsumer<MessageInDatabaseEntity[]>
 {
-    public async Task Consume(MessageInDatabaseEntity[] newCommits)
+    public async Task Consume(MessageInDatabaseEntity[] newEntities)
     {
         // Ensure the user is in the thread.
         if (!threadCache.IsUserInThread(listeningUserId))
@@ -385,14 +375,43 @@ public class ThreadReflectConsumer(
         }
         
         // Send to the client.
-        logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newCommits.Length, listeningUserId);
-        await socket.Send(SDK.Extensions.Serialize(newCommits.Select(t => new Commit<ChatMessage>
-        {
-            Item = t.ToClientView(),
-            Id = t.Id.ToString("D"),
-            CommitTime = t.CreationTime
-        })));
-        
+        logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newEntities.Length, listeningUserId);
+        await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
+
+        // var messageEvents = new List<NewMessageEvent>();
+        // foreach (var entity in newEntities)
+        // {
+        //     var sender = await usersRepo.GetUserByIdWithCacheAsync(entity.SenderId.ToString());
+        //     if (sender == null)
+        //     {
+        //         logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", listeningUserId);
+        //         continue;
+        //     }
+        //     var messageEvent = new NewMessageEvent
+        //     {
+        //         Message = new KahlaMessageMappedSentView
+        //         {
+        //             Id = entity.Id,
+        //             ThreadId = threadCache.ThreadId,
+        //             Sender = new KahlaUserMappedPublicView
+        //             {
+        //                 Id = sender.Id,
+        //                 NickName = sender.NickName,
+        //                 Bio = sender.Bio,
+        //                 IconFilePath = sender.IconFilePath,
+        //                 AccountCreateTime = sender.AccountCreateTime,
+        //                 EmailConfirmed = sender.EmailConfirmed,
+        //                 Email = sender.Email
+        //             },
+        //             Preview = Encoding.UTF8.GetString(entity.Preview.TrimEndZeros()),
+        //             SendTime = entity.CreationTime,
+        //         },
+        //         Muted = false,
+        //     };
+        //     messageEvents.Add(messageEvent);
+        // }
+        // kahlaPushService.QueuePushToUser(listeningUserId, PushMode.AllPath, messageEvents);
+
         // Clear current user's unread message count.
         quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, listeningUserId);
     }
