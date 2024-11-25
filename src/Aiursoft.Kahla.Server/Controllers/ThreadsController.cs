@@ -741,7 +741,7 @@ public class ThreadsController(
                     {
                         UserId = targetUser.Id,
                         ThreadId = thread.Id,
-                        UserThreadRole = UserThreadRole.Member
+                        UserThreadRole = UserThreadRole.Admin
                     };
                     relationalDbContext.UserThreadRelations.Add(targetRelation);
                     // Don't call SaveChangesAsync here for better performance.
