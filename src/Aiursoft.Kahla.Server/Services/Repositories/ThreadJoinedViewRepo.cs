@@ -31,7 +31,7 @@ public class ThreadJoinedViewRepo(
             .OrderByDescending(t => t.CreateTime);
     }
 
-    public async Task<List<KahlaThreadMappedJoinedView>> GetThreadsIJoined(int[] threadIds, string viewingUserId)
+    public async Task<List<KahlaThreadMappedJoinedView>> GetThreadsBasedOnIds(int[] threadIds, string viewingUserId)
     {
         var threadsQuery = relationalDbContext.ChatThreads
             .AsNoTracking()
