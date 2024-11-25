@@ -135,15 +135,10 @@ public class DevicesController(
 
     [HttpPost]
     [Route("push-test-message")]
-    public async Task<IActionResult> PushTestMessage()
+    public IActionResult PushTestMessage()
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to push a test message to all his devices.", currentUserId);
-        var user = await dbContext.Users.Include(t => t.HisDevices).FirstOrDefaultAsync(t => t.Id == currentUserId);
-        if (user == null)
-        {
-            return this.Protocol(Code.NotFound, "Can not find your user.");
-        }
         var messageEvent = new NewMessageEvent
         {
             Message = new KahlaMessageMappedSentView
@@ -166,7 +161,7 @@ public class DevicesController(
             Muted = false,
         };
         
-        kahlaPushService.QueuePushToUser(user, PushMode.AllPath, [ messageEvent ]);
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.AllPath, messageEvent);
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");

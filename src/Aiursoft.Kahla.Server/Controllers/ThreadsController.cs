@@ -7,6 +7,7 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -306,10 +307,28 @@ public class ThreadsController(
         }
         
         // Push to the client
-        await kahlaPushService.QueuePushToUserAsync(currentUserId, PushMode.OnlyWebSocket, new YouDirectJoinedEvent
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouDirectJoinedEvent
         {
             Thread = await threadService.GetThreadIJoinedAsync(id, currentUserId)
         });
+        var user = await relationalDbContext.Users.FirstOrDefaultAsync(t => t.Id == currentUserId);
+        if (user != null)
+        {
+            kahlaPushService.QueuePushEventsToThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
+            {
+                User = new KahlaUserMappedPublicView
+                {
+                    Id = user.Id,
+                    NickName = user.NickName,
+                    Bio = user.Bio,
+                    IconFilePath = user.IconFilePath,
+                    AccountCreateTime = user.AccountCreateTime,
+                    EmailConfirmed = user.EmailConfirmed,
+                    Email = user.Email
+                },
+                ThreadId = id
+            });
+        }
 
         logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.",
             currentUserId, id);

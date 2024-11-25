@@ -77,4 +77,9 @@ public class ThreadsInMemoryCache
     {
         return UserUnReadAmountSinceBoot.ContainsKey(userId);
     }
+    
+    public string[] GetUsersInThread()
+    {
+        return UserUnReadAmountSinceBoot.Keys.ToArray();
+    }
 }

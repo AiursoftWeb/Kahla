@@ -318,6 +318,11 @@ public class QuickMessageAccess(
         }
     }
     
+    public string[] GetUsersInThread(int threadId)
+    {
+        return CachedThreads[threadId].GetUsersInThread();
+    }
+    
     // TODO: Use this function.
     public long GetMyTotalUnreadMessages(string userId)
     {

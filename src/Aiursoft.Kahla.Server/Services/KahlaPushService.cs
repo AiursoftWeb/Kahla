@@ -1,9 +1,6 @@
-﻿using Aiursoft.AiurProtocol.Exceptions;
-using Aiursoft.AiurProtocol.Models;
-using Aiursoft.Canon;
+﻿using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services;
@@ -17,42 +14,33 @@ public enum PushMode
 }
 
 public class BufferedKahlaPushService(
-    KahlaRelationalDbContext context,
+    ILogger<BufferedKahlaPushService> logger,
+    QuickMessageAccess quickMessageAccess,
     CanonQueue canonQueue)
 {
-    public void QueuePushToUser(KahlaUser user, PushMode mode, IEnumerable<KahlaEvent> payloads)
+    private void QueuePushEventsToUser(string userId, PushMode mode, IEnumerable<KahlaEvent> payloads)
     {
         canonQueue.QueueWithDependency<KahlaPushService>(async p =>
         {
             foreach (var payload in payloads)
             {
-                await p.PushToUser(user, payload, mode);
+                logger.LogInformation("Queuing push events to user: {UserId}, with mode: {Mode}, event type: {EventType}", userId, mode, payload.TypeDescription);
+                await p.PushToUser(userId, payload, mode);
             }
         });
     }
 
-    private async Task QueuePushToUserAsync(string userId, PushMode mode, IEnumerable<KahlaEvent> payloads)
+    public void QueuePushEventsToThread(int threadId, PushMode mode, KahlaEvent payload)
     {
-        var user = await context
-            .Users
-            .Include(t => t.HisDevices)
-            .FirstOrDefaultAsync(t => t.Id == userId);
-        if (user == null)
+        var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
+        foreach (var user in usersInThread)
         {
-            throw new AiurServerException(Code.NotFound, $"The user with ID: '{userId}' was not found in database.");
+            QueuePushEventsToUser(user, mode, [payload]);
         }
-        
-        canonQueue.QueueWithDependency<KahlaPushService>(async p =>
-        {
-            foreach (var payload in payloads)
-            {
-                await p.PushToUser(user, payload, mode);
-            }
-        });
     }
-    
-    public Task QueuePushToUserAsync(string userId, PushMode mode, KahlaEvent payload) =>
-        QueuePushToUserAsync(userId, mode, new[] { payload });
+
+    public void QueuePushEventToUser(string userId, PushMode mode, KahlaEvent payload) =>
+        QueuePushEventsToUser(userId, mode, [payload]);
 }
 
 public class KahlaPushService(
@@ -62,34 +50,36 @@ public class KahlaPushService(
     WebSocketPushService wsPusher,
     WebPushService webPusher)
 {
-    public async Task PushToUser(KahlaUser user, KahlaEvent payload, PushMode mode = PushMode.AllPath)
+    public async Task PushToUser(string userId, KahlaEvent payload, PushMode mode = PushMode.AllPath)
     {
         // WebSocket push.
         if (mode is PushMode.AllPath or PushMode.OnlyWebSocket)
         {
-            logger.LogInformation("Pushing to user: {UserId} with WebSocket...", user.Id);
-            canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(user.Id, payload); });
+            logger.LogInformation("Pushing to user: {UserId} with WebSocket...", userId);
+            canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(userId, payload); });
         }
-        
+
         // Web push.
+        // TODO: Refactor this to in memory cache to improve performance.
         // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (mode is PushMode.AllPath or PushMode.OnlyWebPush)
         {
-            // Load his devices if not loaded.
-            if (!context.Entry(user).Collection(t => t.HisDevices).IsLoaded)
-            {
-                logger.LogInformation("Loading devices for user: {UserId}, since devices were not loaded...", user.Id);
-                await context.Entry(user).Collection(t => t.HisDevices).LoadAsync();
-            }
-            logger.LogInformation("Pushing to user: {UserId} with {DeviceCount} WebPush devices...", user.Id, user.HisDevices.Count());
-            foreach (var hisDevice in user.HisDevices)
+            // Load his devices
+            var hisDevices = await context
+                .Devices
+                .AsNoTracking()
+                .Where(t => t.OwnerId == userId)
+                .ToListAsync();
+            logger.LogInformation("Pushing to user: {UserId} with {DeviceCount} WebPush devices...", userId,
+                hisDevices.Count());
+            foreach (var hisDevice in hisDevices)
             {
                 canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, payload); });
             }
         }
-        
+
         // Dry run.
-        if (mode is PushMode.DryRun) 
+        if (mode is PushMode.DryRun)
         {
             logger.LogWarning("Dry run mode is enabled. No push will be sent.");
         }
@@ -97,7 +87,7 @@ public class KahlaPushService(
         // Do actual push.
         await canonPool.RunAllTasksInPoolAsync(Extensions.GetLimitedNumber(
             min: 8,
-            max: 32, 
+            max: 32,
             suggested: Environment.ProcessorCount));
     }
 }

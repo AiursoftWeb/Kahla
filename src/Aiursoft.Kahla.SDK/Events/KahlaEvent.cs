@@ -141,9 +141,9 @@ public class SomeoneLeftEvent : KahlaEvent
     public required int ThreadId { get; init; }
 }
 
-public class SomeoneDirectJoinEvent : KahlaEvent
+public class SomeOneDirectJoinEvent : KahlaEvent
 {
-    public SomeoneDirectJoinEvent()
+    public SomeOneDirectJoinEvent()
     {
         Type = EventType.SomeoneDirectJoin;
     }
