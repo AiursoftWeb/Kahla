@@ -25,7 +25,6 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
-    KahlaRelationalDbContext dbContext,
     BufferedKahlaPushService kahlaPushService,
     ILogger<DevicesController> logger,
     DeviceOwnerViewRepo repo,
