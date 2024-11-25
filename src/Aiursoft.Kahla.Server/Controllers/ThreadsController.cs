@@ -311,24 +311,21 @@ public class ThreadsController(
         {
             Thread = await threadService.GetThreadIJoinedAsync(id, currentUserId)
         });
-        var user = await relationalDbContext.Users.FirstOrDefaultAsync(t => t.Id == currentUserId);
-        if (user != null)
+        var user = await relationalDbContext.Users.FirstAsync(t => t.Id == currentUserId);
+        kahlaPushService.QueuePushEventsToThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
         {
-            kahlaPushService.QueuePushEventsToThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
+            User = new KahlaUserMappedPublicView
             {
-                User = new KahlaUserMappedPublicView
-                {
-                    Id = user.Id,
-                    NickName = user.NickName,
-                    Bio = user.Bio,
-                    IconFilePath = user.IconFilePath,
-                    AccountCreateTime = user.AccountCreateTime,
-                    EmailConfirmed = user.EmailConfirmed,
-                    Email = user.Email
-                },
-                ThreadId = id
-            });
-        }
+                Id = user.Id,
+                NickName = user.NickName,
+                Bio = user.Bio,
+                IconFilePath = user.IconFilePath,
+                AccountCreateTime = user.AccountCreateTime,
+                EmailConfirmed = user.EmailConfirmed,
+                Email = user.Email
+            },
+            ThreadId = id
+        });
 
         logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.",
             currentUserId, id);
