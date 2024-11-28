@@ -33,24 +33,24 @@ public static class KahlaQueryMappers
         this IQueryable<UserThreadRelation> filteredRelations, string viewingUserId, OnlineDetector onlineDetector)
     {
         return filteredRelations
-            .Select(u => new KahlaUserMappedInThreadView
+            .Select(ur => new KahlaUserMappedInThreadView
             {
                 User = new KahlaUserMappedPublicView
                 {
-                    Id = u.UserId,
-                    NickName = u.User.NickName,
-                    Bio = u.User.Bio,
-                    IconFilePath = u.User.IconFilePath,
-                    AccountCreateTime = u.User.AccountCreateTime,
-                    EmailConfirmed = u.User.EmailConfirmed,
-                    Email = u.User.Email
+                    Id = ur.UserId,
+                    NickName = ur.User.NickName,
+                    Bio = ur.User.Bio,
+                    IconFilePath = ur.User.IconFilePath,
+                    AccountCreateTime = ur.User.AccountCreateTime,
+                    EmailConfirmed = ur.User.EmailConfirmed,
+                    Email = ur.User.Email
                 },
-                IsKnownContact = u.User.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
-                IsBlockedByYou = u.User.BlockedBy.Any(p => p.CreatorId == viewingUserId),
-                IsAdmin = u.UserThreadRole == UserThreadRole.Admin,
-                IsOwner = u.Thread.OwnerRelation!.UserId == viewingUserId,
-                JoinTime = u.JoinTime,
-                Online = onlineDetector.IsOnline(u.UserId, u.User.EnableHideMyOnlineStatus) // Client side evaluate.
+                IsKnownContact = ur.User.OfKnownContacts.Any(p => p.CreatorId == viewingUserId),
+                IsBlockedByYou = ur.User.BlockedBy.Any(p => p.CreatorId == viewingUserId),
+                IsAdmin = ur.UserThreadRole == UserThreadRole.Admin,
+                IsOwner = ur.Thread.OwnerRelationId == ur.Id,
+                JoinTime = ur.JoinTime,
+                Online = onlineDetector.IsOnline(ur.UserId, ur.User.EnableHideMyOnlineStatus) // Client side evaluate.
             });
     }
 
