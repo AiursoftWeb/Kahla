@@ -305,6 +305,11 @@ public class MessageRepoPullTests
         Assert.AreEqual(9, messagesStore.PushedItemsOffset);
         Assert.AreEqual(9, messagesStore.PulledItemsOffset);
         
+        for (int i = 1; i <= 9; i++)
+        {
+            Assert.IsTrue(allMessages[i - 1].Item.Content.EndsWith(i.ToString()));
+        }
+        
         // Push should do nothing.
         var pushed = messagesStore.Push().ToArray();
         Assert.AreEqual(0, pushed.Length);
