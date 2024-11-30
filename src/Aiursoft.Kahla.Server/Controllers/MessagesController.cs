@@ -131,9 +131,18 @@ public class MessagesController(
             userId);
         var pusher = await HttpContext.AcceptWebSocketClient();
         var channel = memoryDb.GetMyChannel(userId);
-        channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));
+        var sub = channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));
 
-        await pusher.Listen(HttpContext.RequestAborted);
+        try
+        {
+            await pusher.Listen(HttpContext.RequestAborted);
+        }
+        finally
+        {
+            sub.Unsubscribe();
+            logger.LogInformation("User with Id: {Id} disconnected from the user channel websocket.", userId);
+        }
+
         return new EmptyResult();
     }
 
@@ -214,15 +223,20 @@ public class MessagesController(
         var socSub = socket.Subscribe(clientPushConsumer);
         logger.LogInformation("User with ID: {UserId} finished initial push and connected to thread {ThreadId} and listening for new events.",
             userId, threadId);
-        
-        // Start listening.
-        await socket.Listen(HttpContext.RequestAborted);
-        
-        // Unsubscribe.
-        refSub.Unsubscribe();
-        socSub.Unsubscribe();
-        logger.LogInformation("User with ID: {UserId} disconnected from thread {ThreadId}.", userId, threadId);
-        
+
+        try
+        {
+            // Start listening.
+            await socket.Listen(HttpContext.RequestAborted);
+        }
+        finally
+        {
+            // Unsubscribe.
+            refSub.Unsubscribe();
+            socSub.Unsubscribe();
+            logger.LogInformation("User with ID: {UserId} disconnected from thread {ThreadId} channel websocket.", userId, threadId);
+        }
+
         return new EmptyResult();
     }
 
