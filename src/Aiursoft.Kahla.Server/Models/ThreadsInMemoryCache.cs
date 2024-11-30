@@ -63,7 +63,6 @@ public class ThreadsInMemoryCache
 
     public void OnUserJoined(string userId)
     {
-        // TODO: Call this function.
         UserUnReadAmountSinceBoot.TryAdd(userId, 0 - (int)_appendedMessageSinceBootCount);
     }
 
