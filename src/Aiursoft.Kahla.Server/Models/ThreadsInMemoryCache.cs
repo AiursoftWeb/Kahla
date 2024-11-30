@@ -39,8 +39,8 @@ public class ThreadsInMemoryCache
     {
         // It's possible that the user is not in the thread when the app is booting.
         // If found unknown user, return 0 - appended message count.
-        return (uint)(UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - (int)_appendedMessageSinceBootCount) +
-                      _appendedMessageSinceBootCount);
+        var unread = UserUnReadAmountSinceBoot.GetOrAdd(userId, _ => 0 - (int)_appendedMessageSinceBootCount) + _appendedMessageSinceBootCount;
+        return unread < 0 ? 0 : (uint)unread;
     }
 
     public void ClearUserUnReadAmountSinceBoot(string userId)
