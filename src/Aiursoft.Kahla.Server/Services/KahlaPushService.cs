@@ -71,7 +71,7 @@ public class KahlaPushService(
                 .Where(t => t.OwnerId == userId)
                 .ToListAsync();
             logger.LogInformation("Pushing to user: {UserId} with {DeviceCount} WebPush devices...", userId,
-                hisDevices.Count());
+                hisDevices.Count);
             foreach (var hisDevice in hisDevices)
             {
                 canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, payload); });
