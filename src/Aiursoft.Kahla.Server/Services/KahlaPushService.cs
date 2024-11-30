@@ -89,5 +89,8 @@ public class KahlaPushService(
             min: 8,
             max: 32,
             suggested: Environment.ProcessorCount));
+        
+        // Some devices may be invalid, remove them.
+        await context.SaveChangesAsync();
     }
 }

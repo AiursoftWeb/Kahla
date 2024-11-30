@@ -35,7 +35,6 @@ public class WebPushService(
         catch (WebPushException e)
         {
             relationalDbContext.Devices.Remove(device);
-            await relationalDbContext.SaveChangesAsync();
             logger.LogCritical(e,
                 "A  WebPush error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
                 device.Id);
@@ -43,7 +42,6 @@ public class WebPushService(
         catch (Exception e)
         {
             relationalDbContext.Devices.Remove(device);
-            await relationalDbContext.SaveChangesAsync();
             logger.LogCritical(e,
                 "An unknown error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
                 device.Id);

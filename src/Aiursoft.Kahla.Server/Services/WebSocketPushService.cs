@@ -15,7 +15,7 @@ public class WebSocketPushService(
         var channel = context.GetMyChannel(userId);
         try
         {
-            logger.LogInformation("Trying to push a message to user: {Email}.", userId); 
+            logger.LogInformation("Trying to push a message to user: {Id} with WebSocket.", userId); 
             var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
