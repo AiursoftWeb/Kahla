@@ -1,6 +1,6 @@
 using System.Text;
 using Aiursoft.ArrayDb.ObjectBucket;
-using Aiursoft.ArrayDb.ObjectBucket.Attributes;
+using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Attributes;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
@@ -28,6 +28,8 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     public Guid SenderId { get; init; } = Guid.Empty;
     
     public Guid Id { get; init; } = Guid.Empty;
+    
+    public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     
     public static MessageInDatabaseEntity FromPushedCommit(
         Commit<ChatMessage> messageIncoming, 

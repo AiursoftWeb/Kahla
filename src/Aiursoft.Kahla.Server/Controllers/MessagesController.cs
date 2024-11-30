@@ -11,6 +11,7 @@ using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.ArrayDb.ObjectBucket;
+using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Interfaces;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;

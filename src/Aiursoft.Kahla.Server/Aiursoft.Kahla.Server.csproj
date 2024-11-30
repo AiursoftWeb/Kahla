@@ -16,7 +16,7 @@
     <PackageReference Include="Aiursoft.DbTools.InMemory" Version="8.0.13" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="8.0.2" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="1.0.6" />
-    <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="1.0.19" />
+    <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="1.0.20" />
     <PackageReference Include="Aiursoft.Scanner" Version="8.0.2" />
     <PackageReference Include="Aiursoft.WebTools" Version="8.0.28" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
