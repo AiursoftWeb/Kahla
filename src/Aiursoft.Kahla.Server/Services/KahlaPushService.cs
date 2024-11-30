@@ -30,7 +30,7 @@ public class BufferedKahlaPushService(
         });
     }
 
-    public void QueuePushEventsToThread(int threadId, PushMode mode, KahlaEvent payload)
+    public void QueuePushEventsToUsersInThread(int threadId, PushMode mode, KahlaEvent payload)
     {
         var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
         foreach (var user in usersInThread)

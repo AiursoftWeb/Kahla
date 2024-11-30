@@ -312,7 +312,7 @@ public class ThreadsController(
             Thread = await threadService.GetThreadIJoinedAsync(id, currentUserId)
         });
         var user = await relationalDbContext.Users.FirstAsync(t => t.Id == currentUserId);
-        kahlaPushService.QueuePushEventsToThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
+        kahlaPushService.QueuePushEventsToUsersInThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
         {
             User = new KahlaUserMappedPublicView
             {
