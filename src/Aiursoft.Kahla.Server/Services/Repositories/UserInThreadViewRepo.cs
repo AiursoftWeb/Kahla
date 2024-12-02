@@ -16,7 +16,7 @@ public class UserInThreadViewRepo(KahlaRelationalDbContext relationalDbContext, 
             .WhereWhen(excluding, t => !t.User.NickName.Contains(excluding!))
             .WhereWhen(searchInput, t =>
                 t.User.NickName.Contains(searchInput!) ||
-                t.User.Id.ToString() == searchInput ||
+                t.User.Id == searchInput ||
                 t.User.Email.Contains(searchInput!))
             .MapUsersInThreadView(viewingUserId, onlineDetector)
             .OrderBy(t => t.JoinTime);
