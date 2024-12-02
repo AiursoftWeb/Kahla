@@ -152,6 +152,7 @@ public class MemoryLayerTests : KahlaTestBase
             await Ensure2ThreadsCorrect();
             await repo1.Disconnect();
         });
+        return;
 
         async Task Ensure3ThreadsCorrect()
         {
@@ -227,10 +228,10 @@ public class MemoryLayerTests : KahlaTestBase
             await Sdk.DirectJoinAsync(thread1Id);
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
         });
-        
+
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
-        
+
         // User 1 sends a message. Reflect to user 2.
         await repo1.Send(new ChatMessage
         {
@@ -238,10 +239,10 @@ public class MemoryLayerTests : KahlaTestBase
             Preview = "Hello, world!",
             SenderId = user1Id
         });
-        
+
         // User 2 should receive the message.
         Assert.AreEqual("Hello, world!", repo2.Head()?.Item.Content);
-        
+
         // User 2 sends a message. Reflect to user 1.
         await repo2.Send(new ChatMessage
         {
@@ -249,16 +250,13 @@ public class MemoryLayerTests : KahlaTestBase
             Preview = "Hello, world! 2",
             SenderId = user1Id
         });
-        
+
         // User 1 should receive the message.
         Assert.AreEqual("Hello, world! 2", repo1.Head()?.Item.Content);
-        
+
         // Kick user 2.
-        await RunUnderUser("wsuser1", async () =>
-        {
-           await Sdk.KickMemberAsync(thread1Id, user2Id.ToString());
-        });
-        
+        await RunUnderUser("wsuser1", async () => { await Sdk.KickMemberAsync(thread1Id, user2Id.ToString()); });
+
         // User 1 sends a message. User 2 should not receive it.
         await repo1.Send(new ChatMessage
         {
@@ -267,7 +265,7 @@ public class MemoryLayerTests : KahlaTestBase
             SenderId = user1Id
         });
         Assert.AreEqual("Hello, world! 2", repo2.Head()?.Item.Content);
-        
+
         // User 2 sends a message. User 1 should not receive it.
         await repo2.Send(new ChatMessage
         {
@@ -276,7 +274,7 @@ public class MemoryLayerTests : KahlaTestBase
             SenderId = user1Id
         });
         Assert.AreEqual("Hello, world! After kick!", repo1.Head()?.Item.Content);
-        
+
         // Clean
         await repo1.Disconnect();
         await repo2.Disconnect();
@@ -308,14 +306,11 @@ public class MemoryLayerTests : KahlaTestBase
             await Sdk.DirectJoinAsync(thread1Id);
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
         });
-        await RunUnderUser("wsuser3", async () =>
-        {
-            await Sdk.DirectJoinAsync(thread1Id);
-        });
-        
+        await RunUnderUser("wsuser3", async () => { await Sdk.DirectJoinAsync(thread1Id); });
+
         // User 1 connects while user 2 idle.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
-    
+
         // User 1 sends a message.
         await repo1.Send(new ChatMessage
         {
@@ -329,24 +324,24 @@ public class MemoryLayerTests : KahlaTestBase
             Preview = "Hello, world! 2",
             SenderId = user1Id
         });
-        
+
         // User 2 should notice there are 2 unread messages.
         await RunUnderUser("wsuser2", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // User 2 read the messages.
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
-        
+
         // User 2 should notice there are no unread messages.
         await RunUnderUser("wsuser2", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // User 1 & 2 keeps sending messages, and user 1 & 2 should not notice any unread messages.
         for (int i = 0; i < 10; i++)
         {
@@ -363,7 +358,7 @@ public class MemoryLayerTests : KahlaTestBase
                 SenderId = user1Id
             });
         }
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
@@ -383,13 +378,13 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual((uint)22, threadDetails.Thread.MessageContext.UnReadAmount);
             Assert.AreEqual((uint)22, threadDetails.Thread.TotalMessages);
         });
-        
+
         // Clean up.
         await repo1.Disconnect();
         await repo2.Disconnect();
     }
-    
-       [TestMethod]
+
+    [TestMethod]
     public async Task TestAfterRebootingUnreadAmountCorrect()
     {
         var thread1Id = 0;
@@ -415,14 +410,11 @@ public class MemoryLayerTests : KahlaTestBase
             await Sdk.DirectJoinAsync(thread1Id);
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
         });
-        await RunUnderUser("wsuser3", async () =>
-        {
-            await Sdk.DirectJoinAsync(thread1Id);
-        });
-        
+        await RunUnderUser("wsuser3", async () => { await Sdk.DirectJoinAsync(thread1Id); });
+
         // User 1 connects while user 2 idle.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
-    
+
         // User 1 sends a message.
         await repo1.Send(new ChatMessage
         {
@@ -437,36 +429,36 @@ public class MemoryLayerTests : KahlaTestBase
             SenderId = user1Id
         });
         await Task.Delay(1000);
-        
+
         // User 2 should notice there are 2 unread messages.
         await RunUnderUser("wsuser2", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // User 2 read the messages.
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         await Task.Delay(200); // Wait for the messages to be reflected.
-        
+
         // User 2 should notice there are no unread messages.
         await RunUnderUser("wsuser2", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // User 3 should notice there are 2 unread messages.
         await RunUnderUser("wsuser3", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // Server reboot.
         await Server!.Services.GetRequiredService<QuickMessageAccess>().PersistUserUnreadAmount();
         await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
-        
+
         // User 1 should notice there are no unread messages.
         await RunUnderUser("wsuser1", async () =>
         {
@@ -479,14 +471,14 @@ public class MemoryLayerTests : KahlaTestBase
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)0, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // User 3 should notice there are 2 unread messages.
         await RunUnderUser("wsuser3", async () =>
         {
             var threadDetails = await Sdk.ThreadDetailsJoinedAsync(thread1Id);
             Assert.AreEqual((uint)2, threadDetails.Thread.MessageContext.UnReadAmount);
         });
-        
+
         // Clean up.
         await repo1.Disconnect();
         await repo2.Disconnect();
@@ -534,7 +526,7 @@ public class MemoryLayerTests : KahlaTestBase
         // User 2 should receive the message.
         Assert.AreEqual(largeString0xFFFF, repo2.Head()?.Item.Content);
         Assert.AreEqual("Preview", repo2.Head()?.Item.Preview);
-        
+
         // Clean
         await repo1.Disconnect();
         await repo2.Disconnect();
