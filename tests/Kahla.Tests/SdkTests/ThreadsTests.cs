@@ -751,4 +751,63 @@ public class ThreadsTests : KahlaTestBase
             Assert.IsTrue(threadDetails.Thread.ImInIt);
         });
     }
+
+    [TestMethod]
+    public async Task DirectJoinNonExistentThread()
+    {
+        await RunUnderUser("user53", async () =>
+        {
+            try
+            {
+                await Sdk.DirectJoinAsync(999);
+                Assert.Fail();
+            }
+            catch (AiurUnexpectedServerResponseException e)
+            {
+                Assert.AreEqual(Code.NotFound, e.Response.Code);
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task DirectJoinAThreadNotAllowingDirectJoin()
+    {
+        var threadId = 0;
+        await RunUnderUser("user54", async () =>
+        {
+            var createdThread = await Sdk.CreateFromScratchAsync("t", false, false, false, false, false);
+            threadId = createdThread.NewThreadId;
+        });
+        
+        await RunUnderUser("user55", async () =>
+        {
+            try
+            {
+                await Sdk.DirectJoinAsync(threadId);
+                Assert.Fail();
+            }
+            catch (AiurUnexpectedServerResponseException e)
+            {
+                Assert.AreEqual(Code.Unauthorized, e.Response.Code);
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task DirectJoinImAlreadyIn()
+    {
+        await RunUnderUser("user56", async () =>
+        {
+            var createdThread = await Sdk.CreateFromScratchAsync("t", false, true, false, false, false);
+            try
+            {
+                await Sdk.DirectJoinAsync(createdThread.NewThreadId);
+                Assert.Fail();
+            }
+            catch (AiurUnexpectedServerResponseException e)
+            {
+                Assert.AreEqual(Code.Conflict, e.Response.Code);
+            }
+        });
+    }
 }
