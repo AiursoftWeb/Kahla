@@ -328,10 +328,21 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<ThreadMembersViewModel> ThreadMembersAsync(int id, int skip = 0, int take = 20)
+    public async Task<ThreadMembersViewModel> ThreadMembersAsync(
+        int id,
+        string? search = null,
+        string? excluding = null,
+        int skip = 0, 
+        int take = 20)
     {
-        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/threads/members/{id}",
-            param: new { id, skip, take });
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: $"/api/threads/members/{id}",
+            param: new SearchAddressModel
+            {
+                SearchInput = search,
+                Excluding = excluding,
+                Skip = skip,
+                Take = take
+            });
         var result = await http.Get<ThreadMembersViewModel>(url);
         return result;
     }

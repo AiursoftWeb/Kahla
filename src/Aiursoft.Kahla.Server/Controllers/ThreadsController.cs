@@ -89,7 +89,7 @@ public class ThreadsController(
     [HttpGet]
     [Route("members/{id:int}")]
     [Produces<ThreadMembersViewModel>]
-    public async Task<IActionResult> Members([FromRoute] int id, [FromQuery] int skip = 0, [FromQuery] int take = 20)
+    public async Task<IActionResult> Members([FromRoute] int id, [FromQuery] SearchAddressModel model)
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to get the members of the thread. Thread ID: {ThreadID}.",
@@ -111,14 +111,15 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "This thread does not allow members to enlist members. Please contact the admin for more information.");
         }
 
-        var (count, members) = await userAppService.QueryMembersInThreadAsync(id, currentUserId, skip, take);
+        var (count, members) = await userAppService.QueryMembersInThreadAsync(
+            id, model.SearchInput, model.Excluding, currentUserId, model.Skip, model.Take);
         logger.LogInformation(
             "User with Id: {Id} successfully get the members of the thread. Thread ID: {ThreadID}. Total members: {Count}.",
             currentUserId, id, members.Count);
         return this.Protocol(new ThreadMembersViewModel
         {
             Code = Code.ResultShown,
-            Message = $"Successfully get the first {take} members of the thread and skipped {skip} members.",
+            Message = $"Successfully get the first {model.Take} members of the thread and skipped {model.Skip} members.",
             Members = members,
             TotalCount = count
         });

@@ -212,6 +212,39 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
+    public async Task TestSearchMemberInThread()
+    {
+        var threadId = 0;
+        await RunUnderUser("user1", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "Test-Thread",
+                true,
+                true,
+                true,
+                true,
+                true);
+            threadId = thread.NewThreadId;
+        });
+        await RunUnderUser("user2", async () =>
+        {
+            await Sdk.DirectJoinAsync(threadId);
+        });
+        await RunUnderUser("user12", async () =>
+        {
+            await Sdk.DirectJoinAsync(threadId);
+            var searchResult = await Sdk.ThreadMembersAsync(threadId, "user1");
+            Assert.AreEqual(Code.ResultShown, searchResult.Code);
+            Assert.AreEqual(2, searchResult.Members.Count);
+            
+            var searchResult2 = await Sdk.ThreadMembersAsync(threadId, "user", "2");
+            Assert.AreEqual(Code.ResultShown, searchResult2.Code);
+            Assert.AreEqual(1, searchResult2.Members.Count);
+            Assert.AreEqual("user1", searchResult2.Members.Single().User.NickName);
+        });
+    }
+
+    [TestMethod]
     public async Task ListMembersAfterKicked()
     {
         await Sdk.RegisterAsync("user31@domain.com", "password");
