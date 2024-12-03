@@ -85,7 +85,7 @@ public enum EventType
     ///
     /// In this case, client should add the thread to the thread list.
     /// </summary>
-    YouCompletedSoftwareInvited = 20
+    YouCompletedSoftInvited = 20
 
     #endregion
 }
@@ -227,11 +227,11 @@ public class YouWasHardInvitedEvent : KahlaEvent
 ///
 /// In this case, client should add the thread to the thread list.
 /// </summary>
-public class YouCompletedSoftwareInvitedEvent : KahlaEvent
+public class YouCompletedSoftInvitedEvent : KahlaEvent
 {
-    public YouCompletedSoftwareInvitedEvent()
+    public YouCompletedSoftInvitedEvent()
     {
-        Type = EventType.YouCompletedSoftwareInvited;
+        Type = EventType.YouCompletedSoftInvited;
     }
 
     public required KahlaThreadMappedJoinedView Thread { get; init; }
@@ -267,7 +267,7 @@ public static class JsonTools
                 EventType.YouDirectJoined => typeof(YouDirectJoinedEvent),
                 EventType.YourHardInviteFinished => typeof(YourHardInviteFinishedEvent),
                 EventType.YouWasHardInvited => typeof(YouWasHardInvitedEvent),
-                EventType.YouCompletedSoftwareInvited => typeof(YouCompletedSoftwareInvitedEvent),
+                EventType.YouCompletedSoftInvited => typeof(YouCompletedSoftInvitedEvent),
                 _ => typeof(KahlaEvent) // Default to base class if type is unknown
             };
 

@@ -970,8 +970,8 @@ public class ThreadsController(
         }
         
         // Push to the client
-        logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouCompletedSoftwareInvitedEvent), currentUserId);
-        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouCompletedSoftwareInvitedEvent
+        logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouCompletedSoftInvitedEvent), currentUserId);
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouCompletedSoftInvitedEvent
         {
             Thread = await threadService.GetThreadIJoinedAsync(threadId, currentUserId)
         });
