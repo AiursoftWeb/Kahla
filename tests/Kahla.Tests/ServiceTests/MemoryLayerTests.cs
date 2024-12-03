@@ -9,7 +9,7 @@ using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Aiursoft.Kahla.Tests;
+namespace Aiursoft.Kahla.Tests.ServiceTests;
 
 [TestClass]
 public class MemoryLayerTests : KahlaTestBase
