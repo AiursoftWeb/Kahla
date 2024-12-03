@@ -31,6 +31,7 @@ public class BufferedKahlaPushService(
 
     public void QueuePushEventsToUsersInThread(int threadId, PushMode mode, KahlaEvent payload)
     {
+        logger.LogInformation("Pushing payload with type {Type} to all users in thread: {ThreadId} via mode: {Mode}", payload.GetType().Name, threadId, mode);
         var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
         foreach (var user in usersInThread)
         {
@@ -38,8 +39,11 @@ public class BufferedKahlaPushService(
         }
     }
 
-    public void QueuePushEventToUser(string userId, PushMode mode, KahlaEvent payload) =>
+    public void QueuePushEventToUser(string userId, PushMode mode, KahlaEvent payload)
+    {
+        logger.LogInformation("Pushing payload with type {Type} to user: {UserId} via mode: {Mode}", payload.GetType().Name, userId, mode);
         QueuePushEventsToUser(userId, mode, [payload]);
+    }
 }
 
 public class KahlaPushService(
