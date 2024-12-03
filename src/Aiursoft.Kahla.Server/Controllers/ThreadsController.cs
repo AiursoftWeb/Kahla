@@ -7,7 +7,6 @@ using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
-using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
@@ -41,9 +40,6 @@ public class ThreadsController(
     UserInThreadViewAppService userAppService,
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
-    // TODO:
-    // When thread-dissolved, you-direct-joined, you-been-kicked, you-leaved, someone-left, someone-direct-join, someone-soft-invite-finished, create-scratched, new-message, your-hard-invite-finished, you-was-hard-invited, you-completed-software-invited
-    // Push to user's websocket so his thread list can be updated.
     [HttpGet]
     [Route("mine")]
     [Produces<MyThreadsViewModel>]
@@ -308,24 +304,10 @@ public class ThreadsController(
         }
         
         // Push to the client
+        logger.LogInformation("Pushing new {EventType }to user: {UserId} with WebSocket...", nameof(YouDirectJoinedEvent), currentUserId);
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouDirectJoinedEvent
         {
             Thread = await threadService.GetThreadIJoinedAsync(id, currentUserId)
-        });
-        var user = await relationalDbContext.Users.FirstAsync(t => t.Id == currentUserId);
-        kahlaPushService.QueuePushEventsToUsersInThread(id, PushMode.OnlyWebSocket, new SomeOneDirectJoinEvent
-        {
-            User = new KahlaUserMappedPublicView
-            {
-                Id = user.Id,
-                NickName = user.NickName,
-                Bio = user.Bio,
-                IconFilePath = user.IconFilePath,
-                AccountCreateTime = user.AccountCreateTime,
-                EmailConfirmed = user.EmailConfirmed,
-                Email = user.Email
-            },
-            ThreadId = id
         });
 
         logger.LogInformation("User with Id: {Id} successfully directly joined a thread. Thread ID: {ThreadID}.",
@@ -379,6 +361,7 @@ public class ThreadsController(
         }
 
         thread.OwnerRelationId = targetRelation.Id;
+        
         // Also set the target user as an admin
         targetRelation.UserThreadRole = UserThreadRole.Admin;
         await relationalDbContext.SaveChangesAsync();
@@ -485,12 +468,25 @@ public class ThreadsController(
 
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, targetUserId);
+        
+        // Push to the client
+        logger.LogInformation("Pushing new {EventType }to user: {UserId} with WebSocket...", nameof(YouBeenKickedEvent), targetUserId);
+        kahlaPushService.QueuePushEventToUser(targetUserId, PushMode.OnlyWebSocket, new YouBeenKickedEvent
+        {
+            ThreadId = id,
+            ThreadName = thread.Name
+        });
+        
         logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.",
             currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
     }
 
+    // TODO:
     // Ban a member from the thread. (Or unban a member) (Only the admin can do this)
+    
+    // TODO:
+    // Set an alias for a member. (Only current user can do this)
 
     // Leave the thread. (The owner can not leave the thread)
     [HttpPost]
@@ -526,6 +522,15 @@ public class ThreadsController(
 
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, currentUserId);
+        
+        // Push to the client
+        logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouLeftEvent), currentUserId);
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouLeftEvent
+        {
+            ThreadId = id,
+            ThreadName = thread.Name
+        });
+        
         logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId,
             id);
         return this.Protocol(Code.JobDone, "Successfully left the thread.");
@@ -574,6 +579,14 @@ public class ThreadsController(
 
         // Remove the thread from the array database.
         await arrayDbContext.DeleteThreadAsync(id);
+        
+        // Push to the client
+        logger.LogInformation("Pushing new {EventType} to all users in the thread with WebSocket...", nameof(ThreadDissolvedEvent));
+        kahlaPushService.QueuePushEventsToUsersInThread(threadId: id, PushMode.OnlyWebSocket, new ThreadDissolvedEvent
+        {
+            ThreadId = id,
+            ThreadName = thread.Name
+        });
 
         logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.",
             currentUserId, id);
@@ -660,6 +673,13 @@ public class ThreadsController(
 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
+                
+                // Push to the client
+                logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(CreateScratchedEvent), currentUserId);
+                kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new CreateScratchedEvent
+                {
+                    Thread = await threadService.GetThreadIJoinedAsync(thread.Id, currentUserId)
+                });
 
                 logger.LogInformation("User with Id: {Id} successfully created a new thread from scratch.",
                     currentUserId);
@@ -770,6 +790,22 @@ public class ThreadsController(
 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
+                
+                // Push to the client
+                logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YourHardInviteFinishedEvent), currentUserId);
+                kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YourHardInviteFinishedEvent
+                {
+                    Thread = await threadService.GetThreadIJoinedAsync(thread.Id, currentUserId)
+                });
+                if (currentUserId != targetUser.Id)
+                {
+                    logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouWasHardInvitedEvent), targetUser.Id);
+                    kahlaPushService.QueuePushEventToUser(targetUser.Id, PushMode.OnlyWebSocket,
+                        new YouWasHardInvitedEvent
+                        {
+                            Thread = await threadService.GetThreadIJoinedAsync(thread.Id, targetUser.Id)
+                        });
+                }
 
                 logger.LogInformation("A new thread has been created successfully. Thread ID is {ID}.", thread.Id);
                 return this.Protocol(new CreateNewThreadViewModel
@@ -932,6 +968,13 @@ public class ThreadsController(
         {
             joinThreadLock.Release();
         }
+        
+        // Push to the client
+        logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouCompletedSoftwareInvitedEvent), currentUserId);
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouCompletedSoftwareInvitedEvent
+        {
+            Thread = await threadService.GetThreadIJoinedAsync(threadId, currentUserId)
+        });
 
         logger.LogInformation("User with Id: {Id} successfully completed the soft invite. Thread ID: {ThreadID}.",
             currentUserId, threadId);

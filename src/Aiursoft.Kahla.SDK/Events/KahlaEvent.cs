@@ -4,6 +4,7 @@ namespace Aiursoft.Kahla.SDK.Events;
 
 public abstract class KahlaEvent
 {
+    // ReSharper disable once MemberCanBeProtected.Global
     public EventType Type { get; init; }
     public string TypeDescription => Type.ToString();
 }
@@ -18,31 +19,6 @@ public enum EventType
     /// In this case, client should move the thread to the top of the thread list. And show the latest message in the thread.
     /// </summary>
     NewMessage = 0,
-
-    #endregion
-
-    #region Events that means the member (not you) of the thread has changed.
-
-    /// <summary>
-    /// Someone left a thread that you are in.
-    ///
-    /// In this case, client should move the thread to the top of the thread list. And show the latest message in the thread.
-    /// </summary>
-    SomeoneLeft = 4,
-
-    /// <summary>
-    /// Someone directly joined a thread that you are in.
-    ///
-    /// In this case, client should move the thread to the top of the thread list. And show the latest message in the thread.
-    /// </summary>
-    SomeoneDirectJoin = 5,
-
-    /// <summary>
-    /// Someone finished a soft invite in a thread that you are in. (Soft join)
-    ///
-    /// In this case, client should move the thread to the top of the thread list. And show the latest message in the thread.
-    /// </summary>
-    SomeoneSoftInviteFinished = 6,
 
     #endregion
 
@@ -113,6 +89,11 @@ public enum EventType
     #endregion
 }
 
+/// <summary>
+/// Someone sent a new message in a thread that you are in.
+///
+/// In this case, client should move the thread to the top of the thread list. And show the latest message in the thread.
+/// </summary>
 public class NewMessageEvent : KahlaEvent
 {
     public NewMessageEvent()
@@ -129,42 +110,11 @@ public class NewMessageEvent : KahlaEvent
     public bool Mentioned { get; set; }
 }
 
-public class SomeoneLeftEvent : KahlaEvent
-{
-    public SomeoneLeftEvent()
-    {
-        Type = EventType.SomeoneLeft;
-    }
-
-    public required KahlaUserMappedPublicView User { get; init; }
-    
-    public required int ThreadId { get; init; }
-}
-
-public class SomeOneDirectJoinEvent : KahlaEvent
-{
-    public SomeOneDirectJoinEvent()
-    {
-        Type = EventType.SomeoneDirectJoin;
-    }
-
-    public required KahlaUserMappedPublicView User { get; init; }
-    
-    public required int ThreadId { get; init; }
-}
-
-public class SomeoneSoftInviteFinishedEvent : KahlaEvent
-{
-    public SomeoneSoftInviteFinishedEvent()
-    {
-        Type = EventType.SomeoneSoftInviteFinished;
-    }
-
-    public required KahlaUserMappedPublicView User { get; init; }
-    
-    public required int ThreadId { get; init; }
-}
-
+/// <summary>
+/// A thread that you are in has been dissolved.
+///
+/// In this case, client should remove the thread from the thread list.
+/// </summary>
 public class ThreadDissolvedEvent : KahlaEvent
 {
     public ThreadDissolvedEvent()
@@ -177,6 +127,11 @@ public class ThreadDissolvedEvent : KahlaEvent
     public required string ThreadName { get; init; }
 }
 
+/// <summary>
+/// You have been kicked from a thread.
+///
+/// In this case, client should remove the thread from the thread list.
+/// </summary>
 public class YouBeenKickedEvent : KahlaEvent
 {
     public YouBeenKickedEvent()
@@ -189,6 +144,11 @@ public class YouBeenKickedEvent : KahlaEvent
     public required string ThreadName { get; init; }
 }
 
+/// <summary>
+/// You have left a thread.
+///
+/// In this case, client should remove the thread from the thread list.
+/// </summary>
 public class YouLeftEvent : KahlaEvent
 {
     public YouLeftEvent()
@@ -201,6 +161,11 @@ public class YouLeftEvent : KahlaEvent
     public required string ThreadName { get; init; }
 }
 
+/// <summary>
+/// A new thread has been created by you.
+///
+/// In this case, client should add the thread to the thread list.
+/// </summary>
 public class CreateScratchedEvent : KahlaEvent
 {
     public CreateScratchedEvent()
@@ -211,6 +176,11 @@ public class CreateScratchedEvent : KahlaEvent
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
 
+/// <summary>
+/// You have been directly invited to a thread.
+///
+/// In this case, client should add the thread to the thread list.
+/// </summary>
 public class YouDirectJoinedEvent : KahlaEvent
 {
     public YouDirectJoinedEvent()
@@ -221,6 +191,11 @@ public class YouDirectJoinedEvent : KahlaEvent
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
 
+/// <summary>
+/// You hard invited someone to a thread.
+///
+/// In this case, client should add the thread to the thread list.
+/// </summary>
 public class YourHardInviteFinishedEvent : KahlaEvent
 {
     public YourHardInviteFinishedEvent()
@@ -231,6 +206,11 @@ public class YourHardInviteFinishedEvent : KahlaEvent
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
 
+/// <summary>
+/// You were hard invited to a thread.
+///
+/// In this case, client should add the thread to the thread list.
+/// </summary>
 public class YouWasHardInvitedEvent : KahlaEvent
 {
     public YouWasHardInvitedEvent()
@@ -241,6 +221,11 @@ public class YouWasHardInvitedEvent : KahlaEvent
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
 
+/// <summary>
+/// You completed a software invite and soft joined a thread.
+///
+/// In this case, client should add the thread to the thread list.
+/// </summary>
 public class YouCompletedSoftwareInvitedEvent : KahlaEvent
 {
     public YouCompletedSoftwareInvitedEvent()
