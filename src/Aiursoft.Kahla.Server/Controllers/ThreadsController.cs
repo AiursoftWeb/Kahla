@@ -574,9 +574,6 @@ public class ThreadsController(
         relationalDbContext.ChatThreads.Remove(thread);
         await relationalDbContext.SaveChangesAsync();
 
-        // Remove the thread from the cache.
-        quickMessageAccess.OnThreadDropped(id);
-
         // Remove the thread from the array database.
         await arrayDbContext.DeleteThreadAsync(id);
         
@@ -587,6 +584,9 @@ public class ThreadsController(
             ThreadId = id,
             ThreadName = thread.Name
         });
+        
+        // Remove the thread from the cache.
+        quickMessageAccess.OnThreadDropped(id);
 
         logger.LogInformation("User with Id: {Id} successfully dissolved the thread. Thread ID: {ThreadID}.",
             currentUserId, id);
