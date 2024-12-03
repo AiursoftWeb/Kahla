@@ -29,7 +29,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/threads")]
 public class ThreadsController(
-    BufferedKahlaPushService kahlaPushService,
+    BufferedKahlaPushService kahlaPushService, // TODO: Add unit tests to ensure all events are pushed to the client.
     LocksInMemoryDb locksInMemoryDb,
     ArrayDbContext arrayDbContext,
     IDataProtectionProvider dataProtectionProvider,
