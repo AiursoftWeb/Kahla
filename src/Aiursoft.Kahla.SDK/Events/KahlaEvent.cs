@@ -1,4 +1,5 @@
-﻿using Aiursoft.Kahla.SDK.Models.Mapped;
+﻿using System.Text.Json;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 
 namespace Aiursoft.Kahla.SDK.Events;
 
@@ -234,4 +235,49 @@ public class YouCompletedSoftwareInvitedEvent : KahlaEvent
     }
 
     public required KahlaThreadMappedJoinedView Thread { get; init; }
+}
+
+public static class JsonTools
+{
+    public static KahlaEvent DeseralizeKahlaEvent(string json)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true // 忽略属性名称的大小写
+        };
+        
+        using var jsonDocument = JsonDocument.Parse(json);
+        var root = jsonDocument.RootElement;
+
+        // Check if the 'Type' property exists
+        if (root.TryGetProperty("type", out var typeElement))
+        {
+            // Get the integer value of the 'Type' property
+            var typeValue = typeElement.GetInt32();
+            var eventType = (EventType)typeValue;
+
+            // Map the event type to the corresponding class type
+            var targetType = eventType switch
+            {
+                EventType.NewMessage => typeof(NewMessageEvent),
+                EventType.ThreadDissolved => typeof(ThreadDissolvedEvent),
+                EventType.YouBeenKicked => typeof(YouBeenKickedEvent),
+                EventType.YouLeft => typeof(YouLeftEvent),
+                EventType.CreateScratched => typeof(CreateScratchedEvent),
+                EventType.YouDirectJoined => typeof(YouDirectJoinedEvent),
+                EventType.YourHardInviteFinished => typeof(YourHardInviteFinishedEvent),
+                EventType.YouWasHardInvited => typeof(YouWasHardInvitedEvent),
+                EventType.YouCompletedSoftwareInvited => typeof(YouCompletedSoftwareInvitedEvent),
+                _ => typeof(KahlaEvent) // Default to base class if type is unknown
+            };
+
+            // Deserialize the JSON into the target type
+            var kahlaEvent = (KahlaEvent)JsonSerializer.Deserialize(json, targetType, options)!;
+            return kahlaEvent;
+        }
+        else
+        {
+            throw new JsonException("The 'Type' property was not found in the JSON.");
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Tests.TestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -766,6 +767,21 @@ public class ThreadsTests : KahlaTestBase
             {
                 Assert.AreEqual(Code.NotFound, e.Response.Code);
             }
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureCreateScratchEventPushed()
+    {
+        await RunUnderUser("user54", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Sdk.CreateFromScratchAsync("t", false, false, false, false, false);
+            });
+
+            Assert.IsTrue(pushed is CreateScratchedEvent);
+            Assert.AreEqual("t", ((CreateScratchedEvent)pushed).Thread.Name);
         });
     }
 

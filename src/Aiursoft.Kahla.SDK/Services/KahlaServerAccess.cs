@@ -155,7 +155,7 @@ public class KahlaServerAccess(
         return result;
     }
 
-    public async Task<InitPusherViewModel> InitPusherAsync()
+    public async Task<InitPusherViewModel> InitThreadsWebSocketAsync()
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance, route: "/api/messages/init-websocket",
             param: new { });

@@ -13,7 +13,7 @@ public class WebSocketTests : KahlaTestBase
     public async Task WebSocketPushTest()
     {
         await Sdk.RegisterAsync("user11@domain.com", "password");
-        var pusher = await Sdk.InitPusherAsync();
+        var pusher = await Sdk.InitThreadsWebSocketAsync();
         var endpointUrl = pusher.WebSocketEndpoint;
         var socket = await endpointUrl.ConnectAsWebSocketServer();
         var socketStage = new MessageStageLast<string>();
@@ -32,7 +32,7 @@ public class WebSocketTests : KahlaTestBase
         MessagesController.TokenTimeout = TimeSpan.FromSeconds(-1);
 
         await Sdk.RegisterAsync("userExpired@domain.com", "password");
-        var pusher = await Sdk.InitPusherAsync();
+        var pusher = await Sdk.InitThreadsWebSocketAsync();
 
         var endpointUrl = pusher.WebSocketEndpoint;
         var exceptionThrown = false;
@@ -54,7 +54,7 @@ public class WebSocketTests : KahlaTestBase
     public async Task WebSocketInitWithInvalidOtpTest()
     {
         await Sdk.RegisterAsync("userInvalid@domain.com", "password");
-        var pusher = await Sdk.InitPusherAsync();
+        var pusher = await Sdk.InitThreadsWebSocketAsync();
 
         var invalidEndpointUrl = pusher.WebSocketEndpoint.Replace("otp=", "otp=invalid_token");
 
@@ -93,7 +93,7 @@ public class WebSocketTests : KahlaTestBase
     public async Task WebSocketConnectionInterruptedTest()
     {
         await Sdk.RegisterAsync("userInterrupt@domain.com", "password");
-        var pusher = await Sdk.InitPusherAsync();
+        var pusher = await Sdk.InitThreadsWebSocketAsync();
         var endpointUrl = pusher.WebSocketEndpoint;
 
         var socket = await endpointUrl.ConnectAsWebSocketServer();
