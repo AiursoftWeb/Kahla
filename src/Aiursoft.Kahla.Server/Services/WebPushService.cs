@@ -30,7 +30,7 @@ public class WebPushService(
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             });
             await webPushClient.SendNotificationAsync(pushSubscription, payloadToken, vapidDetails);
-            logger.LogInformation("Successfully pushed a message to a webpush device: {DeviceId}", device.Id);
+            logger.LogInformation("Successfully pushed a message to a WebPush device: {DeviceId}", device.Id);
         }
         catch (WebPushException e)
         {

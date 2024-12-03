@@ -471,7 +471,7 @@ public class ThreadsController(
         
         // Push to the client
         logger.LogInformation("Pushing new {EventType }to user: {UserId} with WebSocket...", nameof(YouBeenKickedEvent), targetUserId);
-        kahlaPushService.QueuePushEventToUser(targetUserId, PushMode.OnlyWebSocket, new YouBeenKickedEvent
+        kahlaPushService.QueuePushEventToUser(targetUserId, PushMode.AllPath, new YouBeenKickedEvent
         {
             ThreadId = id,
             ThreadName = thread.Name
@@ -800,7 +800,7 @@ public class ThreadsController(
                 if (currentUserId != targetUser.Id)
                 {
                     logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouWasHardInvitedEvent), targetUser.Id);
-                    kahlaPushService.QueuePushEventToUser(targetUser.Id, PushMode.OnlyWebSocket,
+                    kahlaPushService.QueuePushEventToUser(targetUser.Id, PushMode.AllPath,
                         new YouWasHardInvitedEvent
                         {
                             Thread = await threadService.GetThreadIJoinedAsync(thread.Id, targetUser.Id)

@@ -24,7 +24,6 @@ public class BufferedKahlaPushService(
         {
             foreach (var payload in payloads)
             {
-                logger.LogInformation("Pushing events to user: {UserId}, with mode: {Mode}, event type: {EventType}", userId, mode, payload.TypeDescription);
                 await p.PushToUser(userId, payload, mode);
             }
         });
