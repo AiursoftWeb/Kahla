@@ -93,9 +93,7 @@ public abstract class KahlaTestBase
 
             await action();
 
-            await Task.Delay(200);
-            var eventResult = socketStage.Stage;
-            return eventResult!;
+            return await socketStage.WaitOneEvent();
         }
         finally
         {
