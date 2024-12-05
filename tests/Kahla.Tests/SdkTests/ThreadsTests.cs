@@ -787,6 +787,19 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
+    public async Task EnsureDissolveEventPushed()
+    {
+        await RunUnderUser("user54", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync("bbbbb", false, false, false, false, false);
+            var pushed = await RunAndGetEvent(async () => { await Sdk.DissolveThreadAsync(thread.NewThreadId); });
+
+            Assert.IsTrue(pushed is ThreadDissolvedEvent);
+            Assert.AreEqual("bbbbb", ((ThreadDissolvedEvent)pushed).ThreadName);
+        });
+    }
+
+    [TestMethod]
     public async Task DirectJoinAThreadNotAllowingDirectJoin()
     {
         var threadId = 0;
