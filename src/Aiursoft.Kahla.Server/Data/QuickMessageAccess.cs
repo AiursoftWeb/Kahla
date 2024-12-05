@@ -128,6 +128,7 @@ public class QuickMessageAccess(
 
             // Insert the thread into the linked list.
             var lastMessageTime = lastMessage?.SendTime ?? thread.CreateTime;
+            // TODO: Move the following logic to a separate method.
             var node = ThreadIdsSortedByLastMessageTime.First;
             while (node != null)
             {
@@ -148,6 +149,12 @@ public class QuickMessageAccess(
             }
 
             logger.LogInformation("Thread with ID {ThreadId} inserted into the sorted list.", thread.Id);
+        }
+        
+        if (CachedThreads.Count != ThreadIdsSortedByLastMessageTime.Count)
+        {
+            throw new InvalidOperationException(
+                $"The count of cached threads and the count of threads in the sorted list are not equal! Cached threads: {CachedThreads.Count}, Sorted list count: {ThreadIdsSortedByLastMessageTime.Count}. Is the data corrupted?");
         }
 
         logger.LogInformation(
