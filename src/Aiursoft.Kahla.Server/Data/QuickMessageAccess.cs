@@ -323,7 +323,7 @@ public class QuickMessageAccess(
         return CachedThreads[threadId].GetUsersInThread();
     }
     
-    // TODO: Use this function.
+    // TODO: Use this function to build an API.
     public long GetMyTotalUnreadMessages(string userId)
     {
         ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();

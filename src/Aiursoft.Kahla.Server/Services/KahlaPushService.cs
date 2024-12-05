@@ -1,8 +1,6 @@
 ﻿using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services;
 

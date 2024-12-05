@@ -482,11 +482,7 @@ public class ThreadsController(
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
     }
 
-    // TODO:
-    // Ban a member from the thread. (Or unban a member) (Only the admin can do this)
-    
-    // TODO:
-    // Set an alias for a member. (Only current user can do this)
+    // TODO: Set an alias for a member. (Only current user can do this)
 
     // Leave the thread. (The owner can not leave the thread)
     [HttpPost]
