@@ -46,7 +46,7 @@ public class BufferedKahlaPushService(
             var muted = cachedUserInThreadInfo.Muted;
             var atTargeted = atUserIds?.Contains(cachedUserInThreadInfo.UserId) ?? false;
             var userIsSender = cachedUserInThreadInfo.UserId == payload.Message.Sender?.Id;
-            var shouldPush = !muted && (atTargeted || userIsSender);
+            var shouldPush = (!muted || atTargeted) && userIsSender;
             var reason = 
                 (!muted ? "User didn't mute the thread. " : "User muted this thread. ") + 
                 (atTargeted ? "The user is at-targeted. " : " the user is not at-targeted. ") +
