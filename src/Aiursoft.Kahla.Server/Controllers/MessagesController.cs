@@ -368,7 +368,7 @@ public class ClientPushConsumer(
             messagesDb.Add(messagesToAddToDb);
             
             // Push to other users.
-            kahlaPushService.QueuePushEventsToUsersInThread(threadId: threadId, PushMode.AllPath, new NewMessageEvent
+            kahlaPushService.QueuePushMessageToUsersInThread(threadId: threadId, new NewMessageEvent
             {
                 Message = new KahlaMessageMappedSentView
                 {

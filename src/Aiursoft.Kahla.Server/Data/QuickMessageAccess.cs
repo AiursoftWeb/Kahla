@@ -99,7 +99,7 @@ public class QuickMessageAccess(
                 .AsNoTracking()
                 .Where(t => t.ThreadId == thread.Id)
                 .ToListAsync();
-            var userUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>();
+            var userInfos = new ConcurrentDictionary<string, CachedUserInThreadInfo>();
             var totalMessages = arrayDbContext.GetTotalMessagesCount(thread.Id);
             foreach (var member in membersInThread)
             {
@@ -107,14 +107,19 @@ public class QuickMessageAccess(
                 logger.LogInformation(
                     "Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.",
                     member.UserId, thread.Id, unReadMessages);
-                userUnReadAmountSinceBoot.TryAdd(member.UserId, unReadMessages);
+                userInfos.TryAdd(member.UserId, new CachedUserInThreadInfo
+                {
+                    UserId = member.UserId,
+                    UnreadAmountSinceBoot = unReadMessages,
+                    Muted = member.Muted
+                });
             }
 
             var threadInMemoryCache = new ThreadsInMemoryCache
             {
                 ThreadId = thread.Id,
                 LastMessage = lastMessage,
-                UserUnReadAmountSinceBoot = userUnReadAmountSinceBoot,
+                UserInfo = userInfos,
                 ThreadCreatedTime = thread.CreateTime
             };
             CachedThreads[thread.Id] = threadInMemoryCache;
@@ -182,10 +187,7 @@ public class QuickMessageAccess(
     /// <param name="userId"></param>
     public void ClearUserUnReadAmountForUser(ThreadsInMemoryCache threadCache, string userId)
     {
-        lock (threadCache)
-        {
-            threadCache.ClearUserUnReadAmountSinceBoot(userId);
-        }
+        threadCache.ClearUserUnReadAmountSinceBoot(userId);
     }
 
     /// <summary>
@@ -199,7 +201,7 @@ public class QuickMessageAccess(
         {
             ThreadId = threadId,
             LastMessage = null,
-            UserUnReadAmountSinceBoot = new ConcurrentDictionary<string, int>(),
+            UserInfo = new ConcurrentDictionary<string, CachedUserInThreadInfo>(),
             ThreadCreatedTime = createTime
         });
 
@@ -218,20 +220,12 @@ public class QuickMessageAccess(
 
     public void OnUserJoinedThread(int threadId, string userId)
     {
-        var threadCache = CachedThreads[threadId];
-        lock (threadCache)
-        {
-            threadCache.OnUserJoined(userId);
-        }
+        CachedThreads[threadId].OnUserJoined(userId);
     }
 
     public void OnUserLeftThread(int threadId, string userId)
     {
-        var threadCache = CachedThreads[threadId];
-        lock (threadCache)
-        {
-            threadCache.OnUserLeft(userId);
-        }
+        CachedThreads[threadId].OnUserLeft(userId);
     }
     
     public ThreadsInMemoryCache GetThreadCache(int threadId)
@@ -318,7 +312,7 @@ public class QuickMessageAccess(
         }
     }
     
-    public string[] GetUsersInThread(int threadId)
+    public CachedUserInThreadInfo[] GetUsersInThread(int threadId)
     {
         return CachedThreads[threadId].GetUsersInThread();
     }

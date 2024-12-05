@@ -29,7 +29,7 @@ public class BufferedKahlaPushService(
     }
 
     /// <summary>
-    /// TODO: Add new switch: Only for users not muted || at targeted.
+    /// TODO: Add new switch: Only for users (!thread-muted || at-targeted) && !isSendingUser
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="mode"></param>
@@ -38,9 +38,37 @@ public class BufferedKahlaPushService(
     {
         logger.LogInformation("Pushing payload with type {Type} to all users in thread: {ThreadId} via mode: {Mode}", payload.GetType().Name, threadId, mode);
         var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
-        foreach (var user in usersInThread)
+        foreach (var cachedUserInThreadInfo in usersInThread)
         {
-            QueuePushEventsToUser(user, mode, [payload]);
+            QueuePushEventsToUser(cachedUserInThreadInfo.UserId, mode, [payload]);
+        }
+    }
+    
+    public void QueuePushMessageToUsersInThread(int threadId, NewMessageEvent payload, string[]? atUserIds = null)
+    {
+        var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
+        foreach (var cachedUserInThreadInfo in usersInThread)
+        {
+            var muted = cachedUserInThreadInfo.Muted;
+            var atTargeted = atUserIds?.Contains(cachedUserInThreadInfo.UserId) ?? false;
+            var userIsSender = cachedUserInThreadInfo.UserId == payload.Message.Sender?.Id;
+            var shouldPush = !muted && (atTargeted || userIsSender);
+            var reason = 
+                (!muted ? "User didn't mute the thread. " : "User muted this thread. ") + 
+                (atTargeted ? "The user is at-targeted. " : " the user is not at-targeted. ") +
+                (userIsSender ? "The user is the sender." : "The user is not the sender.");
+            if (shouldPush)
+            {
+                logger.LogInformation("Pushing web push message to user: {UserId} in thread {ThreadId} because {Reason}",
+                    cachedUserInThreadInfo.UserId, threadId, reason);
+                QueuePushEventsToUser(cachedUserInThreadInfo.UserId, PushMode.AllPath, [payload]);
+            }
+            else
+            {
+                logger.LogInformation("Don't have to push to user: {UserId} in thread {ThreadId} because {Reason} But we will still push to websocket.",
+                    cachedUserInThreadInfo.UserId, threadId, reason);
+                QueuePushEventsToUser(cachedUserInThreadInfo.UserId, PushMode.OnlyWebSocket, [payload]);
+            }
         }
     }
 
