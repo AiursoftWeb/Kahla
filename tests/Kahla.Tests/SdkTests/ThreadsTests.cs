@@ -1,6 +1,7 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Tests.TestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -826,5 +827,37 @@ public class ThreadsTests : KahlaTestBase
             }
         });
     }
-    
+
+    [TestMethod]
+    public async Task TestSetMuteAynsc()
+    {
+        var threadId = 0;
+        await RunUnderUser("user57", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync("t", false, true, false, false, false);
+            threadId = thread.NewThreadId;
+            await Sdk.SetMuteAsync(threadId, true);
+            var details = await Sdk.ThreadDetailsJoinedAsync(threadId);
+            Assert.IsTrue(details.Thread.Muted);
+        });
+        
+        await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
+
+        await RunUnderUser("user57", async () =>
+        {
+            var details = await Sdk.ThreadDetailsJoinedAsync(threadId);
+            Assert.IsTrue(details.Thread.Muted);
+            await Sdk.SetMuteAsync(threadId, false);
+            var details2 = await Sdk.ThreadDetailsJoinedAsync(threadId);
+            Assert.IsFalse(details2.Thread.Muted);
+        });
+        
+        await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
+        
+        await RunUnderUser("user57", async () =>
+        {
+            var details = await Sdk.ThreadDetailsJoinedAsync(threadId);
+            Assert.IsFalse(details.Thread.Muted);
+        });
+    }
 }

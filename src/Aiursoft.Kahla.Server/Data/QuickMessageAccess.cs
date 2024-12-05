@@ -126,27 +126,8 @@ public class QuickMessageAccess(
             logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.",
                 thread.Id, lastMessage?.SendTime);
 
-            // Insert the thread into the linked list.
-            var lastMessageTime = lastMessage?.SendTime ?? thread.CreateTime;
-            // TODO: Move the following logic to a separate method.
-            var node = ThreadIdsSortedByLastMessageTime.First;
-            while (node != null)
-            {
-                var nextThreadLastMessage = CachedThreads[node.Value].LastMessage?.SendTime ??
-                                            CachedThreads[node.Value].ThreadCreatedTime;
-                if (lastMessageTime > nextThreadLastMessage)
-                {
-                    ThreadIdsSortedByLastMessageTime.AddBefore(node, thread.Id);
-                    break;
-                }
-
-                node = node.Next;
-            }
-
-            if (node == null)
-            {
-                ThreadIdsSortedByLastMessageTime.AddLast(thread.Id);
-            }
+            // Insert the thread into the sorted linked list using the new method.
+            InsertThreadIntoSortedList(thread.Id, lastMessage?.SendTime ?? thread.CreateTime);
 
             logger.LogInformation("Thread with ID {ThreadId} inserted into the sorted list.", thread.Id);
         }
@@ -160,6 +141,41 @@ public class QuickMessageAccess(
         logger.LogInformation(
             "Quick message access cache built and is ready to be used. Totally {ThreadCount} threads cached. {ListCount} items in sorted linked list.",
             CachedThreads.Count, ThreadIdsSortedByLastMessageTime.Count);
+    }
+    
+    /// <summary>
+    /// Inserts a thread ID into the sorted linked list based on the provided last message time.
+    /// Newer threads are placed at the front of the list.
+    /// </summary>
+    /// <param name="threadId">The ID of the thread to insert.</param>
+    /// <param name="lastMessageTime">The timestamp of the last message in the thread.</param>
+    private void InsertThreadIntoSortedList(int threadId, DateTime lastMessageTime)
+    {
+        ThreadIdsSortedByLastMessageTimeLock.EnterWriteLock();
+        try
+        {
+            var node = ThreadIdsSortedByLastMessageTime.First;
+            while (node != null)
+            {
+                var currentThread = CachedThreads[node.Value];
+                var currentLastMessageTime = currentThread.LastMessage?.SendTime ?? currentThread.ThreadCreatedTime;
+
+                if (lastMessageTime > currentLastMessageTime)
+                {
+                    ThreadIdsSortedByLastMessageTime.AddBefore(node, threadId);
+                    return;
+                }
+
+                node = node.Next;
+            }
+
+            // If no node has a lesser timestamp, add to the end.
+            ThreadIdsSortedByLastMessageTime.AddLast(threadId);
+        }
+        finally
+        {
+            ThreadIdsSortedByLastMessageTimeLock.ExitWriteLock();
+        }
     }
 
     /// <summary>
