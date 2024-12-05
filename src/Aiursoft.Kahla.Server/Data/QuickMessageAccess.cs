@@ -88,17 +88,17 @@ public class QuickMessageAccess(
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaRelationalDbContext>();
         var userOthersViewRepo = scope.ServiceProvider.GetRequiredService<UserOthersViewRepo>();
         logger.LogInformation("Building quick message access cache...(This happens when the application starts, only once.)");
-        foreach (var thread in dbContext.ChatThreads)
+        var threads = await dbContext
+            .ChatThreads
+            .Include(t => t.Members)
+            .AsNoTracking()
+            .ToListAsync();
+        foreach (var thread in threads)
         {
             logger.LogInformation("Building cache for thread with ID {ThreadId}...", thread.Id);
             var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
             var lastMessage = lastMessageEntity?.ToSentView(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
-
-            var membersInThread = await dbContext
-                .UserThreadRelations
-                .AsNoTracking()
-                .Where(t => t.ThreadId == thread.Id)
-                .ToListAsync();
+            var membersInThread = thread.Members;
             var userInfos = new ConcurrentDictionary<string, CachedUserInThreadInfo>();
             var totalMessages = arrayDbContext.GetTotalMessagesCount(thread.Id);
             foreach (var member in membersInThread)
