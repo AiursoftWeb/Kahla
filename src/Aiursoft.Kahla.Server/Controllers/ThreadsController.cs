@@ -612,8 +612,13 @@ public class ThreadsController(
             return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
         }
 
+        // Save the mute status in the database.
         myRelation.Muted = mute;
         await relationalDbContext.SaveChangesAsync();
+        
+        // Save the mute status in the cache.
+        quickMessageAccess.SetUserMutedStatus(id, currentUserId, mute);
+        
         logger.LogInformation(
             "User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId,
             mute, id);

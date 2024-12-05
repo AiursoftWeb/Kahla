@@ -228,6 +228,12 @@ public class QuickMessageAccess(
         CachedThreads[threadId].OnUserLeft(userId);
     }
     
+    
+    public void SetUserMutedStatus(int threadId, string userId, bool muted)
+    {
+        CachedThreads[threadId].SetUserMutedStatus(userId, muted);
+    }
+    
     public ThreadsInMemoryCache GetThreadCache(int threadId)
     {
         return CachedThreads[threadId];
