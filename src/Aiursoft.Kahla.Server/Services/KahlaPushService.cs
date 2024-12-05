@@ -1,6 +1,7 @@
 ﻿using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Services;
@@ -50,9 +51,15 @@ public class BufferedKahlaPushService(
         logger.LogInformation("Pushing payload with type {Type} to user: {UserId} via mode: {Mode}", payload.GetType().Name, userId, mode);
         QueuePushEventsToUser(userId, mode, [payload]);
     }
+
+    public async Task Sync()
+    {
+        await canonQueue.Engine;
+    }
 }
 
 public class KahlaPushService(
+    DevicesCache devicesCache,
     ILogger<KahlaPushService> logger,
     KahlaRelationalDbContext context,
     CanonPool canonPool,
@@ -69,16 +76,11 @@ public class KahlaPushService(
         }
 
         // Web push.
-        // TODO: Refactor this to in memory cache to improve performance.
         // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (mode is PushMode.AllPath or PushMode.OnlyWebPush)
         {
             // Load his devices
-            var hisDevices = await context
-                .Devices
-                .AsNoTracking()
-                .Where(t => t.OwnerId == userId)
-                .ToListAsync();
+            var hisDevices = await devicesCache.GetValidDevicesWithCache(userId);
             logger.LogInformation("Pushing to user: {UserId} with {DeviceCount} WebPush devices...", userId,
                 hisDevices.Count);
             foreach (var hisDevice in hisDevices)

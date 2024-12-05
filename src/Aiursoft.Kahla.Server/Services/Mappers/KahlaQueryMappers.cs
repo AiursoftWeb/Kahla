@@ -123,7 +123,7 @@ public static class KahlaQueryMappers
             });
     }
 
-    public static IQueryable<DeviceMappedOwnerView> MapDevicesOwnedView(this IQueryable<Device> filteredDevices)
+    public static IEnumerable<DeviceMappedOwnerView> MapDevicesOwnedView(this IEnumerable<Device> filteredDevices)
     {
         return filteredDevices
             .Select(t => new DeviceMappedOwnerView

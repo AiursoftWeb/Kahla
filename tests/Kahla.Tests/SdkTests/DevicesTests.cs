@@ -79,5 +79,9 @@ public class DevicesTests : KahlaTestBase
         var addResponse = await Sdk.AddDeviceAsync("device1", "auth", "endpoint://test_endpoint", "p256dh");
         Assert.AreEqual(Code.JobDone, addResponse.Code);
         await Sdk.PushTestAsync();
+        
+        // My device is not a real device, so it will disappear after the test.
+        var devices = await Sdk.MyDevicesAsync();
+        Assert.AreEqual(0, devices.Items?.Count);
     }
 }

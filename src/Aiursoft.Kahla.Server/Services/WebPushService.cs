@@ -8,6 +8,7 @@ using WebPush;
 namespace Aiursoft.Kahla.Server.Services;
 
 public class WebPushService(
+    DevicesCache cache,
     IConfiguration configuration,
     WebPushClient webPushClient,
     ILogger<WebPushService> logger,
@@ -34,6 +35,7 @@ public class WebPushService(
         }
         catch (WebPushException e)
         {
+            cache.ClearCacheForUser(device.OwnerId);
             relationalDbContext.Devices.Remove(device);
             logger.LogCritical(e,
                 "A  WebPush error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
@@ -41,6 +43,7 @@ public class WebPushService(
         }
         catch (Exception e)
         {
+            cache.ClearCacheForUser(device.OwnerId);
             relationalDbContext.Devices.Remove(device);
             logger.LogCritical(e,
                 "An unknown error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,

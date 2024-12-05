@@ -70,7 +70,6 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
-            services.AddScoped<DeviceOwnerViewRepo>();
             
             // App services
             services.AddScoped<UserOthersViewAppService>();
@@ -80,6 +79,7 @@ namespace Aiursoft.Kahla.Server
             
             // Push services
             services.AddTaskCanon();
+            services.AddScoped<DevicesCache>();
             services.AddScoped<WebPushClient>();
             services.AddScoped<WebPushService>();
             services.AddScoped<WebSocketPushService>();

@@ -9,7 +9,7 @@ using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services;
-using Aiursoft.Kahla.Server.Services.Repositories;
+using Aiursoft.Kahla.Server.Services.Mappers;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +25,9 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/devices")]
 public class DevicesController(
+    DevicesCache cache,
     BufferedKahlaPushService kahlaPushService,
     ILogger<DevicesController> logger,
-    DeviceOwnerViewRepo repo,
     KahlaRelationalDbContext relationalDbContext) : ControllerBase
 {
     [HttpGet]
@@ -36,7 +36,7 @@ public class DevicesController(
     {
         var userId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to get all his devices.", userId);
-        var devices = await repo.SearchDevicesIOwn(userId).ToListAsync();
+        var devices = (await cache.GetValidDevicesWithCache(userId)).MapDevicesOwnedView().ToList();
         return this.Protocol(Code.ResultShown, "Successfully get all your devices.", devices);
     }
 
@@ -77,6 +77,7 @@ public class DevicesController(
         };
         await relationalDbContext.Devices.AddAsync(device);
         await relationalDbContext.SaveChangesAsync();
+        cache.ClearCacheForUser(userId);
         logger.LogInformation("User with Id: {Id} successfully added a new device with id: {DeviceId}",
             userId, device.Id);
         return this.Protocol(Code.JobDone, "Successfully created your new device with id: " + device.Id,
@@ -100,6 +101,7 @@ public class DevicesController(
 
         relationalDbContext.Devices.Remove(device);
         await relationalDbContext.SaveChangesAsync();
+        cache.ClearCacheForUser(userId);
         logger.LogInformation("User with Id: {Id} successfully dropped a device with id: {DeviceId}",
             userId, device.Id);
         return this.Protocol(Code.JobDone, $"Successfully dropped your device.");
@@ -126,6 +128,7 @@ public class DevicesController(
         device.PushP256Dh = model.PushP256Dh;
         relationalDbContext.Devices.Update(device);
         await relationalDbContext.SaveChangesAsync();
+        cache.ClearCacheForUser(userId);
         logger.LogInformation("User with Id: {Id} successfully patched a device with id: {DeviceId}",
             userId, device.Id);
         return this.Protocol(Code.JobDone, "Successfully updated your new device with id: " + device.Id,
@@ -134,7 +137,7 @@ public class DevicesController(
 
     [HttpPost]
     [Route("push-test-message")]
-    public IActionResult PushTestMessage()
+    public async Task<IActionResult> PushTestMessage()
     {
         var currentUserId = User.GetUserId();
         logger.LogInformation("User with Id: {Id} is trying to push a test message to all his devices.", currentUserId);
@@ -160,6 +163,7 @@ public class DevicesController(
         };
         
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.AllPath, messageEvent);
+        await kahlaPushService.Sync();
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
         return this.Protocol(Code.JobDone, "Successfully sent you a test message to all your devices.");

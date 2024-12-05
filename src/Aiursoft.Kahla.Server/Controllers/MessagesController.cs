@@ -336,21 +336,23 @@ public class ClientPushConsumer(
                 .ToArray();
 
             // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
-            // TODO: Push to his own channel.
             
             // Reflect in quick message access layer.
             if (messagesToAddToDb.Any())
             {
                 // Set as new last message in cache.
-                var lastMessage = messagesToAddToDb.Last();
-                threadCache.LastMessage = new KahlaMessageMappedSentView
                 {
-                    Id = lastMessage.Id,
-                    ThreadId = threadId,
-                    Preview = Encoding.UTF8.GetString(lastMessage.Preview.TrimEndZeros()),
-                    SendTime = lastMessage.CreationTime,
-                    Sender = userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
-                };
+                    var lastMessage = messagesToAddToDb.Last();
+                    threadCache.LastMessage = new KahlaMessageMappedSentView
+                    {
+                        Id = lastMessage.Id,
+                        ThreadId = threadId,
+                        Preview = Encoding.UTF8.GetString(lastMessage.Preview.TrimEndZeros()),
+                        SendTime = lastMessage.CreationTime,
+                        Sender =
+                            userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
+                    };
+                }
 
                 // Increase the appended message count. So all users will see this message as unread.
                 threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
