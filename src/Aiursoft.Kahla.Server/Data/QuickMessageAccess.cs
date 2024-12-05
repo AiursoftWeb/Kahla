@@ -304,6 +304,7 @@ public class QuickMessageAccess(
             .Include(t => t.Members)
             .ToListAsync();
 
+        var updatedUsersCount = 0;
         foreach (var thread in threads)
         {
             var threadId = thread.ThreadId;
@@ -322,16 +323,15 @@ public class QuickMessageAccess(
 
                 if (relation.ReadMessageIndex != newReadMessageIndex)
                 {
+                    updatedUsersCount++;
                     relation.ReadMessageIndex = newReadMessageIndex;
                     logger.LogInformation(
                         "Persisting user unread amount for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}. Index in database archived is {ReadMessageIndex}.",
                         relation.UserId, threadId, unRead, relation.ReadMessageIndex);
                 }
             }
-
-            logger.LogInformation("Persisting user unread amount for thread with ID {ThreadId} done for {UserCount} users.",
-                threadId, threadInDb.Members.Count());
         }
+        logger.LogInformation("Persisted user unread amount to the database. {UpdatedUsersCount} users' unread amount updated.", updatedUsersCount);
 
         await dbContext.SaveChangesAsync();
     }

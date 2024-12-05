@@ -14,8 +14,8 @@ public class UnreadPersistsService(
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("UnreadPersistsService service is starting...");
-        // Delay start for 30 seconds, then run every 2 minutes.
-        _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2));
+        // Delay start for 30 seconds, then run every 10 minutes.
+        _timer = new Timer(DoWork, null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(10));
         return Task.CompletedTask;
     }
 
