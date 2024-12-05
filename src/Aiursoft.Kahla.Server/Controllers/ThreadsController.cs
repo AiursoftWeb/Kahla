@@ -617,6 +617,7 @@ public class ThreadsController(
         await relationalDbContext.SaveChangesAsync();
         
         // Save the mute status in the cache.
+        // TODO: Build Unit test to cover if the user muted, don't have to web push to him.
         quickMessageAccess.SetUserMutedStatus(id, currentUserId, mute);
         
         logger.LogInformation(
