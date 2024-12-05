@@ -829,7 +829,7 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
-    public async Task TestSetMuteAynsc()
+    public async Task TestSetMute()
     {
         var threadId = 0;
         await RunUnderUser("user57", async () =>
