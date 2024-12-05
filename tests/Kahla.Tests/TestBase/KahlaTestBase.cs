@@ -17,7 +17,7 @@ namespace Aiursoft.Kahla.Tests.TestBase;
 public abstract class KahlaTestBase
 {
     private readonly int _port;
-    private List<string> _users = new List<string>();
+    private readonly List<string> _users = [];
     protected readonly KahlaServerAccess Sdk;
     protected IHost? Server;
 

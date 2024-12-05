@@ -102,7 +102,6 @@ public class NewMessageEvent : KahlaEvent
         Type = EventType.NewMessage;
     }
 
-    public bool Muted { get; set; }
     public required KahlaMessageMappedSentView Message { get; init; }
     
     /// <summary>

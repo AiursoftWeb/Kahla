@@ -156,8 +156,7 @@ public class DevicesController(
                 },
                 Preview = "Sample message",
                 SendTime = DateTime.UtcNow,
-            },
-            Muted = false,
+            }
         };
         
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.AllPath, messageEvent);

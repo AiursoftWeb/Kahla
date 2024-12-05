@@ -13,12 +13,14 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.ArrayDb.ObjectBucket;
 using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Interfaces;
 using Aiursoft.ArrayDb.Partitions;
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Services;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +34,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/messages")]
 public class MessagesController(
+    BufferedKahlaPushService kahlaPushService,
     QuickMessageAccess quickMessageAccess,
     LocksInMemoryDb locksInMemory,
     PartitionedObjectBucket<MessageInDatabaseEntity, int> messages,
@@ -176,6 +179,7 @@ public class MessagesController(
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed 
             },
+            kahlaPushService,
             threadId,
             quickMessageAccess,
             threadCache,
@@ -295,6 +299,7 @@ public class MessagesController(
 
 public class ClientPushConsumer(
     KahlaUserMappedPublicView userView,
+    BufferedKahlaPushService kahlaPushService,
     int threadId,
     QuickMessageAccess quickMessageAccess,
     ThreadsInMemoryCache threadCache,
@@ -359,6 +364,20 @@ public class ClientPushConsumer(
 
             // Save to database.
             messagesDb.Add(messagesToAddToDb);
+            
+            // Push to other users.
+            kahlaPushService.QueuePushEventsToUsersInThread(threadId: threadId, PushMode.AllPath, new NewMessageEvent
+            {
+                Message = new KahlaMessageMappedSentView
+                {
+                    Id = messagesToAddToDb.Last().Id,
+                    Preview = Encoding.UTF8.GetString(messagesToAddToDb.Last().Preview.TrimEndZeros()),
+                    Sender = userView,
+                    SendTime = messagesToAddToDb.Last().CreationTime,
+                    ThreadId = threadId
+                }
+            });
+            
             logger.LogInformation(
                 "User with ID: {UserId} pushed {Count} messages. We have successfully broadcast to other clients and saved to database.",
                 userIdGuid, messagesToAddToDb.Length);

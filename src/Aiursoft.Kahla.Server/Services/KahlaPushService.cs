@@ -29,6 +29,12 @@ public class BufferedKahlaPushService(
         });
     }
 
+    /// <summary>
+    /// TODO: Add new switch: Only for users not muted || at targeted.
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="mode"></param>
+    /// <param name="payload"></param>
     public void QueuePushEventsToUsersInThread(int threadId, PushMode mode, KahlaEvent payload)
     {
         logger.LogInformation("Pushing payload with type {Type} to all users in thread: {ThreadId} via mode: {Mode}", payload.GetType().Name, threadId, mode);
