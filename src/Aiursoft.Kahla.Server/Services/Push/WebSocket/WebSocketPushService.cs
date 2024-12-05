@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebPush;
 
-namespace Aiursoft.Kahla.Server.Services;
+namespace Aiursoft.Kahla.Server.Services.Push.WebSocket;
 
 public class WebSocketPushService(
     ILogger<WebSocketPushService> logger,
@@ -12,10 +12,10 @@ public class WebSocketPushService(
 {
     public async Task PushAsync(string userId, KahlaEvent payload)
     {
-        var channel = context.GetMyChannel(userId);
+        var channel = context.GetUserChannel(userId);
         try
         {
-            logger.LogInformation("Trying to push a message to user: {Id} with WebSocket.", userId); 
+            logger.LogInformation("Pushing a WebSocket message to user: {Id} with WebSocket.", userId); 
             var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,

@@ -1,16 +1,8 @@
-﻿using Aiursoft.Canon;
+using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
 
-namespace Aiursoft.Kahla.Server.Services;
-
-public enum PushMode
-{
-    AllPath,
-    OnlyWebPush,
-    OnlyWebSocket,
-    DryRun
-}
+namespace Aiursoft.Kahla.Server.Services.Push;
 
 public class BufferedKahlaPushService(
     ILogger<BufferedKahlaPushService> logger,
@@ -75,53 +67,5 @@ public class BufferedKahlaPushService(
     public async Task Sync()
     {
         await canonQueue.Engine;
-    }
-}
-
-public class KahlaPushService(
-    DevicesCache devicesCache,
-    ILogger<KahlaPushService> logger,
-    KahlaRelationalDbContext context,
-    CanonPool canonPool,
-    WebSocketPushService wsPusher,
-    WebPushService webPusher)
-{
-    public async Task PushToUser(string userId, KahlaEvent payload, PushMode mode = PushMode.AllPath)
-    {
-        // WebSocket push.
-        if (mode is PushMode.AllPath or PushMode.OnlyWebSocket)
-        {
-            logger.LogInformation("Pushing to user: {UserId} with WebSocket...", userId);
-            canonPool.RegisterNewTaskToPool(async () => { await wsPusher.PushAsync(userId, payload); });
-        }
-
-        // Web push.
-        // ReSharper disable once ConvertIfStatementToSwitchStatement
-        if (mode is PushMode.AllPath or PushMode.OnlyWebPush)
-        {
-            // Load his devices
-            var hisDevices = await devicesCache.GetValidDevicesWithCache(userId);
-            logger.LogInformation("Pushing to user: {UserId} with {DeviceCount} WebPush devices...", userId,
-                hisDevices.Count);
-            foreach (var hisDevice in hisDevices)
-            {
-                canonPool.RegisterNewTaskToPool(async () => { await webPusher.PushAsync(hisDevice, payload); });
-            }
-        }
-
-        // Dry run.
-        if (mode is PushMode.DryRun)
-        {
-            logger.LogWarning("Dry run mode is enabled. No push will be sent.");
-        }
-
-        // Do actual push.
-        await canonPool.RunAllTasksInPoolAsync(Extensions.GetLimitedNumber(
-            min: 8,
-            max: 32,
-            suggested: Environment.ProcessorCount));
-        
-        // Some devices may be invalid, remove them.
-        await context.SaveChangesAsync();
     }
 }

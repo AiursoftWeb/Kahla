@@ -21,6 +21,7 @@ using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services;
+using Aiursoft.Kahla.Server.Services.Push;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -133,7 +134,7 @@ public class MessagesController(
         logger.LogInformation("User with Id: {Id} is trying to get a websocket. And he provided the correct OTP.",
             userId);
         var pusher = await HttpContext.AcceptWebSocketClient();
-        var channel = memoryDb.GetMyChannel(userId);
+        var channel = memoryDb.GetUserChannel(userId);
         var sub = channel.Subscribe(t => pusher.Send(t, HttpContext.RequestAborted));
 
         try
@@ -160,7 +161,7 @@ public class MessagesController(
         var threadCache = quickMessageAccess.GetThreadCache(threadId);
         EnsureUserIsMemberOfThread(threadId, userId, otp, threadCache);
         var messagesDb = messages.GetPartitionById(threadId);
-        var threadReflector = memoryDb.GetThreadNewMessagesChannel(threadId);
+        var threadReflector = memoryDb.GetThreadChannel(threadId);
         var threadMessagesLock = locksInMemory.GetThreadMessagesLock(threadId);
         var user = await relationalDbContext.Users.FindAsync(userId);
 

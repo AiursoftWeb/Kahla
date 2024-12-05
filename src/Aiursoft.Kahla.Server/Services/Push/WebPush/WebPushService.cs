@@ -1,11 +1,12 @@
-﻿using Aiursoft.Kahla.SDK.Events;
+﻿using Aiursoft.CSTools.Tools;
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebPush;
 
-namespace Aiursoft.Kahla.Server.Services;
+namespace Aiursoft.Kahla.Server.Services.Push.WebPush;
 
 public class WebPushService(
     DevicesCache cache,
@@ -21,8 +22,12 @@ public class WebPushService(
         try
         {
             logger.LogInformation(
-                "Trying to push a message to device: {DeviceId}. Device endpoint: {Endpoint}, Device P256DH: {P256DH}, Device Auth: {Auth}",
-                device.Id, device.PushEndpoint, device.PushP256Dh, device.PushAuth);
+                "Pushing a WebPush message to device: {DeviceId} from owner: {OwnerId}. Device endpoint: {Endpoint}..., Device P256DH: {P256DH}..., Device Auth: {Auth}...",
+                device.Id, 
+                device.OwnerId,
+                device.PushEndpoint.SafeSubstring(30), 
+                device.PushP256Dh.SafeSubstring(20), 
+                device.PushAuth.SafeSubstring(20));
             var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256Dh, device.PushAuth);
             var vapidDetails = new VapidDetails("mailto:" + triggerEmail, vapidPublicKey, vapidPrivateKey);
             var payloadToken = JsonConvert.SerializeObject(payload, new JsonSerializerSettings

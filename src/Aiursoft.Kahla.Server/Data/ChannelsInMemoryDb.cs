@@ -9,7 +9,7 @@ public class ChannelsInMemoryDb
     private ConcurrentDictionary<string, AsyncObservable<string>> UserListenChannels { get; } = new();
     private ConcurrentDictionary<int, AsyncObservable<MessageInDatabaseEntity[]>> ThreadsListenChannels { get; } = new();
 
-    public AsyncObservable<string> GetMyChannel(string userId)
+    public AsyncObservable<string> GetUserChannel(string userId)
     {
         lock (UserListenChannels)
         {
@@ -17,7 +17,7 @@ public class ChannelsInMemoryDb
         }
     }
     
-    public AsyncObservable<MessageInDatabaseEntity[]> GetThreadNewMessagesChannel(int threadId)
+    public AsyncObservable<MessageInDatabaseEntity[]> GetThreadChannel(int threadId)
     {
         lock (ThreadsListenChannels)
         {
