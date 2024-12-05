@@ -296,31 +296,46 @@ public class QuickMessageAccess(
     {
         logger.LogInformation("Persisting user unread amount to the database...");
         var threads = CachedThreads.Values.ToArray();
-        var scope = scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KahlaRelationalDbContext>();
+
+        var allThreadsInDb = await dbContext
+            .ChatThreads
+            .Include(t => t.Members)
+            .ToListAsync();
+
         foreach (var thread in threads)
         {
             var threadId = thread.ThreadId;
-            var userThreadRelations = await dbContext
-                .UserThreadRelations
-                .Where(t => t.ThreadId == threadId)
-                .ToListAsync();
-            logger.LogInformation("Persisting user unread amount for thread with ID {ThreadId}, with total {UserCount} users.",
-                threadId, userThreadRelations.Count);
-            foreach (var relation in userThreadRelations)
+            var threadInDb = allThreadsInDb.FirstOrDefault(t => t.Id == threadId);
+
+            if (threadInDb == null)
+            {
+                continue;
+            }
+
+            foreach (var relation in threadInDb.Members)
             {
                 var unRead = thread.GetUserUnReadAmount(relation.UserId);
-                relation.ReadMessageIndex = arrayDbContext.GetTotalMessagesCount(threadId) - (int)unRead;
-                logger.LogInformation(
-                    "Persisting user unread amount for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}. Index in database archived is {ReadMessageIndex}.",
-                    relation.UserId, threadId, unRead, relation.ReadMessageIndex);
+                var totalMessages = arrayDbContext.GetTotalMessagesCount(threadId);
+                var newReadMessageIndex = totalMessages - (int)unRead;
+
+                if (relation.ReadMessageIndex != newReadMessageIndex)
+                {
+                    relation.ReadMessageIndex = newReadMessageIndex;
+                    logger.LogInformation(
+                        "Persisting user unread amount for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}. Index in database archived is {ReadMessageIndex}.",
+                        relation.UserId, threadId, unRead, relation.ReadMessageIndex);
+                }
             }
 
             logger.LogInformation("Persisting user unread amount for thread with ID {ThreadId} done for {UserCount} users.",
-                threadId, userThreadRelations.Count);
-            await dbContext.SaveChangesAsync();
+                threadId, threadInDb.Members.Count());
         }
+
+        await dbContext.SaveChangesAsync();
     }
+
 
     public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int? skipTillThreadId, int take)
     {
