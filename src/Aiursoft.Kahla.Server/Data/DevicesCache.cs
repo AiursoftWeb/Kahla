@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Aiursoft.Kahla.Server.Data;
 
 public class DevicesCache(
+    ILogger<DevicesCache> logger,
     KahlaRelationalDbContext context,
     CacheService cache)
 {
@@ -12,6 +13,7 @@ public class DevicesCache(
     {
         return await cache.RunWithCache($"user-with-ids-devices-{userId}", async () =>
         {
+            logger.LogTrace("Devices cache missed! Loading devices for user: {UserId}", userId);
             return await context
                 .Devices
                 .AsNoTracking()
@@ -22,6 +24,7 @@ public class DevicesCache(
     
     public void ClearCacheForUser(string userId)
     {
+        logger.LogInformation("Clearing cached devices for user: {UserId}...", userId);
         cache.Clear($"user-with-ids-devices-{userId}");
     }
 }
