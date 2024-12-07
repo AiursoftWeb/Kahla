@@ -377,7 +377,8 @@ public class ClientPushConsumer(
                     Sender = userView,
                     SendTime = messagesToAddToDb.Last().CreationTime,
                     ThreadId = threadId
-                }
+                },
+                ThreadName = threadCache.ThreadName,
             });
             
             logger.LogInformation(

@@ -120,7 +120,8 @@ public class QuickMessageAccess(
                 ThreadId = thread.Id,
                 LastMessage = lastMessage,
                 UserInfo = userInfos,
-                ThreadCreatedTime = thread.CreateTime
+                ThreadCreatedTime = thread.CreateTime,
+                ThreadName = thread.Name
             };
             CachedThreads[thread.Id] = threadInMemoryCache;
             logger.LogInformation("Cache built for thread with ID {ThreadId}. Last message time: {LastMessageTime}.",
@@ -212,20 +213,27 @@ public class QuickMessageAccess(
     {
         threadCache.ClearUserUnReadAmountSinceBoot(userId);
     }
+    
+    public void OnThreadNameChanged(int threadId, string newName)
+    {
+        CachedThreads[threadId].ThreadName = newName;
+    }
 
     /// <summary>
     /// This should be called when a new thread is created.
     /// </summary>
     /// <param name="threadId"></param>
     /// <param name="createTime"></param>
-    public void OnNewThreadCreated(int threadId, DateTime createTime)
+    /// <param name="threadName"></param>
+    public void OnNewThreadCreated(int threadId, DateTime createTime, string threadName)
     {
         CachedThreads.TryAdd(threadId, new ThreadsInMemoryCache
         {
             ThreadId = threadId,
             LastMessage = null,
             UserInfo = new ConcurrentDictionary<string, CachedUserInThreadInfo>(),
-            ThreadCreatedTime = createTime
+            ThreadCreatedTime = createTime,
+            ThreadName = threadName
         });
 
         // Update the sorted linked list.
