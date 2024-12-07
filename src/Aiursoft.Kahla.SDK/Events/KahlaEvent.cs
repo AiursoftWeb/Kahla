@@ -257,6 +257,8 @@ public class ThreadPropertyChangedEvent : KahlaEvent
     public required int ThreadId { get; init; }
     
     public required string ThreadName { get; init; }
+    
+    public required string ThreadImagePath { get; init; }
 }
 
 public static class JsonTools

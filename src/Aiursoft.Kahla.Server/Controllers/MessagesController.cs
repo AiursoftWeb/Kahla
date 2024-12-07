@@ -243,6 +243,8 @@ public class MessagesController(
         return new EmptyResult();
     }
 
+    // TODO: Add a new API to directly send a message to a thread.
+    
     private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try

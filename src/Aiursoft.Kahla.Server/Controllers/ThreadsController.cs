@@ -257,7 +257,8 @@ public class ThreadsController(
         kahlaPushService.QueuePushEventsToUsersInThread(threadId: id, PushMode.OnlyWebSocket, new ThreadPropertyChangedEvent
         {
             ThreadId = id,
-            ThreadName = thread.Name
+            ThreadName = thread.Name,
+            ThreadImagePath = thread.IconFilePath
         });
         
         var updatedPropertiesName = string.Join(", ", updatedProperties);
