@@ -189,7 +189,6 @@ public class MessagesController(
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
-            quickMessageAccess,
             threadCache,
             userId,
             logger,
@@ -220,7 +219,7 @@ public class MessagesController(
         }
         
         // Clear current user's unread message count.
-        quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, userId);
+        threadCache.ClearUserUnReadAmountSinceBoot(userId);
         
         // Configure the reflector and the client push consumer.
         var refSub = threadReflector.Subscribe(reflectorConsumer);
@@ -244,6 +243,8 @@ public class MessagesController(
         return new EmptyResult();
     }
 
+    // TODO: Add a new API to directly send a message to a thread.
+    
     private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try
@@ -377,7 +378,8 @@ public class ClientPushConsumer(
                     Sender = userView,
                     SendTime = messagesToAddToDb.Last().CreationTime,
                     ThreadId = threadId
-                }
+                },
+                ThreadName = threadCache.ThreadName,
             });
             
             logger.LogInformation(
@@ -392,9 +394,6 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
-    //UserOthersViewRepo usersRepo,
-    //BufferedKahlaPushService kahlaPushService,
-    QuickMessageAccess quickMessageAccess,
     ThreadsInMemoryCache threadCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
@@ -414,41 +413,7 @@ public class ThreadReflectConsumer(
         logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newEntities.Length, listeningUserId);
         await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
 
-        // var messageEvents = new List<NewMessageEvent>();
-        // foreach (var entity in newEntities)
-        // {
-        //     var sender = await usersRepo.GetUserByIdWithCacheAsync(entity.SenderId.ToString());
-        //     if (sender == null)
-        //     {
-        //         logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", listeningUserId);
-        //         continue;
-        //     }
-        //     var messageEvent = new NewMessageEvent
-        //     {
-        //         Message = new KahlaMessageMappedSentView
-        //         {
-        //             Id = entity.Id,
-        //             ThreadId = threadCache.ThreadId,
-        //             Sender = new KahlaUserMappedPublicView
-        //             {
-        //                 Id = sender.Id,
-        //                 NickName = sender.NickName,
-        //                 Bio = sender.Bio,
-        //                 IconFilePath = sender.IconFilePath,
-        //                 AccountCreateTime = sender.AccountCreateTime,
-        //                 EmailConfirmed = sender.EmailConfirmed,
-        //                 Email = sender.Email
-        //             },
-        //             Preview = Encoding.UTF8.GetString(entity.Preview.TrimEndZeros()),
-        //             SendTime = entity.CreationTime,
-        //         },
-        //         Muted = false,
-        //     };
-        //     messageEvents.Add(messageEvent);
-        // }
-        // kahlaPushService.QueuePushToUser(listeningUserId, PushMode.AllPath, messageEvents);
-
         // Clear current user's unread message count.
-        quickMessageAccess.ClearUserUnReadAmountForUser(threadCache, listeningUserId);
+        threadCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
     }
 }

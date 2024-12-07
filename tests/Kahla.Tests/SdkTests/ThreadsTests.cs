@@ -41,6 +41,71 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
+    public async Task CreateAThreadWithNameTooLong()
+    {
+        await RunUnderUser("user19", async () =>
+        {
+            var nameTooLong = new string('a', 257);
+            try
+            {
+                await Sdk.CreateFromScratchAsync(
+                    nameTooLong,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false);
+                Assert.Fail();
+            }
+            catch (AiurUnexpectedServerResponseException e)
+            {
+                Assert.AreEqual(Code.InvalidInput, e.Response.Code);
+            }
+        });
+    }
+    
+    [TestMethod]
+    public async Task UpdateAThreadWithNameTooLong()
+    {
+        await RunUnderUser("user19", async () =>
+        {
+            var nameTooLong = new string('a', 257);
+            var threadDetails = await Sdk.CreateFromScratchAsync(
+                "init test",
+                false,
+                false,
+                false,
+                false,
+                false);
+            try
+            {
+                await Sdk.UpdateThreadAsync(
+                    threadDetails.NewThreadId,
+                    name: nameTooLong);
+                Assert.Fail();
+            }
+            catch (AiurUnexpectedServerResponseException e)
+            {
+                Assert.AreEqual(Code.InvalidInput, e.Response.Code);
+            }
+
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                // Update to a valid name
+                await Sdk.UpdateThreadAsync(
+                    threadDetails.NewThreadId,
+                    name: "valid name");
+            });
+            Assert.IsTrue(pushed is ThreadPropertyChangedEvent);
+            Assert.AreEqual("valid name", ((ThreadPropertyChangedEvent)pushed).ThreadName);
+            
+            // Get the thread details
+            var details = await Sdk.ThreadDetailsJoinedAsync(threadDetails.NewThreadId);
+            Assert.AreEqual("valid name", details.Thread.Name);
+        });
+    }
+
+    [TestMethod]
     public async Task SearchThreadByUserName()
     {
         var user1Id = "";

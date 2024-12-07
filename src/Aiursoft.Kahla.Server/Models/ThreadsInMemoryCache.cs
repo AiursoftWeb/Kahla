@@ -36,6 +36,8 @@ public class ThreadsInMemoryCache
     public required ConcurrentDictionary<string, CachedUserInThreadInfo> UserInfo { private get; init; }
 
     public required DateTime ThreadCreatedTime { get; init; }
+    
+    public required string ThreadName { get; set; }
 
     public uint GetUserUnReadAmount(string userId)
     {

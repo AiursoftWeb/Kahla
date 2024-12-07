@@ -159,7 +159,8 @@ public class DevicesController(
                 },
                 Preview = "Sample message",
                 SendTime = DateTime.UtcNow,
-            }
+            },
+            ThreadName = "A test thread",
         };
         
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebPush, messageEvent);

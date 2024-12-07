@@ -248,6 +248,19 @@ public class ThreadsController(
         }
 
         await relationalDbContext.SaveChangesAsync();
+        
+        // Save to cache.
+        quickMessageAccess.OnThreadNameChanged(id, thread.Name);
+        
+        // Push to the client
+        logger.LogInformation("Pushing new {EventType} to all users in the thread with WebSocket...", nameof(ThreadPropertyChangedEvent));
+        kahlaPushService.QueuePushEventsToUsersInThread(threadId: id, PushMode.OnlyWebSocket, new ThreadPropertyChangedEvent
+        {
+            ThreadId = id,
+            ThreadName = thread.Name,
+            ThreadImagePath = thread.IconFilePath
+        });
+        
         var updatedPropertiesName = string.Join(", ", updatedProperties);
         logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId,
             updatedPropertiesName);
@@ -670,7 +683,7 @@ public class ThreadsController(
                 await transaction.CommitAsync();
 
                 // Save to cache.
-                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
+                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime, thread.Name);
                 quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
 
                 // Save in array database.
@@ -783,7 +796,7 @@ public class ThreadsController(
                 await transaction.CommitAsync();
 
                 // Save to cache.
-                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime);
+                quickMessageAccess.OnNewThreadCreated(thread.Id, thread.CreateTime, thread.Name);
                 quickMessageAccess.OnUserJoinedThread(thread.Id, currentUserId);
                 if (currentUserId != targetUser.Id)
                 {

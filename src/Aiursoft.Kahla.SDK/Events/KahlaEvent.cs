@@ -85,9 +85,18 @@ public enum EventType
     ///
     /// In this case, client should add the thread to the thread list.
     /// </summary>
-    YouCompletedSoftInvited = 20
+    YouCompletedSoftInvited = 20,
 
     #endregion
+    
+    #region The properties of a thread that may change.
+    
+    /// <summary>
+    /// Someone changed the thread's name or avatar.
+    /// </summary>
+    ThreadPropertyChanged = 32
+    #endregion
+    
 }
 
 /// <summary>
@@ -103,6 +112,8 @@ public class NewMessageEvent : KahlaEvent
     }
 
     public required KahlaMessageMappedSentView Message { get; init; }
+    
+    public required string ThreadName { get; init; }
     
     /// <summary>
     /// TODO: Finish the mentioned feature.
@@ -236,6 +247,20 @@ public class YouCompletedSoftInvitedEvent : KahlaEvent
     public required KahlaThreadMappedJoinedView Thread { get; init; }
 }
 
+public class ThreadPropertyChangedEvent : KahlaEvent
+{
+    public ThreadPropertyChangedEvent()
+    {
+        Type = EventType.ThreadPropertyChanged;
+    }
+
+    public required int ThreadId { get; init; }
+    
+    public required string ThreadName { get; init; }
+    
+    public required string ThreadImagePath { get; init; }
+}
+
 public static class JsonTools
 {
     public static KahlaEvent DeseralizeKahlaEvent(string json)
@@ -267,6 +292,7 @@ public static class JsonTools
                 EventType.YourHardInviteFinished => typeof(YourHardInviteFinishedEvent),
                 EventType.YouWasHardInvited => typeof(YouWasHardInvitedEvent),
                 EventType.YouCompletedSoftInvited => typeof(YouCompletedSoftInvitedEvent),
+                EventType.ThreadPropertyChanged => typeof(ThreadPropertyChangedEvent),
                 _ => typeof(KahlaEvent) // Default to base class if type is unknown
             };
 
