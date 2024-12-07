@@ -162,7 +162,7 @@ public class DevicesController(
             }
         };
         
-        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.AllPath, messageEvent);
+        kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebPush, messageEvent);
         await kahlaPushService.Sync();
 
         logger.LogInformation("User with Id: {Id} successfully pushed a test message to all his devices.", currentUserId);
