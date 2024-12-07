@@ -204,16 +204,6 @@ public class QuickMessageAccess(
         }
     }
 
-    /// <summary>
-    /// This should be called if the user has read all messages in this thread.
-    /// </summary>
-    /// <param name="threadCache"></param>
-    /// <param name="userId"></param>
-    public void ClearUserUnReadAmountForUser(ThreadsInMemoryCache threadCache, string userId)
-    {
-        threadCache.ClearUserUnReadAmountSinceBoot(userId);
-    }
-    
     public void OnThreadNameChanged(int threadId, string newName)
     {
         CachedThreads[threadId].ThreadName = newName;
@@ -248,23 +238,31 @@ public class QuickMessageAccess(
             ThreadIdsSortedByLastMessageTimeLock.ExitWriteLock();
         }
     }
-
-    public void OnUserJoinedThread(int threadId, string userId)
+    
+    public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int? skipTillThreadId, int take)
     {
-        CachedThreads[threadId].OnUserJoined(userId);
+        ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();
+        try
+        {
+            return ThreadIdsSortedByLastMessageTime
+                .SkipUntilEquals(skipTillThreadId)
+                .Select(tId => CachedThreads[tId])
+                .Where(t => t.IsUserInThread(userId))
+                .Take(take)
+                .Select(t => t.ThreadId)
+                .ToArray();
+        }
+        finally
+        {
+            ThreadIdsSortedByLastMessageTimeLock.ExitReadLock();
+        }
+    }
+    
+    public CachedUserInThreadInfo[] GetUsersInThread(int threadId)
+    {
+        return CachedThreads[threadId].GetUsersInThread();
     }
 
-    public void OnUserLeftThread(int threadId, string userId)
-    {
-        CachedThreads[threadId].OnUserLeft(userId);
-    }
-    
-    
-    public void SetUserMutedStatus(int threadId, string userId, bool muted)
-    {
-        CachedThreads[threadId].SetUserMutedStatus(userId, muted);
-    }
-    
     public ThreadsInMemoryCache GetThreadCache(int threadId)
     {
         return CachedThreads[threadId];
@@ -298,6 +296,21 @@ public class QuickMessageAccess(
             UnReadAmount = chatThread.GetUserUnReadAmount(viewingUserId),
             LatestMessage = chatThread.LastMessage
         };
+    }
+    
+    public void OnUserJoinedThread(int threadId, string userId)
+    {
+        CachedThreads[threadId].OnUserJoined(userId);
+    }
+
+    public void OnUserLeftThread(int threadId, string userId)
+    {
+        CachedThreads[threadId].OnUserLeft(userId);
+    }
+    
+    public void SetUserMutedStatus(int threadId, string userId, bool muted)
+    {
+        CachedThreads[threadId].SetUserMutedStatus(userId, muted);
     }
 
     public async Task PersistUserUnreadAmount()
@@ -344,31 +357,6 @@ public class QuickMessageAccess(
         await dbContext.SaveChangesAsync();
     }
 
-
-    public int[] GetMyThreadIdsOrderedByLastMessageTimeDesc(string userId, int? skipTillThreadId, int take)
-    {
-        ThreadIdsSortedByLastMessageTimeLock.EnterReadLock();
-        try
-        {
-            return ThreadIdsSortedByLastMessageTime
-                .SkipUntilEquals(skipTillThreadId)
-                .Select(tId => CachedThreads[tId])
-                .Where(t => t.IsUserInThread(userId))
-                .Take(take)
-                .Select(t => t.ThreadId)
-                .ToArray();
-        }
-        finally
-        {
-            ThreadIdsSortedByLastMessageTimeLock.ExitReadLock();
-        }
-    }
-    
-    public CachedUserInThreadInfo[] GetUsersInThread(int threadId)
-    {
-        return CachedThreads[threadId].GetUsersInThread();
-    }
-    
     // TODO: Use this function to build an API.
     public long GetMyTotalUnreadMessages(string userId)
     {
