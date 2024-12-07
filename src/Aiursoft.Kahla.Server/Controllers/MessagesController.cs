@@ -189,7 +189,6 @@ public class MessagesController(
             threadReflector,
             messagesDb);
         var reflectorConsumer = new ThreadReflectConsumer(
-            quickMessageAccess,
             threadCache,
             userId,
             logger,
@@ -393,9 +392,6 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
-    //UserOthersViewRepo usersRepo,
-    //BufferedKahlaPushService kahlaPushService,
-    QuickMessageAccess quickMessageAccess,
     ThreadsInMemoryCache threadCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
