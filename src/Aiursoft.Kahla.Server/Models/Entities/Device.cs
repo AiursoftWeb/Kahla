@@ -20,11 +20,11 @@ public class Device
     [NotNull]
     public KahlaUser? KahlaUser { get; init; }
 
-    [JsonIgnore] [StringLength(400)] public required string PushEndpoint { get; set; }
+    [JsonIgnore] [StringLength(2048)] public required string PushEndpoint { get; set; }
 
-    [JsonIgnore] [StringLength(400)] public required string PushP256Dh { get; set; }
+    [JsonIgnore] [StringLength(2048)] public required string PushP256Dh { get; set; }
 
-    [JsonIgnore] [StringLength(150)] public required string PushAuth { get; set; }
+    [JsonIgnore] [StringLength(512)] public required string PushAuth { get; set; }
 
     public DateTime AddTime { get; init; } = DateTime.UtcNow;
 }
