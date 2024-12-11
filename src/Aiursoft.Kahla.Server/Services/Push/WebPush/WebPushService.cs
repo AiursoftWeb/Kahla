@@ -1,5 +1,4 @@
 ﻿using Aiursoft.CSTools.Tools;
-using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;

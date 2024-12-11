@@ -1,4 +1,3 @@
-using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.Server.Data;
 using Newtonsoft.Json;

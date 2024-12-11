@@ -4,7 +4,6 @@ using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK;
-using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
