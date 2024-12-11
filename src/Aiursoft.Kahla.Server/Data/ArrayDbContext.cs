@@ -19,7 +19,7 @@ public class ArrayDbContext(PartitionedObjectBucket<MessageInDatabaseEntity, int
     
     public MessageInDatabaseEntity[] ReadBulk(int threadId, int start, int count)
     {
-        return bucket.ReadBulk(threadId, start, count);
+        return count == 0 ? [] : bucket.ReadBulk(threadId, start, count);
     }
     
     public int GetTotalMessagesCount(int threadId)
