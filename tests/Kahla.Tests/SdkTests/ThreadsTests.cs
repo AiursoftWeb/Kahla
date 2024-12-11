@@ -63,7 +63,7 @@ public class ThreadsTests : KahlaTestBase
             }
         });
     }
-    
+
     [TestMethod]
     public async Task UpdateAThreadWithNameTooLong()
     {
@@ -98,7 +98,7 @@ public class ThreadsTests : KahlaTestBase
             });
             Assert.IsTrue(pushed is ThreadPropertyChangedEvent);
             Assert.AreEqual("valid name", ((ThreadPropertyChangedEvent)pushed).ThreadName);
-            
+
             // Get the thread details
             var details = await Sdk.ThreadDetailsJoinedAsync(threadDetails.NewThreadId);
             Assert.AreEqual("valid name", details.Thread.Name);
@@ -109,10 +109,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task SearchThreadByUserName()
     {
         var user1Id = "";
-        await RunUnderUser("user1", async () =>
-        {
-            user1Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user1", async () => { user1Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user2", async () =>
         {
@@ -160,10 +157,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task HardInviteOnlyWeTwoAsMembers()
     {
         var user24Id = "";
-        await RunUnderUser("user24", async () =>
-        {
-            user24Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user24", async () => { user24Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user25", async () =>
         {
@@ -226,10 +220,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task HardInviteBlockedAccount()
     {
         var user28Id = "";
-        await RunUnderUser("user28", async () =>
-        {
-            user28Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user28", async () => { user28Id = (await Sdk.MeAsync()).User.Id; });
 
         var user29Id = "";
         await RunUnderUser("user29", async () =>
@@ -313,10 +304,7 @@ public class ThreadsTests : KahlaTestBase
                 true);
             threadId = thread.NewThreadId;
         });
-        await RunUnderUser("user2", async () =>
-        {
-            await Sdk.DirectJoinAsync(threadId);
-        });
+        await RunUnderUser("user2", async () => { await Sdk.DirectJoinAsync(threadId); });
         await RunUnderUser("user12", async () =>
         {
             await Sdk.DirectJoinAsync(threadId);
@@ -335,10 +323,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task ListMembersAfterKicked()
     {
         var user31Id = "";
-        await RunUnderUser("user31", async () =>
-        {
-            user31Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user31", async () => { user31Id = (await Sdk.MeAsync()).User.Id; });
 
         var threadId = 0;
         await RunUnderUser("user32", async () =>
@@ -387,10 +372,7 @@ public class ThreadsTests : KahlaTestBase
         var user33Id = "";
         var threadId = 0;
 
-        await RunUnderUser("user33", async () =>
-        {
-            user33Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user33", async () => { user33Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user34", async () =>
         {
@@ -482,10 +464,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task UpdateThreadNotJoined()
     {
         var user39Id = "";
-        await RunUnderUser("user39", async () =>
-        {
-            user39Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user39", async () => { user39Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user38", async () =>
         {
@@ -516,10 +495,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task UpdateThreadImNotAdmin()
     {
         var user40Id = "";
-        await RunUnderUser("user40", async () =>
-        {
-            user40Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user40", async () => { user40Id = (await Sdk.MeAsync()).User.Id; });
 
         var threadId = 0;
         await RunUnderUser("user41", async () =>
@@ -566,10 +542,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task TransferOwnershipTest()
     {
         var newUserId = "";
-        await RunUnderUser("newUser", async () =>
-        {
-            newUserId = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("newUser", async () => { newUserId = (await Sdk.MeAsync()).User.Id; });
 
         var threadId = 0;
         await RunUnderUser("ownerUser", async () =>
@@ -584,10 +557,7 @@ public class ThreadsTests : KahlaTestBase
             threadId = thread.NewThreadId;
         });
 
-        await RunUnderUser("newUser", async () =>
-        {
-            await Sdk.DirectJoinAsync(threadId);
-        });
+        await RunUnderUser("newUser", async () => { await Sdk.DirectJoinAsync(threadId); });
 
         await RunUnderUser("ownerUser", async () =>
         {
@@ -632,16 +602,10 @@ public class ThreadsTests : KahlaTestBase
     public async Task TransferOwnershipNotAdminTest()
     {
         var adminUserId = "";
-        await RunUnderUser("adminUser", async () =>
-        {
-            adminUserId = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("adminUser", async () => { adminUserId = (await Sdk.MeAsync()).User.Id; });
 
         var regularUserId = "";
-        await RunUnderUser("regularUser", async () =>
-        {
-            regularUserId = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("regularUser", async () => { regularUserId = (await Sdk.MeAsync()).User.Id; });
 
         int threadId = 0;
         await RunUnderUser("adminUser", async () =>
@@ -693,10 +657,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task PromoteAdmin_MyRelationNotFound()
     {
         var user43Id = "";
-        await RunUnderUser("user43", async () =>
-        {
-            user43Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user43", async () => { user43Id = (await Sdk.MeAsync()).User.Id; });
 
         int threadId = 0;
         await RunUnderUser("user44", async () =>
@@ -705,10 +666,7 @@ public class ThreadsTests : KahlaTestBase
             threadId = thread.NewThreadId;
         });
 
-        await RunUnderUser("user43", async () =>
-        {
-            await Sdk.LeaveThreadAsync(threadId);
-        });
+        await RunUnderUser("user43", async () => { await Sdk.LeaveThreadAsync(threadId); });
 
         await RunUnderUser("user44", async () =>
         {
@@ -728,10 +686,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task PromoteAdmin_NotOwnerOfThread()
     {
         var user45Id = "";
-        await RunUnderUser("user45", async () =>
-        {
-            user45Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user45", async () => { user45Id = (await Sdk.MeAsync()).User.Id; });
 
         int threadId = 0;
         await RunUnderUser("user46", async () =>
@@ -758,10 +713,7 @@ public class ThreadsTests : KahlaTestBase
     public async Task PromoteAdmin_TargetRelationNotFound()
     {
         var user47Id = "";
-        await RunUnderUser("user47", async () =>
-        {
-            user47Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user47", async () => { user47Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user48", async () =>
         {
@@ -797,10 +749,7 @@ public class ThreadsTests : KahlaTestBase
             threadId = thread.NewThreadId;
         });
 
-        await RunUnderUser("user52", async () =>
-        {
-            user52Id = (await Sdk.MeAsync()).User.Id;
-        });
+        await RunUnderUser("user52", async () => { user52Id = (await Sdk.MeAsync()).User.Id; });
 
         await RunUnderUser("user51", async () =>
         {
@@ -865,6 +814,229 @@ public class ThreadsTests : KahlaTestBase
     }
 
     [TestMethod]
+    public async Task EnsureDirectJoinEventPushed()
+    {
+        var threadId = 0;
+        await RunUnderUser("user100", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "t",
+                true,
+                true,
+                false,
+                false,
+                false);
+            threadId = thread.NewThreadId;
+        });
+
+        await RunUnderUser("user101", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () => { await Sdk.DirectJoinAsync(threadId); });
+
+            Assert.IsTrue(pushed is YouDirectJoinedEvent);
+            Assert.AreEqual("t", ((YouDirectJoinedEvent)pushed).Thread.Name);
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureYouBeenKickedEventPushed()
+    {
+        // User 102 creates a thread
+        var threadId = 0;
+        await RunUnderUser("user102", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "t",
+                true,
+                true,
+                false,
+                false,
+                false);
+            threadId = thread.NewThreadId;
+        });
+        
+        // User 103 joins the thread
+        var user103Id = "";
+        await RunUnderUser("user103", async () =>
+        {
+            user103Id = (await Sdk.MeAsync()).User.Id;
+            await Sdk.DirectJoinAsync(threadId);
+        });
+        
+        // User 102 will kick user 103 in 3 second
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            await Sdk.SignoutAsync();
+            await RunUnderUser("user102", async () =>
+            {
+                await Sdk.KickMemberAsync(threadId, user103Id);
+            });
+        });
+        
+        // User 103 will receive a YouBeenKickedEvent
+        await RunUnderUser("user103", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Task.CompletedTask;
+            });
+
+            Assert.IsTrue(pushed is YouBeenKickedEvent);
+            Assert.AreEqual("t", ((YouBeenKickedEvent)pushed).ThreadName);
+        }, autoSignOut: false);
+    }
+
+    [TestMethod]
+    public async Task EnsureLeaveThreadEventPushed()
+    {
+        // User 104 creates a thread
+        var threadId = 0;
+        await RunUnderUser("user104", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "ttt",
+                true,
+                true,
+                false,
+                false,
+                false);
+            threadId = thread.NewThreadId;
+        });
+        await RunUnderUser("user105", async () =>
+        {
+            await Sdk.DirectJoinAsync(threadId);
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Sdk.LeaveThreadAsync(threadId);
+            });
+            
+            Assert.IsTrue(pushed is YouLeftEvent);
+            Assert.AreEqual("ttt", ((YouLeftEvent)pushed).ThreadName);
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureThreadDissolvedEventPushed()
+    {
+        // User 126 creates a thread
+        await RunUnderUser("user126", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "tt",
+                true,
+                true,
+                false,
+                false,
+                false);
+
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Sdk.DissolveThreadAsync(thread.NewThreadId);
+            });
+            Assert.IsTrue(pushed is ThreadDissolvedEvent);
+            Assert.AreEqual("tt", ((ThreadDissolvedEvent)pushed).ThreadName);
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureYourHardInviteFinishedEventPushed()
+    {
+        var user107Id = "";
+        await RunUnderUser("user107", async () => { user107Id = (await Sdk.MeAsync()).User.Id; });
+        await RunUnderUser("user108", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Sdk.HardInviteAsync(user107Id);
+            });
+            Assert.IsTrue(pushed is YourHardInviteFinishedEvent);
+            Assert.AreEqual("{THE OTHER USER}", ((YourHardInviteFinishedEvent)pushed).Thread.Name);
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureYouWasHardInvitedEventPushed()
+    {
+        var user109Id = "";
+        await RunUnderUser("user109", async () => { user109Id = (await Sdk.MeAsync()).User.Id; });
+        
+        // User 110 will hard invite user 109 in 3 second
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            await Sdk.SignoutAsync();
+            await RunUnderUser("user110", async () =>
+            {
+                await Sdk.HardInviteAsync(user109Id);
+            }, autoSignOut: false);
+        });
+        
+        await RunUnderUser("user109", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Task.CompletedTask;
+            });
+
+            Assert.IsTrue(pushed is YouWasHardInvitedEvent);
+            Assert.AreEqual("{THE OTHER USER}", ((YouWasHardInvitedEvent)pushed).Thread.Name);
+        }, autoSignOut: false);
+    }
+
+    [TestMethod]
+    public async Task EnsureYouCompletedSoftInvitedEventPushed()
+    {
+        var threadId = 0;
+        var validToken = "";
+        var user52Id = "";
+        await RunUnderUser("user51", async () =>
+        {
+            var thread = await Sdk.CreateFromScratchAsync(
+                "SoftInviteCompleteThread",
+                false,
+                true,
+                true,
+                true,
+                false);
+            threadId = thread.NewThreadId;
+        });
+
+        await RunUnderUser("user52", async () => { user52Id = (await Sdk.MeAsync()).User.Id; });
+
+        await RunUnderUser("user51", async () =>
+        {
+            var tokenResponse = await Sdk.CreateSoftInviteTokenAsync(threadId, user52Id);
+            validToken = tokenResponse.Token;
+        });
+
+        await RunUnderUser("user52", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () => { await Sdk.CompleteSoftInviteAsync(validToken); });
+            
+            Assert.IsTrue(pushed is YouCompletedSoftInvitedEvent);
+            Assert.AreEqual("SoftInviteCompleteThread", ((YouCompletedSoftInvitedEvent)pushed).Thread.Name);
+        });
+    }
+
+    [TestMethod]
+    public async Task EnsureThreadPropertyChangedEventPushed()
+    {
+        await RunUnderUser("user111", async () =>
+        {
+            await Sdk.CreateFromScratchAsync("t", true, true, false, false, false);
+            
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Sdk.UpdateThreadAsync(1, name: "new name");
+            });
+            
+            Assert.IsTrue(pushed is ThreadPropertyChangedEvent);
+            Assert.AreEqual("new name", ((ThreadPropertyChangedEvent)pushed).ThreadName);
+        });
+    }
+
+    [TestMethod]
     public async Task DirectJoinAThreadNotAllowingDirectJoin()
     {
         var threadId = 0;
@@ -873,7 +1045,7 @@ public class ThreadsTests : KahlaTestBase
             var createdThread = await Sdk.CreateFromScratchAsync("t", false, false, false, false, false);
             threadId = createdThread.NewThreadId;
         });
-        
+
         await RunUnderUser("user55", async () =>
         {
             try
@@ -918,7 +1090,7 @@ public class ThreadsTests : KahlaTestBase
             var details = await Sdk.ThreadDetailsJoinedAsync(threadId);
             Assert.IsTrue(details.Thread.Muted);
         });
-        
+
         await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
 
         await RunUnderUser("user57", async () =>
@@ -929,9 +1101,9 @@ public class ThreadsTests : KahlaTestBase
             var details2 = await Sdk.ThreadDetailsJoinedAsync(threadId);
             Assert.IsFalse(details2.Thread.Muted);
         });
-        
+
         await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
-        
+
         await RunUnderUser("user57", async () =>
         {
             var details = await Sdk.ThreadDetailsJoinedAsync(threadId);

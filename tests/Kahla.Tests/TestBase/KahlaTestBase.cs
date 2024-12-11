@@ -4,13 +4,14 @@ using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK;
-using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Aiursoft.WebTools.Extends;
+using Extensions = Aiursoft.Kahla.SDK.Extensions;
 
 namespace Aiursoft.Kahla.Tests.TestBase;
 
@@ -61,7 +62,7 @@ public abstract class KahlaTestBase
         Server.Dispose();
     }
 
-    protected async Task RunUnderUser(string userId, Func<Task> action)
+    protected async Task RunUnderUser(string userId, Func<Task> action, bool autoSignOut = true)
     {
         if (!_users.Contains(userId))
         {
@@ -74,7 +75,10 @@ public abstract class KahlaTestBase
         }
 
         await action();
-        await Sdk.SignoutAsync();
+        if (autoSignOut)
+        {
+            await Sdk.SignoutAsync();
+        }
     }
 
     protected async Task<KahlaEvent> RunAndGetEvent(Func<Task> action)
@@ -87,12 +91,16 @@ public abstract class KahlaTestBase
             wsObject = await ws.WebSocketEndpoint.ConnectAsWebSocketServer();
             var socketStage = new MessageStageLast<KahlaEvent>();
             subscription = wsObject
-                .Map(JsonTools.DeseralizeKahlaEvent)
+                .Map(Extensions.DeserializeKahlaEvent)
                 .Subscribe(socketStage);
             await Task.Factory.StartNew(() => wsObject.Listen());
 
             await action();
 
+            if (socketStage.Stage != null)
+            {
+                return socketStage.Stage;
+            }
             return await socketStage.WaitOneEvent();
         }
         finally

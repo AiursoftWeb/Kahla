@@ -1,5 +1,6 @@
 using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
+using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.Server.Data;
 
 namespace Aiursoft.Kahla.Server.Services.Push;
