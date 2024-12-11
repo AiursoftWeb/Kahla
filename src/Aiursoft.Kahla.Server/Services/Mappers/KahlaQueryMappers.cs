@@ -119,6 +119,7 @@ public static class KahlaQueryMappers
                 AllowMembersEnlistAllMembers = t.AllowMembersEnlistAllMembers,
                 AllowSearchByName = t.AllowSearchByName,
                 TotalMessages = (uint)arrayDb.GetTotalMessagesCount(t.Id),
+                UnreadAtMe = quickMessageAccess.HasUnreadAtMeMessages(t.Id, viewingUserId),
                 MessageContext = quickMessageAccess.GetMessageContext(t.Id, viewingUserId) // Client side evaluate.
             });
     }

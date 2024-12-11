@@ -103,15 +103,24 @@ public class QuickMessageAccess(
             var totalMessages = arrayDbContext.GetTotalMessagesCount(thread.Id);
             foreach (var member in membersInThread)
             {
-                var unReadMessages = totalMessages - member.ReadMessageIndex;
+                var unReadMessagesCount = totalMessages - member.ReadMessageIndex;
                 logger.LogInformation(
                     "Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.",
-                    member.UserId, thread.Id, unReadMessages);
+                    member.UserId, thread.Id, unReadMessagesCount);
+                
+                var unreadRange = arrayDbContext.ReadBulk(
+                    thread.Id, 
+                    start: member.ReadMessageIndex, 
+                    count: unReadMessagesCount);
+                var beingAted = unreadRange.Any(r => 
+                    r.AtsStored.Split(',').Select(Convert.FromBase64String).Any(bytes => new Guid(bytes) == Guid.Parse(member.UserId))); 
+                
                 userInfos.TryAdd(member.UserId, new CachedUserInThreadInfo
                 {
                     UserId = member.UserId,
-                    UnreadAmountSinceBoot = unReadMessages,
-                    Muted = member.Muted
+                    UnreadAmountSinceBoot = unReadMessagesCount,
+                    Muted = member.Muted,
+                    BeingAted = beingAted
                 });
             }
 
@@ -372,5 +381,10 @@ public class QuickMessageAccess(
         {
             ThreadIdsSortedByLastMessageTimeLock.ExitReadLock();
         }
+    }
+
+    public bool HasUnreadAtMeMessages(int threadId, string viewingUserId)
+    {
+        return CachedThreads[threadId].HasUnreadAtMeMessages(viewingUserId);
     }
 }

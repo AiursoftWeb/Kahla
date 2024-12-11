@@ -17,6 +17,11 @@ public class ArrayDbContext(PartitionedObjectBucket<MessageInDatabaseEntity, int
         return lastMessage;
     }
     
+    public MessageInDatabaseEntity[] ReadBulk(int threadId, int start, int count)
+    {
+        return bucket.ReadBulk(threadId, start, count);
+    }
+    
     public int GetTotalMessagesCount(int threadId)
     {
         return bucket.Count(threadId);

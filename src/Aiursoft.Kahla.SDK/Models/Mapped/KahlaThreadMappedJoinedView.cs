@@ -15,6 +15,11 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 
     // I'm the owner of this thread.
     public required bool ImOwner { get; init; }
+    
+    /// <summary>
+    /// Exists a message which is unread by me and at me.
+    /// </summary>
+    public required bool UnreadAtMe { get; init; }
 
     // Thread properties.
     public required bool AllowSearchByName { get; init; }
@@ -26,6 +31,4 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
     public required bool AllowMemberSoftInvitation { get; init; }
     
     public required uint TotalMessages { get; init; }
-
-    // Someone at me. TODO.
 }
