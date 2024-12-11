@@ -8,4 +8,5 @@ public class KahlaMessageMappedSentView
     public required KahlaUserMappedPublicView? Sender { get; init; }
     public required string Preview { get; init; }
     public required DateTime SendTime { get; init; }
+    public required Guid[] Ats { get; init; }
 }

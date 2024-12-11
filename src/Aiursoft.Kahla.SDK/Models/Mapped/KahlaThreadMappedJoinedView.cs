@@ -7,14 +7,25 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 
     public required MessageContext MessageContext { get; init; }
 
-    // Muted.
+    /// <summary>
+    /// If I have muted this thread.
+    /// </summary>
     public required bool Muted { get; init; }
 
-    // I'm an Admin of this thread.
+    /// <summary>
+    /// If I'm an admin of this thread.
+    /// </summary>
     public required bool ImAdmin { get; init; }
 
-    // I'm the owner of this thread.
+    /// <summary>
+    /// If I'm the owner of this thread.
+    /// </summary>
     public required bool ImOwner { get; init; }
+    
+    /// <summary>
+    /// Exists a message which is unread by me and at me.
+    /// </summary>
+    public required bool UnreadAtMe { get; init; }
 
     // Thread properties.
     public required bool AllowSearchByName { get; init; }
@@ -26,6 +37,4 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
     public required bool AllowMemberSoftInvitation { get; init; }
     
     public required uint TotalMessages { get; init; }
-
-    // Someone at me. TODO.
 }

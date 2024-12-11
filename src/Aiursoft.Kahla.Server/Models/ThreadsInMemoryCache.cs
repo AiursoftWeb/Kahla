@@ -34,23 +34,22 @@ public class ThreadsInMemoryCache
     public required KahlaMessageMappedSentView? LastMessage { get; set; }
 
     public required ConcurrentDictionary<string, CachedUserInThreadInfo> UserInfo { private get; init; }
-
+    
     public required DateTime ThreadCreatedTime { get; init; }
     
     public required string ThreadName { get; set; }
 
     public uint GetUserUnReadAmount(string userId)
     {
-        // It's possible that the user is not in the thread when the app is booting.
-        // If found unknown user, return 0 - appended message count.
-        var userInfo = UserInfo.GetOrAdd(userId, _ => new CachedUserInThreadInfo
+        if (UserInfo.TryGetValue(userId, out var cached))
         {
-            UserId = userId,
-            UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount, 
-            Muted = false
-        });
-        var unread = userInfo.UnreadAmountSinceBoot + _appendedMessageSinceBootCount;
-        return unread < 0 ? 0 : (uint)unread;
+            var unread = cached.UnreadAmountSinceBoot + _appendedMessageSinceBootCount;
+            return unread < 0 ? 0 : (uint)unread;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While getting user unread amount, user {userId} not found in the thread!");
+        }
     }
 
     public void ClearUserUnReadAmountSinceBoot(string userId)
@@ -61,24 +60,20 @@ public class ThreadsInMemoryCache
         }
         else
         {
-            UserInfo.TryAdd(userId, new CachedUserInThreadInfo
-            {
-                UserId = userId,
-                UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount, 
-                Muted = false
-            });
+            throw new InvalidOperationException($"While clearing user unread amount, user {userId} not found in the thread!");
         }
     }
 
     public void SetUserMutedStatus(string userId, bool muted)
     {
-        var userInfo = UserInfo.GetOrAdd(userId, _ => new CachedUserInThreadInfo
+        if (UserInfo.TryGetValue(userId, out var cached))
         {
-            UserId = userId,
-            UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount, 
-            Muted = false
-        });
-        userInfo.Muted = muted;
+            cached.Muted = muted;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While setting user mute status, user {userId} not found in the thread!");
+        }
     }
 
     public void AppendMessagesCount(uint messagesCount)
@@ -93,7 +88,8 @@ public class ThreadsInMemoryCache
         {
             UserId = userId,
             UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount, 
-            Muted = false
+            Muted = false,
+            BeingAted = false
         });
     }
 
@@ -111,6 +107,42 @@ public class ThreadsInMemoryCache
     {
         return UserInfo.Values.ToArray();
     }
+
+    public bool HasUnreadAtMeMessages(string viewingUserId)
+    {
+        if (UserInfo.TryGetValue(viewingUserId, out var cached))
+        {
+            return cached.BeingAted;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While checking user at status, user {viewingUserId} not found in the thread!");
+        }
+    }
+    
+    public void AtUser(string userId)
+    {
+        if (UserInfo.TryGetValue(userId, out var cached))
+        {
+            cached.BeingAted = true;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While setting user at status, user {userId} not found in the thread!");
+        }
+    }
+    
+    public void ClearAtForUser(string userId)
+    {
+        if (UserInfo.TryGetValue(userId, out var cached))
+        {
+            cached.BeingAted = false;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While clearing user at status, user {userId} not found in the thread!");
+        }
+    }
 }
 
 public class CachedUserInThreadInfo
@@ -118,4 +150,6 @@ public class CachedUserInThreadInfo
     public required string UserId { get; init; }
     public required int UnreadAmountSinceBoot { get; set; }
     public required bool Muted { get; set; }
+    
+    public required bool BeingAted { get; set; }
 }
