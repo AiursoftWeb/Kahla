@@ -37,6 +37,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     {
         return AtsStored
             .Split(',')
+            .Where(s => !string.IsNullOrWhiteSpace(s))
             .Select(Convert.FromBase64String)
             .Select(bytes => new Guid(bytes))
             .ToArray();
@@ -64,7 +65,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
                 Content = Content,
                 Preview = Encoding.UTF8.GetString(Preview.TrimEndZeros()),
                 SenderId = SenderId,
-                Ats = AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray()
+                Ats = GetAtsAsGuids()
             },
             Id = Id.ToString("D"),
             CommitTime = CreationTime
@@ -79,7 +80,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
             ThreadId = ThreadId,
             Preview = Encoding.UTF8.GetString(bytes: Preview.TrimEndZeros()),
             SendTime = CreationTime,
-            Ats = AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
+            Ats = GetAtsAsGuids(),
             Sender = sender
         };
     }
