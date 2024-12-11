@@ -95,25 +95,44 @@ public class QuickMessageAccess(
             .ToListAsync();
         foreach (var thread in threads)
         {
+            // TODO: Function is too ugly. Refactor it to multiple functions.
             logger.LogInformation("Building cache for thread with ID {ThreadId}...", thread.Id);
+            
+            // Build lastMessage.
             var lastMessageEntity = arrayDbContext.GetLastMessage(thread.Id);
-            var lastMessage = lastMessageEntity?.ToSentView(await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D")));
+            KahlaMessageMappedSentView? lastMessage = null;
+            if (lastMessageEntity != null)
+            {
+                var user = await userOthersViewRepo.GetUserByIdWithCacheAsync(lastMessageEntity.SenderId.ToString("D"));
+                var userMapped = user == null ? null : new KahlaUserMappedPublicView
+                {
+                    Id = user.Id,
+                    NickName = user.NickName,
+                    Bio = user.Bio,
+                    IconFilePath = user.IconFilePath,
+                    AccountCreateTime = user.AccountCreateTime,
+                    EmailConfirmed = user.EmailConfirmed,
+                    Email = user.Email
+                };
+                lastMessage = lastMessageEntity.ToSentView(userMapped);
+            }
+            
+            // Build userInfos.
             var membersInThread = thread.Members;
             var userInfos = new ConcurrentDictionary<string, CachedUserInThreadInfo>();
             var totalMessages = arrayDbContext.GetTotalMessagesCount(thread.Id);
             foreach (var member in membersInThread)
             {
+                // Build unReadMessages.
                 var unReadMessagesCount = totalMessages - member.ReadMessageIndex;
-                logger.LogInformation(
-                    "Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}.",
-                    member.UserId, thread.Id, unReadMessagesCount);
                 
+                // Build beingAted.
                 var unreadRange = arrayDbContext.ReadBulk(
                     thread.Id, 
                     start: member.ReadMessageIndex, 
                     count: unReadMessagesCount);
                 var beingAted = unreadRange.Any(r => 
-                    r.AtsStored.Split(',').Select(Convert.FromBase64String).Any(bytes => new Guid(bytes) == Guid.Parse(member.UserId))); 
+                    r.GetAtsAsGuids().Any(g => g.ToString() == member.UserId)); 
                 
                 userInfos.TryAdd(member.UserId, new CachedUserInThreadInfo
                 {
@@ -122,6 +141,10 @@ public class QuickMessageAccess(
                     Muted = member.Muted,
                     BeingAted = beingAted
                 });
+                
+                logger.LogInformation(
+                    "Cache built for user with ID {UserId} in thread with ID {ThreadId}. His un-read message count is {UnReadMessages}. He is being ated: {BeingAted}.",
+                    member.UserId, thread.Id, unReadMessagesCount, beingAted);
             }
 
             var threadInMemoryCache = new ThreadsInMemoryCache
@@ -307,6 +330,7 @@ public class QuickMessageAccess(
         };
     }
     
+    // TODO: Some methods works as methods. Some methods just returns the CachedThreads[tId]. Refactor them to be consistent.
     public void OnUserJoinedThread(int threadId, string userId)
     {
         CachedThreads[threadId].OnUserJoined(userId);

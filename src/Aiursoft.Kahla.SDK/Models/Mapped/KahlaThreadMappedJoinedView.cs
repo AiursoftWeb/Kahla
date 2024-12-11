@@ -7,13 +7,19 @@ public class KahlaThreadMappedJoinedView : KahlaThreadMappedOthersView
 
     public required MessageContext MessageContext { get; init; }
 
-    // Muted.
+    /// <summary>
+    /// If I have muted this thread.
+    /// </summary>
     public required bool Muted { get; init; }
 
-    // I'm an Admin of this thread.
+    /// <summary>
+    /// If I'm an admin of this thread.
+    /// </summary>
     public required bool ImAdmin { get; init; }
 
-    // I'm the owner of this thread.
+    /// <summary>
+    /// If I'm the owner of this thread.
+    /// </summary>
     public required bool ImOwner { get; init; }
     
     /// <summary>

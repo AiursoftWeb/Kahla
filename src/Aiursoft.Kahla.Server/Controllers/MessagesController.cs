@@ -221,6 +221,9 @@ public class MessagesController(
         // Clear current user's unread message count.
         threadCache.ClearUserUnReadAmountSinceBoot(userId);
         
+        // Clear current user's at status.
+        threadCache.ClearAtForUser(userId);
+        
         // Configure the reflector and the client push consumer.
         var refSub = threadReflector.Subscribe(reflectorConsumer);
         var socSub = socket.Subscribe(clientPushConsumer);
@@ -245,6 +248,7 @@ public class MessagesController(
 
     // TODO: Add a new API to directly send a message to a thread.
     
+    // TODO: This function should be migrated to a service.
     private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try
@@ -344,19 +348,21 @@ public class ClientPushConsumer(
                 // Set as new last message in cache.
                 {
                     var lastMessage = messagesToAddToDb.Last();
-                    threadCache.LastMessage = new KahlaMessageMappedSentView
-                    {
-                        Id = lastMessage.Id,
-                        ThreadId = threadId,
-                        Preview = Encoding.UTF8.GetString(lastMessage.Preview.TrimEndZeros()),
-                        SendTime = lastMessage.CreationTime,
-                        Ats = lastMessage.AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
-                        Sender = userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
-                    };
+                    threadCache.LastMessage = lastMessage.ToSentView(sender: userView);
                 }
 
                 // Increase the appended message count. So all users will see this message as unread.
                 threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
+                
+                // Reflect the ats.
+                foreach (var message in messagesToAddToDb)
+                {
+                    // Increase the unread count for all users in the thread.
+                    foreach (var at in message.GetAtsAsGuids())
+                    {
+                        threadCache.AtUser(at.ToString());
+                    } 
+                }
                 
                 // Reflect to other clients.
                 await threadReflector.BroadcastAsync(messagesToAddToDb);
@@ -376,7 +382,7 @@ public class ClientPushConsumer(
                     Id = messagesToAddToDb.Last().Id,
                     Preview = Encoding.UTF8.GetString(messagesToAddToDb.Last().Preview.TrimEndZeros()),
                     Sender = userView,
-                    Ats = messagesToAddToDb.Last().AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
+                    Ats = messagesToAddToDb.Last().GetAtsAsGuids(),
                     SendTime = messagesToAddToDb.Last().CreationTime,
                     ThreadId = threadId
                 },
@@ -416,5 +422,8 @@ public class ThreadReflectConsumer(
 
         // Clear current user's unread message count.
         threadCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
+        
+        // Clear current user's at status.
+        threadCache.ClearAtForUser(listeningUserId);
     }
 }

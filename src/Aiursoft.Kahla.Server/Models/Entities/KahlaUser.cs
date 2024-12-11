@@ -9,6 +9,7 @@ namespace Aiursoft.Kahla.Server.Models.Entities;
 [JsonObject(MemberSerialization.OptIn)]
 public class KahlaUser : IdentityUser
 {
+    // TODO: Use GUID type to replace string type.
     [Key]
     [JsonProperty]
     public override string Id

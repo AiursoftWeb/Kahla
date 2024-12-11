@@ -32,6 +32,15 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     public Guid Id { get; init; } = Guid.Empty;
     
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
+
+    public Guid[] GetAtsAsGuids()
+    {
+        return AtsStored
+            .Split(',')
+            .Select(Convert.FromBase64String)
+            .Select(bytes => new Guid(bytes))
+            .ToArray();
+    }
     
     public static MessageInDatabaseEntity FromPushedCommit(
         Commit<ChatMessage> messageIncoming, 
@@ -62,7 +71,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         };
     }
 
-    public KahlaMessageMappedSentView ToSentView(KahlaUser? sender)
+    public KahlaMessageMappedSentView ToSentView(KahlaUserMappedPublicView? sender)
     {
         return new KahlaMessageMappedSentView
         {
@@ -71,16 +80,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
             Preview = Encoding.UTF8.GetString(bytes: Preview.TrimEndZeros()),
             SendTime = CreationTime,
             Ats = AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
-            Sender = sender == null ? null : new KahlaUserMappedPublicView
-            {
-                Id = sender.Id,
-                NickName = sender.NickName,
-                Bio = sender.Bio,
-                IconFilePath = sender.IconFilePath,
-                AccountCreateTime = sender.AccountCreateTime,
-                EmailConfirmed = sender.EmailConfirmed,
-                Email = sender.Email
-            }
+            Sender = sender
         };
     }
 }
