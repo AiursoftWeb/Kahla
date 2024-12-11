@@ -38,6 +38,7 @@ public class BufferedKahlaPushService(
         {
             var muted = cachedUserInThreadInfo.Muted;
             var atTargeted = atUserIds?.Contains(cachedUserInThreadInfo.UserId) ?? false;
+            payload.Mentioned = atTargeted;
             var userIsSender = cachedUserInThreadInfo.UserId == payload.Message.Sender?.Id;
             var shouldPush = (!muted || atTargeted) && !userIsSender;
             var reason = 

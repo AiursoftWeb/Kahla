@@ -19,8 +19,5 @@ public class NewMessageEvent : KahlaEvent
     
     public required string ThreadName { get; init; }
     
-    /// <summary>
-    /// TODO: Finish the mentioned feature.
-    /// </summary>
     public bool Mentioned { get; set; }
 }

@@ -370,25 +370,29 @@ public class ClientPushConsumer(
                 // Set the thread as new message sent.
                 quickMessageAccess.SetThreadAsNewMessageSent(threadId);
             }
+            
+            foreach (var message in messagesToAddToDb)
+            {
+                // Push to other users.
+                kahlaPushService.QueuePushMessageToUsersInThread(threadId: threadId, new NewMessageEvent
+                {
+                    Message = new KahlaMessageMappedSentView
+                    {
+                        Id = message.Id,
+                        Preview = Encoding.UTF8.GetString(message.Preview.TrimEndZeros()),
+                        Sender = userView,
+                        Ats = message.GetAtsAsGuids(),
+                        SendTime = message.CreationTime,
+                        ThreadId = threadId
+                    },
+                    ThreadName = threadCache.ThreadName,
+                }, atUserIds: message.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
+            }
 
             // Save to database.
             messagesDb.Add(messagesToAddToDb);
             
-            // Push to other users.
-            kahlaPushService.QueuePushMessageToUsersInThread(threadId: threadId, new NewMessageEvent
-            {
-                Message = new KahlaMessageMappedSentView
-                {
-                    Id = messagesToAddToDb.Last().Id,
-                    Preview = Encoding.UTF8.GetString(messagesToAddToDb.Last().Preview.TrimEndZeros()),
-                    Sender = userView,
-                    Ats = messagesToAddToDb.Last().GetAtsAsGuids(),
-                    SendTime = messagesToAddToDb.Last().CreationTime,
-                    ThreadId = threadId
-                },
-                ThreadName = threadCache.ThreadName,
-            });
-            
+
             logger.LogInformation(
                 "User with ID: {UserId} pushed {Count} messages. We have successfully broadcast to other clients and saved to database.",
                 userIdGuid, messagesToAddToDb.Length);
