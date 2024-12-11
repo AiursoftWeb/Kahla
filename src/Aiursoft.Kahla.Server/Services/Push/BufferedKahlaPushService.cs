@@ -39,19 +39,20 @@ public class BufferedKahlaPushService(
         {
             var muted = cachedUserInThreadInfo.Muted;
             var atTargeted = atUserIds?.Contains(cachedUserInThreadInfo.UserId) ?? false;
+            var userIsSender = cachedUserInThreadInfo.UserId == message.Sender?.Id;
+            var reason = 
+                (!muted ? "User didn't mute the thread. " : "User muted this thread. ") + 
+                (atTargeted ? "The user is at-targeted. " : " the user is not at-targeted. ") +
+                (userIsSender ? "The user is the sender." : "The user is not the sender.");
             
+            // TODO: After we having an API to directly send a message, add unit test to make sure the properties are correctly set.
             var payload = new NewMessageEvent
             {
                 Message = message,
                 Mentioned = atTargeted,
                 ThreadName = threadName
             };
-            var userIsSender = cachedUserInThreadInfo.UserId == payload.Message.Sender?.Id;
             var shouldPush = (!muted || atTargeted) && !userIsSender;
-            var reason = 
-                (!muted ? "User didn't mute the thread. " : "User muted this thread. ") + 
-                (atTargeted ? "The user is at-targeted. " : " the user is not at-targeted. ") +
-                (userIsSender ? "The user is the sender." : "The user is not the sender.");
             if (shouldPush)
             {
                 logger.LogInformation("Pushing web push message to user: {UserId} in thread {ThreadId} because {Reason}",
