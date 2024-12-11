@@ -350,8 +350,8 @@ public class ClientPushConsumer(
                         ThreadId = threadId,
                         Preview = Encoding.UTF8.GetString(lastMessage.Preview.TrimEndZeros()),
                         SendTime = lastMessage.CreationTime,
-                        Sender =
-                            userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
+                        Ats = lastMessage.AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
+                        Sender = userView // This userView is cached during the user is connected. If he changes his profile, this will not be updated.
                     };
                 }
 
@@ -376,6 +376,7 @@ public class ClientPushConsumer(
                     Id = messagesToAddToDb.Last().Id,
                     Preview = Encoding.UTF8.GetString(messagesToAddToDb.Last().Preview.TrimEndZeros()),
                     Sender = userView,
+                    Ats = messagesToAddToDb.Last().AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
                     SendTime = messagesToAddToDb.Last().CreationTime,
                     ThreadId = threadId
                 },

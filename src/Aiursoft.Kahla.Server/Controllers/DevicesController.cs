@@ -159,6 +159,7 @@ public class DevicesController(
                 },
                 Preview = "Sample message",
                 SendTime = DateTime.UtcNow,
+                Ats = []
             },
             ThreadName = "A test thread",
         };

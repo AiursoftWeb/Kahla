@@ -25,6 +25,8 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     
     public string Content { get; init; } = string.Empty;
     
+    public string AtsStored { get; init; } = string.Empty;
+    
     public Guid SenderId { get; init; } = Guid.Empty;
     
     public Guid Id { get; init; } = Guid.Empty;
@@ -41,6 +43,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         Id = Guid.Parse(messageIncoming.Id),
         CreationTime = serverTime,
         SenderId = userIdGuid,
+        AtsStored = string.Join(",", messageIncoming.Item.Ats.Select(guid => Convert.ToBase64String(guid.ToByteArray()))) 
     };
     
     public Commit<ChatMessage> ToCommit()
@@ -51,7 +54,8 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
             {
                 Content = Content,
                 Preview = Encoding.UTF8.GetString(Preview.TrimEndZeros()),
-                SenderId = SenderId
+                SenderId = SenderId,
+                Ats = AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray()
             },
             Id = Id.ToString("D"),
             CommitTime = CreationTime
@@ -66,6 +70,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
             ThreadId = ThreadId,
             Preview = Encoding.UTF8.GetString(bytes: Preview.TrimEndZeros()),
             SendTime = CreationTime,
+            Ats = AtsStored.Split(',').Select(Convert.FromBase64String).Select(bytes => new Guid(bytes)).ToArray(),
             Sender = sender == null ? null : new KahlaUserMappedPublicView
             {
                 Id = sender.Id,
