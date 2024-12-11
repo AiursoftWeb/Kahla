@@ -1,6 +1,7 @@
 using Aiursoft.Canon;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
+using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Data;
 
 namespace Aiursoft.Kahla.Server.Services.Push;
@@ -31,14 +32,20 @@ public class BufferedKahlaPushService(
         }
     }
     
-    public void QueuePushMessageToUsersInThread(int threadId, NewMessageEvent payload, string[]? atUserIds = null)
+    public void QueuePushMessageToUsersInThread(int threadId, string threadName, KahlaMessageMappedSentView message, string[]? atUserIds)
     {
         var usersInThread = quickMessageAccess.GetUsersInThread(threadId);
         foreach (var cachedUserInThreadInfo in usersInThread)
         {
             var muted = cachedUserInThreadInfo.Muted;
             var atTargeted = atUserIds?.Contains(cachedUserInThreadInfo.UserId) ?? false;
-            payload.Mentioned = atTargeted;
+            
+            var payload = new NewMessageEvent
+            {
+                Message = message,
+                Mentioned = atTargeted,
+                ThreadName = threadName
+            };
             var userIsSender = cachedUserInThreadInfo.UserId == payload.Message.Sender?.Id;
             var shouldPush = (!muted || atTargeted) && !userIsSender;
             var reason = 

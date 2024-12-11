@@ -223,6 +223,12 @@ public class QuickMessageAccess(
         ThreadIdsSortedByLastMessageTimeLock.EnterWriteLock();
         try
         {
+            // If already on the first, no need to move.
+            if (ThreadIdsSortedByLastMessageTime.First?.Value == threadId)
+            {
+                return;
+            }
+            
             // Move the id to the front.
             if (ThreadIdsSortedByLastMessageTime.Remove(threadId))
             {

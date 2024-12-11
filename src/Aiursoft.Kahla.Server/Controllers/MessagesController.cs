@@ -13,7 +13,6 @@ using Aiursoft.AiurProtocol.Server;
 using Aiursoft.ArrayDb.ObjectBucket;
 using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Interfaces;
 using Aiursoft.ArrayDb.Partitions;
-using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
@@ -350,42 +349,41 @@ public class ClientPushConsumer(
                     var lastMessage = messagesToAddToDb.Last();
                     threadCache.LastMessage = lastMessage.ToSentView(sender: userView);
                 }
-
-                // Increase the appended message count. So all users will see this message as unread.
-                threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
-                
-                // Reflect the ats.
-                foreach (var message in messagesToAddToDb)
-                {
-                    // Increase the unread count for all users in the thread.
-                    foreach (var at in message.GetAtsAsGuids())
-                    {
-                        threadCache.AtUser(at.ToString());
-                    } 
-                }
-                
-                // Reflect to other clients.
-                await threadReflector.BroadcastAsync(messagesToAddToDb);
-                
-                // Set the thread as new message sent.
-                quickMessageAccess.SetThreadAsNewMessageSent(threadId);
             }
             
+            // Increase the appended message count. So all users will see this message as unread.
+            threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
+                
+            // Reflect to other clients.
+            await threadReflector.BroadcastAsync(messagesToAddToDb);
+                
+            // Set the thread as new message sent.
+            quickMessageAccess.SetThreadAsNewMessageSent(threadId);
+            
+            // Reflect the ats.
             foreach (var message in messagesToAddToDb)
             {
-                // Push to other users.
-                kahlaPushService.QueuePushMessageToUsersInThread(threadId: threadId, new NewMessageEvent
+                // Increase the unread count for all users in the thread.
+                foreach (var at in message.GetAtsAsGuids())
                 {
-                    Message = new KahlaMessageMappedSentView
-                    {
-                        Id = message.Id,
-                        Preview = Encoding.UTF8.GetString(message.Preview.TrimEndZeros()),
-                        Sender = userView,
-                        Ats = message.GetAtsAsGuids(),
-                        SendTime = message.CreationTime,
-                        ThreadId = threadId
-                    },
-                    ThreadName = threadCache.ThreadName,
+                    threadCache.AtUser(at.ToString());
+                } 
+            }
+            
+            // Push to other users.
+            foreach (var message in messagesToAddToDb)
+            {
+                kahlaPushService.QueuePushMessageToUsersInThread(
+                    threadId: threadId, 
+                    threadName: threadCache.ThreadName,
+                    new KahlaMessageMappedSentView
+                {
+                    Id = message.Id,
+                    Preview = Encoding.UTF8.GetString(message.Preview.TrimEndZeros()),
+                    Sender = userView,
+                    Ats = message.GetAtsAsGuids(),
+                    SendTime = message.CreationTime,
+                    ThreadId = threadId
                 }, atUserIds: message.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
             }
 
