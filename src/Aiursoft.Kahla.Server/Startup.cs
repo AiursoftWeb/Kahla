@@ -22,7 +22,7 @@ namespace Aiursoft.Kahla.Server
 {
     public class Startup : IWebStartup
     {
-        public void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
+        public virtual void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 

@@ -6,7 +6,6 @@ using Aiursoft.DbTools;
 using Aiursoft.Kahla.SDK;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.SDK.Services;
-using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -36,7 +35,7 @@ public abstract class KahlaTestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        Server = await AppAsync<Startup>([], port: _port);
+        Server = await AppAsync<TestStartup>([], port: _port);
         await Server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
 
         var serverConfig = Server.Services.GetRequiredService<IConfiguration>();
@@ -96,11 +95,6 @@ public abstract class KahlaTestBase
             await Task.Factory.StartNew(() => wsObject.Listen());
 
             await action();
-
-            if (socketStage.Stage != null)
-            {
-                return socketStage.Stage;
-            }
             return await socketStage.WaitOneEvent();
         }
         finally

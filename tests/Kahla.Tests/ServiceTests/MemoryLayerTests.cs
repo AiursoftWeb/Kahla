@@ -1,10 +1,12 @@
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
+using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -597,7 +599,7 @@ public class MemoryLayerTests : KahlaTestBase
         await repo2.Disconnect();
     }
     
-        [TestMethod]
+    [TestMethod]
     public async Task TestAtUserWithReload()
     {
         var thread1Id = 0;
@@ -664,5 +666,89 @@ public class MemoryLayerTests : KahlaTestBase
         // Clean
         await repo1.Disconnect();
         await repo2.Disconnect();
+    }
+    
+    [TestMethod]
+    public async Task TestAtUserWebPushedInfo()
+    {
+        var thread1Id = 0;
+        var user1Ws = string.Empty;
+        var user1Id = Guid.Empty;
+        var user2Id = Guid.Empty;
+        
+        await RunUnderUser("wsuser1", async () =>
+        {
+            var result1 = await Sdk.CreateFromScratchAsync(
+                name: "Sample thread 1",
+                allowSearchByName: true,
+                allowMemberSoftInvitation: true,
+                allowMembersSendMessages: true,
+                allowDirectJoinWithoutInvitation: true,
+                allowMembersEnlistAllMembers: true);
+            thread1Id = result1.NewThreadId;
+            user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+            user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+            
+            // This device won't receive because it's the sender's device.
+            await Sdk.AddDeviceAsync("fake name", "fake push auth", "fake endpoint", "fake p256dh");
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            await Sdk.DirectJoinAsync(thread1Id);
+            user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+
+            await Sdk.AddDeviceAsync("fake name", "fake push auth", "fake endpoint", "fake p256dh");
+        });
+
+        // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
+        var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
+
+        // User 1 will send a message in 1 second
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(1000);
+            await repo1.Send(new ChatMessage
+            {
+                Content = "Hello, world!",
+                Preview = "Hello, world!",
+                SenderId = user1Id,
+                Ats = [user2Id]
+            });
+            
+            await repo1.Send(new ChatMessage
+            {
+                Content = "Hello, world no at!",
+                Preview = "Hello, world no at!",
+                SenderId = user1Id,
+            });
+        });
+        
+        // User 103 will receive a YouBeenKickedEvent
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var pushed = await RunAndGetEvent(async () =>
+            {
+                await Task.CompletedTask;
+            });
+
+            Assert.IsTrue(pushed is NewMessageEvent);
+            Assert.AreEqual("Hello, world!", (pushed as NewMessageEvent)!.Message.Preview);
+            Assert.AreEqual(user2Id, (pushed as NewMessageEvent)!.Message.Ats[0]);
+            Assert.AreEqual(true, (pushed as NewMessageEvent)!.Mentioned);
+        }, autoSignOut: false);
+
+        await Task.Delay(200);
+        Assert.AreEqual(2, MockWebPushService.PushedPayloads.Count);
+        Assert.IsTrue(MockWebPushService.PushedPayloads[0] is NewMessageEvent);
+        Assert.AreEqual("Hello, world!", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Message.Preview);
+        Assert.AreEqual(true, (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Mentioned);
+        Assert.AreEqual("Sample thread 1", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.ThreadName);
+        Assert.IsTrue(MockWebPushService.PushedPayloads[1] is NewMessageEvent);
+        Assert.AreEqual("Hello, world no at!", (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.Message.Preview);
+        Assert.AreEqual(false, (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.Mentioned);
+        Assert.AreEqual("Sample thread 1", (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.ThreadName);
+
+        // Clean
+        await repo1.Disconnect();
     }
 }

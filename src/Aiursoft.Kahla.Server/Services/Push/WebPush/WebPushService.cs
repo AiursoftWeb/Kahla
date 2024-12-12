@@ -15,7 +15,7 @@ public class WebPushService(
     ILogger<WebPushService> logger,
     KahlaRelationalDbContext relationalDbContext)
 {
-    public async Task PushAsync(Device device, KahlaEvent payload, string triggerEmail = "postermaster@aiursoft.com")
+    public virtual async Task PushAsync(Device device, KahlaEvent payload, string triggerEmail = "postermaster@aiursoft.com")
     {
         var vapidPublicKey = configuration.GetSection("VapidKeys")["PublicKey"]!;
         var vapidPrivateKey = configuration.GetSection("VapidKeys")["PrivateKey"]!;
@@ -54,5 +54,26 @@ public class WebPushService(
                 "An unknown error occured while calling WebPush API: {EMessage} on device: {DeviceId}", e.Message,
                 device.Id);
         }
+    }
+}
+
+public class MockWebPushService(
+    DevicesCache cache,
+    IConfiguration configuration,
+    WebPushClient webPushClient,
+    ILogger<WebPushService> logger,
+    KahlaRelationalDbContext relationalDbContext)
+    : WebPushService(cache, configuration, webPushClient, logger,
+        relationalDbContext)
+{
+    public static List<KahlaEvent?> PushedPayloads { get; private set; } = new List<KahlaEvent?>();
+    
+    public override Task PushAsync(
+        Device device, 
+        KahlaEvent payload,
+        string triggerEmail = "postermaster@aiursoft.com")
+    {
+        PushedPayloads.Add(payload);
+        return Task.CompletedTask;
     }
 }
