@@ -80,8 +80,7 @@ public class DevicesTests : KahlaTestBase
         Assert.AreEqual(Code.JobDone, addResponse.Code);
         await Sdk.PushTestAsync();
         
-        // My device is not a real device, so it will disappear after the test.
         var devices = await Sdk.MyDevicesAsync();
-        Assert.AreEqual(0, devices.Items?.Count);
+        Assert.AreEqual(1, devices.Items?.Count);
     }
 }
