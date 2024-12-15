@@ -45,7 +45,6 @@ public class BufferedKahlaPushService(
                 (atTargeted ? "The user is at-targeted. " : " the user is not at-targeted. ") +
                 (userIsSender ? "The user is the sender." : "The user is not the sender.");
             
-            // TODO: After we having an API to directly send a message, add unit test to make sure the properties are correctly set.
             var payload = new NewMessageEvent
             {
                 Message = message,
