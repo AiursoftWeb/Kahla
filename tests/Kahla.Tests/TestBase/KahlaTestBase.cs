@@ -7,6 +7,7 @@ using Aiursoft.Kahla.SDK;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Aiursoft.WebTools.Extends;
@@ -35,6 +36,7 @@ public abstract class KahlaTestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
+        MockWebPushService.PushedPayloads.Clear();
         Server = await AppAsync<TestStartup>([], port: _port);
         await Server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
 
