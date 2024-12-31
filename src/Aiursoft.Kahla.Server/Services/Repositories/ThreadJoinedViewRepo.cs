@@ -35,7 +35,7 @@ public class ThreadJoinedViewRepo(
     {
         var threadsQuery = relationalDbContext.ChatThreads
             .AsNoTracking()
-            .Where(t => threadIds.Contains(t.Id))
+            .Where(t => EF.Constant(threadIds).Contains(t.Id))
             .MapThreadsJoinedView(viewingUserId, detector, quickMessageAccess, arrayDbContext);
 
         // Need to order by the order of threadIds.
