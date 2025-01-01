@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.0" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.0" />
-    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.0" />
+    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.1" />
     <PackageReference Include="Aiursoft.DbTools.InMemory" Version="9.0.0" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="8.0.4" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="1.0.6" />
