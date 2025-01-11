@@ -30,7 +30,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
 </Project>
