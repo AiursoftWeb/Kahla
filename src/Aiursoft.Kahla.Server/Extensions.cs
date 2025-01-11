@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.CSTools.Models;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools.InMemory;
 using Aiursoft.DbTools.MySql;
@@ -81,5 +82,37 @@ public static class Extensions
                     break;
             }
         }
+    }
+    
+    private static (string etag, long length) GetFileHttpProperties(string path)
+    {
+        var fileInfo = new FileInfo(path);
+        
+        // XOR the last write time and the file length to get a unique etag.
+        var etagHash = fileInfo.LastWriteTime.ToUniversalTime().ToFileTime() ^ fileInfo.Length;
+        var etag = Convert.ToString(etagHash, 16);
+        return (etag, fileInfo.Length);
+    }
+
+    public static IActionResult WebFile(this ControllerBase controller, string path, string extension)
+    {
+        var (etag, length) = GetFileHttpProperties(path);
+        
+        // Handle etag
+        controller.Response.Headers.Append("ETag", '\"' + etag + '\"');
+        if (controller.Request.Headers.ContainsKey("If-None-Match"))
+        {
+            if (controller.Request.Headers["If-None-Match"].ToString().Trim('\"') == etag)
+            {
+                return new StatusCodeResult(304);
+            }
+        }
+
+        // Return file result.
+        controller.Response.Headers.Append("Content-Length", length.ToString());
+        
+        // Allow cache
+        controller.Response.Headers.Append("Cache-Control", $"public, max-age={TimeSpan.FromDays(7).TotalSeconds}");
+        return controller.PhysicalFile(path, Mime.GetContentType(extension), true);
     }
 }
