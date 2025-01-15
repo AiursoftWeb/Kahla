@@ -1,15 +1,18 @@
 using System.Collections.Concurrent;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.CSTools.Attributes;
+using Aiursoft.CSTools.Tools;
+using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models;
-using Aiursoft.Scanner.Abstractions;
+using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
@@ -72,11 +75,6 @@ public class StorageService(IConfiguration configuration)
         return Path.Combine(_workspaceFolder, fileName);
     }
 
-    public string ServerAbsolutePathToRelativePath(string absolutePath)
-    {
-        return Path.GetRelativePath(_workspaceFolder, absolutePath);
-    }
-    
     public string RelativePathToUriPath(string relativePath)
     {
         var urlPath = Uri.EscapeDataString(relativePath)
@@ -89,6 +87,14 @@ public class StorageService(IConfiguration configuration)
     }
 }
 
+[LimitPerMin]
+[KahlaForceAuth]
+[GenerateDoc]
+[ApiExceptionHandler(
+    PassthroughRemoteErrors = true,
+    PassthroughAiurServerException = true)]
+[ApiModelStateChecker]
+[Route("api/files")]
 public class FilesController(
     ImageCompressor imageCompressor,
     ILogger<FilesController> logger,
@@ -97,7 +103,8 @@ public class FilesController(
     KahlaRelationalDbContext relationalDbContext)
     : ControllerBase
 {
-    private void EnsureUserCanRead(int threadId, ThreadsInMemoryCache threadCache)
+    // TODO: This should be migrated to a service.
+    private void EnsureUserCanRead(int threadId)
     {
         var userId = User.GetUserId();
         if (!threadCache.IsUserInThread(userId))
@@ -109,6 +116,7 @@ public class FilesController(
         }
     }
 
+    // TODO: This should be migrated to a service.
     private async Task EnsureUserCanUpload(int threadId)
     {
         var userId = User.GetUserId();
@@ -181,7 +189,10 @@ public class FilesController(
 
         return Ok(new
         {
-            InternetPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/download/{uriPath}",
+            // Krl is a safe resource path for Kahla. Client side should use Krl instead of the InternetOpenPath to avoid hackers injecting malicious files to messages.
+            Krl = $"kahla://server/{threadId}/{uriPath}",
+            InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/Open/{threadId}/{uriPath}",
+            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/File/{threadId}/{uriPath}",
         });
     }
 
@@ -189,27 +200,36 @@ public class FilesController(
     [Route("Open/{ThreadId}/{**FolderNames}", Name = "Open")]
     public async Task<IActionResult> Open(OpenAddressModel model)
     {
-        EnsureUserCanRead(model.ThreadId, threadCache);
-        var file = 
-        if (file == null)
+        EnsureUserCanRead(model.ThreadId);
+    
+        var relativePath = Path.Combine(
+            "thread-files",
+            model.ThreadId.ToString(),
+            model.FolderNames);
+
+        var path = storage.GetFilePhysicalPath(relativePath);
+
+        if (!System.IO.File.Exists(path))
         {
             return NotFound();
         }
 
-        var path = 
-        var extension = 
+        var fileName = Path.GetFileName(path);
+        var extension = Path.GetExtension(path).TrimStart('.');
+
         if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "File")
         {
             return this.WebFile(path, "do-not-open");
         }
 
-        if (file.FileName.IsStaticImage() && await IsValidImageAsync(path))
+        if (fileName.IsStaticImage() && await IsValidImageAsync(path))
         {
             return await FileWithImageCompressor(path, extension);
         }
 
         return this.WebFile(path, extension);
     }
+
 
     private async Task<bool> IsValidImageAsync(string imagePath)
     {
@@ -274,7 +294,7 @@ public class ImageCompressor(
         return GetFileReadLock(path);
     }
 
-    public async Task<string> ClearExif(string path)
+    public async Task<string> ClearExif(string inputFile)
     {
         try
         {
@@ -284,15 +304,15 @@ public class ImageCompressor(
                 Directory.CreateDirectory(clearedFolder);
             }
 
-            var clearedImagePath = $"{clearedFolder}probe_cleared_file_id_{Path.GetFileNameWithoutExtension(path)}.dat";
-            await ClearImage(path, clearedImagePath);
+            var clearedImagePath = $"{clearedFolder}probe_cleared_file_id_{Path.GetFileNameWithoutExtension(inputFile)}.dat";
+            await ClearImage(inputFile, clearedImagePath);
             return clearedImagePath;
         }
         catch (ImageFormatException ex)
         {
             // ReSharper disable once InconsistentlySynchronizedField
             logger.LogError(ex, "Failed to clear the EXIF of an image. Have to return the original image.");
-            return path;
+            return inputFile;
         }
     }
 

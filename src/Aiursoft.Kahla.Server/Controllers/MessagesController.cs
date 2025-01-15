@@ -331,7 +331,7 @@ public class ClientPushConsumer(
         threadMessagesLock.EnterWriteLock();
         try
         {
-            // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
+            // TODO: The thread may be set that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
             var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
