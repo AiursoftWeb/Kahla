@@ -124,9 +124,9 @@ public class FilesController(
         {
             Code = Code.JobDone,
             Message = $"File uploaded! Please use the Krl to save in messages. To convert a Krl to a real URL, please append the path after /server/ as {Request.Scheme}://{Request.Host}/api/files/open/*.",
-            Krl = $"kahla://server/thread-files/{threadId}/{uriPath}",
-            InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/thread-files/{threadId}/{uriPath}",
-            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/thread-files/{threadId}/{uriPath}",
+            Krl = $"kahla://server/{uriPath}",
+            InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/{uriPath}",
+            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/{uriPath}",
         });
     }
 
