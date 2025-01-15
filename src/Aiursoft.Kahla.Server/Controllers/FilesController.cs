@@ -1,5 +1,6 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.AiurProtocol.Server;
 using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.CSTools.Attributes;
 using Aiursoft.CSTools.Tools;
@@ -16,6 +17,13 @@ using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 
 namespace Aiursoft.Kahla.Server.Controllers;
+
+public class UploadViewModel : AiurResponse
+{
+    public required string Krl { get; init; }
+    public required string InternetOpenPath { get; init; }
+    public required string InternetDownloadPath { get; init; }
+}
 
 [LimitPerMin]
 [KahlaForceAuth]
@@ -117,11 +125,12 @@ public class FilesController(
         var relativePath = await storage.Save(storePath, file);
         var uriPath = storage.RelativePathToUriPath(relativePath);
 
-        return Ok(new
+        return this.Protocol(new UploadViewModel
         {
-            // Krl is a safe resource path for Kahla. Client side should use Krl instead of the InternetOpenPath to avoid hackers injecting malicious files to messages.
+            Code = Code.JobDone,
+            Message = $"File uploaded! Please use the Krl to save in messages. To convert a Krl to a real URL, please append the path after /server/ as {Request.Scheme}://{Request.Host}/api/files/open/*.",
             Krl = $"kahla://server/thread-files/{threadId}/{uriPath}",
-            InternetOpenPath =     $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/thread-files/{threadId}/{uriPath}",
+            InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/thread-files/{threadId}/{uriPath}",
             InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/thread-files/{threadId}/{uriPath}",
         });
     }
