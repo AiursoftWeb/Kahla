@@ -247,7 +247,7 @@ public class MessagesController(
 
     // TODO: Add a new API to directly send a message to a thread.
     
-    // TODO: This function should be migrated to a service.
+    // TODO: This function should be migrated to a service. Should have an arg: LowPerformance from db to judge. HighPerformance from memory dictionary to judge.
     private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try
@@ -331,7 +331,7 @@ public class ClientPushConsumer(
         threadMessagesLock.EnterWriteLock();
         try
         {
-            // TODO: The thread may be muted that not allowing anyone to send new messages. In this case, don't allow him to do this.
+            // TODO: The thread may be set that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
             var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
