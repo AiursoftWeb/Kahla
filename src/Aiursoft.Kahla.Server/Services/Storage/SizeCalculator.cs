@@ -7,7 +7,7 @@ namespace Aiursoft.Kahla.Server.Services.Storage;
 /// This class is used to compute size values by finding the smallest
 /// power of two that is greater than or equal to the input.
 /// </remarks>
-public class SizeCalculator
+public static class SizeCalculator
 {
     private static IEnumerable<int> GetTwoPowers()
     {

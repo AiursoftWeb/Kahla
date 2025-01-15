@@ -14,6 +14,7 @@ using Aiursoft.Kahla.Server.Services.Push;
 using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.Kahla.Server.Services.Push.WebSocket;
 using Aiursoft.Kahla.Server.Services.Repositories;
+using Aiursoft.Kahla.Server.Services.Storage;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
@@ -88,6 +89,10 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
             services.AddScoped<BufferedKahlaPushService>();
+            
+            // Storage services.
+            services.AddScoped<StorageService>();
+            services.AddScoped<ImageCompressor>();
             
             // Online detector
             services.AddScoped<OnlineDetector>();
