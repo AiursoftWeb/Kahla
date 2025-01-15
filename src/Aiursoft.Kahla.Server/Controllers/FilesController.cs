@@ -7,6 +7,7 @@ using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Models;
@@ -17,13 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 
 namespace Aiursoft.Kahla.Server.Controllers;
-
-public class UploadViewModel : AiurResponse
-{
-    public required string Krl { get; init; }
-    public required string InternetOpenPath { get; init; }
-    public required string InternetDownloadPath { get; init; }
-}
 
 [LimitPerMin]
 [KahlaForceAuth]
