@@ -147,6 +147,8 @@ public class ImageCompressor(
                     image.Mutate(x => x.AutoOrient());
                     image.Metadata.ExifProfile = null;
                     image.Mutate(x => x.Resize(width, height));
+                    
+                    // TODO: Consider saving as webp to save space.
                     image.Save(saveTarget ??
                                throw new NullReferenceException(
                                    $"When compressing image, {nameof(saveTarget)} is null!"));
