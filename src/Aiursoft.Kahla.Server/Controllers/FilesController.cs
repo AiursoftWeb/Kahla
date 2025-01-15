@@ -10,7 +10,6 @@ using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services.Storage;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +30,7 @@ public class FilesController(
     ImageCompressor imageCompressor,
     ILogger<FilesController> logger,
     StorageService storage,
-    ThreadsInMemoryCache threadCache,
+    QuickMessageAccess quickMessageAccess,
     KahlaRelationalDbContext relationalDbContext)
     : ControllerBase
 {
@@ -39,6 +38,7 @@ public class FilesController(
     private void EnsureUserCanRead(int threadId)
     {
         var userId = User.GetUserId();
+        var threadCache = quickMessageAccess.GetThreadCache(threadId);
         if (!threadCache.IsUserInThread(userId))
         {
             logger.LogWarning(
