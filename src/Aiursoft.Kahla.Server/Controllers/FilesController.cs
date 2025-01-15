@@ -1,56 +1,216 @@
 using System.Collections.Concurrent;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
+using Aiursoft.CSTools.Attributes;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
+using Aiursoft.Kahla.Server.Data;
+using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Scanner.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
+/// <summary>
+/// Represents a service for storing and retrieving files.
+/// </summary>
+public class StorageService(IConfiguration configuration)
+{
+    private readonly string _workspaceFolder = Path.Combine(configuration["Storage:Path"]!, "Workspace");
+
+    // Async lock.
+    private readonly SemaphoreSlim _uniqueFileCreationLock = new(1, 1);
+
+    /// <summary>
+    /// Saves a file to the storage.
+    /// </summary>
+    /// <param name="saveRelativePath">The path where the file will be saved. The 'savePath' is the path that the user wants to save. Not related to actual disk path.</param>
+    /// <param name="file">The file to be saved.</param>
+    /// <returns>The actual path where the file is saved relative to the workspace folder.</returns>
+    public async Task<string> Save(string saveRelativePath, IFormFile file)
+    {
+        var finalFilePath = Path.Combine(_workspaceFolder, saveRelativePath);
+        var finalFolder = Path.GetDirectoryName(finalFilePath);
+
+        // Create the folder if it does not exist.
+        if (!Directory.Exists(finalFolder))
+        {
+            Directory.CreateDirectory(finalFolder!);
+        }
+
+        // The problem is: What if the file already exists?
+        await _uniqueFileCreationLock.WaitAsync();
+        try
+        {
+            var expectedFileName = Path.GetFileName(finalFilePath);
+            while (File.Exists(finalFilePath))
+            {
+                expectedFileName = "_" + expectedFileName;
+                finalFilePath = Path.Combine(finalFolder!, expectedFileName);
+            }
+
+            // Create a new file.
+            File.Create(finalFilePath).Close();
+        }
+        finally
+        {
+            _uniqueFileCreationLock.Release();
+        }
+
+        await using var fileStream = new FileStream(finalFilePath, FileMode.Create);
+        await file.CopyToAsync(fileStream);
+        fileStream.Close();
+        return Path.GetRelativePath(_workspaceFolder, finalFilePath);
+    }
+
+    public string GetFilePhysicalPath(string fileName)
+    {
+        return Path.Combine(_workspaceFolder, fileName);
+    }
+
+    public string ServerAbsolutePathToRelativePath(string absolutePath)
+    {
+        return Path.GetRelativePath(_workspaceFolder, absolutePath);
+    }
+    
+    public string RelativePathToUriPath(string relativePath)
+    {
+        var urlPath = Uri.EscapeDataString(relativePath)
+            .Replace("%5C", "/")
+            .Replace("%5c", "/")
+            .Replace("%2F", "/")
+            .Replace("%2f", "/")
+            .TrimStart('/');
+        return urlPath;
+    }
+}
+
 public class FilesController(
     ImageCompressor imageCompressor,
-    ILogger<FilesController> logger)
+    ILogger<FilesController> logger,
+    StorageService storage,
+    ThreadsInMemoryCache threadCache,
+    KahlaRelationalDbContext relationalDbContext)
     : ControllerBase
 {
+    private void EnsureUserCanRead(int threadId, ThreadsInMemoryCache threadCache)
+    {
+        var userId = User.GetUserId();
+        if (!threadCache.IsUserInThread(userId))
+        {
+            logger.LogWarning(
+                "User with ID: {UserId} is trying to get a websocket for thread {ThreadId} that he is not in.",
+                userId, threadId);
+            throw new AiurServerException(Code.Unauthorized, "You are not a member of this thread.");
+        }
+    }
+
+    private async Task EnsureUserCanUpload(int threadId)
+    {
+        var userId = User.GetUserId();
+        var thread = await relationalDbContext.ChatThreads.FindAsync(threadId);
+        if (thread == null)
+        {
+            logger.LogWarning(
+                "User with ID {UserId} is trying to upload files to a thread that does not exist: {ThreadId}.",
+                userId, threadId);
+            throw new AiurServerException(Code.NotFound, "The thread does not exist.");
+        }
+
+        var myRelation = await relationalDbContext.UserThreadRelations
+            .Where(t => t.UserId == userId)
+            .Where(t => t.ThreadId == threadId)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            logger.LogWarning(
+                "User with ID {UserId} is trying to upload files to thread {ThreadId} that he is not a member of.",
+                userId, threadId);
+            throw new AiurServerException(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        
+        // Not allowing sending messages, and I'm not an admin.
+        if (!thread.AllowMembersSendMessages && myRelation.UserThreadRole != UserThreadRole.Admin)
+        {
+            logger.LogWarning(
+                "User with ID {UserId} is trying to send messages in thread {ThreadId} that he is not allowed to send messages in.", 
+                userId, threadId);
+            throw new AiurServerException(Code.Unauthorized, "You are not allowed to send messages in this thread.");
+        }
+    }
+
+    [Route("Upload/{ThreadId:int}")]
+    public async Task<IActionResult> Upload(int threadId)
+    {
+        await EnsureUserCanUpload(threadId);
+        
+        // Executing here will let the browser upload the file.
+        try
+        {
+            _ = HttpContext.Request.Form.Files.FirstOrDefault()?.ContentType;
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
+
+        if (HttpContext.Request.Form.Files.Count < 1)
+        {
+            return BadRequest("No file uploaded!");
+        }
+
+        var file = HttpContext.Request.Form.Files.First();
+        if (!new ValidFolderName().IsValid(file.FileName))
+        {
+            return BadRequest($"Invalid file name '{file.FileName}'!");
+        }
+
+        var storePath = Path.Combine(
+            "thread-files",
+            threadId.ToString(),
+            DateTime.UtcNow.Year.ToString("D4"),
+            DateTime.UtcNow.Month.ToString("D2"),
+            DateTime.UtcNow.Day.ToString("D2"),
+            file.FileName);
+        var relativePath = await storage.Save(storePath, file);
+        var uriPath = storage.RelativePathToUriPath(relativePath);
+
+        return Ok(new
+        {
+            InternetPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/download/{uriPath}",
+        });
+    }
+
     [Route("File/{ThreadId}/{**FolderNames}", Name = "File")]
     [Route("Open/{ThreadId}/{**FolderNames}", Name = "Open")]
     public async Task<IActionResult> Open(OpenAddressModel model)
     {
-        // Ensure he joined this thread.
-        // If not, return Unauthorized.
-
-        var (folders, fileName) = _folderSplitter.SplitToFoldersAndFile(model.FolderNames);
-        try
-        {
-            var file = await _fileRepo.GetFileInFolder(folder, fileName);
-            if (file == null)
-            {
-                return NotFound();
-            }
-
-            var path = _storageProvider.GetFilePath(file.HardwareId);
-            var extension = _storageProvider.GetExtension(file.FileName);
-            if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "File")
-            {
-                return this.WebFile(path, "do-not-open");
-            }
-
-            if (file.FileName.IsStaticImage() && await IsValidImageAsync(path))
-            {
-                return await FileWithImageCompressor(path, extension);
-            }
-
-            return this.WebFile(path, extension);
-        }
-        catch (AiurUnexpectedServerResponseException e) when (e.Response.Code == Code.NotFound)
+        EnsureUserCanRead(model.ThreadId, threadCache);
+        var file = 
+        if (file == null)
         {
             return NotFound();
         }
+
+        var path = 
+        var extension = 
+        if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "File")
+        {
+            return this.WebFile(path, "do-not-open");
+        }
+
+        if (file.FileName.IsStaticImage() && await IsValidImageAsync(path))
+        {
+            return await FileWithImageCompressor(path, extension);
+        }
+
+        return this.WebFile(path, extension);
     }
-    
+
     private async Task<bool> IsValidImageAsync(string imagePath)
     {
         try
@@ -65,10 +225,10 @@ public class FilesController(
             return false;
         }
     }
-    
+
     private async Task<IActionResult> FileWithImageCompressor(string path, string extension)
     {
-        var passedWidth= int.TryParse(Request.Query["w"], out var width);
+        var passedWidth = int.TryParse(Request.Query["w"], out var width);
         var passedSquare = bool.TryParse(Request.Query["square"], out var square);
         if (width > 0 && passedWidth)
         {
@@ -84,26 +244,14 @@ public class FilesController(
     }
 }
 
-
-public class ImageCompressor
+public class ImageCompressor(
+    ILogger<ImageCompressor> logger,
+    IConfiguration configuration)
 {
-    private readonly ILogger<ImageCompressor> _logger;
-    private readonly string _tempFilePath;
     private static readonly ConcurrentDictionary<string, object> ReadFileLockMapping = new();
     private static readonly ConcurrentDictionary<string, object> WriteFileLockMapping = new();
+    private readonly string _compressorFolder = Path.Combine(configuration["Storage:Path"]!, "ImageCompressor");
 
-    public ImageCompressor(
-        ILogger<ImageCompressor> logger,
-        IOptions<DiskAccessConfig> diskAccessConfig)
-    {
-        _logger = logger;
-        _tempFilePath = diskAccessConfig.Value.TempFileStoragePath;
-        if (string.IsNullOrWhiteSpace(_tempFilePath))
-        {
-            _tempFilePath = diskAccessConfig.Value.StoragePath;
-        }
-    }
-    
     private static object GetFileReadLock(string path)
     {
         if (ReadFileLockMapping.TryGetValue(path, out var mapping))
@@ -130,8 +278,7 @@ public class ImageCompressor
     {
         try
         {
-            var clearedFolder =
-                _tempFilePath + $"{Path.DirectorySeparatorChar}ClearedEXIF{Path.DirectorySeparatorChar}";
+            var clearedFolder = Path.Combine(_compressorFolder, "ClearedEXIF");
             if (Directory.Exists(clearedFolder) == false)
             {
                 Directory.CreateDirectory(clearedFolder);
@@ -144,7 +291,7 @@ public class ImageCompressor
         catch (ImageFormatException ex)
         {
             // ReSharper disable once InconsistentlySynchronizedField
-            _logger.LogError(ex, "Failed to clear the EXIF of an image. Have to return the original image.");
+            logger.LogError(ex, "Failed to clear the EXIF of an image. Have to return the original image.");
             return path;
         }
     }
@@ -173,7 +320,8 @@ public class ImageCompressor
             {
                 lock (GetFileWriteLock(saveTarget))
                 {
-                    _logger.LogInformation("Trying to clear EXIF for image {Source} and save to {Target}", sourceImage, saveTarget);
+                    logger.LogInformation("Trying to clear EXIF for image {Source} and save to {Target}", sourceImage,
+                        saveTarget);
                     var image = Image.Load(sourceImage);
                     image.Mutate(x => x.AutoOrient());
                     image.Metadata.ExifProfile = null;
@@ -191,8 +339,7 @@ public class ImageCompressor
         height = SizeCalculator.Ceiling(height);
         try
         {
-            var compressedFolder =
-                _tempFilePath + $"{Path.DirectorySeparatorChar}Compressed{Path.DirectorySeparatorChar}";
+            var compressedFolder = Path.Combine(_compressorFolder, "Compressed");
             if (Directory.Exists(compressedFolder) == false)
             {
                 Directory.CreateDirectory(compressedFolder);
@@ -206,7 +353,7 @@ public class ImageCompressor
         catch (ImageFormatException ex)
         {
             // ReSharper disable once InconsistentlySynchronizedField
-            _logger.LogError(ex, "Failed to compress an image");
+            logger.LogError(ex, "Failed to compress an image");
             return path;
         }
     }
@@ -234,12 +381,15 @@ public class ImageCompressor
             {
                 lock (GetFileWriteLock(saveTarget))
                 {
-                    _logger.LogInformation("Trying to compress for image {Source} and save to {Target}", sourceImage, saveTarget);
+                    logger.LogInformation("Trying to compress for image {Source} and save to {Target}", sourceImage,
+                        saveTarget);
                     var image = Image.Load(sourceImage);
                     image.Mutate(x => x.AutoOrient());
                     image.Metadata.ExifProfile = null;
                     image.Mutate(x => x.Resize(width, height));
-                    image.Save(saveTarget ?? throw new NullReferenceException($"When compressing image, {nameof(saveTarget)} is null!"));
+                    image.Save(saveTarget ??
+                               throw new NullReferenceException(
+                                   $"When compressing image, {nameof(saveTarget)} is null!"));
                 }
             }
         }
@@ -271,7 +421,7 @@ public class SizeCalculator
     private static IEnumerable<int> GetTwoPowers()
     {
         yield return 0;
-        
+
         // 16384
         for (var i = 1; i <= 0x4000; i *= 2)
         {

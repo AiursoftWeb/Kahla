@@ -247,7 +247,7 @@ public class MessagesController(
 
     // TODO: Add a new API to directly send a message to a thread.
     
-    // TODO: This function should be migrated to a service.
+    // TODO: This function should be migrated to a service. Should have an arg: LowPerformance from db to judge. HighPerformance from memory dictionary to judge.
     private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
     {
         try
