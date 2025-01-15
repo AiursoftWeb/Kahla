@@ -120,14 +120,14 @@ public class FilesController(
         return Ok(new
         {
             // Krl is a safe resource path for Kahla. Client side should use Krl instead of the InternetOpenPath to avoid hackers injecting malicious files to messages.
-            Krl = $"kahla://server/{threadId}/{uriPath}",
-            InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/Open/{threadId}/{uriPath}",
-            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/File/{threadId}/{uriPath}",
+            Krl = $"kahla://server/thread-files/{threadId}/{uriPath}",
+            InternetOpenPath =     $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/thread-files/{threadId}/{uriPath}",
+            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/thread-files/{threadId}/{uriPath}",
         });
     }
 
-    [Route("File/{ThreadId}/{**FolderNames}", Name = "File")]
-    [Route("Open/{ThreadId}/{**FolderNames}", Name = "Open")]
+    [Route("Download/thread-files/{ThreadId}/{**FolderNames}", Name = "File")]
+    [Route("Open/thread-files/{ThreadId}/{**FolderNames}", Name = "Open")]
     public async Task<IActionResult> Open(OpenAddressModel model)
     {
         EnsureUserCanRead(model.ThreadId);
@@ -147,7 +147,7 @@ public class FilesController(
         var fileName = Path.GetFileName(path);
         var extension = Path.GetExtension(path).TrimStart('.');
 
-        if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "File")
+        if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "Download")
         {
             return this.WebFile(path, "do-not-open");
         }
