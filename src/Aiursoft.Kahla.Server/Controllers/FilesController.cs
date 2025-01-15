@@ -84,6 +84,7 @@ public class FilesController(
     }
 
     [Route("Upload/{ThreadId:int}")]
+    [HttpPost]
     public async Task<IActionResult> Upload(int threadId)
     {
         await EnsureUserCanUpload(threadId);
