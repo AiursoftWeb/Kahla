@@ -101,6 +101,14 @@ public class ImageProcessingService(
         return targetAbsolute;
     }
 
+    private async Task WaitTillFileCanBeReadAsync(string path)
+    {
+        while (!FileCanBeRead(path))
+        {
+            await Task.Delay(100);
+        }
+    }
+    
     private bool FileCanBeRead(string path)
     {
         try
@@ -112,16 +120,5 @@ public class ImageProcessingService(
         {
             return false;
         }
-    }
-
-    private Task WaitTillFileCanBeReadAsync(string path)
-    {
-        return Task.Run(() =>
-        {
-            while (!FileCanBeRead(path))
-            {
-                Thread.Sleep(100);
-            }
-        });
     }
 }
