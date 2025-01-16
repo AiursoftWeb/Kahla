@@ -4,64 +4,34 @@ namespace Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 /// Responsible for determining the correct physical paths for 
 /// reading original files and writing processed files.
 /// </summary>
-public class PathResolver(ImageProcessingOptions options)
+public class PathResolver
 {
-    /// <summary>
-    /// Returns the absolute path for a file that is relative to the workspace.
-    /// For example, if relativePath is "thread-files/1/2025/01/15/foo.jpg",
-    /// this might return "kahla-data/Workspace/thread-files/1/2025/01/15/foo.jpg".
-    /// </summary>
-    public string GetOriginalAbsolutePath(string relativePath)
+    private readonly string _clearExifFolder;
+    private readonly string _compressedFolder;
+    private readonly string _workspaceFolder;
+
+    public PathResolver(IConfiguration configuration)
     {
-        return Path.Combine(options.WorkspaceFolder, relativePath);
-    }
+        var basePath = configuration["Storage:Path"] ??
+                       throw new InvalidDataException("Missing config 'Storage:Path'!");
+        _clearExifFolder = Path.Combine(basePath, "ClearExif");
+        _compressedFolder = Path.Combine(basePath, "Compressed");
+        _workspaceFolder = Path.Combine(basePath, "Workspace");
 
-    /// <summary>
-    /// Returns the absolute path for a file that should be placed in the "ClearedEXIF" subfolder.
-    /// This retains the subfolder structure, but appends "_cleared" before the extension.
-    /// 
-    /// E.g. input: "thread-files/1/2025/01/15/foo.jpg"
-    /// output: "kahla-data/ImageCompressor/ClearedEXIF/thread-files/1/2025/01/15/foo_cleared.jpg"
-    /// </summary>
-    public string GetClearedExifAbsolutePath(string relativePath)
-    {
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-        var extension = Path.GetExtension(relativePath);
-        var folder = Path.GetDirectoryName(relativePath) ?? string.Empty;
+        if (!Directory.Exists(_workspaceFolder))
+        {
+            Directory.CreateDirectory(_workspaceFolder);
+        }
 
-        var targetFolder = Path.Combine(options.ProcessedFolder, "ClearedEXIF", folder);
-        var targetFileName = $"{fileName}_cleared{extension}";
-        return Path.Combine(targetFolder, targetFileName);
-    }
+        if (!Directory.Exists(_clearExifFolder))
+        {
+            Directory.CreateDirectory(_clearExifFolder);
+        }
 
-    /// <summary>
-    /// Returns the absolute path for a compressed version of the image, 
-    /// retaining the folder structure but adding dimension suffix.
-    /// 
-    /// E.g. if relativePath is "thread-files/1/2025/01/15/foo.jpg",
-    /// width=100, height=0 => "kahla-data/ImageCompressor/Compressed/thread-files/1/2025/01/15/foo_w100.jpg"
-    /// </summary>
-    public string GetCompressedAbsolutePath(string relativePath, int width, int height)
-    {
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-        var extension = Path.GetExtension(relativePath);
-        var folder = Path.GetDirectoryName(relativePath) ?? string.Empty;
-
-        var dimensionSuffix = BuildDimensionSuffix(width, height);
-        var targetFolder = Path.Combine(options.ProcessedFolder, "Compressed", folder);
-        var targetFileName = $"{fileName}{dimensionSuffix}{extension}";
-        return Path.Combine(targetFolder, targetFileName);
-    }
-
-    /// <summary>
-    /// Returns a path that is relative to the ProcessedFolder (for final usage in controller).
-    /// For instance, if absolutePath is "kahla-data/ImageCompressor/Compressed/.../file.jpg",
-    /// and ProcessedFolder is "kahla-data/ImageCompressor", then the result might be
-    /// "Compressed/.../file.jpg".
-    /// </summary>
-    public string GetPathRelativeToProcessed(string absolutePath)
-    {
-        return Path.GetRelativePath(options.ProcessedFolder, absolutePath);
+        if (!Directory.Exists(_compressedFolder))
+        {
+            Directory.CreateDirectory(_compressedFolder);
+        }
     }
 
     private static string BuildDimensionSuffix(int width, int height)
@@ -70,14 +40,61 @@ public class PathResolver(ImageProcessingOptions options)
         {
             return $"_w{width}_h{height}";
         }
-        else if (width > 0)
+
+        if (width > 0)
         {
             return $"_w{width}";
         }
-        else if (height > 0)
+
+        if (height > 0)
         {
             return $"_h{height}";
         }
+
         return string.Empty;
+    }
+
+    private string GetRelativePath(string file, string folder)
+    {
+        var pathUri = new Uri(file);
+        if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+        {
+            folder += Path.DirectorySeparatorChar;
+        }
+
+        var folderUri = new Uri(folder);
+        return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString()
+            .Replace('/', Path.DirectorySeparatorChar));
+    }
+
+    public string GetClearedExifAbsolutePath(string sourceAbsolute)
+    {
+        var relativeToWorkspace = GetRelativePath(sourceAbsolute, _workspaceFolder);
+        var targetFileLocation = Path.Combine(_clearExifFolder, relativeToWorkspace);
+        var targetFolder = Path.GetDirectoryName(targetFileLocation);
+        if (!Directory.Exists(targetFolder))
+        {
+            Directory.CreateDirectory(targetFolder!);
+        }
+
+        return targetFileLocation;
+    }
+
+    public string GetCompressedAbsolutePath(string sourceAbsolute, int width, int height)
+    {
+        var relativeToWorkspace = GetRelativePath(sourceAbsolute, _workspaceFolder);
+        var fileName = Path.GetFileNameWithoutExtension(relativeToWorkspace);
+        var extension = Path.GetExtension(relativeToWorkspace);
+        var folder = Path.GetDirectoryName(relativeToWorkspace) ?? string.Empty;
+
+        var dimensionSuffix = BuildDimensionSuffix(width, height);
+        var targetFolder = Path.Combine(_compressedFolder, folder);
+        var targetFileName = $"{fileName}{dimensionSuffix}{extension}";
+        if (!Directory.Exists(targetFolder))
+        {
+            Directory.CreateDirectory(targetFolder);
+        }
+
+        return Path.Combine(targetFolder, targetFileName);
     }
 }

@@ -14,8 +14,7 @@ public class StorageService
     {
         // Example: "Storage:Path" points to "kahla-data"
         // Then we place the workspace folder under that path, named "Workspace".
-        var basePath = configuration["Storage:Path"]
-                       ?? throw new InvalidDataException("Missing config 'Storage:Path'!");
+        var basePath = configuration["Storage:Path"] ?? throw new InvalidDataException("Missing config 'Storage:Path'!");
         _workspaceFolder = Path.Combine(basePath, "Workspace");
 
         if (!Directory.Exists(_workspaceFolder))

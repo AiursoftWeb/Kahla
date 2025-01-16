@@ -16,7 +16,7 @@ public interface IImageProcessingService
     /// <returns>
     /// The path *relative to the ProcessedFolder* for the newly created EXIF-cleared image.
     /// </returns>
-    string ClearExif(string relativePath);
+    Task<string> ClearExifAsync(string relativePath);
 
     /// <summary>
     /// Compresses an image by resizing it to the specified width and/or height, and writes
@@ -31,5 +31,5 @@ public interface IImageProcessingService
     /// <returns>
     /// The path *relative to the ProcessedFolder* for the newly created compressed image.
     /// </returns>
-    string Compress(string relativePath, int width, int height);
+    Task<string> CompressAsync(string relativePath, int width, int height);
 }

@@ -162,7 +162,7 @@ public class FilesController(
 
         if (fileName.IsStaticImage() && await IsValidImageAsync(path))
         {
-            return FileWithImageCompressor(path, extension);
+            return await FileWithImageCompressor(path, extension);
         }
 
         return this.WebFile(path, extension);
@@ -183,26 +183,27 @@ public class FilesController(
         }
     }
 
-    private IActionResult FileWithImageCompressor(string path, string extension)
+    private async Task<IActionResult> FileWithImageCompressor(string path, string extension)
     {
         var passedWidth = int.TryParse(Request.Query["w"], out var width);
         var passedSquare = bool.TryParse(Request.Query["square"], out var square);
         if (width > 0 && passedWidth)
         {
+            width = SizeCalculator.Ceiling(width);
             if (square && passedSquare)
             {
-                var compressedPath = imageCompressor.Compress(path, width, width);
+                var compressedPath = await imageCompressor.CompressAsync(path, width, width);
                 return this.WebFile(compressedPath, extension);
             }
             else
             {
-                var compressedPath = imageCompressor.Compress(path, width, 0);
+                var compressedPath = await imageCompressor.CompressAsync(path, width, 0);
                 return this.WebFile(compressedPath, extension);
             }
         }
 
         // If no width or invalid, just clear EXIF
-        var clearedPath = imageCompressor.ClearExif(path);
+        var clearedPath = await imageCompressor.ClearExifAsync(path);
         return this.WebFile(clearedPath, extension);
     }
 }

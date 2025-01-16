@@ -9,14 +9,14 @@ namespace Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 /// </summary>
 public class FileLockProvider
 {
-    private readonly ConcurrentDictionary<string, object> _lockDictionary = new();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _lockDictionary = new();
 
     /// <summary>
     /// Retrieves or creates a lock object for the specified path. 
     /// Use this object in a 'lock' statement to ensure exclusive access.
     /// </summary>
-    public object GetLock(string path)
+    public SemaphoreSlim GetLock(string path)
     {
-        return _lockDictionary.GetOrAdd(path, _ => new object());
+        return _lockDictionary.GetOrAdd(path, _ => new SemaphoreSlim(1, 1));
     }
 }

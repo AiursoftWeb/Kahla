@@ -92,8 +92,8 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<BufferedKahlaPushService>();
             
             // Storage services.
+            services.AddScoped<PathResolver>();
             services.AddScoped<StorageService>();
-            services.Configure<ImageProcessingOptions>(configuration.GetSection("Storage")); 
             services.AddSingleton<FileLockProvider>(); 
             services.AddScoped<IImageProcessingService, ImageProcessingService>();
             
