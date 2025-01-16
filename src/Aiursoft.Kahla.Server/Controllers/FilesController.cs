@@ -11,6 +11,7 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.Storage;
+using Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/files")]
 public class FilesController(
-    ImageCompressor imageCompressor,
+    IImageProcessingService imageCompressor,
     ILogger<FilesController> logger,
     StorageService storage,
     QuickMessageAccess quickMessageAccess,
@@ -72,14 +73,15 @@ public class FilesController(
                 userId, threadId);
             throw new AiurServerException(Code.Unauthorized, "You are not a member of this thread.");
         }
-        
+
         // Not allowing sending messages, and I'm not an admin.
         if (!thread.AllowMembersSendMessages && myRelation.UserThreadRole != UserThreadRole.Admin)
         {
             logger.LogWarning(
-                "User with ID {UserId} is trying to send messages in thread {ThreadId} that he is not allowed to send messages in.", 
+                "User with ID {UserId} is trying to send messages in thread {ThreadId} that he is not allowed to send messages in.",
                 userId, threadId);
-            throw new AiurServerException(Code.Unauthorized, "You are not allowed to send messages in this thread.");
+            throw new AiurServerException(Code.Unauthorized,
+                "You are not allowed to send messages in this thread.");
         }
     }
 
@@ -88,8 +90,7 @@ public class FilesController(
     public async Task<IActionResult> Upload(int threadId)
     {
         await EnsureUserCanUpload(threadId);
-        
-        // Executing here will let the browser upload the file.
+
         try
         {
             _ = HttpContext.Request.Form.Files.FirstOrDefault()?.ContentType;
@@ -117,16 +118,19 @@ public class FilesController(
             DateTime.UtcNow.Month.ToString("D2"),
             DateTime.UtcNow.Day.ToString("D2"),
             file.FileName);
+
         var relativePath = await storage.Save(storePath, file);
         var uriPath = storage.RelativePathToUriPath(relativePath);
 
         return this.Protocol(new UploadViewModel
         {
             Code = Code.JobDone,
-            Message = $"File uploaded! Please use the Krl to save in messages. To convert a Krl to a real URL, please append the path after /server/ as {Request.Scheme}://{Request.Host}/api/files/open/*.",
+            Message =
+                $"File uploaded! Please use the Krl to save in messages. To convert a Krl to a real URL, please append the path after /server/ as {Request.Scheme}://{Request.Host}/api/files/open/*.",
             Krl = $"kahla://server/{uriPath}",
             InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/{uriPath}",
-            InternetDownloadPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/{uriPath}",
+            InternetDownloadPath =
+                $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/download/{uriPath}",
         });
     }
 
@@ -135,7 +139,7 @@ public class FilesController(
     public async Task<IActionResult> Open(OpenAddressModel model)
     {
         EnsureUserCanRead(model.ThreadId);
-    
+
         var relativePath = Path.Combine(
             "thread-files",
             model.ThreadId.ToString(),
@@ -158,29 +162,28 @@ public class FilesController(
 
         if (fileName.IsStaticImage() && await IsValidImageAsync(path))
         {
-            return await FileWithImageCompressor(path, extension);
+            return FileWithImageCompressor(path, extension);
         }
 
         return this.WebFile(path, extension);
     }
-
 
     private async Task<bool> IsValidImageAsync(string imagePath)
     {
         try
         {
             _ = await Image.DetectFormatAsync(imagePath);
-            logger.LogTrace("File with path {ImagePath} is an valid image", imagePath);
+            logger.LogTrace("File with path {ImagePath} is a valid image", imagePath);
             return true;
         }
         catch (Exception e)
         {
-            logger.LogWarning(e, "File with path {ImagePath} is not an valid image", imagePath);
+            logger.LogWarning(e, "File with path {ImagePath} is not a valid image", imagePath);
             return false;
         }
     }
 
-    private async Task<IActionResult> FileWithImageCompressor(string path, string extension)
+    private IActionResult FileWithImageCompressor(string path, string extension)
     {
         var passedWidth = int.TryParse(Request.Query["w"], out var width);
         var passedSquare = bool.TryParse(Request.Query["square"], out var square);
@@ -188,12 +191,18 @@ public class FilesController(
         {
             if (square && passedSquare)
             {
-                return this.WebFile(await imageCompressor.Compress(path, width, width, extension), extension);
+                var compressedPath = imageCompressor.Compress(path, width, width);
+                return this.WebFile(compressedPath, extension);
             }
-
-            return this.WebFile(await imageCompressor.Compress(path, width, 0, extension), extension);
+            else
+            {
+                var compressedPath = imageCompressor.Compress(path, width, 0);
+                return this.WebFile(compressedPath, extension);
+            }
         }
 
-        return this.WebFile(await imageCompressor.ClearExif(path), extension);
+        // If no width or invalid, just clear EXIF
+        var clearedPath = imageCompressor.ClearExif(path);
+        return this.WebFile(clearedPath, extension);
     }
 }
