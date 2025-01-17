@@ -10,10 +10,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.0" />
-    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.1" />
-    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.4" />
-    <PackageReference Include="Aiursoft.DbTools.InMemory" Version="9.0.0" />
+    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.1" />
+    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.2" />
+    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.5" />
+    <PackageReference Include="Aiursoft.DbTools.InMemory" Version="9.0.1" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.1" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="9.0.1" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="9.0.0" />
