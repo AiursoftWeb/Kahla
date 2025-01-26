@@ -14,7 +14,7 @@ RUN dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj  --configuration Release --
 
 # ============================
 # Prepare Runtime Environment
-FROM hub.aiursoft.cn/mcr.microsoft.com/dotnet/aspnet:9.0
+FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet
 ARG PROJ_NAME
 WORKDIR /app
 COPY --from=build-env /app .
