@@ -26,7 +26,7 @@ build:
   needs: 
     - restore
   script:
-    - dotnet build -maxcpucount:1 --no-self-contained
+    - dotnet build --no-self-contained
 
 lint:
   stage: lint
@@ -76,8 +76,8 @@ pack:
     - lint
     - test
   script:
-    - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
-    - dotnet pack -maxcpucount:1 --configuration Release *.sln || echo "Some packaging failed!"
+    - dotnet build --configuration Release --no-self-contained *.sln
+    - dotnet pack --configuration Release *.sln || echo "Some packaging failed!"
   artifacts:
     expire_in: 1 week
     paths:
