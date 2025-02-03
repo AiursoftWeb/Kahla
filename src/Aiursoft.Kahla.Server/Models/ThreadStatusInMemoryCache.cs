@@ -24,7 +24,7 @@ namespace Aiursoft.Kahla.Server.Models;
 /// - `SetUserMutedStatus(string userId, bool muted)`: Sets the mute status for a specific user.
 /// - `AppendMessagesCount(uint messagesCount)`: Increments the count of new messages appended to the thread since the application started.
 /// </summary>
-public class ThreadsInMemoryCache
+public class ThreadStatusInMemoryCache
 {
     // Every time a message is appended to this thread, this count will increase.
     // ReSharper disable once RedundantDefaultMemberInitializer
@@ -78,7 +78,6 @@ public class ThreadsInMemoryCache
 
     public void AppendMessagesCount(uint messagesCount)
     {
-        // Interlocked.Increment(ref _appendedMessageSinceBootCount);
         Interlocked.Add(ref _appendedMessageSinceBootCount, messagesCount);
     }
 

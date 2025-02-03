@@ -10,6 +10,7 @@ using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.BackgroundJobs;
+using Aiursoft.Kahla.Server.Services.Messages;
 using Aiursoft.Kahla.Server.Services.Push;
 using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.Kahla.Server.Services.Push.WebSocket;
@@ -90,6 +91,9 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
             services.AddScoped<BufferedKahlaPushService>();
+            
+            // Message services
+            services.AddScoped<ChannelMessageService>();
             
             // Storage services.
             services.AddScoped<PathResolver>();

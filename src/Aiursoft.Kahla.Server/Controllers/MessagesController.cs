@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Aiursoft.AiurObserver;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
@@ -10,8 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
-using Aiursoft.ArrayDb.ObjectBucket;
-using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Interfaces;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
@@ -19,7 +16,7 @@ using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Models.Entities;
-using Aiursoft.Kahla.Server.Services.Push;
+using Aiursoft.Kahla.Server.Services.Messages;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +30,7 @@ namespace Aiursoft.Kahla.Server.Controllers;
 [ApiModelStateChecker]
 [Route("api/messages")]
 public class MessagesController(
-    BufferedKahlaPushService kahlaPushService,
+    ChannelMessageService channelMessageService,
     QuickMessageAccess quickMessageAccess,
     LocksInMemoryDb locksInMemory,
     PartitionedObjectBucket<MessageInDatabaseEntity, int> messages,
@@ -100,7 +97,9 @@ public class MessagesController(
 
     [EnforceWebSocket]
     [Route("websocket/{userId}")]
-    public async Task<IActionResult> WebSocket([FromRoute] string userId, [FromQuery] string otp)
+    public async Task<IActionResult> WebSocket(
+        [FromRoute] string userId, 
+        [FromQuery] string otp)
     {
         try
         {
@@ -168,6 +167,7 @@ public class MessagesController(
         logger.LogInformation("User with ID: {UserId} is accepted to connect to thread {ThreadId}.", userId, threadId);
         
         var clientPushConsumer = new ClientPushConsumer(
+            channelMessageService,
             new KahlaUserMappedPublicView
             {
                 Id = user!.Id,
@@ -178,15 +178,8 @@ public class MessagesController(
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed 
             },
-            kahlaPushService,
             threadId,
-            quickMessageAccess,
-            threadCache,
-            logger,
-            threadMessagesLock,
-            Guid.Parse(userId),
-            threadReflector,
-            messagesDb);
+            logger);
         var reflectorConsumer = new ThreadReflectConsumer(
             threadCache,
             userId,
@@ -199,7 +192,8 @@ public class MessagesController(
         try
         {
             var startLocation = start ?? 0;
-            var readLength = GetReadLength(messagesDb, startLocation);
+            // Example: Totally 30 messages. User start from 20, then he should read 10 messages.
+            var readLength = messagesDb.Count - startLocation;
             if (readLength > 0)
             {
                 logger.LogInformation(
@@ -245,10 +239,47 @@ public class MessagesController(
         return new EmptyResult();
     }
 
-    // TODO: Add a new API to directly send a message to a thread.
-    
+    [HttpPost]
+    [KahlaForceAuth]
+    [Route("direct-send/{threadId:int}")]
+    public async Task<IActionResult> DirectSend(
+        [FromRoute] int threadId,
+        [FromBody] Commit<ChatMessage> message)
+    {
+        var currentUserId = User.GetUserId();
+        logger.LogInformation("User with Id: {Id} is trying to directly send a message to thread {ThreadId}.", currentUserId, threadId);
+        var thread = await relationalDbContext.ChatThreads.FindAsync(threadId);
+        if (thread == null)
+        {
+            return this.Protocol(Code.NotFound, "The thread does not exist.");
+        }
+
+        var myRelation = await relationalDbContext.UserThreadRelations
+            .Where(t => t.UserId == currentUserId)
+            .Where(t => t.ThreadId == threadId)
+            .FirstOrDefaultAsync();
+        if (myRelation == null)
+        {
+            return this.Protocol(Code.Unauthorized, "You are not a member of this thread.");
+        }
+        
+        var user = await relationalDbContext.Users.FindAsync(currentUserId);
+        var userView = new KahlaUserMappedPublicView
+        {
+            Id = user!.Id,
+            NickName = user.NickName,
+            Bio = user.Bio,
+            IconFilePath = user.IconFilePath,
+            AccountCreateTime = user.AccountCreateTime,
+            Email = user.Email,
+            EmailConfirmed = user.EmailConfirmed 
+        };
+        await channelMessageService.SendMessagesToChannel([message], threadId, userView);
+        return this.Protocol(Code.JobDone, "Successfully pushed the message.");
+    }
+
     // TODO: This function should be migrated to a service. Should have an arg: LowPerformance from db to judge. HighPerformance from memory dictionary to judge.
-    private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
+    private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadStatusInMemoryCache threadStatuCache)
     {
         try
         {
@@ -277,7 +308,7 @@ public class MessagesController(
                     userId, otp);
                 throw new AiurServerException(Code.Unauthorized, "Expired OTP.");
             }
-            if (!threadCache.IsUserInThread(userId))
+            if (!threadStatuCache.IsUserInThread(userId))
             {
                 logger.LogWarning("User with ID: {UserId} is trying to get a websocket for thread {ThreadId} that he is not in.",
                     userId, threadId);
@@ -291,119 +322,29 @@ public class MessagesController(
             throw new AiurServerException(Code.Unauthorized, "Invalid OTP.");
         }
     }
-
-    private static int GetReadLength(
-        IObjectBucket<MessageInDatabaseEntity> messagesDb,
-        int startLocation)
-    {
-        var readLength = messagesDb.Count - startLocation;
-        return readLength;
-    }
 }
 
 public class ClientPushConsumer(
+    ChannelMessageService channelMessageService,
     KahlaUserMappedPublicView userView,
-    BufferedKahlaPushService kahlaPushService,
     int threadId,
-    QuickMessageAccess quickMessageAccess,
-    ThreadsInMemoryCache threadCache,
-    ILogger<MessagesController> logger,
-    ReaderWriterLockSlim threadMessagesLock,
-    Guid userIdGuid,
-    AsyncObservable<MessageInDatabaseEntity[]> threadReflector,
-    IObjectBucket<MessageInDatabaseEntity> messagesDb)
+    ILogger<MessagesController> logger)
     : IConsumer<string>
 {
     public async Task Consume(string clientPushed)
     {
         if (clientPushed.Length > 0xFFFF)
         {
-            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected. Max allowed size is 65535. He pushed {Size} bytes.", userIdGuid, clientPushed.Length);
+            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected. Max allowed size is 65535. He pushed {Size} bytes.", userView.Id, clientPushed.Length);
             return;
         }
-        if (!threadCache.IsUserInThread(userIdGuid.ToString()))
-        {
-            logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", userIdGuid);
-            return;
-        }
-        
-        logger.LogInformation("User with ID: {UserId} is trying to push a message.", userIdGuid);
-        threadMessagesLock.EnterWriteLock();
-        try
-        {
-            // TODO: The thread may be set that not allowing anyone to send new messages. In this case, don't allow him to do this.
-            // Deserialize the incoming messages and fill the properties.
-            var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
-            var serverTime = DateTime.UtcNow;
-            var messagesToAddToDb = model
-                .Select(messageIncoming => MessageInDatabaseEntity.FromPushedCommit(messageIncoming, serverTime, userIdGuid))
-                .ToArray();
-
-            // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
-            
-            // Reflect in quick message access layer.
-            if (messagesToAddToDb.Any())
-            {
-                // Set as new last message in cache.
-                {
-                    var lastMessage = messagesToAddToDb.Last();
-                    threadCache.LastMessage = lastMessage.ToSentView(sender: userView);
-                }
-            }
-            
-            // Increase the appended message count. So all users will see this message as unread.
-            threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
-                
-            // Reflect to other clients.
-            await threadReflector.BroadcastAsync(messagesToAddToDb);
-                
-            // Set the thread as new message sent.
-            quickMessageAccess.SetThreadAsNewMessageSent(threadId);
-            
-            // Reflect the ats.
-            foreach (var message in messagesToAddToDb)
-            {
-                // Increase the unread count for all users in the thread.
-                foreach (var at in message.GetAtsAsGuids())
-                {
-                    threadCache.AtUser(at.ToString());
-                } 
-            }
-            
-            // Push to other users.
-            foreach (var message in messagesToAddToDb)
-            {
-                kahlaPushService.QueuePushMessageToUsersInThread(
-                    threadId: threadId, 
-                    threadName: threadCache.ThreadName,
-                    new KahlaMessageMappedSentView
-                {
-                    Id = message.Id,
-                    Preview = Encoding.UTF8.GetString(message.Preview.TrimEndZeros()),
-                    Sender = userView,
-                    Ats = message.GetAtsAsGuids(),
-                    SendTime = message.CreationTime,
-                    ThreadId = threadId
-                }, atUserIds: message.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
-            }
-
-            // Save to database.
-            messagesDb.Add(messagesToAddToDb);
-            
-
-            logger.LogInformation(
-                "User with ID: {UserId} pushed {Count} messages. We have successfully broadcast to other clients and saved to database.",
-                userIdGuid, messagesToAddToDb.Length);
-        }
-        finally
-        {
-            threadMessagesLock.ExitWriteLock();
-        }
+        var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
+        await channelMessageService.SendMessagesToChannel(model, threadId, userView);
     }
 }
 
 public class ThreadReflectConsumer(
-    ThreadsInMemoryCache threadCache,
+    ThreadStatusInMemoryCache threadStatusCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
     ObservableWebSocket socket)
@@ -412,7 +353,7 @@ public class ThreadReflectConsumer(
     public async Task Consume(MessageInDatabaseEntity[] newEntities)
     {
         // Ensure the user is in the thread.
-        if (!threadCache.IsUserInThread(listeningUserId))
+        if (!threadStatusCache.IsUserInThread(listeningUserId))
         {
             logger.LogWarning("User with ID: {UserId} is trying to listen to a thread that he is not in. Rejected.", listeningUserId);
             return;
@@ -423,9 +364,9 @@ public class ThreadReflectConsumer(
         await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
 
         // Clear current user's unread message count.
-        threadCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
+        threadStatusCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
         
         // Clear current user's at status.
-        threadCache.ClearAtForUser(listeningUserId);
+        threadStatusCache.ClearAtForUser(listeningUserId);
     }
 }

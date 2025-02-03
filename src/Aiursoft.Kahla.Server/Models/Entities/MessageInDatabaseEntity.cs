@@ -45,15 +45,25 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     
     public static MessageInDatabaseEntity FromPushedCommit(
         Commit<ChatMessage> messageIncoming, 
+        // We don't trust the client side's time, so we use server time instead.
         DateTime serverTime,
-        Guid userIdGuid) => new()
+        // We don't trust the client side's user ID, so we use server side's user ID instead.
+        Guid userIdGuid,
+        // We don't trust the client side's thread ID, so we use server side's thread ID instead.
+        int threadId) => new()
     {
+        // We only trust the following fields from the client side:
+        //  * Content
+        //  * Preview
+        //  * Ats
+        //  * ID
         Content = messageIncoming.Item.Content,
         Preview = Encoding.UTF8.GetBytes(messageIncoming.Item.Preview).Take(50).ToArray(),
+        AtsStored = string.Join(",", messageIncoming.Item.Ats.Select(guid => Convert.ToBase64String(guid.ToByteArray()))),
         Id = Guid.Parse(messageIncoming.Id),
         CreationTime = serverTime,
         SenderId = userIdGuid,
-        AtsStored = string.Join(",", messageIncoming.Item.Ats.Select(guid => Convert.ToBase64String(guid.ToByteArray()))) 
+        ThreadId = threadId
     };
     
     public Commit<ChatMessage> ToCommit()
