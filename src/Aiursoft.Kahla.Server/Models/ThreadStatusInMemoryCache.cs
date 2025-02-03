@@ -83,7 +83,7 @@ public class ThreadStatusInMemoryCache
         }
     }
 
-    public void ClearUserUnReadAmountSinceBoot(string userId, bool ignoreIfNotFound = true)
+    public void ClearUserUnReadAmount(string userId, bool ignoreIfNotFound = true)
     {
         if (UserInfo.TryGetValue(userId, out var cached))
         {

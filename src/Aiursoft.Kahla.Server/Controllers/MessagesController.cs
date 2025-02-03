@@ -211,10 +211,8 @@ public class MessagesController(
             threadMessagesLock.ExitReadLock();
         }
         
-        // Clear current user's unread message count.
-        threadCache.ClearUserUnReadAmountSinceBoot(userId);
-        
-        // Clear current user's at status.
+        // Clear current user's unread message count and at status.
+        threadCache.ClearUserUnReadAmount(userId);
         threadCache.ClearAtForUser(userId);
         
         // Configure the reflector and the client push consumer.
@@ -275,6 +273,15 @@ public class MessagesController(
             EmailConfirmed = user.EmailConfirmed 
         };
         await channelMessageService.SendMessagesToChannel([message], threadId, userView);
+        
+        var unRead = quickMessageAccess.GetThreadCache(threadId).GetUserUnReadAmount(currentUserId);
+        if (unRead == 1)
+        {
+            // After direct send, the newly sent message was the only unread message.
+            // So we should clear the at status for the user.
+            quickMessageAccess.GetThreadCache(threadId).ClearAtForUser(currentUserId);
+            quickMessageAccess.GetThreadCache(threadId).ClearUserUnReadAmount(currentUserId);
+        }
         return this.Protocol(Code.JobDone, "Successfully pushed the message.");
     }
 
@@ -364,7 +371,7 @@ public class ThreadReflectConsumer(
         await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
 
         // Clear current user's unread message count.
-        threadStatusCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
+        threadStatusCache.ClearUserUnReadAmount(listeningUserId);
         
         // Clear current user's at status.
         threadStatusCache.ClearAtForUser(listeningUserId);
