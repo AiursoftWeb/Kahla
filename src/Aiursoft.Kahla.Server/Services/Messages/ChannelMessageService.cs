@@ -9,7 +9,7 @@ using Aiursoft.Kahla.Server.Services.Push;
 namespace Aiursoft.Kahla.Server.Services.Messages;
 
 /// <summary>
-/// 用于向某个 Thread（channel）发送消息，并将结果广播给其他用户、更新缓存、通知推送、落地数据库等等。
+/// The service that handles sending messages to a channel (thread).
 /// </summary>
 public class ChannelMessageService(
     LocksInMemoryDb locksInMemory,
@@ -20,12 +20,11 @@ public class ChannelMessageService(
     ILogger<ChannelMessageService> logger)
 {
     /// <summary>
-    /// 将一组新消息发送到某个群聊，对外广播、更新群聊缓存、推送到移动端/在线客户端、落地 DB 等等。
-    /// 注意：外部要自行做好并发锁（WriterLock），以免和其它写操作冲突。
+    /// Send a collection of messages to a channel (thread), broadcast to all users, update cache, push to mobile/online clients, persist to DB, etc.
     /// </summary>
     /// <param name="newCommits">The new messages to send</param>
-    /// <param name="threadId">当前群聊 ID</param>
-    /// <param name="senderView">发送者（当前用户）的映射视图，用于推送到前端时序列化</param>
+    /// <param name="threadId">The ID of the thread to send messages to</param>
+    /// <param name="senderView">The view of the sender</param>
     public async Task SendMessagesToChannel(
         List<Commit<ChatMessage>> newCommits,
         int threadId,
