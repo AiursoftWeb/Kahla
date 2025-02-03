@@ -39,43 +39,6 @@ public class ThreadStatusInMemoryCache
     
     public required string ThreadName { get; set; }
 
-    public uint GetUserUnReadAmount(string userId)
-    {
-        if (UserInfo.TryGetValue(userId, out var cached))
-        {
-            var unread = cached.UnreadAmountSinceBoot + _appendedMessageSinceBootCount;
-            return unread < 0 ? 0 : (uint)unread;
-        }
-        else
-        {
-            throw new InvalidOperationException($"While getting user unread amount, user {userId} not found in the thread!");
-        }
-    }
-
-    public void ClearUserUnReadAmountSinceBoot(string userId)
-    {
-        if (UserInfo.TryGetValue(userId, out var cached))
-        {
-            cached.UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount;
-        }
-        else
-        {
-            throw new InvalidOperationException($"While clearing user unread amount, user {userId} not found in the thread!");
-        }
-    }
-
-    public void SetUserMutedStatus(string userId, bool muted)
-    {
-        if (UserInfo.TryGetValue(userId, out var cached))
-        {
-            cached.Muted = muted;
-        }
-        else
-        {
-            throw new InvalidOperationException($"While setting user mute status, user {userId} not found in the thread!");
-        }
-    }
-
     public void AppendMessagesCount(uint messagesCount)
     {
         Interlocked.Add(ref _appendedMessageSinceBootCount, messagesCount);
@@ -106,6 +69,50 @@ public class ThreadStatusInMemoryCache
     {
         return UserInfo.Values.ToArray();
     }
+    
+    public uint GetUserUnReadAmount(string userId)
+    {
+        if (UserInfo.TryGetValue(userId, out var cached))
+        {
+            var unread = cached.UnreadAmountSinceBoot + _appendedMessageSinceBootCount;
+            return unread < 0 ? 0 : (uint)unread;
+        }
+        else
+        {
+            throw new InvalidOperationException($"While getting user unread amount, user {userId} not found in the thread!");
+        }
+    }
+
+    public void ClearUserUnReadAmountSinceBoot(string userId, bool ignoreIfNotFound = true)
+    {
+        if (UserInfo.TryGetValue(userId, out var cached))
+        {
+            cached.UnreadAmountSinceBoot = 0 - (int)_appendedMessageSinceBootCount;
+        }
+        else
+        {
+            if (!ignoreIfNotFound)
+            {
+                throw new InvalidOperationException($"While clearing user unread amount, user {userId} not found in the thread!");
+            }
+        }
+    }
+
+    public void SetUserMutedStatus(string userId, bool muted, bool ignoreIfNotFound = true)
+    {
+        if (UserInfo.TryGetValue(userId, out var cached))
+        {
+            cached.Muted = muted;
+        }
+        else
+        {
+            if (!ignoreIfNotFound)
+            {
+                throw new InvalidOperationException(
+                    $"While setting user mute status, user {userId} not found in the thread!");
+            }
+        }
+    }
 
     public bool HasUnreadAtMeMessages(string viewingUserId)
     {
@@ -115,11 +122,12 @@ public class ThreadStatusInMemoryCache
         }
         else
         {
-            throw new InvalidOperationException($"While checking user at status, user {viewingUserId} not found in the thread with ID: {ThreadId}!");
+            throw new InvalidOperationException(
+                $"While checking user at status, user {viewingUserId} not found in the thread with ID: {ThreadId}!");
         }
     }
     
-    public void AtUser(string userId)
+    public void AtUser(string userId, bool ignoreIfNotFound = true)
     {
         if (UserInfo.TryGetValue(userId, out var cached))
         {
@@ -127,11 +135,15 @@ public class ThreadStatusInMemoryCache
         }
         else
         {
-            throw new InvalidOperationException($"While setting user at status, user {userId} not found in the thread with ID: {ThreadId}!");
+            if (!ignoreIfNotFound)
+            {
+                throw new InvalidOperationException(
+                    $"While setting user at status, user {userId} not found in the thread with ID: {ThreadId}!");
+            }
         }
     }
     
-    public void ClearAtForUser(string userId)
+    public void ClearAtForUser(string userId, bool ignoreIfNotFound = true)
     {
         if (UserInfo.TryGetValue(userId, out var cached))
         {
@@ -139,7 +151,11 @@ public class ThreadStatusInMemoryCache
         }
         else
         {
-            throw new InvalidOperationException($"While clearing user at status, user {userId} not found in the thread!");
+            if (!ignoreIfNotFound)
+            {
+                throw new InvalidOperationException(
+                    $"While clearing user at status, user {userId} not found in the thread!");
+            }
         }
     }
 }
@@ -149,6 +165,5 @@ public class CachedUserInThreadInfo
     public required string UserId { get; init; }
     public required int UnreadAmountSinceBoot { get; set; }
     public required bool Muted { get; set; }
-    
     public required bool BeingAted { get; set; }
 }
