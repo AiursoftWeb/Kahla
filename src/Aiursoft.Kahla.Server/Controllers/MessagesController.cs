@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Aiursoft.AiurObserver;
 using Aiursoft.AiurObserver.WebSocket.Server;
 using Aiursoft.AiurProtocol.Models;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
-using Aiursoft.ArrayDb.ObjectBucket;
 using Aiursoft.ArrayDb.ObjectBucket.Abstractions.Interfaces;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Kahla.SDK.Models;
@@ -328,15 +326,7 @@ public class MessagesController(
             kahlaPushService.QueuePushMessageToUsersInThread(
                 threadId: threadId, 
                 threadName: threadCache.ThreadName,
-                new KahlaMessageMappedSentView
-            {
-                Id = messageToAddToDb.Id,
-                Preview = Encoding.UTF8.GetString(messageToAddToDb.Preview.TrimEndZeros()),
-                Sender = userView,
-                Ats = messageToAddToDb.GetAtsAsGuids(),
-                SendTime = messageToAddToDb.CreationTime,
-                ThreadId = threadId
-            }, atUserIds: messageToAddToDb.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
+                messageToAddToDb.ToSentView(userView), atUserIds: messageToAddToDb.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
 
             // Save to database.
             messagesDb.Add(messageToAddToDb);
@@ -468,15 +458,7 @@ public class ClientPushConsumer(
                 kahlaPushService.QueuePushMessageToUsersInThread(
                     threadId: threadId, 
                     threadName: threadStatuCache.ThreadName,
-                    new KahlaMessageMappedSentView
-                {
-                    Id = message.Id,
-                    Preview = Encoding.UTF8.GetString(message.Preview.TrimEndZeros()),
-                    Sender = userView,
-                    Ats = message.GetAtsAsGuids(),
-                    SendTime = message.CreationTime,
-                    ThreadId = threadId
-                }, atUserIds: message.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
+                    message.ToSentView(userView), atUserIds: message.GetAtsAsGuids().Select(t => t.ToString()).ToArray());
             }
 
             // Save to database.
