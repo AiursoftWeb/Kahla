@@ -115,7 +115,7 @@ public class ThreadStatusInMemoryCache
         }
         else
         {
-            throw new InvalidOperationException($"While checking user at status, user {viewingUserId} not found in the thread!");
+            throw new InvalidOperationException($"While checking user at status, user {viewingUserId} not found in the thread with ID: {ThreadId}!");
         }
     }
     
@@ -127,7 +127,7 @@ public class ThreadStatusInMemoryCache
         }
         else
         {
-            throw new InvalidOperationException($"While setting user at status, user {userId} not found in the thread!");
+            throw new InvalidOperationException($"While setting user at status, user {userId} not found in the thread with ID: {ThreadId}!");
         }
     }
     
