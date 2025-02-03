@@ -58,7 +58,7 @@ public class QuickMessageAccess(
     IServiceScopeFactory scopeFactory,
     ILogger<QuickMessageAccess> logger)
 {
-    private ConcurrentDictionary<int, ThreadsInMemoryCache> CachedThreads { get; } = new();
+    private ConcurrentDictionary<int, ThreadStatusInMemoryCache> CachedThreads { get; } = new();
 
     /// <summary>
     /// This list is actually sorted by the thread's last message time.
@@ -147,7 +147,7 @@ public class QuickMessageAccess(
                     member.UserId, thread.Id, unReadMessagesCount, beingAted);
             }
 
-            var threadInMemoryCache = new ThreadsInMemoryCache
+            var threadInMemoryCache = new ThreadStatusInMemoryCache
             {
                 ThreadId = thread.Id,
                 LastMessage = lastMessage,
@@ -255,7 +255,7 @@ public class QuickMessageAccess(
     /// <param name="threadName"></param>
     public void OnNewThreadCreated(int threadId, DateTime createTime, string threadName)
     {
-        CachedThreads.TryAdd(threadId, new ThreadsInMemoryCache
+        CachedThreads.TryAdd(threadId, new ThreadStatusInMemoryCache
         {
             ThreadId = threadId,
             LastMessage = null,
@@ -301,7 +301,7 @@ public class QuickMessageAccess(
         return CachedThreads[threadId].GetUsersInThread();
     }
 
-    public ThreadsInMemoryCache GetThreadCache(int threadId)
+    public ThreadStatusInMemoryCache GetThreadCache(int threadId)
     {
         return CachedThreads[threadId];
     }

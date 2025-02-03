@@ -46,14 +46,16 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
     public static MessageInDatabaseEntity FromPushedCommit(
         Commit<ChatMessage> messageIncoming, 
         DateTime serverTime,
-        Guid userIdGuid) => new()
+        Guid userIdGuid,
+        int threadId) => new()
     {
         Content = messageIncoming.Item.Content,
         Preview = Encoding.UTF8.GetBytes(messageIncoming.Item.Preview).Take(50).ToArray(),
         Id = Guid.Parse(messageIncoming.Id),
         CreationTime = serverTime,
         SenderId = userIdGuid,
-        AtsStored = string.Join(",", messageIncoming.Item.Ats.Select(guid => Convert.ToBase64String(guid.ToByteArray()))) 
+        AtsStored = string.Join(",", messageIncoming.Item.Ats.Select(guid => Convert.ToBase64String(guid.ToByteArray()))),
+        ThreadId = threadId
     };
     
     public Commit<ChatMessage> ToCommit()

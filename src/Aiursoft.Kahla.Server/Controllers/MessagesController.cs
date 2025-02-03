@@ -302,7 +302,7 @@ public class MessagesController(
             // TODO: The thread may be set that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
             var serverTime = DateTime.UtcNow;
-            var messageToAddToDb = MessageInDatabaseEntity.FromPushedCommit(message, serverTime, Guid.Parse(currentUserId));
+            var messageToAddToDb = MessageInDatabaseEntity.FromPushedCommit(message, serverTime, Guid.Parse(currentUserId), threadId);
 
             // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
             
@@ -353,7 +353,7 @@ public class MessagesController(
     }
 
     // TODO: This function should be migrated to a service. Should have an arg: LowPerformance from db to judge. HighPerformance from memory dictionary to judge.
-    private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadsInMemoryCache threadCache)
+    private void EnsureUserIsMemberOfThread(int threadId, string userId, string otp, ThreadStatusInMemoryCache threadStatuCache)
     {
         try
         {
@@ -382,7 +382,7 @@ public class MessagesController(
                     userId, otp);
                 throw new AiurServerException(Code.Unauthorized, "Expired OTP.");
             }
-            if (!threadCache.IsUserInThread(userId))
+            if (!threadStatuCache.IsUserInThread(userId))
             {
                 logger.LogWarning("User with ID: {UserId} is trying to get a websocket for thread {ThreadId} that he is not in.",
                     userId, threadId);
@@ -403,7 +403,7 @@ public class ClientPushConsumer(
     BufferedKahlaPushService kahlaPushService,
     int threadId,
     QuickMessageAccess quickMessageAccess,
-    ThreadsInMemoryCache threadCache,
+    ThreadStatusInMemoryCache threadStatuCache,
     ILogger<MessagesController> logger,
     ReaderWriterLockSlim threadMessagesLock,
     Guid userIdGuid,
@@ -418,7 +418,7 @@ public class ClientPushConsumer(
             logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected. Max allowed size is 65535. He pushed {Size} bytes.", userIdGuid, clientPushed.Length);
             return;
         }
-        if (!threadCache.IsUserInThread(userIdGuid.ToString()))
+        if (!threadStatuCache.IsUserInThread(userIdGuid.ToString()))
         {
             logger.LogWarning("User with ID: {UserId} is trying to push a message to a thread that he is not in. Rejected.", userIdGuid);
             return;
@@ -428,26 +428,23 @@ public class ClientPushConsumer(
         threadMessagesLock.EnterWriteLock();
         try
         {
-            // TODO: The thread may be set that not allowing anyone to send new messages. In this case, don't allow him to do this.
             // Deserialize the incoming messages and fill the properties.
             var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
             var serverTime = DateTime.UtcNow;
             var messagesToAddToDb = model
-                .Select(messageIncoming => MessageInDatabaseEntity.FromPushedCommit(messageIncoming, serverTime, userIdGuid))
+                .Select(messageIncoming => MessageInDatabaseEntity.FromPushedCommit(messageIncoming, serverTime, userIdGuid, threadId))
                 .ToArray();
-
-            // TODO: Build an additional memory layer to get set if current user has the permission to send messages to this thread.
             
             // Reflect in quick message access layer.
             if (messagesToAddToDb.Any())
             {
                 // Set as new last message in cache.
                 var lastMessage = messagesToAddToDb.Last();
-                threadCache.LastMessage = lastMessage.ToSentView(sender: userView);
+                threadStatuCache.LastMessage = lastMessage.ToSentView(sender: userView);
             }
             
             // Increase the appended message count. So all users will see this message as unread.
-            threadCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
+            threadStatuCache.AppendMessagesCount((uint)messagesToAddToDb.Length);
                 
             // Reflect to other clients.
             await threadReflector.BroadcastAsync(messagesToAddToDb);
@@ -461,7 +458,7 @@ public class ClientPushConsumer(
                 // Increase the unread count for all users in the thread.
                 foreach (var at in message.GetAtsAsGuids())
                 {
-                    threadCache.AtUser(at.ToString());
+                    threadStatuCache.AtUser(at.ToString());
                 } 
             }
             
@@ -470,7 +467,7 @@ public class ClientPushConsumer(
             {
                 kahlaPushService.QueuePushMessageToUsersInThread(
                     threadId: threadId, 
-                    threadName: threadCache.ThreadName,
+                    threadName: threadStatuCache.ThreadName,
                     new KahlaMessageMappedSentView
                 {
                     Id = message.Id,
@@ -498,7 +495,7 @@ public class ClientPushConsumer(
 }
 
 public class ThreadReflectConsumer(
-    ThreadsInMemoryCache threadCache,
+    ThreadStatusInMemoryCache threadStatuCache,
     string listeningUserId,
     ILogger<MessagesController> logger,
     ObservableWebSocket socket)
@@ -507,7 +504,7 @@ public class ThreadReflectConsumer(
     public async Task Consume(MessageInDatabaseEntity[] newEntities)
     {
         // Ensure the user is in the thread.
-        if (!threadCache.IsUserInThread(listeningUserId))
+        if (!threadStatuCache.IsUserInThread(listeningUserId))
         {
             logger.LogWarning("User with ID: {UserId} is trying to listen to a thread that he is not in. Rejected.", listeningUserId);
             return;
@@ -518,9 +515,9 @@ public class ThreadReflectConsumer(
         await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
 
         // Clear current user's unread message count.
-        threadCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
+        threadStatuCache.ClearUserUnReadAmountSinceBoot(listeningUserId);
         
         // Clear current user's at status.
-        threadCache.ClearAtForUser(listeningUserId);
+        threadStatuCache.ClearAtForUser(listeningUserId);
     }
 }
