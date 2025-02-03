@@ -1,6 +1,7 @@
 using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Services;
+using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
@@ -166,9 +167,28 @@ public class KahlaServerAccess(
     public async Task<InitPusherViewModel> InitThreadWebSocketAsync(int threadId)
     {
         var url = new AiurApiEndpoint(_demoServerLocator.Instance,
-            route: "/api/messages/init-thread-websocket/{threadId}", param:
-            new { threadId });
+            route: "/api/messages/init-thread-websocket/{threadId}", 
+            param: new { threadId });
         var result = await http.Post<InitPusherViewModel>(url, new AiurApiPayload(new { }));
+        return result;
+    }
+    
+    public async Task<AiurResponse> DirectSendMessageAsync(int threadId, string content, string preview, Guid[] ats)
+    {
+        var url = new AiurApiEndpoint(_demoServerLocator.Instance, 
+            route: "/api/messages/direct-send/{threadId}",
+            param: new { threadId });
+        var model = new AiurApiPayload(new Commit<ChatMessage>
+        {
+            Id = Guid.NewGuid().ToString("D"),
+            Item = new ChatMessage
+            {
+                Content = content,
+                Preview = preview,
+                Ats = ats
+            },
+        });
+        var result = await http.Post<AiurResponse>(url, model, format: BodyFormat.HttpJsonBody);
         return result;
     }
 

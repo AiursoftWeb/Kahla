@@ -600,6 +600,66 @@ public class MemoryLayerTests : KahlaTestBase
     }
     
     [TestMethod]
+    public async Task TestAtUserDirectSend()
+    {
+        var thread1Id = 0;
+        var user2Ws = string.Empty;
+        var user2Id = Guid.Empty;
+        
+        await RunUnderUser("wsuser1", async () =>
+        {
+            var result1 = await Sdk.CreateFromScratchAsync(
+                name: "Sample thread 1",
+                allowSearchByName: true,
+                allowMemberSoftInvitation: true,
+                allowMembersSendMessages: true,
+                allowDirectJoinWithoutInvitation: true,
+                allowMembersEnlistAllMembers: true);
+            thread1Id = result1.NewThreadId;
+        });
+        await RunUnderUser("wsuser2", async () =>
+        {
+            await Sdk.DirectJoinAsync(thread1Id);
+            user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
+            user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
+        });
+        
+        // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
+        await RunUnderUser("wsuser1", async () =>
+        {
+            await Sdk.DirectSendMessageAsync(
+                threadId: thread1Id,
+                content: "Hello, world!",
+                preview: "Hello, world!",
+                ats: [user2Id]);
+        });
+        
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var myThreads = await Sdk.MyThreadsAsync();
+            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.AreEqual((uint)1, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
+            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
+        });
+        
+        var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
+        await Task.Delay(200); // Wait for the messages to be reflected.
+        
+        await RunUnderUser("wsuser2", async () =>
+        {
+            var myThreads = await Sdk.MyThreadsAsync();
+            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.AreEqual((uint)0, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
+            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
+        });
+        
+        // Clean
+        await repo2.Disconnect();
+    }
+    
+    [TestMethod]
     public async Task TestAtUserWithReload()
     {
         var thread1Id = 0;
