@@ -83,22 +83,7 @@ pack:
     paths:
       - '**/*.nupkg'
 
-upload_to_nuget:
-  stage: deploy
-  environment: production
-  needs:
-    - pack
-  dependencies:
-    - pack
-  script:
-    - |
-      for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
-      done
-  only:
-    - master
-
-upload_to_local_nuget:
+deploy_local_nuget:
   stage: deploy
   environment: production
   needs:
@@ -113,7 +98,23 @@ upload_to_local_nuget:
   only:
     - master
 
-deploy_docker:
+deploy_public_nuget:
+  stage: deploy
+  environment: production
+  needs:
+    - pack
+    - deploy_local_nuget
+  dependencies:
+    - pack
+  script:
+    - |
+      for file in $(find . -name "*.nupkg"); do
+        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
+      done
+  only:
+    - master
+
+deploy_docker_registry:
   stage: deploy
   environment: production
   needs: 
@@ -124,6 +125,23 @@ deploy_docker:
     - echo building image hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
     - docker build . -t hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
     - docker push hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      exists:
+      - Dockerfile
+
+deploy_docker_hub:
+  stage: deploy
+  environment: production
+  needs: 
+    - deploy_docker_registry
+  script:
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
+    - echo building image $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
+    - docker build . -t $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+    - echo "Logging in to Docker Hub..."
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker push $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
       exists:
