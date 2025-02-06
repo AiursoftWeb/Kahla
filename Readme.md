@@ -52,7 +52,7 @@ CREATE USER 'kahla'@'localhost' IDENTIFIED BY '<kahla_password>';
 GRANT ALL PRIVILEGES ON kahla.* TO 'kahla'@'localhost';
 FLUSH PRIVILEGES;
 exit;
-````
+```
 
 Requirements about how to run
 
