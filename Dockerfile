@@ -1,5 +1,5 @@
-ARG CSPROJ_PATH="./src/Aiursoft.Kahla"
-ARG PROJ_NAME="Aiursoft.Kahla"
+ARG CSPROJ_PATH="./src/Aiursoft.Kahla.Server"
+ARG PROJ_NAME="Aiursoft.Kahla.Server"
 ARG FRONT_END_PATH="${CSPROJ_PATH}/wwwroot"
 
 # ============================
