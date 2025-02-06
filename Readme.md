@@ -1,17 +1,11 @@
 # Kahla
 
-<p align="center">
-    <img width="100px" src="./kahla.png">
-    <h3 align="center">Kahla</h3>
-    <p align="center">Kahla is a cross-platform business messaging app.<p>
-</p>
-
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/blob/master/LICENSE)
 [![Pipeline stat](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
 [![Test Coverage](https://gitlab.aiursoft.cn/aiursoft/kahla/badges/master/coverage.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/pipelines)
 [![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.cn/aiursoft/kahla.svg)](https://gitlab.aiursoft.cn/aiursoft/kahla/-/commits/master?ref_type=heads)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fkahla.aiursoft.cn%2F)](https://kahla.aiursoft.cn)
-[![Docker](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://hub.aiursoft.cn/#!/taglist/aiursoft/kahla)
+[![Docker](https://img.shields.io/docker/pulls/aiursoft/kahla.svg)](https://hub.docker.com/r/aiursoft/kahla)
 
 Kahla is a cross-platform business chat application. It is written in C# and TypeScript. It uses ASP.NET Core and Angular. It is a part of the Aiursoft project.
 
