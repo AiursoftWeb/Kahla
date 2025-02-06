@@ -1,27 +1,47 @@
-ARG CSPROJ_PATH="./src/Aiursoft.Kahla.Server/"
-ARG PROJ_NAME="Aiursoft.Kahla.Server"
+ARG CSPROJ_PATH="./src/Aiursoft.Kahla"
+ARG PROJ_NAME="Aiursoft.Kahla"
+ARG FRONT_END_PATH="${CSPROJ_PATH}/wwwroot"
 
 # ============================
-# Prepare Building Environment
+# Prepare node modules
+# ============================
+FROM hub.aiursoft.cn/node:21-alpine AS npm-env
+ARG FRONT_END_PATH
+WORKDIR /src
+
+# Restore
+COPY ${FRONT_END_PATH}/package*.json .
+RUN npm install --loglevel verbose --force
+
+# Build (no need to build. Static files project)
+# COPY ${FRONT_END_PATH}/ .
+# RUN npm run build --loglevel verbose
+
+# ============================
+# Prepare .NET binaries
+# ============================
 FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet AS build-env
 ARG CSPROJ_PATH
 ARG PROJ_NAME
 WORKDIR /src
-COPY . .
 
 # Build
-RUN dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj  --configuration Release --no-self-contained --runtime linux-x64 --output /app
+COPY . .
+RUN dotnet publish ${CSPROJ_PATH}/${PROJ_NAME}.csproj --configuration Release --no-self-contained --runtime linux-x64 --output /app
 
 # ============================
-# Prepare Runtime Environment
+# Prepare runtime image
+# ============================
 FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet
 ARG PROJ_NAME
 WORKDIR /app
 COPY --from=build-env /app .
+COPY --from=npm-env /src ./wwwroot
 
-# Edit appsettings.json to set storage path from /tmp/data to /data
-RUN sed -i 's/\/tmp\/data/\/data/g' appsettings.json
-RUN mkdir -p /data
+# Edit appsettings.json
+RUN sed -i 's/DataSource=app.db/DataSource=\/data\/app.db/g' appsettings.json && \
+    sed -i 's/\/tmp\/data/\/data/g' appsettings.json && \
+    mkdir -p /data
 
 VOLUME /data
 EXPOSE 5000
