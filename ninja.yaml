@@ -14,3 +14,4 @@ files:
     contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/ninja.yaml
   - name: nuget.config
     contentUri: https://gitlab.aiursoft.cn/aiursoft/tracer/-/raw/master/nuget.config
+  - name: README.md
