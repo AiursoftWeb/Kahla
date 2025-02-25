@@ -1,6 +1,24 @@
+# Editor configuration, see http://editorconfig.org
 root = true
-[*]
 
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.scss]
+indent_size = 2
+
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[*.json]
+indent_size = 2
+
+[*.cshtml]
 # Some CSS Resharper doesn't know how to load.
 resharper_unknown_css_class_highlighting=none
 
@@ -19,14 +37,15 @@ resharper_css_browser_compatibility_highlighting=none
 # Localization might not be finished.
 resharper_not_overridden_in_specific_culture_highlighting=suggestion
 
-# Allow names like `IPAddress`.
-resharper_inconsistent_naming_highlighting=suggestion
-
-# Allow unused auto property get.
-resharper_unused_auto_property_accessor_global_highlighting=suggestion
-
 # Allow view render global var.
 resharper_access_to_modified_closure_highlighting=suggestion
 
 # Suppress id not resolved because resharper can't understand
 resharper_html_id_not_resolved_highlighting=suggestion
+
+[*.cs]
+# Allow names like `IPAddress`.
+resharper_inconsistent_naming_highlighting=suggestion
+
+# Allow unused auto property get.
+resharper_unused_auto_property_accessor_global_highlighting=suggestion
