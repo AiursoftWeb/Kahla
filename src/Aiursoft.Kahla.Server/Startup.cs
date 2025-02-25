@@ -1,4 +1,4 @@
-﻿using Aiursoft.AiurProtocol.Server;
+using Aiursoft.AiurProtocol.Server;
 using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
@@ -19,6 +19,7 @@ using Aiursoft.Kahla.Server.Services.Storage;
 using Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Hosting;
 using WebPush;
 
 namespace Aiursoft.Kahla.Server
@@ -114,6 +115,7 @@ namespace Aiursoft.Kahla.Server
         public void Configure(WebApplication app)
         {
             app.UseDefaultFiles();
+            app.UseMiddleware<AngularMiddleware>();
             app.UseStaticFiles();
             app.UseWebSockets();
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
