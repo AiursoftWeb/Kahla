@@ -113,6 +113,8 @@ namespace Aiursoft.Kahla.Server
 
         public void Configure(WebApplication app)
         {
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseWebSockets();
             app.UseMiddleware<HandleKahlaOptionsMiddleware>();
             app.UseRouting();

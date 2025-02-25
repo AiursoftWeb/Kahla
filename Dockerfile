@@ -1,21 +1,23 @@
 ARG CSPROJ_PATH="./src/Aiursoft.Kahla.Server"
 ARG PROJ_NAME="Aiursoft.Kahla.Server"
-ARG FRONT_END_PATH="${CSPROJ_PATH}/wwwroot"
+ARG FRONT_END_PATH="./src/Aiursoft.Kahla.Frontend"
 
 # ============================
-# Prepare node modules
+# Prepare node dist
 # ============================
 FROM hub.aiursoft.cn/node:21-alpine AS npm-env
 ARG FRONT_END_PATH
 WORKDIR /src
 
 # Restore
-COPY ${FRONT_END_PATH}/package*.json .
-RUN npm install --loglevel verbose --force
+COPY ${FRONT_END_PATH}/kahla.app/package.json ./kahla.app/
+COPY ${FRONT_END_PATH}/kahla.sdk/package.json ./kahla.sdk/
+COPY ${FRONT_END_PATH}/package.json ./yarn.lock ./.yarnrc.yml ./
+RUN corepack enable && corepack yarn install --immutable
 
-# Build (no need to build. Static files project)
-# COPY ${FRONT_END_PATH}/ .
-# RUN npm run build --loglevel verbose
+# Build
+COPY ${FRONT_END_PATH}/ .
+RUN corepack yarn run build
 
 # ============================
 # Prepare .NET binaries
@@ -36,7 +38,7 @@ FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet
 ARG PROJ_NAME
 WORKDIR /app
 COPY --from=build-env /app .
-COPY --from=npm-env /src ./wwwroot
+COPY --from=npm-env /src/kahla.app/dist/ng/browser ./wwwroot/
 
 # Edit appsettings.json
 RUN sed -i 's/DataSource=app.db/DataSource=\/data\/app.db/g' appsettings.json && \

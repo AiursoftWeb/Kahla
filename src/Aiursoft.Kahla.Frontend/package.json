@@ -1,0 +1,39 @@
+{
+  "name": "kahla",
+  "version": "4.5.0",
+  "workspaces": [
+    "kahla.app/",
+    "kahla.sdk/"
+  ],
+  "scripts": {
+    "format": "prettier -cw .",
+    "build": "yarn workspace @aiursoft/kahla.sdk build && yarn workspace @aiursoft/kahla.app build",
+    "test": "yarn workspace @aiursoft/kahla.sdk test",
+    "lint": "yarn workspace @aiursoft/kahla.sdk lint && yarn workspace @aiursoft/kahla.app lint",
+    "clean": "yarn workspace @aiursoft/kahla.sdk clean && yarn workspace @aiursoft/kahla.app clean"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  },
+  "description": "Kahla is a cross-platform business messaging app.",
+  "author": "Aiursoft <service@aiursoft.com> (https://www.aiursoft.cn/)",
+  "contributors": [
+    "Anduin@aiursoft.com",
+    "xxyzz@aiursoft.com",
+    "EdgeNeko@aiursoft.com",
+    "2539820590@qq.com",
+    "l2dy@macports.org"
+  ],
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.aiursoft.cn/aiursoft/kahla.app.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://gitlab.aiursoft.cn/aiursoft/kahla.app/-/issues"
+  },
+  "homepage": "https://kahla.aiursoft.cn",
+  "packageManager": "yarn@4.5.3"
+}
