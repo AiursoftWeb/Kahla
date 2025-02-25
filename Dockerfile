@@ -12,7 +12,9 @@ WORKDIR /src
 # Restore
 COPY ${FRONT_END_PATH}/kahla.app/package.json ./kahla.app/
 COPY ${FRONT_END_PATH}/kahla.sdk/package.json ./kahla.sdk/
-COPY ${FRONT_END_PATH}/package.json ./yarn.lock ./.yarnrc.yml ./
+COPY ${FRONT_END_PATH}/package.json .
+COPY ${FRONT_END_PATH}/yarn.lock .
+COPY ${FRONT_END_PATH}/.yarnrc.yml .
 RUN corepack enable && corepack yarn install --immutable
 
 # Build
