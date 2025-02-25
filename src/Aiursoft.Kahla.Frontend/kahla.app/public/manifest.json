@@ -1,0 +1,48 @@
+{
+  "short_name": "Kahla",
+  "name": "Kahla",
+  "start_url": "/",
+  "description": "As a cross-platform business messaging app, Kahla can encrypt communications at any location, on any device. And it is completely open source and free.",
+  "icons": [
+    {
+      "src": "/assets/144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/240x240.png",
+      "sizes": "240x240",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#fff",
+  "theme_color": "#fff",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "com.aiursoft.kahla"
+    }
+  ],
+  "share_target": {
+    "action": "/share-target/",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

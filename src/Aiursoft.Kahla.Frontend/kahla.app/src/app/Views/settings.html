@@ -1,0 +1,56 @@
+<app-header title="Me" [returnButton]="false"></app-header>
+@if (cacheService.mine()) {
+    <app-user-basic-info
+        routerLink="/userInfo"
+        [user]="cacheService.mine()!.me"
+        [online]="cacheService.mine()!.privateSettings.enableHideMyOnlineStatus ? undefined : true"
+    />
+}
+<div class="menu-button" *ngIf="homeService.pwaHomeScreenPrompt" (click)="pwaAddHomeScreen()">
+    <div class="img">
+        <i class="fas fa-thumbtack" aria-hidden="true"></i>
+    </div>
+    <div class="text">Pin Kahla to home</div>
+</div>
+<div class="menu-button" *ngIf="homeService.pwaHomeScreenSuccess">
+    <div class="img">
+        <i class="fas fa-check" aria-hidden="true"></i>
+    </div>
+    <div class="text">Success</div>
+</div>
+<div class="menu-gap"></div>
+
+<div
+    class="menu-button"
+    *ngIf="cacheService.mine() && !cacheService.mine()!.me.emailConfirmed"
+    (click)="sendEmail()"
+>
+    <div class="img warning">
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+    </div>
+    <div class="text warning">
+        <strong>Your account email was not confirmed!</strong>
+    </div>
+</div>
+<div class="menu-button" routerLink="/theme">
+    <div class="img">
+        <i class="fas fa-paint-brush"></i>
+    </div>
+    <div class="text">Theme</div>
+</div>
+<div class="menu-button" routerLink="/advanced-setting">
+    <div class="img">
+        <i class="fas fa-cog" aria-hidden="true"></i>
+    </div>
+    <div class="text">Settings</div>
+</div>
+<div class="menu-button" routerLink="/about">
+    <div class="img">
+        <i class="fas fa-server"></i>
+    </div>
+    <div class="text">About</div>
+</div>
+<div class="menu-gap"></div>
+<div class="buttons">
+    <button class="button warning" (click)="SignOut()">Sign out</button>
+</div>

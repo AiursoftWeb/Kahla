@@ -1,0 +1,9 @@
+{
+  "references": [{ "path": "./tsconfig.json" }],
+  "extends": "./tsconfig.json",
+  "include": ["tests"],
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "tests"
+  }
+}

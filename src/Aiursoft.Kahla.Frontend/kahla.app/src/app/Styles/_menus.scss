@@ -1,0 +1,33 @@
+@use 'effects';
+%menu-item {
+  background: var(--selectable-bg);
+  border-color: var(--selectable-border-color);
+
+  border-width: 1px;
+  border-bottom-style: solid;
+  user-select: none;
+  text-decoration: none;
+
+  .img,
+  .img-right {
+    color: var(--primary-color-depth2);
+  }
+
+  &.w-current {
+    background: var(--selectable-hover-bg) !important;
+  }
+}
+
+%menu-item-clickable {
+  cursor: pointer;
+  outline: none;
+  @extend %menu-item;
+
+  @include effects.hover-effect(var(--selectable-hover-bg), var(--selectable-active-bg));
+}
+
+.empty-result-notice {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 14px;
+}

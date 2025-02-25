@@ -1,0 +1,11 @@
+<button
+    class="button button--fab scroll-down primary"
+    (click)="clicked()"
+    [class.hide]="hide()"
+    [disabled]="hide()"
+>
+    <i class="fas {{ 'fa-angle-' + direction() }}" aria-hidden="true"></i>
+    @if (emphasis()) {
+        <div class="dot reddot"></div>
+    }
+</button>

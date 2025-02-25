@@ -1,0 +1,125 @@
+%header {
+  color: #339bf9;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+    Cantarell, Helvetica, sans-serif;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  margin: 0;
+}
+
+.signin-back {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  z-index: 1001;
+  position: absolute;
+  overflow-y: auto;
+  text-align: center;
+}
+@media (prefers-color-scheme: dark) {
+  .signin-back {
+    background-color: rgb(28, 30, 31) !important;
+  }
+}
+
+.auth-page {
+  margin: auto;
+  display: block;
+  height: 576px;
+  max-height: 100%;
+  padding: 20px 10px;
+  box-sizing: border-box;
+  max-width: 400px;
+}
+
+.auth-header {
+  img {
+    width: 90px;
+    height: 90px;
+    overflow: hidden;
+  }
+
+  h1 {
+    @extend %header;
+    font-size: 2em;
+  }
+
+  h3 {
+    @extend %header;
+    font-size: 1.5em;
+  }
+}
+
+.auth-content {
+  width: 290px;
+  max-width: 80%;
+  margin: 50% auto 5% auto;
+}
+
+.button.white {
+  text-transform: uppercase;
+  color: #2391d3 !important;
+}
+
+.actionLink {
+  margin: 5% auto;
+  display: block;
+  text-decoration: underline;
+  font-size: 12px;
+  color: #2391d3;
+}
+
+p {
+  margin: 4px 0 4px 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.login {
+  display: block;
+  padding: 0 !important;
+  margin-top: 8%;
+}
+
+.split-bar {
+  @extend %header;
+  clear: both;
+  user-select: none;
+  margin: 32px 0 32px 0;
+  position: relative;
+  display: inline-block;
+  font-size: 1.5em;
+
+  &::before,
+  &::after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: -120px;
+    width: 100px; // 100px line on either side
+    border-bottom: 2px solid #339bf9;
+  }
+
+  &::after {
+    left: auto;
+    right: -120px;
+  }
+}
+
+.inputAddr {
+  border: 1px solid var(--text-input-border-color);
+  color: var(--default-textcolor);
+  background-color: var(--text-input-bg);
+  border-radius: 6px;
+  height: 35px;
+  padding: 6px 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  width: 100%;
+  margin-bottom: 10px;
+}

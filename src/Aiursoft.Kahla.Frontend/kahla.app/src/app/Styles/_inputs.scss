@@ -1,0 +1,23 @@
+%textbox {
+  border: 1px solid var(--text-input-border-color);
+  color: var(--default-textcolor);
+  background-color: var(--text-input-bg);
+  border-radius: 6px;
+  transition:
+    border-color ease-in-out 0.15s,
+    box-shadow ease-in-out 0.15s;
+  box-shadow: none;
+  height: 35px;
+  padding: 6px 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+
+  &:focus {
+    border-color: var(--primary-color-depth2);
+  }
+
+  &:hover {
+    border-color: var(--primary-color-depth3);
+  }
+}

@@ -1,0 +1,205 @@
+<app-header title="File History" [processing]="loading"></app-header>
+<div *ngIf="files.length > 0">
+    <div class="menu-hint">{{ calcSummary() }}</div>
+    <div *ngFor="let dir of files">
+        <div class="menu-header">{{ dir.showingDateUTC }}</div>
+        <div class="file-tiles">
+            <div *ngFor="let file of dir.items" class="file-item">
+                <a
+                    title="{{ file.fileName }}"
+                    href="{{ buildProbeUrl(file, dir) }}"
+                    target="_blank"
+                    class="file-item-body"
+                >
+                    <img
+                        *ngIf="isImage(file.fileName); else file_ico"
+                        src="{{ buildProbeUrl(file, dir) }}&w=128"
+                        class="icon"
+                    />
+                    <ng-template #file_ico>
+                        <div
+                            class="icon"
+                            [ngSwitch]="file.fileName.substring(file.fileName.lastIndexOf('.') + 1)"
+                        >
+                            <i *ngSwitchCase="'pdf'" class="far fa-file-pdf" aria-hidden="true"></i>
+                            <i
+                                *ngSwitchCase="'jpg'"
+                                class="far fa-file-image"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'png'"
+                                class="far fa-file-image"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'svg'"
+                                class="far fa-file-image"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'bmp'"
+                                class="far fa-file-image"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'jpeg'"
+                                class="far fa-file-image"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'mp3'"
+                                class="far fa-file-audio"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'aac'"
+                                class="far fa-file-audio"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'flac'"
+                                class="far fa-file-audio"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'wav'"
+                                class="far fa-file-audio"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'mp4'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'avi'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'mkv'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'ogg'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'webm'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'m4v'"
+                                class="far fa-file-video"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'zip'"
+                                class="far fa-file-archive"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'tar'"
+                                class="far fa-file-archive"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'7z'"
+                                class="far fa-file-archive"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'dmg'"
+                                class="far fa-file-archive"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'tar.gz'"
+                                class="far fa-file-archive"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'doc'"
+                                class="far fa-file-word"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'docx'"
+                                class="far fa-file-word"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'pages'"
+                                class="far fa-file-word"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'xls'"
+                                class="far fa-file-excel"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'xlsx'"
+                                class="far fa-file-excel"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'numbers'"
+                                class="far fa-file-excel"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'ppt'"
+                                class="far fa-file-powerpoint"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'pptx'"
+                                class="far fa-file-powerpoint"
+                                aria-hidden="true"
+                            ></i>
+                            <i
+                                *ngSwitchCase="'key'"
+                                class="far fa-file-powerpoint"
+                                aria-hidden="true"
+                            ></i>
+                            <i *ngSwitchDefault class="fas fa-file" aria-hidden="true"></i>
+                        </div>
+                    </ng-template>
+                    <div class="title">{{ file.fileName }}</div>
+                    <div class="detail">Size: {{ file.fileSize | humanReadableSize }}</div>
+                </a>
+                <div class="operate-button share" (click)="share(file, dir)" title="Share">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <a
+                    class="operate-button download"
+                    href="{{ buildProbeUrl(file, dir, true) }}"
+                    title="Download"
+                    ><i class="fas fa-arrow-down"></i
+                ></a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="empty-notice" *ngIf="noMoreFiles && files.length === 0">
+    <p>No files.</p>
+    <p>Files uploaded to the conversation will be shown here.</p>
+</div>
+
+<div class="empty-notice" *ngIf="noMoreFiles && files.length > 0">
+    <p>All files have been shown.</p>
+</div>
+
+<ng-container *ngIf="!noMoreFiles">
+    <div style="height: 20px"></div>
+    <div class="buttons">
+        <button class="button primary" [disabled]="loading" (click)="loadFiles()">
+            {{ loading ? 'Loading...' : 'Load more' }}
+        </button>
+    </div>
+</ng-container>

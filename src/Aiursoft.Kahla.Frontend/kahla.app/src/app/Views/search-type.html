@@ -1,0 +1,13 @@
+<div class="search-type">
+    @for (item of items; track $index; let idx = $index) {
+        <div (click)="currentIndex.set(idx)" [ngClass]="{ selected: currentIndex() === idx }">
+            <span>
+                <i [class]="item.className"></i>
+                {{ item.title }}
+            </span>
+            @if (item.showDot) {
+                <div class="dot bluedot">{{ item.dotValue! | truncatedNum }}</div>
+            }
+        </div>
+    }
+</div>

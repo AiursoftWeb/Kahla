@@ -1,0 +1,10 @@
+@use 'fixed_widescreen';
+@use 'menus';
+
+.search-part {
+  @extend %full-fixed-width;
+  position: fixed;
+  z-index: 50;
+  background-color: var(--fixed-toolbars-bg);
+  backdrop-filter: blur(8px);
+}

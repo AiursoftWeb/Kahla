@@ -1,0 +1,31 @@
+.search-type {
+  width: 100%;
+  font-size: 18px;
+  height: 40px;
+  display: flex;
+
+  div {
+    flex: 1 1;
+    vertical-align: middle;
+    overflow: hidden;
+    text-align: center;
+    display: inline-block;
+    cursor: pointer;
+    transition: background-color ease-out 0.2s;
+    border-radius: 6px 6px 0 0;
+
+    .dot {
+      border-radius: 50%;
+      width: unset;
+      position: unset;
+    }
+
+    span {
+      line-height: 40px;
+    }
+
+    &.selected {
+      background-color: var(--selectable-bg);
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<div class="menu-header">Thread Profile</div>
+<div class="profile">
+    <label>Name</label>
+    <input
+        [ngModel]="threadOptions().name"
+        placeholder="Enter the name of the thread"
+        type="text"
+        (ngModelChange)="flipOption('name', $event)"
+    />
+</div>
+<div class="menu-header">Options</div>
+<app-toggle-menu-item
+    title="Allow members send messages"
+    iconClasses="fas fa-message"
+    [value]="threadOptions().allowMembersSendMessages"
+    (valueChange)="flipOption('allowMembersSendMessages', $event)"
+/>
+<app-toggle-menu-item
+    title="Allow members invite others to the thread without approval"
+    iconClasses="fas fa-envelope"
+    [value]="threadOptions().allowMemberSoftInvitation"
+    (valueChange)="flipOption('allowMemberSoftInvitation', $event)"
+/>
+<app-toggle-menu-item
+    title="Allow members enlist all members"
+    iconClasses="fas fa-users"
+    [value]="threadOptions().allowMembersEnlistAllMembers"
+    (valueChange)="flipOption('allowMembersEnlistAllMembers', $event)"
+/>
+<app-toggle-menu-item
+    title="List the thread in global search"
+    iconClasses="fas fa-stream"
+    [value]="threadOptions().allowSearchByName"
+    (valueChange)="flipOption('allowSearchByName', $event)"
+/>
+<app-toggle-menu-item
+    title="Allow user join without invitation"
+    iconClasses="fas fa-user-plus"
+    [value]="threadOptions().allowDirectJoinWithoutInvitation"
+    (valueChange)="flipOption('allowDirectJoinWithoutInvitation', $event)"
+/>

@@ -1,0 +1,33 @@
+@use 'menus';
+
+/******************
+ *    Friends
+ ******************** */
+
+.friends-header {
+  width: 100%;
+  height: 80px;
+  display: flex;
+
+  .friends-button {
+    @extend %menu-item-clickable;
+    color: var(--primary-color-depth2);
+    flex: 1 1;
+
+    .icon {
+      position: relative;
+      text-align: center;
+      margin: 7px auto auto;
+      font-size: 2.4em;
+    }
+
+    .words {
+      text-align: center;
+      user-select: none;
+    }
+
+    .reddot {
+      right: 10px;
+    }
+  }
+}

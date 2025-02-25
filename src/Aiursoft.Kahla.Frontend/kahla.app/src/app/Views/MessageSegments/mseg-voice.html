@@ -1,0 +1,8 @@
+@if (audioPlaying) {
+    <audio contorls autoplay src="{{ content().url | storageUrl }}"></audio>
+} @else {
+    <a href="javascript:void(0)" class="voicemsg" (click)="audioPlaying = true">
+        <i class="fas fa-play"></i>
+        <span>Voice Message</span>
+    </a>
+}

@@ -1,0 +1,33 @@
+@use 'inputs';
+
+.search-input {
+  padding: 7px;
+  display: flex;
+  margin-bottom: 8px;
+  input {
+    @extend %textbox;
+    width: 100%;
+    flex: auto;
+  }
+
+  button.d-none {
+    display: none;
+  }
+
+  &.search-input-with-button {
+    button {
+      border-radius: 0 6px 6px 0;
+      width: 100px;
+      height: 35px;
+      flex: none;
+
+      &.compact {
+        width: 50px;
+      }
+    }
+
+    input {
+      border-radius: 6px 0 0 6px;
+    }
+  }
+}

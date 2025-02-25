@@ -1,0 +1,80 @@
+<app-header title="Theme" [closeDirectly]="true"></app-header>
+<div class="menu-header">Primary color</div>
+<div class="select-button-group">
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 0"
+        (click)="primaryColor = 0; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #38cbf0"></span>
+        <span>Kahla</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 1"
+        (click)="primaryColor = 1; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #fb7299"></span>
+        <span>Sakura</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 2"
+        (click)="primaryColor = 2; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #8e44ad"></span>
+        <span>Violet</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 3"
+        (click)="primaryColor = 3; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #bd161e"></span>
+        <span>Communist</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 4"
+        (click)="primaryColor = 4; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #4ba950"></span>
+        <span>Grass</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+</div>
+
+<div class="menu-header">Accent color</div>
+<div class="select-button-group">
+    <span
+        class="select-button"
+        [class.selected]="accentColor === 0"
+        (click)="accentColor = 0; applyTheme()"
+    >
+        <i class="fas fa-adjust color-ellipse"></i>
+        <span>System</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="accentColor === 1"
+        (click)="accentColor = 1; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #efeff4"></span>
+        <span>Light</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+    <span
+        class="select-button"
+        [class.selected]="accentColor === 2"
+        (click)="accentColor = 2; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #2c3e50"></span>
+        <span>Dark</span>
+        <i class="fas fa-check checked"></i>
+    </span>
+</div>

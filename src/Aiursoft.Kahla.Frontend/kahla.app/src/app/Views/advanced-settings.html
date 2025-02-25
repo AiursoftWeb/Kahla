@@ -1,0 +1,61 @@
+<app-header
+    title="Advanced Settings"
+    [closeDirectly]="true"
+    [processing]="!!updatingSetting"
+></app-header>
+@if (this.options) {
+    <div class="menu-header">General</div>
+    <div class="menu-button" (click)="todo()">
+        <div class="img">
+            <i class="fas fa-language"></i>
+        </div>
+        <div class="text">Language</div>
+    </div>
+    <app-toggle-menu-item
+        title="Use Enter to send message"
+        [(value)]="this.options.enableEnterToSendMessage"
+        (valueChange)="updateSettings()"
+        iconClasses="fas fa-exchange-alt"
+    />
+    <div class="menu-hint">You can still insert a line break with Ctrl+Enter if you enable it.</div>
+    <div class="menu-header">Privacy</div>
+    <app-toggle-menu-item
+        title="Show my online status"
+        [value]="!this.options.enableHideMyOnlineStatus"
+        (valueChange)="this.options.enableHideMyOnlineStatus = !$event; updateSettings()"
+        iconClasses="fas fa-plug"
+    />
+    <app-toggle-menu-item
+        title="List me in search result"
+        [(value)]="this.options.allowSearchByName"
+        (valueChange)="updateSettings()"
+        iconClasses="fas fa-stream"
+    />
+    <app-toggle-menu-item
+        title="Allow others creating new conversation with me"
+        [value]="this.options.allowHardInvitation"
+        (valueChange)="this.options.allowHardInvitation = $event; updateSettings()"
+        iconClasses="fas fa-lock"
+    />
+    <div class="menu-header">Notification</div>
+    <app-toggle-menu-item
+        title="Email notification"
+        [(value)]="this.options.enableEmailNotification"
+        (valueChange)="updateSettings()"
+        iconClasses="fas fa-envelope"
+        *ngIf="this.me && me.emailConfirmed && this.options"
+    ></app-toggle-menu-item>
+    <div class="menu-button" routerLink="/devices">
+        <div class="img">
+            <i class="far fa-bell" aria-hidden="true"></i>
+        </div>
+        <div class="text">Push notification settings</div>
+    </div>
+    <div class="menu-header">Account</div>
+    <div class="menu-button" routerLink="/changepassword">
+        <div class="img">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+        </div>
+        <div class="text">Change password</div>
+    </div>
+}

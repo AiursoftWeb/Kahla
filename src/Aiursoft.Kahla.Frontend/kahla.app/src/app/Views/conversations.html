@@ -1,0 +1,17 @@
+<app-header
+    title="Kahla"
+    [processing]="threadsRepo?.status === 'loading'"
+    [returnButton]="false"
+></app-header>
+<div class="search-part" #searchPart>
+    <app-search-area [(searchText)]="searchText" />
+</div>
+<div class="search-holder" [appMatchHeightFor]="searchPart"></div>
+
+<app-threads-list
+    *ngIf="threadsRepo"
+    [threadRepo]="threadsRepo"
+    [highlightPredicate]="current.bind(this)"
+    (threadClicked)="goTalking($event.thread.id)"
+    emptyMessage="Start talking by creating some conversations first. 💬"
+/>

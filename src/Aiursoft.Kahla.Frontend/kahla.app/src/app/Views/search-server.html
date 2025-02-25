@@ -1,0 +1,44 @@
+﻿<app-header
+    title="Search"
+    [closeDirectly]="true"
+    [processing]="contactsRepo?.status === 'loading' || threadsRepo?.status === 'loading'"
+></app-header>
+<div class="search-part" #searchPart>
+    <app-search-area [(searchText)]="searchTerm" [aggressive]="false" />
+    <app-search-type
+        [items]="[
+            {
+                title: 'Users',
+                className: 'fas fa-user',
+                showDot: !!contactsRepo,
+                dotValue: contactsRepo?.total ?? 0,
+            },
+            {
+                title: 'Threads',
+                className: 'fas fa-users',
+                showDot: !!threadsRepo,
+                dotValue: threadsRepo?.total ?? 0,
+            },
+        ]"
+        [(currentIndex)]="selectedTab"
+    />
+</div>
+<div class="search-holder" [appMatchHeightFor]="searchPart"></div>
+@switch (selectedTab()) {
+    @case (0) {
+        <app-contact-list
+            *ngIf="contactsRepo"
+            [contacts]="contactsRepo"
+            emptyMessage="No results. Check your spelling or try different keywords."
+        ></app-contact-list>
+    }
+    @case (1) {
+        <app-threads-list
+            *ngIf="threadsRepo"
+            [threadRepo]="threadsRepo"
+            emptyMessage="No results. Check your spelling or try different keywords."
+            [externalView]="true"
+            (threadClicked)="threadClicked($event)"
+        ></app-threads-list>
+    }
+}

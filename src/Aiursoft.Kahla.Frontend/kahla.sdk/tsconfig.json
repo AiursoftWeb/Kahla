@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "node16",
+    "target": "es2020", // set to the *lowest* target you support
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023", "DOM"],
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "composite": true,
+    "rootDir": "./src"
+    // "esModuleInterop": true
+  },
+  "include": ["src"]
+}

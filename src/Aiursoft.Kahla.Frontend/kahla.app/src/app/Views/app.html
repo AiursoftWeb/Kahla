@@ -1,0 +1,29 @@
+﻿@let inWideScreen = homeService.wideScreenEnabled && !route.isActive('/signin', false);
+@let wideScreenIdle = route.isActive('/home', false) && inWideScreen;
+
+@if (inWideScreen) {
+    <div id="homeWrapper" class="floating-home-wrapper">
+        <app-home></app-home>
+    </div>
+}
+<div class="window-wrapper">
+    @if (inWideScreen) {
+        <div class="home-holder"></div>
+    }
+    @if (!wideScreenIdle) {
+        <div id="contentWrapper" class="content-wrapper" [class.in-widescreen]="inWideScreen">
+            <router-outlet></router-outlet>
+        </div>
+    } @else {
+        <!-- Show an empty component when no reasonable component to show. -->
+        <div class="content-empty">
+            <h2>Welcome back, {{ cacheService.mine()?.me?.nickName }}.</h2>
+            <img
+                style="width: 100px"
+                src="{{ cacheService.mine()?.me?.iconFilePath | storageUrl }}?w=256&square=true"
+                (click)="homeService.currentPage = 2"
+            />
+            <h3>Start talking now!</h3>
+        </div>
+    }
+</div>

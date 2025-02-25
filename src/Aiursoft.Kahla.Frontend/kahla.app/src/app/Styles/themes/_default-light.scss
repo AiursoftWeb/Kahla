@@ -1,0 +1,20 @@
+@use 'sass:color';
+%default-light {
+  --default-background: #efeff4;
+  --default-textcolor: #333;
+  --default-foreground-20: #{color.adjust(#333, $alpha: -0.8)};
+  --default-foreground-40: #{color.adjust(#333, $alpha: -0.6)};
+  --minor-textcolor: #999;
+  --selectable-bg: #fff;
+  --selectable-hover-bg: #f6f6f6;
+  --selectable-active-bg: #d4d4d4;
+  --selectable-border-color: #e8e8e8;
+  --fixed-toolbars-bg: #e4e4e4aa;
+  --text-input-border-color: #e2e2e4;
+  --text-input-bg: #fff;
+  --talking-chat-bg: white;
+  --tgl-btn-bg: #f0f0f0;
+  --a-color: #1e3799;
+  --left-a-color: #1e3799;
+  --alert-bg: #fff;
+}

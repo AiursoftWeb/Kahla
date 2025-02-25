@@ -1,0 +1,25 @@
+<div
+    class="search-input"
+    [ngClass]="{ 'search-input-with-button': !!textInput.value || !aggressive() }"
+>
+    <input
+        [placeholder]="placeHolder"
+        type="text"
+        (keydown.enter)="onpositiveClicked()"
+        [formControl]="textInput"
+        appAutofocus
+    />
+    @if (aggressive()) {
+        <button
+            class="button compact primary"
+            [ngClass]="{ 'd-none': !textInput.value }"
+            (click)="textInput.setValue('')"
+        >
+            <i class="fas fa-times"></i>
+        </button>
+    } @else {
+        <button class="button primary" (click)="onpositiveClicked()" [disabled]="!textInput.value">
+            <i class="fas fa-search"></i>
+        </button>
+    }
+</div>

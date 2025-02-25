@@ -1,0 +1,16 @@
+<div class="user">
+    <!--TODO: replace with thread avatar-->
+    <a
+        class="user-img groupGridRow"
+        href="{{ threadInfo().imagePath | storageUrl }}"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
+        <img
+            class="user-img groupGridRow"
+            src="{{ threadInfo().imagePath | storageUrl }}?w=128&square=true"
+        />
+    </a>
+    <div class="name">{{ threadInfo() | threadName }}</div>
+    <div class="create-time">Create Time: {{ threadInfo().createTime | date: 'mediumDate' }}</div>
+</div>

@@ -1,0 +1,40 @@
+<div class="nav-bar-holder"></div>
+<div class="nav-bar-wrapper">
+    <div class="nav-bar">
+        <div
+            class="nav-item"
+            (click)="homeService.currentPage = 0"
+            [class.current]="homeService.currentPage === 0"
+        >
+            <div class="icon">
+                <i class="{{ homeService.currentPage === 0 ? 'fas' : 'far' }} fa-comment"></i>
+                @if (cacheService.totalUnread > 0) {
+                    <div class="dot reddot">
+                        {{ cacheService.totalUnread | truncatedNum }}
+                    </div>
+                }
+            </div>
+            <div class="words">Kahla</div>
+        </div>
+        <div
+            class="nav-item"
+            (click)="homeService.currentPage = 1"
+            [class.current]="homeService.currentPage === 1"
+        >
+            <div class="icon">
+                <i class="{{ homeService.currentPage === 1 ? 'fas' : 'far' }} fa-address-book"></i>
+            </div>
+            <div class="words">Contacts</div>
+        </div>
+        <div
+            class="nav-item"
+            (click)="homeService.currentPage = 2"
+            [class.current]="homeService.currentPage === 2"
+        >
+            <div class="icon">
+                <i class="{{ homeService.currentPage === 2 ? 'fas' : 'far' }} fa-user"></i>
+            </div>
+            <div class="words">Me</div>
+        </div>
+    </div>
+</div>

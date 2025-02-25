@@ -1,0 +1,52 @@
+<app-header
+    title="{{ repo.value()?.total ?? '' }} Members"
+    [processing]="!repo.value() || repo.value()!.status === 'loading'"
+></app-header>
+<div class="search-part" #searchPart>
+    <app-search-area [(searchText)]="searchText" placeHolder="Search for members in thread..." />
+</div>
+<div class="search-holder" [appMatchHeightFor]="searchPart"></div>
+@if (mappedRepo()) {
+    <app-contact-list
+        [contacts]="mappedRepo()"
+        emptyMessage="No members in this thread."
+        [contextMenu]="menu"
+        (contextMenuClicked)="viewDetail($event)"
+    ></app-contact-list>
+
+    <ng-template #menu>
+        <div class="popup-menu" cdkMenu>
+            @if (viewingDetail()) {
+                <button cdkMenuItem [routerLink]="['/user', this.viewingDetail()!.user.id]">
+                    <i class="fas fa-info"></i>
+                    <div>View Detail</div>
+                </button>
+                <button disabled cdkMenuItem>
+                    <i class="fas fa-clock"></i>
+                    <div>Join time: {{ this.viewingDetail()?.joinTime | date: 'short' }}</div>
+                </button>
+
+                @if (threadInfo.value()?.imAdmin) {
+                    <div class="popup-split"></div>
+                    <button cdkMenuItem (click)="removeMember()">
+                        <i class="fas fa-user-times"></i>
+                        <div>Remove from thread</div>
+                    </button>
+                }
+                @if (threadInfo.value()?.imOwner) {
+                    <div class="popup-split"></div>
+                    <button cdkMenuItem (click)="promoteAdmin(!this.viewingDetail()?.isAdmin)">
+                        <i class="fas fa-user-gear"></i>
+                        <div>{{ this.viewingDetail()?.isAdmin ? 'Demote' : 'Promote' }} admin</div>
+                    </button>
+                    <button cdkMenuItem (click)="transferOwnership()">
+                        <i class="fas fa-right-left"></i>
+                        <div>Transfer ownership</div>
+                    </button>
+                }
+            }
+        </div>
+    </ng-template>
+} @else {
+    <div class="menu-hint">Loading...</div>
+}

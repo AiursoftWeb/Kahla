@@ -1,0 +1,94 @@
+<app-header title="Push Notification Settings"></app-header>
+<div class="menu-header">Status & Settings</div>
+@if (this.webpushService.notificationAvail) {
+    <app-toggle-menu-item
+        title="Enable web push notification"
+        (valueChange)="setWebPushStatus($event)"
+        [value]="currentSettings.enabled"
+        iconClasses="far fa-bell"
+    />
+} @else if (this.webpushService.requireUserApproval) {
+    <div class="menu-button" (click)="this.webpushService.requestUserApproval()">
+        <div class="img">
+            <i class="fas fa-cogs" aria-hidden="true"></i>
+        </div>
+        <div class="text">Setup webpush notification</div>
+    </div>
+} @else {
+    <div class="menu-hint">Sorry, but your platform doesn't support receiving notifications.</div>
+    <div class="menu-hint">
+        <p>For iOS devices, please follow the following instructions:</p>
+        <p>
+            1. Pin Kahla to HomeScreen by clicking the share button below, then select Add to
+            HomeScreen.
+        </p>
+        <p>
+            2. Open Kahla from HomeScreen, then navigate to Settings -> Push notification settings
+            (this page)
+        </p>
+        <p>
+            3. You should see "Setup webpush notification", click it then click "Allow" to allow
+            notifications from Kahla.
+        </p>
+        <p>For more information, please checkout our documentation.</p>
+    </div>
+}
+
+<!-- <ng-container *ngIf="electronService.isElectronApp">
+    <div class="menu-button toggle-setting" (click)="setElectronNotify(!getElectronNotify())">
+        <div class="img"><i class="fas fa-concierge-bell"></i></div>
+        <div class="text">Enable desktop notification</div>
+        <input id="toggleElectron" class="tgl" type="checkbox" disabled="disabled" [checked]="getElectronNotify()"/>
+        <label for="toggleElectron" class="tgl-btn"></label>
+    </div>
+</ng-container> -->
+<div class="menu-button" (click)="testPush()">
+    <div class="img">
+        <i class="fas fa-flask" aria-hidden="true"></i>
+    </div>
+    <div class="text">Send test notification</div>
+</div>
+<div class="menu-header">My web devices</div>
+<!--TODO: Refactor to pipe-->
+<div class="menu-button device-menu-button" *ngFor="let device of devices" (click)="detail(device)">
+    <div class="img device-img">
+        <i *ngIf="device._os!.includes('Windows')" class="fab fa-windows" aria-hidden="true"></i>
+        <i
+            *ngIf="device._os!.includes('macOS') || device.name.includes('iOS')"
+            class="fab fa-apple"
+            aria-hidden="true"
+        ></i>
+        <i *ngIf="device._os!.includes('Android')" class="fab fa-android" aria-hidden="true"></i>
+        <i *ngIf="device._os!.includes('Linux')" class="fab fa-linux" aria-hidden="true"></i>
+    </div>
+    <div class="text device-text">{{ device._os! }}</div>
+
+    <div class="img device-img">
+        <i
+            *ngIf="device._browser!.includes('Firefox')"
+            class="fab fa-firefox"
+            aria-hidden="true"
+        ></i>
+        <i
+            *ngIf="
+                (device._browser!.includes('Chromium') && !device.name.includes('Edge')) ||
+                device._browser!.includes('Chrome')
+            "
+            class="fab fa-chrome"
+            aria-hidden="true"
+        ></i>
+        <i *ngIf="device._browser!.includes('Safari')" class="fab fa-safari" aria-hidden="true"></i>
+        <i *ngIf="device._browser!.includes('Opera')" class="fab fa-opera" aria-hidden="true"></i>
+        <i
+            *ngIf="device._browser!.includes('Internet Explorer')"
+            class="fab fa-internet-explorer"
+            aria-hidden="true"
+        ></i>
+        <i *ngIf="device._browser!.includes('Edge')" class="fab fa-edge" aria-hidden="true"></i>
+    </div>
+    <div class="text device-text">
+        {{ device._browser! }}
+        {{ device.id === currentSettings.deviceId ? '(Current Device)' : '' }}
+    </div>
+    <div class="text device-text">{{ device.addTime | date: 'mediumDate' }}</div>
+</div>

@@ -1,0 +1,22 @@
+:host {
+  text-align: left;
+}
+
+.content {
+  display: inline;
+  word-break: break-word;
+  margin: 0;
+  white-space: pre-wrap;
+
+  &.emoji {
+    font-size: 6em;
+  }
+}
+
+:host-context(.left) ::ng-deep .chat-inline-link {
+  color: var(--left-a-color);
+}
+
+:host-context(.right) ::ng-deep .chat-inline-link {
+  color: white;
+}

@@ -1,0 +1,58 @@
+﻿<app-header
+    title="Friends"
+    [returnButton]="false"
+    [processing]="contactsRepo?.status === 'loading'"
+></app-header>
+
+<div class="search-part" #searchPart>
+    <div class="friends-header">
+        <a class="friends-button" routerLink="/search-server">
+            <div class="icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="words">Add New</div>
+        </a>
+        <a class="friends-button" routerLink="/new-thread">
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="words">Create Group</div>
+        </a>
+        <a class="friends-button" routerLink="/blocks">
+            <div class="icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <div class="words">Blocked Users</div>
+        </a>
+    </div>
+    <app-search-area
+        [(searchText)]="searchTxt"
+        placeHolder="Search for your contacts and groups..."
+    ></app-search-area>
+    <app-search-type
+        [(currentIndex)]="searchType"
+        [items]="[
+            {
+                title: 'Contacts',
+                className: 'fas fa-user',
+                showDot: false,
+            },
+            {
+                title: 'Threads',
+                className: 'fas fa-users',
+                showDot: false,
+            },
+        ]"
+    />
+</div>
+<div class="header-space" [appMatchHeightFor]="searchPart"></div>
+@switch (searchType()) {
+    @case (0) {
+        <app-contact-list
+            [contacts]="contactsRepo"
+            (contactClicked)="userClick($event.item, $event.secondary)"
+            emptyMessage="No contacts. Try adding someone first. 🍵"
+        />
+    }
+    @case (1) {}
+}

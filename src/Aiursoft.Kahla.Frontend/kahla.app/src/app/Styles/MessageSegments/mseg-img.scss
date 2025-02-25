@@ -1,0 +1,13 @@
+.image-container {
+  display: block;
+  max-height: 500px;
+  overflow: hidden;
+
+  width: calc(var(--image-width) * 1px);
+  max-width: 100%;
+  aspect-ratio: var(--image-width) / var(--image-height);
+
+  img {
+    width: 100%;
+  }
+}

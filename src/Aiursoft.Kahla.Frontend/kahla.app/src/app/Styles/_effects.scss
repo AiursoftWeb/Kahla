@@ -1,0 +1,27 @@
+@mixin hover-effect($hover-col, $active-col) {
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    background: #{$hover-col};
+  }
+
+  &:active {
+    background: #{$active-col};
+  }
+}
+
+@mixin kf-shake {
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0px);
+    }
+    25%,
+    75% {
+      transform: translateX(-10px);
+    }
+    50% {
+      transform: translateX(10px);
+    }
+  }
+}

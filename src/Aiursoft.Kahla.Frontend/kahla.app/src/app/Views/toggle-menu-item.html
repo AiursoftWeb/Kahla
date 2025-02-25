@@ -1,0 +1,8 @@
+<div class="menu-button toggle-setting" (click)="value.set(!value())">
+    <div class="img">
+        <i [class]="iconClasses()"></i>
+    </div>
+    <div class="text">{{ title() }}</div>
+    <input class="tgl" type="checkbox" disabled="disabled" [ngModel]="value()" />
+    <label class="tgl-btn"></label>
+</div>

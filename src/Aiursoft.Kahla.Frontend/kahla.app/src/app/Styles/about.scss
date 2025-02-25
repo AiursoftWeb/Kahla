@@ -1,0 +1,47 @@
+@use 'fixed_widescreen';
+.big-logo {
+  text-align: center;
+  width: 100px;
+  height: 100px;
+  margin: 20px auto auto;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.version {
+  text-align: center;
+  font-size: 25px;
+  color: #aaa;
+  margin: 10px auto auto;
+
+  p {
+    font-size: 15px;
+    display: inline-block;
+    margin: 0 2%;
+  }
+}
+
+.foot-text {
+  @extend %full-fixed-width;
+  position: fixed;
+  margin: auto;
+  bottom: 30px;
+  text-align: center;
+
+  p {
+    margin-bottom: 5px;
+    margin-top: 0;
+  }
+}
+
+kbd {
+  padding: 0.2rem 0.4rem;
+  font-size: 87.5%;
+  color: #fff;
+  background-color: #212529;
+  border-radius: 0.2rem;
+  vertical-align: middle;
+}

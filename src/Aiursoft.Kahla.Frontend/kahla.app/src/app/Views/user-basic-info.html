@@ -1,0 +1,24 @@
+<!-- view for user-basic-info -->
+<div class="user">
+    <a
+        class="user-img"
+        href="{{ user().iconFilePath | storageUrl }}"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
+        <img class="user-img" src="{{ user().iconFilePath | storageUrl }}?w=128&square=true" />
+        <div
+            class="small-dot greendot"
+            *ngIf="online() !== undefined"
+            [class.greendot]="online()"
+            [class.graydot]="!online()"
+            style="top: -11px; right: -43px"
+        ></div>
+    </a>
+    <div class="name">{{ user().nickName }}</div>
+    <div class="bio">{{ user().bio }}</div>
+    <div class="email">
+        {{ user().email }}
+        <label class="badge badge-success" *ngIf="user().emailConfirmed">Verified</label>
+    </div>
+</div>

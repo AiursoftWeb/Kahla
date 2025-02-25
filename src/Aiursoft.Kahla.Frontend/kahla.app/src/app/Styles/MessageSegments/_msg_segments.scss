@@ -1,0 +1,43 @@
+:host-context(.left) %clickable-segment {
+  color: #9baec8;
+}
+
+:host-context(.right) %clickable-segment {
+  color: #d9e1e8;
+}
+
+%share-item {
+  @extend %clickable-segment;
+  display: grid;
+  grid-template-columns: 50px 2fr;
+  align-items: center;
+  text-decoration: none;
+
+  div {
+    grid-row-start: 1;
+    grid-row-end: 3;
+    text-align: center;
+
+    img {
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+    }
+
+    i {
+      font-size: 30px;
+    }
+  }
+
+  span {
+    grid-column-start: 2;
+    text-align: right;
+    word-break: break-all;
+  }
+
+  h5 {
+    margin: 0;
+    font-size: 14px;
+    word-break: break-all;
+  }
+}

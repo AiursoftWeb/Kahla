@@ -1,0 +1,13 @@
+<a
+    class="file-share-item"
+    target="_blank"
+    rel="noopener noreferrer"
+    [href]="content().url | storageUrl"
+>
+    <div>
+        <i class="{{ content().fileName | iconForFile }}" aria-hidden="true"></i>
+    </div>
+    <h5>{{ content().fileName }}</h5>
+    <span>{{ content().size | humanReadableSize }}</span>
+</a>
+<app-file-sharing-buttons [content]="content()"></app-file-sharing-buttons>

@@ -1,0 +1,68 @@
+<div class="chat-avatar">
+    @if (!groupWithPrevious()) {
+        <div class="chart-avatar-wrapper" [cdkMenuTriggerFor]="menu">
+            <img src="{{ userInfo?.iconFilePath | storageUrl }}?w=128&square=true" />
+        </div>
+    }
+</div>
+<div class="message-block">
+    <!-- <button class="button button--fab" *ngIf="message.resend" (click)="resend(message)">
+            <i class="fas fa-redo"></i>
+        </button>
+        <button class="button button--fab" *ngIf="message.resend" (click)="delete(message)">
+            <i class="fas fa-trash-alt"></i>
+        </button> -->
+    <div class="message-balloon" [class.balloon-grouped]="groupWithPrevious()">
+        <span *ngIf="showNickNames()">{{ userInfo?.nickName ?? 'Loading...' }} </span>
+        @for (item of message().parsedContent.segments; track $index) {
+            @switch (item.type) {
+                @case ('text') {
+                    <app-mseg-text [content]="asTextSeg(item)"></app-mseg-text>
+                }
+                @case ('image') {
+                    <app-mseg-img [content]="asImageSeg(item)"></app-mseg-img>
+                }
+                @case ('video') {
+                    <app-mseg-video [content]="asVideoSeg(item)"></app-mseg-video>
+                }
+                @case ('voice') {
+                    <app-mseg-voice [content]="asVoiceSeg(item)"></app-mseg-voice>
+                }
+                @case ('file') {
+                    <app-mseg-file [content]="asFileSeg(item)"></app-mseg-file>
+                }
+                @default {
+                    Unknown Message Segment Type: {{ item.type }}
+                }
+            }
+        }
+    </div>
+    <!-- <p class="sendFail" [class.last]="isLast" *ngIf="message.resend">
+            <i class="fas fa-exclamation-triangle"></i>
+            Send failed
+        </p> -->
+</div>
+<p class="sendTime" [class.show]="isSending()">
+    @if (isSending()) {
+        <label> Sending... </label>
+    } @else {
+        <label>
+            {{ message().sendTime | date: 'shortTime' }}
+        </label>
+    }
+</p>
+
+<ng-template #menu>
+    <div class="popup-menu" cdkMenu>
+        <button cdkMenuItem [routerLink]="['/user', this.message().senderId]">
+            <i class="fas fa-info"></i>
+            <div>View Detail</div>
+        </button>
+        @if (this.userInfo) {
+            <button cdkMenuItem (click)="mention.emit(this.userInfo)">
+                <i class="fas fa-at"></i>
+                <div>Mention</div>
+            </button>
+        }
+    </div>
+</ng-template>

@@ -1,0 +1,28 @@
+﻿<app-header
+    [returnButton]="true"
+    [shadow]="true"
+    [closeDirectly]="true"
+    [processing]="!repo || !repo.health"
+    [title]="threadInfo.value() | threadName"
+    [button]="true"
+    buttonIcon="fas fa-ellipsis"
+    [buttonLink]="'/thread/' + id()"
+/>
+<!-- <app-load-more-button></app-load-more-button> -->
+<app-message-list
+    [messages]="parsedMessages()"
+    [lastReadIndex]="threadInfo.value()?.messageContext?.unReadAmount ?? 0"
+    (mention)="talkingInput.mention($event)"
+/>
+<app-scroll-button
+    id="scrollDown"
+    direction="down"
+    [emphasis]="hasNewMessages()"
+    [ngClass]="{ 'active-button': showPanel() }"
+/>
+<app-talking-input
+    #talkingInput
+    [(showPanel)]="showPanel"
+    [threadInfo]="this.threadInfo.value()"
+    (sendMessage)="send($event)"
+/>

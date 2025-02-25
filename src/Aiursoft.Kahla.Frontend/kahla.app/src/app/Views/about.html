@@ -1,0 +1,56 @@
+<app-header title="About" [closeDirectly]="true"></app-header>
+
+<div class="big-logo">
+    <img src="assets/144x144.png" />
+</div>
+
+<div class="version">
+    <h4>Kahla</h4>
+    <p>
+        Last git commit:
+        <a href="{{ sourceCodeURL }}" target="_blank" rel="noopener noreferrer"
+            ><kbd>unknown</kbd></a
+        >
+    </p>
+    <p>Build Date: <kbd>unknown</kbd></p>
+</div>
+
+<div class="menu-gap"></div>
+
+<a
+    class="menu-button"
+    href="https://github.com/AiursoftWeb/Kahla.App/tags"
+    target="_blank"
+    rel="noopener noreferrer"
+>
+    <div class="img">
+        <i class="fas fa-book"></i>
+    </div>
+    <div class="text">Update history</div>
+</a>
+<a class="menu-button" href="{{ website }}" target="_blank" rel="noopener noreferrer">
+    <div class="img">
+        <i class="fas fa-info-circle"></i>
+    </div>
+    <div class="text">Open Kahla official site</div>
+</a>
+<div class="foot-text">
+    <p>Server connected: {{ cacheService.serverConfig.serverName }} (/api/)</p>
+    <p>
+        <a href="https://www.aiursoft.com/docs/terms" target="_blank" rel="noopener noreferrer"
+            >Terms</a
+        >
+        |
+        <a href="https://www.aiursoft.com/docs/terms" target="_blank" rel="noopener noreferrer"
+            >Privacy Policy</a
+        >
+        |
+        <a
+            href="https://gitlab.aiursoft.cn/aiursoft/kahla.app/-/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Feedback</a
+        >
+    </p>
+    <p>Copyright &copy; {{ getCurrentYear() }} Aiursoft Corporation</p>
+</div>

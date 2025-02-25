@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+*.local
+
+# Editor directories and files
+.vscode/
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build metadatas
+*.tsbuildinfo
+*.tgz
+
+# Yarn-generated local configs
+.yarnrc.yml
+.yarn/
+*.pnp.*
+
+
+## npmignore
+demo/
+tests/
+.prettierrc.yml
+.gitlab-ci.yml
+eslint.*
+tsconfig.spec.json

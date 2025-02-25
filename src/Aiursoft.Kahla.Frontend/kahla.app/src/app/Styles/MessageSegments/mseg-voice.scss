@@ -1,0 +1,23 @@
+@use '_msg_segments';
+
+audio {
+  max-width: 100%;
+}
+
+.voicemsg {
+  @extend %clickable-segment;
+
+  align-items: center;
+  display: grid;
+  grid-template-columns: 40px 2fr;
+  grid-template-rows: auto;
+
+  .fa {
+    text-align: center;
+  }
+
+  span {
+    font-size: 16px;
+    grid-column-start: 2;
+  }
+}

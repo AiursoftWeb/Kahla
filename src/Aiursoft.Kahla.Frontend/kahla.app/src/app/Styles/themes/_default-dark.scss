@@ -1,0 +1,20 @@
+@use 'sass:color';
+%default-dark {
+  --default-background: #2c3e50;
+  --default-textcolor: #fff;
+  --default-foreground-20: #{color.adjust(#fff, $alpha: -0.8)};
+  --default-foreground-40: #{color.adjust(#fff, $alpha: -0.6)};
+  --minor-textcolor: #999;
+  --selectable-bg: #2f3640;
+  --selectable-hover-bg: #374554;
+  --selectable-active-bg: #404a59;
+  --selectable-border-color: #353b48;
+  --fixed-toolbars-bg: #21252caa;
+  --text-input-border-color: #777;
+  --text-input-bg: #1e272e;
+  --talking-chat-bg: #707e8a;
+  --tgl-btn-bg: #888;
+  --a-color: #3498db;
+  --left-a-color: #74b9ff;
+  --alert-bg: #2f3640;
+}

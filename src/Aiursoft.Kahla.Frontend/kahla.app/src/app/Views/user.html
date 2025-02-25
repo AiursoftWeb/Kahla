@@ -1,0 +1,79 @@
+<app-header title="Profile" [processing]="!info"></app-header>
+@if (info.value(); as infoVal) {
+    <app-user-basic-info
+        [user]="infoVal.searchedUser.user"
+        [online]="infoVal.searchedUser.online"
+    />
+    <div class="menu-button" *ngIf="!infoVal.searchedUser.user.emailConfirmed">
+        <div class="img warning">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        </div>
+        <div class="text warning">
+            <strong>This user's email is not verified.</strong>
+        </div>
+    </div>
+    <div class="menu-button" (click)="shareUser()">
+        <div class="img">
+            <i class="fas fa-share-alt"></i>
+        </div>
+        <div class="text">Share</div>
+    </div>
+
+    <div class="menu-gap"></div>
+    <!-- <div class="menu-button" *ngIf="info" routerLink="/file-history/{{conversationId}}">
+        <div class="img">
+            <i class="fas fa-history"></i>
+        </div>
+        <div class="text">File History</div>
+    </div> -->
+    <div class="menu-button" (click)="report()">
+        <div class="img">
+            <i class="fas fa-gavel"></i>
+        </div>
+        <div class="text">Report</div>
+    </div>
+    <div class="menu-button" (click)="block()">
+        <div class="img">
+            <i class="fas fa-ban"></i>
+        </div>
+        <div class="text">{{ infoVal.searchedUser.isBlockedByYou ? 'Unblock' : 'Block' }}</div>
+    </div>
+    @if (infoVal.searchedUser.isKnownContact) {
+        <div class="menu-button" (click)="delete(infoVal.searchedUser.user.id)">
+            <div class="img">
+                <i class="fas fa-trash warning"></i>
+            </div>
+            <div class="text warning">Delete</div>
+        </div>
+    }
+    <div class="menu-gap"></div>
+    <div class="menu-button" (click)="isCommonThreadsShown.set(!isCommonThreadsShown())">
+        <div class="img">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="text">Common Threads</div>
+        <div class="img-right" [class.rev]="isCommonThreadsShown()">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+    @if (isCommonThreadsShown() && commonThreadsRepo()) {
+        <app-threads-list
+            [threadRepo]="commonThreadsRepo()!"
+            (threadClicked)="messageId($event.thread.id)"
+        />
+    }
+
+    <div class="menu-gap"></div>
+
+    <div class="buttons one-line">
+        @if (!infoVal.searchedUser.isKnownContact) {
+            <button class="primary" (click)="addAsContract()">Add as contract</button>
+        }
+        @if (infoVal.defaultThread) {
+            <button class="primary" (click)="message()">Message</button>
+        }
+        <button class="success" (click)="newThread()">Create new thread</button>
+    </div>
+} @else {
+    <div class="menu-hint">Loading...</div>
+}

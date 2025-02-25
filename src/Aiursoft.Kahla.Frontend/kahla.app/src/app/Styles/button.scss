@@ -1,0 +1,134 @@
+%buttonGroupBase {
+  box-sizing: border-box;
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  width: 100%;
+
+  button,
+  .button {
+    width: 100%;
+    flex: 1 1;
+  }
+
+  button {
+    @extend %buttonBase;
+  }
+
+  &.one-line {
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+}
+
+%buttonBase {
+  border: none;
+  outline: none;
+  border-radius: 4px;
+  color: #fff;
+  transition: all 0.2s ease;
+  max-width: 540px;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &.success {
+    background-color: #5cb85c;
+
+    &:hover:enabled {
+      background-color: #3c983c;
+    }
+
+    &:active:enabled {
+      background-color: #2b722b;
+    }
+
+    &:disabled {
+      background-color: #7c7c7c !important;
+    }
+  }
+
+  &.primary {
+    background-color: var(--primary-color-depth2);
+
+    &:hover:enabled {
+      background-color: var(--primary-color-depth3);
+    }
+
+    &:active:enabled {
+      background-color: var(--primary-color-depth1);
+    }
+
+    &:disabled {
+      background-color: #7c7c7c !important;
+    }
+  }
+
+  &.warning {
+    background-color: #d9534f;
+
+    &:hover {
+      background-color: #ee4643;
+    }
+
+    &:active {
+      background-color: #b12824;
+    }
+  }
+
+  &.white {
+    background-color: #f5f5f5;
+    color: black;
+
+    &:hover {
+      background-color: #e9e9e9;
+    }
+
+    &:active {
+      background-color: #bbb;
+    }
+  }
+}
+
+.buttons {
+  @extend %buttonGroupBase;
+}
+
+.button {
+  @extend %buttonBase;
+}
+
+.button--fab {
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  padding: 0;
+  line-height: normal;
+}
+
+.inputButton {
+  width: auto !important;
+  margin: 0 auto !important;
+}
+
+.load-more {
+  width: 240px;
+  margin-bottom: 20px;
+  background-color: var(--selectable-bg);
+  color: var(--minor-textcolor);
+}

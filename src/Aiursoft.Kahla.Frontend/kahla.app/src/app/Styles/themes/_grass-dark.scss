@@ -1,0 +1,21 @@
+@use 'sass:color';
+@use 'default-dark';
+
+//
+// Dark Theme
+//
+$primary-color-depth1: #82d987;
+$primary-color-depth2: #4ba950;
+$primary-color-depth3: #409344;
+
+body.theme-grass-dark {
+  @extend %default-dark;
+  --primary-color-depth1: #{$primary-color-depth1};
+  --primary-color-depth2: #{$primary-color-depth2};
+  --primary-color-depth3: #{$primary-color-depth3};
+  --header-bg: linear-gradient(
+    to bottom,
+    #{$primary-color-depth3},
+    #{color.adjust($primary-color-depth2, $alpha: -0.4)}
+  );
+}

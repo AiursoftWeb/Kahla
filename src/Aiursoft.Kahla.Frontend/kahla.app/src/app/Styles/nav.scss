@@ -1,0 +1,66 @@
+@use 'fixed_widescreen';
+@use 'effects';
+/******************
+ *    Nav bar
+ ******************** */
+
+.nav-bar-wrapper {
+  @extend %full-fixed-width;
+  position: fixed;
+  bottom: 0;
+  height: 55px;
+  padding-top: 50px;
+  overflow: hidden;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+
+  .nav-bar {
+    background-color: var(--fixed-toolbars-bg);
+    border-color: var(--selectable-border-color);
+    height: 55px;
+    border-width: 1px;
+    border-top-style: solid;
+    box-shadow: 0 22px 50px 10px rgba(0, 0, 0, 0.37);
+    user-select: none;
+    backdrop-filter: blur(8px);
+    display: flex;
+
+    .nav-item {
+      color: var(--minor-textcolor);
+      outline: none;
+      flex: 1 1;
+      text-decoration: none;
+      transition: all 0.2s ease-out;
+      @include effects.hover-effect(var(--selectable-hover-bg), var(--selectable-active-bg));
+
+      .icon {
+        width: 40px;
+        position: relative;
+        text-align: center;
+        margin: 5px auto auto;
+        font-size: 1.7em;
+      }
+
+      .words {
+        text-align: center;
+        margin: auto;
+        font-size: 13px;
+      }
+
+      &:hover {
+        color: var(--primary-color-depth1);
+      }
+
+      &.current {
+        color: var(--primary-color-depth2);
+      }
+    }
+  }
+}
+
+.nav-bar-holder {
+  height: 50px;
+}

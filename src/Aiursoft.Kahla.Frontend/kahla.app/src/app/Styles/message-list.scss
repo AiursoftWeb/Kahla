@@ -1,0 +1,60 @@
+.message-list {
+  list-style: none;
+  overflow-x: hidden;
+  overflow-y: clip;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 0;
+  font-size: 13px;
+  text-align: center;
+  min-height: calc(100vh - 130px);
+  position: relative;
+  background-color: var(--default-background);
+
+  li {
+    clear: both;
+    box-sizing: border-box;
+  }
+
+  %split-bar {
+    clear: both;
+    font-size: 14px;
+    user-select: none;
+    margin: 6px 0 6px 0;
+    position: relative;
+    display: inline-block;
+    color: #bbb;
+
+    &::before,
+    &::after {
+      content: ' ';
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: -120px;
+      width: 100px; // 100px line on either side
+      border-bottom: 1px solid #aaa;
+    }
+
+    &::after {
+      left: auto;
+      right: -120px;
+    }
+  }
+
+  .last-read-bar {
+    @extend %split-bar;
+    color: var(--primary-color-depth2);
+    font-weight: 800;
+
+    &::before,
+    &::after {
+      border-bottom: 2px solid var(--primary-color-depth2);
+    }
+  }
+
+  .date-bar {
+    @extend %split-bar;
+  }
+}

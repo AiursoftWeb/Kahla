@@ -1,0 +1,18 @@
+<a
+    target="_blank"
+    rel="noopener noreferrer"
+    href="{{ content().url | storageUrl }}"
+    class="image-container"
+    [style]="{
+        '--image-width': content().width,
+        '--image-height': content().height,
+    }"
+>
+    <!-- <img
+        src="{{ content().url | storageUrl }}"
+        srcset="{{ content().url | storageUrl }}&w={{ maxWidth }},
+        {{content().url | storageUrl}}&w={{ maxWidth }} 2x"
+    /> -->
+    <img src="https://sakuratrak.aiursoft.cn/api/static/102c62c4-6929-5a71-be58-c4f989a7fa73.jpg" />
+</a>
+<app-file-sharing-buttons [content]="content()"></app-file-sharing-buttons>

@@ -1,0 +1,56 @@
+<div class="signin-back">
+    <div class="auth-page">
+        <div class="auth-header">
+            <img src="assets/144x144.png" />
+            <h1>Kahla</h1>
+        </div>
+        <div class="auth-content" *ngIf="!inRegister">
+            <input
+                type="text"
+                [(ngModel)]="userName"
+                class="inputAddr"
+                placeholder="Email Address"
+                (keyup.enter)="login()"
+            />
+
+            <input
+                type="password"
+                [(ngModel)]="password"
+                class="inputAddr"
+                placeholder="Password"
+                (keyup.enter)="login()"
+            />
+            <div class="button white login" (click)="login()">Sign in</div>
+            <div class="button white login" (click)="inRegister = true">Register</div>
+            <a class="actionLink" href="javascript:void(0)" (click)="forgetPassword()"
+                >Forgot password?</a
+            >
+        </div>
+
+        <div class="auth-content" *ngIf="inRegister">
+            <input
+                type="text"
+                [(ngModel)]="userName"
+                class="inputAddr"
+                placeholder="Email Address"
+                (keyup.enter)="register()"
+            />
+            <input
+                type="password"
+                [(ngModel)]="password"
+                class="inputAddr"
+                placeholder="Password"
+                (keyup.enter)="register()"
+            />
+            <input
+                type="password"
+                [(ngModel)]="confirmPassword"
+                class="inputAddr"
+                placeholder="Confirm Password"
+                (keyup.enter)="register()"
+            />
+            <div class="button white login" (click)="register()">Register</div>
+            <div class="button white login" (click)="inRegister = false">Back to login</div>
+        </div>
+    </div>
+</div>

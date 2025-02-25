@@ -1,0 +1,37 @@
+<app-header title="Edit Profile" [closeDirectly]="true"></app-header>
+@if (user) {
+    <div class="profile avatar">
+        <label>Avatar</label>
+        <a class="user-img" href="{{ user.iconFilePath | storageUrl }}" target="_blank">
+            <img class="user-img" src="{{ user.iconFilePath | storageUrl }}?w=256&square=true" />
+        </a>
+        <button class="button primary inputButton" (click)="uploadAvatar()">
+            Upload new avatar
+        </button>
+    </div>
+    <div class="profile">
+        <label>Nick name</label>
+        <input
+            [(ngModel)]="user.nickName"
+            placeholder=" Enter your new nickname"
+            type="text"
+            (keyup.enter)="save()"
+        />
+    </div>
+    <div class="profile">
+        <label>Bio</label>
+        <input
+            [(ngModel)]="user.bio"
+            placeholder="Enter your new signature"
+            type="text"
+            (keyup.enter)="save()"
+        />
+    </div>
+    <div class="buttons">
+        <button class="button primary" (click)="save()" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Save' }}
+        </button>
+    </div>
+} @else {
+    <div class="menu-hint">Loading ...</div>
+}

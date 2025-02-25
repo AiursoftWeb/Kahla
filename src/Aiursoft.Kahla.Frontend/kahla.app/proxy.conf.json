@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://kahla.aiursoft.cn",
+    "secure": true,
+    "changeOrigin": true,
+    "ws": true
+  }
+}

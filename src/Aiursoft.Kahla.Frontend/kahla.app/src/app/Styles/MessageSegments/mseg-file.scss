@@ -1,0 +1,6 @@
+@use 'msg_segments';
+
+.file-share-item {
+  @extend %share-item;
+  grid-template-columns: 40px 2fr;
+}

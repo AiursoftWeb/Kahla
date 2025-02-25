@@ -1,0 +1,59 @@
+@for (contact of contacts?.data; track contact.user.id) {
+    <div
+        class="contact-list"
+        [class.multiple]="selectable() || contextMenu()"
+        (click)="userClick(contact, $event.ctrlKey)"
+        [routerLink]="preventDefault() ? undefined : ['/user', contact.user.id]"
+    >
+        <div class="user-img-group">
+            <img
+                class="user-img"
+                src="{{ contact.user.iconFilePath | storageUrl }}?w=128&square=true"
+                (click)="$event.stopPropagation(); userClick(contact, true)"
+            />
+            <div
+                class="small-dot"
+                *ngIf="contact.online !== null"
+                [class.greendot]="contact.online"
+                [class.graydot]="!contact.online"
+            ></div>
+        </div>
+        <div class="user-name">
+            {{ contact.user.nickName }}
+            @if (contact.tags) {
+                @for (item of contact.tags; track $index) {
+                    <span class="badge badge-{{ item.type }}">{{ item.desc }}</span>
+                }
+            }
+        </div>
+        @if (contextMenu()) {
+            <button
+                [cdkMenuTriggerFor]="contextMenu()"
+                (click)="$event.stopPropagation(); contextMenuClicked.emit(contact)"
+            >
+                <i class="fas fa-ellipsis"></i>
+            </button>
+        } @else if (selectable() && selectedIds().includes(contact.user.id)) {
+            <i class="fas fa-check"></i>
+        }
+    </div>
+}
+@if (!contacts || (!contacts.data.length && contacts.status === 'synced')) {
+    <div class="empty-result-notice">{{ this.emptyMessage }}</div>
+}
+
+<!-- <div *ngIf="results.users.length !== 0" class="empty-result-notice">Hold <span
+    class="badge badge-secondary">Ctrl</span> to start talking directly.
+</div> -->
+<!-- <div *ngIf="contacts.data.length === 1" class="empty-result-notice">
+    Press <span class="badge badge-secondary">Enter</span> to talk.
+</div> -->
+@if (contacts?.canLoadMore) {
+    <div class="buttons">
+        @if (contacts!.status === 'synced') {
+            <button class="button primary" (click)="contacts!.loadMore(20)">Load More</button>
+        } @else if (contacts!.status === 'loading') {
+            <button class="button primary" disabled>Loading</button>
+        }
+    </div>
+}

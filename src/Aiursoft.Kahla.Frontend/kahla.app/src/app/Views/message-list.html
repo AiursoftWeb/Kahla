@@ -1,0 +1,27 @@
+<ul class="message-list">
+    @for (message of messages(); track message.id; let first = $first, i = $index) {
+        <li>
+            @if (i === lastReadIndex()) {
+                <div><div class="last-read-bar">LAST READ</div></div>
+            }
+            @if (first || messages()[i - 1].sendTime.getDate() !== message.sendTime.getDate()) {
+                <div>
+                    <div class="date-bar">{{ message.sendTime | date }}</div>
+                </div>
+            }
+            <app-message
+                [message]="message"
+                [isByMe]="
+                    (cacheService.mine() && message.senderId === cacheService.mine()!.me.id) ??
+                    false
+                "
+                [groupWithPrevious]="
+                    i > 0 &&
+                    messages()[i - 1].senderId === message.senderId &&
+                    message.sendTime.getTime() - messages()[i - 1].sendTime.getTime() < 60000
+                "
+                (mention)="mention.emit($event)"
+            />
+        </li>
+    }
+</ul>

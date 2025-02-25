@@ -1,0 +1,5 @@
+<app-header title="Blocks list" [processing]="blockedRepo?.status === 'loading'" />
+<app-search-area placeHolder="Filter your blocks..." [(searchText)]="keywords" />
+@if (blockedRepo) {
+    <app-contact-list [contacts]="blockedRepo" emptyMessage="You haven't block anyone yet." />
+}

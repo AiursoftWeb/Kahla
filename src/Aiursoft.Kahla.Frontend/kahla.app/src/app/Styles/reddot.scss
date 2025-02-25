@@ -1,0 +1,42 @@
+.dot {
+  top: 0;
+  right: 0;
+  position: absolute;
+  min-width: 20px;
+  max-width: 24px;
+  height: 20px;
+  color: white;
+  font-size: 12px;
+  line-height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.small-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  // margin-left: 45px;
+  // margin-top: -11px;
+  position: relative;
+  float: left;
+}
+
+.reddot {
+  background-color: #e53935;
+}
+
+.bluedot {
+  background-color: #17a2b8;
+}
+
+.graydot {
+  background-color: #999;
+}
+
+.greendot {
+  background-color: lightgreen;
+}

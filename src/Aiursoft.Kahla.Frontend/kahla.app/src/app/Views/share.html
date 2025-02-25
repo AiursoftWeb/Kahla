@@ -1,0 +1,49 @@
+<app-header title="Choose to share" [returnButton]="inApp"></app-header>
+<!--TODO -->
+<!-- <div class="search-part">
+    <div class="search-input search-input-with-button">
+        <input id="searchBar" placeholder="Search for your friends and groups" type="text" [(ngModel)]="searchTxt"
+               (input)="search(searchTxt, true)" (keydown.enter)="goSingleSearch()"/>
+        <button class="button compact primary" [disabled]="searchTxt === ''" (click)="searchTxt = ''"><i
+            class="fas fa-times"></i></button>
+    </div>
+    <div class="search-type">
+        <div (click)="showUsersResults(true)" [ngClass]="{ 'selected': showUsers }">
+            <span><i class="fas fa-user"></i>
+                Users
+            </span>
+        </div>
+        <div (click)="showUsersResults(false)" [ngClass]="{ 'selected': !showUsers }">
+            <span><i class="fas fa-users"></i>
+                Groups
+            </span>
+        </div>
+    </div>
+</div>
+<div class="share-header-space"></div>
+<div *ngIf="showUsers && results">
+    <div class="result" *ngFor="let user of results.users" (click)="share(user.user)">
+        <img class="user-img" src="{{user.avatarURL ? user.avatarURL : loadingImgURL}}?w=128&square=true"/>
+        <div class="sender">
+            {{user.nickName}}
+        </div>
+    </div>
+    <div *ngIf="results.users.length === 0" class="empty-result-notice">No result.</div>
+    <div *ngIf="results.users.length === 1" class="empty-result-notice">Press <span
+        class="badge badge-secondary">Enter</span> to select.
+    </div>
+</div>
+<div *ngIf="!showUsers && results">
+    <div class="result" *ngFor="let group of results.groups" (click)="share(group, true)">
+        <div class="searchGroupImage">
+            <img class="user-img" src="{{group.avatarURL ? group.avatarURL : loadingImgURL}}?w=128&square=true"/>
+        </div>
+        <div class="sender">
+            {{group.name}}
+        </div>
+    </div>
+    <div *ngIf="results.groups.length === 0" class="empty-result-notice">No result.</div>
+    <div *ngIf="results.groups.length === 1" class="empty-result-notice">Press <span
+        class="badge badge-secondary">Enter</span> to select.
+    </div>
+</div> -->

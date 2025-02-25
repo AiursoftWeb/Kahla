@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'effects';
+
+%transparent-button {
+  @include effects.hover-effect(color.adjust(#fff, $alpha: -0.8), color.adjust(#fff, $alpha: -0.6));
+}

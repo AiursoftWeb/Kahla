@@ -1,0 +1,81 @@
+<div class="chatbox-placeholder" [appMatchHeightFor]="chatBox"></div>
+<div class="chatbox-wrapper" appDropFile (droppedFiles)="fileDropped($event)">
+    <div class="chat-box" #chatBox>
+        @let enterToSend = cacheService.mine()?.privateSettings?.enableEnterToSendMessage;
+        <div
+            class="chat-part"
+            [class.empty]="textContent().length === 0"
+            [class.no-send-button]="enterToSend"
+        >
+            <i
+                class="far fa-smile-wink"
+                aria-hidden="true"
+                (click)="emoji()"
+                style="margin-right: 7px"
+            ></i>
+            <div
+                class="text-input"
+                appMessageTextInput
+                appAutofocus
+                #chatInput="appMessageTextInput"
+                [(textContent)]="textContent"
+                (focus)="startInput()"
+                (keydown)="inputKeydown($event)"
+            ></div>
+            @if (!enterToSend) {
+                <button class="button primary" (click)="send()">Send</button>
+            }
+            <i
+                class="fas fa-microphone auto-hide"
+                aria-hidden="true"
+                (click)="record()"
+                [class.active]="recorder.recording"
+            ></i>
+            <i class="icon fa fa-plus-circle auto-hide" (click)="showPanel.set(!showPanel())"></i>
+        </div>
+        @if (showPanel()) {
+            <div class="more-panel">
+                <button (click)="selectFile('img')">
+                    <i style="color: #ff9800" class="far fa-file-image"></i>
+                    <div class="text">Send Image</div>
+                </button>
+                <button (click)="selectFile('video')">
+                    <i style="color: #00cc9c" class="far fa-file-video"></i>
+                    <div class="text">Send Video</div>
+                </button>
+                <button (click)="selectFile('file')">
+                    <i style="color: #4694f6" class="far fa-file-alt"></i>
+                    <div class="text">Send File</div>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+@if (atRecommendsShowPos(); as pos) {
+    <div [style.--menu-y.px]="pos[1] - 10" [style.--menu-x.px]="pos[0]" class="at-list">
+        <div class="popup-menu" cdkMenu>
+            @for (item of atRecommends()?.data ?? []; track item.user.id) {
+                <button cdkMenuItem (click)="completeMentionMenu(item.user)">
+                    <img src="{{ item.user.iconFilePath | storageUrl }}" class="image" />
+                    <div class="text">{{ item.user.nickName }}</div>
+                </button>
+            } @empty {
+                @if (!atRecommends() || atRecommends()!.status === 'loading') {
+                    <button disabled>
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div class="text">Loading...</div>
+                    </button>
+                } @else {
+                    <button disabled>
+                        <i class="fas fa-ellipsis"></i>
+                        <div class="text">No user found</div>
+                    </button>
+                }
+            }
+            <button cdkMenuItem [routerLink]="['/thread-members/', this.threadInfo()?.id]">
+                <i class="fas fa-ellipsis"></i>
+                <div>More...</div>
+            </button>
+        </div>
+    </div>
+}

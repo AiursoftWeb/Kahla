@@ -1,0 +1,73 @@
+@for (inf of threadRepo.data; track inf.id) {
+    <div
+        class="conversation"
+        (click)="threadClicked.emit({ thread: inf, secondary: $event.ctrlKey })"
+        [class.w-current]="highlightPredicate()(inf)"
+    >
+        <img
+            class="user-img"
+            src="{{ inf.imagePath | storageUrl }}?w=128&square=true"
+            (click)="threadClicked.emit({ thread: inf, secondary: true }); $event.stopPropagation()"
+        />
+        @if (!externalView()) {
+            @let infJoined = asJoined(inf);
+            @if (onlineStatusOf(infJoined) !== null) {
+                <div
+                    class="small-dot"
+                    style="top: 52px; right: 7px"
+                    [class.greendot]="onlineStatusOf(infJoined)"
+                    [class.graydot]="!onlineStatusOf(infJoined)"
+                ></div>
+            }
+            @if (infJoined.messageContext.unReadAmount > 0) {
+                <div class="dot" [ngClass]="infJoined.muted ? 'bluedot' : 'reddot'">
+                    {{ infJoined.messageContext.unReadAmount | truncatedNum }}
+                </div>
+            }
+            @if (infJoined.unreadAtMe) {
+                <div class="dot at-dot">&#64;</div>
+            }
+        }
+        <div class="sender">{{ inf | threadName }}</div>
+        @if (externalView()) {
+            <div class="last-message">
+                {{ inf.allowDirectJoinWithoutInvitation ? 'Public' : 'Private' }}
+            </div>
+        } @else if (asJoined(inf).messageContext.latestMessage) {
+            @let infJoined = asJoined(inf);
+            <div class="last-time">
+                {{ infJoined.messageContext.latestMessage.sendTime | date: 'shortTime' }}
+            </div>
+            <div class="last-message" title="{{ infJoined.messageContext.latestMessage.preview }}">
+                @if (infJoined.topTenMembers.length === 2 && cacheService.mine()) {
+                    @if (
+                        infJoined.messageContext.latestMessage.sender.id ===
+                        cacheService.mine()!.me.id
+                    ) {
+                        <i class="fas fa-angle-right"></i>
+                    } @else {
+                        <i class="fas fa-angle-left"></i>
+                    }
+                } @else if (infJoined.topTenMembers.length > 2) {
+                    <b>{{ infJoined.messageContext.latestMessage.sender.nickName }}:</b>
+                }
+                {{ infJoined.messageContext.latestMessage.preview }}
+            </div>
+        } @else {
+            <div class="last-message">No message. Start talking now!</div>
+        }
+    </div>
+}
+@if (threadRepo.status === 'synced' && !threadRepo.data.length) {
+    <div class="empty-result-notice">{{ emptyMessage() }}</div>
+}
+@if (
+    threadRepo.canLoadMore && (threadRepo.status === 'synced' || threadRepo.status === 'loading')
+) {
+    <app-load-more-button
+        [autoLoad]="autoLoadMore()"
+        [scrollHostElement]="scrollingContainer()"
+        (requestLoadMore)="threadRepo.loadMore(20)"
+        [loading]="threadRepo.status === 'loading'"
+    ></app-load-more-button>
+}

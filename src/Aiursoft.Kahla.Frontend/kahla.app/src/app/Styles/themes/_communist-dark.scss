@@ -1,0 +1,21 @@
+@use 'sass:color';
+@use 'default-dark';
+
+//
+// Dark Theme
+//
+$primary-color-depth1: #fc9e86;
+$primary-color-depth2: #bd161e;
+$primary-color-depth3: #df2710;
+
+body.theme-communist-dark {
+  @extend %default-dark;
+  --primary-color-depth1: #{$primary-color-depth1};
+  --primary-color-depth2: #{$primary-color-depth2};
+  --primary-color-depth3: #{$primary-color-depth3};
+  --header-bg: linear-gradient(
+    to bottom,
+    #{$primary-color-depth3},
+    #{color.adjust($primary-color-depth2, $alpha: -0.4)}
+  );
+}

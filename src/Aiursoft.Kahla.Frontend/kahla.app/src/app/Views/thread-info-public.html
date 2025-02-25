@@ -1,0 +1,22 @@
+<app-header title="Thread Info" />
+@if (threadInfo.value(); as threadInf) {
+    <app-thread-basic-info [threadInfo]="threadInf" />
+
+    <div class="menu-header">Owner</div>
+    @if (ownerInfo.value(); as ownerInf) {
+        <app-user-basic-info
+            [user]="ownerInf.searchedUser.user"
+            [online]="ownerInf.searchedUser.online"
+        />
+    }
+
+    <div class="buttons">
+        @if (threadInf.imInIt) {
+            <button class="primary" routerLink="/thread/{{ id() }}">Go to joined view</button>
+        } @else if (threadInf.allowDirectJoinWithoutInvitation) {
+            <button class="primary" (click)="joinThread()">Join Thread</button>
+        }
+    </div>
+} @else {
+    <div class="menu-hint">Loading...</div>
+}

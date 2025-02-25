@@ -1,0 +1,57 @@
+@use 'menus';
+@use 'button_effects';
+
+.contact-list {
+  @extend %menu-item-clickable;
+  height: 60px;
+  display: grid;
+  grid-template-columns: 15% 1fr;
+  // gap: 16px;
+  align-items: center;
+
+  &.multiple {
+    grid-template-columns: 15% 1fr 15%;
+  }
+
+  .user-img-group {
+    position: relative;
+    justify-self: center;
+
+    .small-dot {
+      top: 36px;
+      right: -4px;
+      position: absolute;
+    }
+
+    .user-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+    }
+  }
+
+  .user-name {
+    font-size: 15px;
+    font-weight: 400;
+    position: relative;
+    word-break: break-all;
+  }
+
+  // The check mark
+  i {
+    font-size: 2em;
+    color: var(--primary-color-depth2);
+  }
+
+  button {
+    background: transparent;
+    border: none;
+    @extend %transparent-button;
+    max-width: 80px;
+    border-radius: 8px;
+    height: 80%;
+    margin: 0;
+    justify-self: center;
+    width: 100%;
+  }
+}

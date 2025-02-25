@@ -1,0 +1,14 @@
+<app-header title="Invite to thread" [button]="true" buttonIcon="fas fa-check" />
+
+<div class="search-part" #searchPart>
+    <app-search-area [(searchText)]="searchText" />
+</div>
+<div class="search-holder" [appMatchHeightFor]="searchPart"></div>
+@if (contactsRepo) {
+    <app-contact-list
+        [contacts]="contactsRepo"
+        selectable="multi"
+        [(selectedIds)]="idsToInvite"
+        [preventDefault]="true"
+    />
+}

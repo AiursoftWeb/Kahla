@@ -1,0 +1,172 @@
+@use 'fixed_widescreen';
+@use 'effects';
+
+.chatbox-wrapper {
+  @extend %full-fixed-width;
+  display: inline-block;
+  position: fixed;
+  z-index: 50;
+  bottom: 0;
+  padding-top: 30px;
+  overflow-x: hidden;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+
+  .userList {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow-y: scroll;
+    background-color: var(--fixed-toolbars-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    li {
+      margin: 0;
+    }
+  }
+
+  .chat-box {
+    padding: 10px;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+    z-index: 50;
+    bottom: 0;
+    box-shadow: 0 23px 50px 10px rgba(0, 0, 0, 0.37);
+    background-color: var(--fixed-toolbars-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    .chat-part {
+      transition: all 0.15s ease-in-out;
+      display: flex;
+      align-items: end;
+
+      .text-input {
+        width: 100%;
+        border-radius: 6px min(calc(100% - 34px), 6px) 0 6px;
+        transition:
+          border-color ease-in-out 0.15s,
+          box-shadow ease-in-out 0.15s,
+          width ease-in-out 0.15s;
+        min-height: 34px;
+        padding: 6px 12px;
+        font-size: 14px;
+        box-sizing: border-box;
+        outline: none;
+        overflow-x: hidden;
+        background-color: var(--text-input-bg);
+        color: var(--default-textcolor);
+        flex: 1 1 auto;
+        max-height: 350px;
+        white-space: pre-wrap;
+      }
+
+      button {
+        visibility: visible;
+        padding: 0 16px;
+        width: 100px;
+        opacity: 1;
+        border-radius: 0 6px 6px 0;
+        height: 34px;
+        transition: all 0.15s ease-in-out;
+        flex: 0 0 auto;
+      }
+
+      i {
+        cursor: pointer;
+        color: #bbb;
+        font-size: 2.5em;
+        outline: none;
+        text-align: center;
+        flex: 0 0 auto;
+        transition: all 0.15s ease-in-out;
+        width: 40px;
+
+        &.active {
+          color: var(--primary-color-depth3);
+        }
+
+        &.auto-hide {
+          opacity: 0;
+          width: 0;
+        }
+      }
+
+      &.empty {
+        button {
+          visibility: hidden;
+          padding: 0;
+          width: 0;
+          opacity: 0;
+        }
+
+        .text-input {
+          border-radius: 6px;
+        }
+
+        i {
+          opacity: 1;
+          width: 40px;
+        }
+      }
+
+      &.no-send-button {
+        .text-input {
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .more-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 15px;
+
+      button {
+        background: transparent;
+        border: none;
+        padding: 10px;
+        height: 90px;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        width: 100px;
+        @include effects.hover-effect(var(--default-foreground-20), var(--default-foreground-40));
+
+        .text {
+          margin-top: 15px;
+          color: #727272;
+          user-select: none;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+i {
+  font-size: 1.5rem;
+}
+
+.oneResult {
+  bottom: 0;
+}
+
+.at-list {
+  position: fixed;
+  // transform: translateY(-100%);
+  z-index: 999;
+  // We decide to position the menu by bottom coord since serval reasons
+  // 1. In Android device, the window height will change when toggling the keyboard, and the input box is always at the bottom of the screen.
+  bottom: calc(100vh - var(--menu-y));
+  left: min(100vw - 200px, var(--menu-x));
+}

@@ -1,0 +1,13 @@
+/* style for scroll-button */
+:host {
+  pointer-events: none; // Disable pointer events to prevent blocking when the button is hidden
+}
+
+button {
+  pointer-events: auto;
+  &.hide {
+    transform: translateX(100px);
+    opacity: 0;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,9 @@
+<app-header title="Manage Thread" />
+@if (threadInfo.value() && threadProfile()) {
+    <app-thread-options [(threadOptions)]="threadProfile"></app-thread-options>
+    <div class="buttons">
+        <button class="primary one-line" (click)="saveProfile()">Save</button>
+    </div>
+} @else {
+    <div class="menu-hint">Loading...</div>
+}

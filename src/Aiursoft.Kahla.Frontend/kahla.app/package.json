@@ -1,0 +1,50 @@
+{
+  "name": "@aiursoft/kahla.app",
+  "version": "4.5.0",
+  "type": "module",
+  "scripts": {
+    "start": "yarn build:sw-base && ng serve",
+    "build:sw-base": "tsc -p src/service-worker && esbuild src/service-worker/sw_notifications.ts --bundle --minify '--define:process.env.NODE_ENV=\"production\"' --outfile='dist/sw-base/sw_notifications.js'",
+    "build": "yarn run build:sw-base && ng build --base-href / && workbox generateSW workbox-config.cjs",
+    "clean": "rm -rf dist",
+    "lint": "tsc -p src && tsc -p src/service-worker && ng lint",
+    "create-component": "python ./scripts/create-component.py"
+  },
+  "dependencies": {
+    "@aiursoft/kahla.sdk": "workspace:^",
+    "@angular/animations": "19.0.5",
+    "@angular/cdk": "^19.0.4",
+    "@angular/common": "19.0.5",
+    "@angular/core": "19.0.5",
+    "@angular/forms": "19.0.5",
+    "@angular/platform-browser": "19.0.5",
+    "@angular/platform-browser-dynamic": "19.0.5",
+    "@angular/router": "19.0.5",
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@joeattardi/emoji-button": "^4.6.4",
+    "@videojs/themes": "^1.0.1",
+    "autolinker": "^4.1.0",
+    "blueimp-load-image": "^5.16.0",
+    "idb": "^8.0.1",
+    "rxjs": "^7.8.1",
+    "sweetalert2": "^11.15.10",
+    "video.js": "8.21.1",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/core": "^19.0.6",
+    "@angular/build": "^19.0.6",
+    "@angular/cli": "^19.0.6",
+    "@angular/compiler": "^19.0.5",
+    "@angular/compiler-cli": "^19.0.5",
+    "@angular/language-service": "19.0.5",
+    "@types/node": "^22.10.5",
+    "angular-eslint": "19.0.2",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "typescript": "~5.6.3",
+    "typescript-eslint": "^8.19.1",
+    "workbox-cli": "^7.3.0"
+  },
+  "packageManager": "yarn@4.5.3"
+}

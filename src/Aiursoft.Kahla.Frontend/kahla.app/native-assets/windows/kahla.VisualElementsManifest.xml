@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application>
+    <VisualElements BackgroundColor="white" ForegroundText="dark" ShowNameOnSquare150x150Logo="on"
+                    Square150x150Logo="win-logo.png" Square70x70Logo="win-logo.png"/>
+</Application>

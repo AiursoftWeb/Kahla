@@ -1,0 +1,70 @@
+@use 'effects';
+
+.popup-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background-color: var(--fixed-toolbars-bg);
+  border-radius: 8px;
+  box-shadow: 0 0 10px 0 var(--default-foreground-20);
+  backdrop-filter: blur(8px);
+  animation: popup-open 0.1s ease-out;
+  transform-origin: top center;
+
+  .popup-menu-item,
+  button {
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    color: var(--default-foreground);
+    background: none;
+    display: flex;
+    border-radius: 4px;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: 120px;
+
+    gap: 8px;
+    align-items: center;
+
+    @include effects.hover-effect(var(--default-foreground-20), var(--default-foreground-40));
+
+    &[disabled],
+    &.disabled {
+      color: var(--minor-textcolor);
+      cursor: default;
+      background: transparent;
+    }
+
+    i {
+      font-size: 18px;
+      width: 24px;
+    }
+
+    .image {
+      width: 24px;
+      height: 24px;
+      border-radius: 2px;
+    }
+  }
+
+  .popup-split {
+    height: 1px;
+    background-color: var(--default-foreground-20);
+    margin: 4px 0;
+  }
+}
+
+@keyframes popup-open {
+  from {
+    opacity: 0;
+    transform: scale(0.9, 0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
