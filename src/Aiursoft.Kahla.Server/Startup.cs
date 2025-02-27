@@ -29,8 +29,6 @@ namespace Aiursoft.Kahla.Server
     {
         public virtual void ConfigureServices(IConfiguration configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
             // Background jobs
             services.AddSingleton<IHostedService, UnreadPersistsService>();
 

@@ -2,7 +2,6 @@ using Aiursoft.Canon;
 using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
-using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
 

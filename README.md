@@ -18,42 +18,13 @@ Try a running Kahla [here](https://kahla.aiursoft.cn).
 
 ## Run manually
 
-Before starting, you need to install MySQL.
-
-```bash
-sudo apt update
-sudo apt install mysql-server
-sudo mysql
-```
-
-Then:
-
-```sql
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '<your_password>';
-  exit;
-```
-
-Then:
-
-```bash
-sudo mysql -u root -p
-```
-
-Then:
-
-```sql
-CREATE DATABASE kahla;
-CREATE USER 'kahla'@'localhost' IDENTIFIED BY '<kahla_password>';
-GRANT ALL PRIVILEGES ON kahla.* TO 'kahla'@'localhost';
-FLUSH PRIVILEGES;
-exit;
-```
-
 Requirements about how to run
 
-1. Install MySQL as instructions above.
-2. Execute `dotnet run` to run the app.
-3. Use your browser to view [http://localhost:5000](http://localhost:5000).
+1. Install [.NET 9 SDK](http://dot.net/) and [Node.js](https://nodejs.org/).
+2. Execute `yarn install && yarn run build` at `./src/Aiursoft.Kahla.Frontend/` folder to install the dependencies.
+3. Copy the `dist` content to `./src/Aiursoft.Kahla.Server/wwwroot/`.
+4. Execute `dotnet run` to run the app.
+5. Use your browser to view [http://localhost:5000](http://localhost:5000).
 
 ## Run in Microsoft Visual Studio
 

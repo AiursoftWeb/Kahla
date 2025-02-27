@@ -1,11 +1,10 @@
-﻿using System;
+﻿#nullable disable
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
-namespace Aiursoft.Kahla.Server.Migrations
+namespace Aiursoft.Kahla.MySql.Migrations
 {
     /// <inheritdoc />
     [ExcludeFromCodeCoverage]
