@@ -5,9 +5,10 @@ namespace Aiursoft.Kahla.InMemory;
 
 public class InMemoryContext(DbContextOptions<InMemoryContext> options) : KahlaRelationalDbContext(options)
 {
-    public override Task MigrateAsync(CancellationToken cancellationToken)
+    public override async Task MigrateAsync(CancellationToken cancellationToken)
     {
-        return Database.EnsureCreatedAsync(cancellationToken);
+        await Database.EnsureDeletedAsync(cancellationToken);
+        await Database.EnsureCreatedAsync(cancellationToken);
     }
 
     public override Task<bool> CanConnectAsync()
