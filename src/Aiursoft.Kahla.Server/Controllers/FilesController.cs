@@ -5,6 +5,7 @@ using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.CSTools.Attributes;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
+using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;

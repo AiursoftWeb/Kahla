@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.Server.Models.Entities;
+namespace Aiursoft.Kahla.Entities.Entities;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class KahlaUser : IdentityUser
@@ -17,13 +17,13 @@ public class KahlaUser : IdentityUser
         get => base.Id;
         set => base.Id = value;
     }
-    
-    [JsonProperty] 
+
+    [JsonProperty]
     [StringLength(40, MinimumLength = 1)]
     [NotNull]
     public virtual string? NickName { get; set; }
-    
-    [JsonProperty] 
+
+    [JsonProperty]
     [StringLength(100, MinimumLength = 1)]
     public virtual string? Bio { get; set; }
 
@@ -38,11 +38,11 @@ public class KahlaUser : IdentityUser
 
     [JsonProperty] public override bool EmailConfirmed { get; set; }
     [NotNull][JsonProperty] public override string? Email { get; set; }
-    
+
     [JsonIgnore]
     [InverseProperty(nameof(UserThreadRelation.User))]
     public IEnumerable<UserThreadRelation> ThreadsRelations { get; set; } = new List<UserThreadRelation>();
-    
+
     [JsonIgnore]
     [InverseProperty(nameof(ContactRecord.Creator))]
     public IEnumerable<ContactRecord> KnownContacts { get; set; } = new List<ContactRecord>();
@@ -50,11 +50,11 @@ public class KahlaUser : IdentityUser
     [JsonIgnore]
     [InverseProperty(nameof(ContactRecord.Target))]
     public IEnumerable<ContactRecord> OfKnownContacts { get; set; } = new List<ContactRecord>();
-    
+
     [JsonIgnore]
     [InverseProperty(nameof(BlockRecord.Creator))]
     public IEnumerable<BlockRecord> BlockList { get; set; } = new List<BlockRecord>();
-    
+
     [JsonIgnore]
     [InverseProperty(nameof(BlockRecord.Target))]
     public IEnumerable<BlockRecord> BlockedBy { get; set; } = new List<BlockRecord>();
@@ -79,8 +79,8 @@ public class KahlaUser : IdentityUser
     [JsonIgnore] public bool EnableEmailNotification { get; set; } = true;
 
     [JsonIgnore] public bool AllowSearchByName { get; set; } = true;
-    
+
     [JsonIgnore] public bool EnableEnterToSendMessage { get; set; } = true;
-    
+
     [JsonIgnore] public bool EnableHideMyOnlineStatus { get; set; }
 }

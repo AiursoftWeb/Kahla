@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Aiursoft.CSTools.Tools;
+using Aiursoft.Kahla.Entities;
+using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using WebPush;

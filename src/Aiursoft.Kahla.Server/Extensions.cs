@@ -4,10 +4,11 @@ using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.CSTools.Models;
 using Aiursoft.CSTools.Tools;
-using Aiursoft.DbTools.InMemory;
-using Aiursoft.DbTools.MySql;
-using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.DbTools.Switchable;
+using Aiursoft.Kahla.Entities.Entities;
+using Aiursoft.Kahla.InMemory;
+using Aiursoft.Kahla.MySql;
+using Aiursoft.Kahla.Sqlite;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,7 @@ public static class Extensions
         }
         return userId;
     }
-    
+
     public static async Task<KahlaUser> GetCurrentUser(this ControllerBase controller, UserManager<KahlaUser> userManager)
     {
         var user = await userManager.GetUserAsync(controller.User);
@@ -34,7 +35,7 @@ public static class Extensions
         }
         return user;
     }
-    
+
     public static IQueryable<T> WhereWhen<T>(
         this IQueryable<T> query,
         string? condition,
@@ -42,31 +43,27 @@ public static class Extensions
     {
         return string.IsNullOrWhiteSpace(condition) ? query : query.Where(predicate);
     }
-    
-    public static IServiceCollection AddRelationalDatabase(this IServiceCollection services, string connectionString)
+
+    public static IServiceCollection AddRelationalDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        if (EntryExtends.IsInUnitTests())
-        {
-            Console.WriteLine("Unit test detected, using in-memory database.");
-            services.AddAiurInMemoryDb<KahlaRelationalDbContext>();
-        }
-        else
-        {
-            Console.WriteLine("Production environment detected, using MySQL database.");
-            
-            // As tested, splitQuery: false has better performance.
-            // This is because splitQuery = false can reduce the number of queries sent to the database from O(n) to O(1).
-            services.AddAiurMySqlWithCache<KahlaRelationalDbContext>(connectionString, splitQuery: false);
-        }
-        
+        var (connectionString, dbType, allowCache) = configuration.GetDbSettings();
+        services.AddSwitchableRelationalDatabase(
+            dbType: EntryExtends.IsInUnitTests() ? "InMemory": dbType,
+            connectionString: connectionString,
+            supportedDbs:
+            [
+                new MySqlSupportedDb(allowCache: allowCache, splitQuery: false),
+                new SqliteSupportedDb(allowCache: allowCache, splitQuery: true),
+                new InMemorySupportedDb()
+            ]);
         return services;
     }
-    
+
     public static int GetLimitedNumber(int min, int max, int suggested)
     {
         return Math.Max(min, Math.Min(max, suggested));
     }
-    
+
     public static IEnumerable<T> SkipUntilEquals<T>(this IEnumerable<T> source, T? target) where T : struct
     {
         var shouldReturn = target == null;
@@ -83,11 +80,11 @@ public static class Extensions
             }
         }
     }
-    
+
     private static (string etag, long length) GetFileHttpProperties(string path)
     {
         var fileInfo = new FileInfo(path);
-        
+
         // XOR the last write time and the file length to get a unique etag.
         var etagHash = fileInfo.LastWriteTime.ToUniversalTime().ToFileTime() ^ fileInfo.Length;
         var etag = Convert.ToString(etagHash, 16);
@@ -97,7 +94,7 @@ public static class Extensions
     public static IActionResult WebFile(this ControllerBase controller, string path, string extension)
     {
         var (etag, length) = GetFileHttpProperties(path);
-        
+
         // Handle etag
         controller.Response.Headers.Append("ETag", '\"' + etag + '\"');
         if (controller.Request.Headers.ContainsKey("If-None-Match"))
@@ -110,7 +107,7 @@ public static class Extensions
 
         // Return file result.
         controller.Response.Headers.Append("Content-Length", length.ToString());
-        
+
         // Allow cache
         controller.Response.Headers.Append("Cache-Control", $"public, max-age={TimeSpan.FromDays(7).TotalSeconds}");
         return controller.PhysicalFile(path, Mime.GetContentType(extension), true);

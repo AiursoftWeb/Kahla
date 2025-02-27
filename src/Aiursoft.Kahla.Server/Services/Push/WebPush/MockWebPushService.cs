@@ -1,6 +1,7 @@
+using Aiursoft.Kahla.Entities;
+using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
 using WebPush;
 
 namespace Aiursoft.Kahla.Server.Services.Push.WebPush;

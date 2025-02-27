@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using Aiursoft.AiurObserver;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Models;
 
 namespace Aiursoft.Kahla.Server.Data;
 

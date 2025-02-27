@@ -6,11 +6,11 @@ using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Services;
 
-namespace Aiursoft.Kahla.Server.Models.Entities;
+namespace Aiursoft.Kahla.Server.Models;
 
 public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
 {
-    [PartitionKey] 
+    [PartitionKey]
     public int ThreadId { get; set; }
 
     [PartitionKey]
@@ -19,18 +19,18 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         get => ThreadId;
         set => ThreadId = value;
     }
-    
+
     [FixedLengthString(BytesLength = 100)]
     public byte[] Preview { get; init; } = [];
-    
+
     public string Content { get; init; } = string.Empty;
-    
+
     public string AtsStored { get; init; } = string.Empty;
-    
+
     public Guid SenderId { get; init; } = Guid.Empty;
-    
+
     public Guid Id { get; init; } = Guid.Empty;
-    
+
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
 
     public Guid[] GetAtsAsGuids()
@@ -42,9 +42,9 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
             .Select(bytes => new Guid(bytes))
             .ToArray();
     }
-    
+
     public static MessageInDatabaseEntity FromPushedCommit(
-        Commit<ChatMessage> messageIncoming, 
+        Commit<ChatMessage> messageIncoming,
         // We don't trust the client side's time, so we use server time instead.
         DateTime serverTime,
         // We don't trust the client side's user ID, so we use server side's user ID instead.
@@ -65,7 +65,7 @@ public class MessageInDatabaseEntity : PartitionedBucketEntity<int>
         SenderId = userIdGuid,
         ThreadId = threadId
     };
-    
+
     public Commit<ChatMessage> ToCommit()
     {
         return new Commit<ChatMessage>

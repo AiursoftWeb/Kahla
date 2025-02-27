@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.Server.Models.Entities;
+namespace Aiursoft.Kahla.Entities.Entities;
 
 public class Device
 {

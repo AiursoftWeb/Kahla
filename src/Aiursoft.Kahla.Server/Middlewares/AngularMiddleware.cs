@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Options;
-
 namespace Aiursoft.Kahla.Server.Middlewares;
 
 public class AngularMiddleware(RequestDelegate next)
@@ -10,7 +8,7 @@ public class AngularMiddleware(RequestDelegate next)
         if (context.Response.StatusCode == 404 && context.Request.Method == "GET")
         {
             var origPath = context.Request.Path;
-            context.Request.Path = "index.html";
+            context.Request.Path = "/index.html";
             await next(context);
             context.Request.Path = origPath; // For correct logging and middleware compatibility
         }

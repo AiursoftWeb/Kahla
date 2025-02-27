@@ -3,7 +3,7 @@ using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services.Push;
 
 namespace Aiursoft.Kahla.Server.Services.Messages;

@@ -3,10 +3,12 @@ using Aiursoft.ArrayDb.Partitions;
 using Aiursoft.Canon;
 using Aiursoft.DocGenerator.Services;
 using Aiursoft.InMemoryKvDb;
+using Aiursoft.Kahla.Entities;
+using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Middlewares;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services;
 using Aiursoft.Kahla.Server.Services.AppService;
 using Aiursoft.Kahla.Server.Services.BackgroundJobs;
@@ -19,7 +21,6 @@ using Aiursoft.Kahla.Server.Services.Storage;
 using Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 using Aiursoft.WebTools.Abstractions.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Hosting;
 using WebPush;
 
 namespace Aiursoft.Kahla.Server
@@ -32,7 +33,7 @@ namespace Aiursoft.Kahla.Server
 
             // Background jobs
             services.AddSingleton<IHostedService, UnreadPersistsService>();
-            
+
             // In Memory Databases.
             services.AddMemoryCache();
             services.AddSingleton<ChannelsInMemoryDb>();
@@ -43,13 +44,13 @@ namespace Aiursoft.Kahla.Server
             services.AddNamedLruMemoryStore<ReaderWriterLockSlim, int>(
                 onNotFound: _ => new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion),
                 maxCachedItemsCount: 0x8000); // 32768
-            
+
             // Memory acceleration layers
             services.AddSingleton<QuickMessageAccess>();
-            
+
             // Relational Database
-            services.AddRelationalDatabase(connectionString);
-            
+            services.AddRelationalDatabase(configuration);
+
             // ArrayDb
             services.AddSingleton<ArrayDbContext>();
             services.AddSingleton<PartitionedObjectBucket<MessageInDatabaseEntity, int>>(_ =>
@@ -58,7 +59,7 @@ namespace Aiursoft.Kahla.Server
                 if (!Directory.Exists(dbPath)) Directory.CreateDirectory(dbPath);
                 return new PartitionedObjectBucket<MessageInDatabaseEntity, int>("kahla", dbPath);
             });
-            
+
             // Identity
             services.AddIdentity<KahlaUser, IdentityRole>(options => options.Password = new PasswordOptions
                 {
@@ -71,19 +72,19 @@ namespace Aiursoft.Kahla.Server
                 })
                 .AddEntityFrameworkStores<KahlaRelationalDbContext>()
                 .AddDefaultTokenProviders();
-            
+
             // Repositories
             services.AddScoped<UserOthersViewRepo>();
             services.AddScoped<UserInThreadViewRepo>();
             services.AddScoped<ThreadOthersViewRepo>();
             services.AddScoped<ThreadJoinedViewRepo>();
-            
+
             // App services
             services.AddScoped<UserOthersViewAppService>();
             services.AddScoped<UserInThreadViewAppService>();
             services.AddScoped<ThreadOthersViewAppService>();
             services.AddScoped<ThreadJoinedViewAppService>();
-            
+
             // Push services
             services.AddTaskCanon();
             services.AddScoped<DevicesCache>();
@@ -92,16 +93,16 @@ namespace Aiursoft.Kahla.Server
             services.AddScoped<WebSocketPushService>();
             services.AddScoped<KahlaPushService>();
             services.AddScoped<BufferedKahlaPushService>();
-            
+
             // Message services
             services.AddScoped<ChannelMessageService>();
-            
+
             // Storage services.
             services.AddScoped<PathResolver>();
             services.AddScoped<StorageService>();
-            services.AddSingleton<FileLockProvider>(); 
+            services.AddSingleton<FileLockProvider>();
             services.AddScoped<IImageProcessingService, ImageProcessingService>();
-            
+
             // Online detector
             services.AddScoped<OnlineDetector>();
 

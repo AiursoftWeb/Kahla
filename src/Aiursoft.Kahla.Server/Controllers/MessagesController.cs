@@ -6,16 +6,15 @@ using Aiursoft.AiurProtocol.Server.Attributes;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
 using Microsoft.AspNetCore.Mvc;
-using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Server;
 using Aiursoft.ArrayDb.Partitions;
+using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Models;
-using Aiursoft.Kahla.Server.Models.Entities;
 using Aiursoft.Kahla.Server.Services.Messages;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.DataProtection;
@@ -328,52 +327,5 @@ public class MessagesController(
                 userId, otp);
             throw new AiurServerException(Code.Unauthorized, "Invalid OTP.");
         }
-    }
-}
-
-public class ClientPushConsumer(
-    ChannelMessageService channelMessageService,
-    KahlaUserMappedPublicView userView,
-    int threadId,
-    ILogger<MessagesController> logger)
-    : IConsumer<string>
-{
-    public async Task Consume(string clientPushed)
-    {
-        if (clientPushed.Length > 0xFFFF)
-        {
-            logger.LogWarning("User with ID: {UserId} is trying to push a message that is too large. Rejected. Max allowed size is 65535. He pushed {Size} bytes.", userView.Id, clientPushed.Length);
-            return;
-        }
-        var model = SDK.Extensions.Deserialize<List<Commit<ChatMessage>>>(clientPushed);
-        await channelMessageService.SendMessagesToChannel(model, threadId, userView);
-    }
-}
-
-public class ThreadReflectConsumer(
-    ThreadStatusInMemoryCache threadStatusCache,
-    string listeningUserId,
-    ILogger<MessagesController> logger,
-    ObservableWebSocket socket)
-    : IConsumer<MessageInDatabaseEntity[]>
-{
-    public async Task Consume(MessageInDatabaseEntity[] newEntities)
-    {
-        // Ensure the user is in the thread.
-        if (!threadStatusCache.IsUserInThread(listeningUserId))
-        {
-            logger.LogWarning("User with ID: {UserId} is trying to listen to a thread that he is not in. Rejected.", listeningUserId);
-            return;
-        }
-        
-        // Send to the client.
-        logger.LogInformation("Reflecting {Count} new messages to the client with Id: '{ClientId}'.", newEntities.Length, listeningUserId);
-        await socket.Send(SDK.Extensions.Serialize(newEntities.Select(t => t.ToCommit())));
-
-        // Clear current user's unread message count.
-        threadStatusCache.ClearUserUnReadAmount(listeningUserId);
-        
-        // Clear current user's at status.
-        threadStatusCache.ClearAtForUser(listeningUserId);
     }
 }

@@ -1,11 +1,13 @@
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
+using Aiursoft.Kahla.Entities;
+using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server;
 using Aiursoft.Kahla.Server.Data;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
@@ -21,7 +23,7 @@ public class MemoryLayerTests : KahlaTestBase
     {
         var port = Network.GetAvailablePort();
         var server = await Extends.AppAsync<Startup>([], port: port);
-        await server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
+        await server.UpdateDbAsync<KahlaRelationalDbContext>();
         var dbContext = server
             .Services
             .GetRequiredService<IServiceScopeFactory>()
@@ -542,7 +544,7 @@ public class MemoryLayerTests : KahlaTestBase
         var user2Ws = string.Empty;
         var user1Id = Guid.Empty;
         var user2Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -562,7 +564,7 @@ public class MemoryLayerTests : KahlaTestBase
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
         });
-        
+
         // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
         await repo1.Send(new ChatMessage
@@ -572,7 +574,7 @@ public class MemoryLayerTests : KahlaTestBase
             SenderId = user1Id,
             Ats = [user2Id]
         });
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -581,10 +583,10 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         await Task.Delay(200); // Wait for the messages to be reflected.
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -593,19 +595,19 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         // Clean
         await repo1.Disconnect();
         await repo2.Disconnect();
     }
-    
+
     [TestMethod]
     public async Task TestAtUserDirectSend()
     {
         var thread1Id = 0;
         var user2Ws = string.Empty;
         var user2Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -623,7 +625,7 @@ public class MemoryLayerTests : KahlaTestBase
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
         });
-        
+
         // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
         await RunUnderUser("wsuser1", async () =>
         {
@@ -633,7 +635,7 @@ public class MemoryLayerTests : KahlaTestBase
                 preview: "Hello, world!",
                 ats: [user2Id]);
         });
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -642,10 +644,10 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         await Task.Delay(200); // Wait for the messages to be reflected.
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -654,11 +656,11 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         // Clean
         await repo2.Disconnect();
     }
-    
+
     [TestMethod]
     public async Task TestAtUserWithReload()
     {
@@ -667,7 +669,7 @@ public class MemoryLayerTests : KahlaTestBase
         var user2Ws = string.Empty;
         var user1Id = Guid.Empty;
         var user2Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -687,7 +689,7 @@ public class MemoryLayerTests : KahlaTestBase
             user2Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user2Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
         });
-        
+
         // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
         await repo1.Send(new ChatMessage
@@ -697,11 +699,11 @@ public class MemoryLayerTests : KahlaTestBase
             SenderId = user1Id,
             Ats = [user2Id]
         });
-        
+
         // Reload server.
         await Server!.Services.GetRequiredService<QuickMessageAccess>().PersistUserUnreadAmount();
         await Server!.Services.GetRequiredService<QuickMessageAccess>().LoadAsync();
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -710,10 +712,10 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
         await Task.Delay(200); // Wait for the messages to be reflected.
-        
+
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
@@ -722,12 +724,12 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
             Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
         });
-        
+
         // Clean
         await repo1.Disconnect();
         await repo2.Disconnect();
     }
-    
+
     [TestMethod]
     public async Task TestAtUserWebPushedInfo()
     {
@@ -735,7 +737,7 @@ public class MemoryLayerTests : KahlaTestBase
         var user1Ws = string.Empty;
         var user1Id = Guid.Empty;
         var user2Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -748,7 +750,7 @@ public class MemoryLayerTests : KahlaTestBase
             thread1Id = result1.NewThreadId;
             user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
-            
+
             // This device won't receive because it's the sender's device.
             await Sdk.AddDeviceAsync("fake name", "fake push auth", "fake endpoint", "fake p256dh");
         });
@@ -774,7 +776,7 @@ public class MemoryLayerTests : KahlaTestBase
                 SenderId = user1Id,
                 Ats = [user2Id]
             });
-            
+
             await repo1.Send(new ChatMessage
             {
                 Content = "Hello, world no at!",
@@ -782,7 +784,7 @@ public class MemoryLayerTests : KahlaTestBase
                 SenderId = user1Id,
             });
         });
-        
+
         // User 103 will receive a NewMessageEvent
         await RunUnderUser("wsuser2", async () =>
         {
@@ -818,7 +820,7 @@ public class MemoryLayerTests : KahlaTestBase
         var thread1Id = 0;
         var user1Ws = string.Empty;
         var user1Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -831,7 +833,7 @@ public class MemoryLayerTests : KahlaTestBase
             thread1Id = result1.NewThreadId;
             user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
-            
+
             // This device won't receive because it's the sender's device.
             await Sdk.AddDeviceAsync("fake name", "fake push auth", "fake endpoint", "fake p256dh");
         });
@@ -844,7 +846,7 @@ public class MemoryLayerTests : KahlaTestBase
 
         // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
-        
+
         // User 1 will send a message in 1 second
         _ = Task.Run(async () =>
         {
@@ -857,7 +859,7 @@ public class MemoryLayerTests : KahlaTestBase
                 Ats = []
             });
         });
-        
+
         // User 103 will receive a NewMessageEvent
         await RunUnderUser("wsuser2", async () =>
         {
@@ -886,7 +888,7 @@ public class MemoryLayerTests : KahlaTestBase
         var user1Ws = string.Empty;
         var user1Id = Guid.Empty;
         var user2Id = Guid.Empty;
-        
+
         await RunUnderUser("wsuser1", async () =>
         {
             var result1 = await Sdk.CreateFromScratchAsync(
@@ -899,7 +901,7 @@ public class MemoryLayerTests : KahlaTestBase
             thread1Id = result1.NewThreadId;
             user1Ws = (await Sdk.InitThreadWebSocketAsync(thread1Id)).WebSocketEndpoint;
             user1Id = Guid.Parse((await Sdk.MeAsync()).User.Id);
-            
+
             // This device won't receive because it's the sender's device.
             await Sdk.AddDeviceAsync("fake name", "fake push auth", "fake endpoint", "fake p256dh");
         });
@@ -913,7 +915,7 @@ public class MemoryLayerTests : KahlaTestBase
 
         // User 1 at user 2, user 2 shows he was ated. After reading, no unread at anymore.
         var repo1 = await new KahlaMessagesRepo(user1Ws).ConnectAndMonitor();
-        
+
         // User 1 will send a message in 1 second
         _ = Task.Run(async () =>
         {
@@ -926,7 +928,7 @@ public class MemoryLayerTests : KahlaTestBase
                 Ats = [user2Id]
             });
         });
-        
+
         // User 103 will receive a NewMessageEvent
         await RunUnderUser("wsuser2", async () =>
         {

@@ -4,7 +4,7 @@ using Aiursoft.Kahla.SDK;
 
 // ReSharper disable RedundantDefaultMemberInitializer
 
-namespace Aiursoft.Kahla.Server.Models.Entities;
+namespace Aiursoft.Kahla.Entities.Entities;
 
 public class ChatThread
 {

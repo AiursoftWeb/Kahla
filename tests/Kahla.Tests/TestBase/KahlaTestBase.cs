@@ -3,6 +3,7 @@ using Aiursoft.AiurObserver.DefaultConsumers;
 using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.DbTools;
+using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.SDK;
 using Aiursoft.Kahla.SDK.Events.Abstractions;
 using Aiursoft.Kahla.SDK.Services;
@@ -38,7 +39,7 @@ public abstract class KahlaTestBase
     {
         MockWebPushService.PushedPayloads.Clear();
         Server = await AppAsync<TestStartup>([], port: _port);
-        await Server.UpdateDbAsync<KahlaRelationalDbContext>(UpdateMode.RecreateThenUse);
+        await Server.UpdateDbAsync<KahlaRelationalDbContext>();
 
         var serverConfig = Server.Services.GetRequiredService<IConfiguration>();
         var storePath = serverConfig.GetSection("Storage:Path").Value;

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.SDK.Models.Mapped;
 using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services.Repositories;

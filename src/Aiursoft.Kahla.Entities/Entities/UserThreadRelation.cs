@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Aiursoft.Kahla.SDK.Models;
 using Newtonsoft.Json;
 
-namespace Aiursoft.Kahla.Server.Models.Entities;
+namespace Aiursoft.Kahla.Entities.Entities;
 
 /// <summary>
 /// For each user in a thread, there will be a UserThreadRelation. And he will be treated as a member of this thread.
@@ -16,9 +16,9 @@ public class UserThreadRelation
     public DateTime JoinTime { get; init; } = DateTime.UtcNow;
 
     public UserThreadRole UserThreadRole { get; set; } = UserThreadRole.Member;
-    
+
     public bool Muted { get; set; }
-    
+
     /// <summary>
     /// If a user is banned from a group, this will be true, and he won't be able to send messages to this group. However, he is still able to read messages.
     /// </summary>

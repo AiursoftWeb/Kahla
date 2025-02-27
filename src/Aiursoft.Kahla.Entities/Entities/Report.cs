@@ -2,14 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Aiursoft.Kahla.Server.Models.Entities
+namespace Aiursoft.Kahla.Entities.Entities
 {
-    public enum ReportStatus
-    {
-        Pending = 0,
-        Resolved = 1 // TODO: Allow admin resolve report.
-    }
-    
     public class Report
     {
         public int Id { get; init; }

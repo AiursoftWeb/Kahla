@@ -12,8 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.2" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.6" />
-    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.9" />
-    <PackageReference Include="Aiursoft.DbTools.InMemory" Version="9.0.4" />
+    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="9.0.12" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.1" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="9.0.2" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="9.0.0" />
@@ -29,6 +28,9 @@
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Aiursoft.Kahla.InMemory\Aiursoft.Kahla.InMemory.csproj" />
+    <ProjectReference Include="..\Aiursoft.Kahla.MySql\Aiursoft.Kahla.MySql.csproj" />
     <ProjectReference Include="..\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj" />
+    <ProjectReference Include="..\Aiursoft.Kahla.Sqlite\Aiursoft.Kahla.Sqlite.csproj" />
   </ItemGroup>
 </Project>

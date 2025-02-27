@@ -1,5 +1,5 @@
 using Aiursoft.ArrayDb.Partitions;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Server.Models;
 
 namespace Aiursoft.Kahla.Server.Data;
 

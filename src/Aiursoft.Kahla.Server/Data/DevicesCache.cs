@@ -1,5 +1,6 @@
 using Aiursoft.Canon;
-using Aiursoft.Kahla.Server.Models.Entities;
+using Aiursoft.Kahla.Entities;
+using Aiursoft.Kahla.Entities.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.Kahla.Server.Data;
