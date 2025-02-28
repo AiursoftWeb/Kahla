@@ -136,12 +136,13 @@ deploy_docker_hub:
   needs: 
     - deploy_docker_registry
   script:
+    - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then NAMESPACE="anduin2019"; else NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
     - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
-    - echo building image $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
-    - docker build . -t $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+    - echo building image $NAMESPACE/$CI_PROJECT_NAME:$TAG
+    - docker build . -t $NAMESPACE/$CI_PROJECT_NAME:$TAG
     - echo "Logging in to Docker Hub..."
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker push $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+    - docker push $NAMESPACE/$CI_PROJECT_NAME:$TAG
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
       exists:

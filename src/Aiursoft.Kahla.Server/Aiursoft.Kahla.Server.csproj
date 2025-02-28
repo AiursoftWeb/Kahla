@@ -18,7 +18,6 @@
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="9.0.0" />
     <PackageReference Include="Aiursoft.Scanner" Version="9.0.3" />
     <PackageReference Include="Aiursoft.WebTools" Version="9.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,7 +29,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.InMemory\Aiursoft.Kahla.InMemory.csproj" />
     <ProjectReference Include="..\Aiursoft.Kahla.MySql\Aiursoft.Kahla.MySql.csproj" />
-    <ProjectReference Include="..\Aiursoft.Kahla.SDK\Aiursoft.Kahla.SDK.csproj" />
     <ProjectReference Include="..\Aiursoft.Kahla.Sqlite\Aiursoft.Kahla.Sqlite.csproj" />
   </ItemGroup>
 </Project>
