@@ -1,18 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>Aiursoft.Kahla.MySql</AssemblyName>
+    <RootNamespace>Aiursoft.Kahla.MySql</RootNamespace>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.11" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.Entities\Aiursoft.Kahla.Entities.csproj" />
   </ItemGroup>
-    
-
 </Project>
