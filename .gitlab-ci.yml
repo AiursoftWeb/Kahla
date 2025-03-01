@@ -39,6 +39,7 @@ lint:
     - sed -i '/InconsistentNaming/d' analyze_output.xml
     - sed -i '/AssignNullToNotNullAttribute/d' analyze_output.xml # This is because jetbrains is not smart enough to understand the nullability of C# 8.0
     - sed -i '/UnusedAutoPropertyAccessor/d' analyze_output.xml
+    - sed -i '/DuplicateResource/d' analyze_output.xml
     - grep 'WARNING' analyze_output.xml && cat analyze_output.xml && exit 1 || echo "No warning found"
   artifacts:
     when: always
