@@ -10,7 +10,7 @@
 
 Kahla is a cross-platform business chat application. It is written in C# and TypeScript. It uses ASP.NET Core and Angular. It is a part of the Aiursoft project.
 
-This is the server project of Kahla.
+This is the core source code project of Kahla.
 
 ## Try
 
