@@ -29,6 +29,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.InMemory\Aiursoft.Kahla.InMemory.csproj" />
     <ProjectReference Include="..\Aiursoft.Kahla.MySql\Aiursoft.Kahla.MySql.csproj" />
-    <ProjectReference Include="..\Aiursoft.Kahla.Sqlite\Aiursoft.Kahla.Sqlite.csproj" />
   </ItemGroup>
 </Project>

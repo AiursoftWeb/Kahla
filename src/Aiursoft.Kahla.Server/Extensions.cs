@@ -8,7 +8,6 @@ using Aiursoft.DbTools.Switchable;
 using Aiursoft.Kahla.Entities.Entities;
 using Aiursoft.Kahla.InMemory;
 using Aiursoft.Kahla.MySql;
-using Aiursoft.Kahla.Sqlite;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,7 +52,6 @@ public static class Extensions
             supportedDbs:
             [
                 new MySqlSupportedDb(allowCache: allowCache, splitQuery: false),
-                new SqliteSupportedDb(allowCache: allowCache, splitQuery: true),
                 new InMemorySupportedDb()
             ]);
         return services;
