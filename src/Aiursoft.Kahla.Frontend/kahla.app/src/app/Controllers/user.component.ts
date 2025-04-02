@@ -57,7 +57,7 @@ export class UserComponent {
 
     public async delete(id: string) {
         const resp = await YesNoDialog.fire({
-            title: 'Are you sure to delete a friend?',
+            title: 'Are you sure to delete the contact?',
         });
         if (!resp.value) return;
         try {
@@ -71,7 +71,7 @@ export class UserComponent {
         void this.router.navigate(['/home']);
     }
 
-    public async addAsContract() {
+    public async addAsContact() {
         try {
             await lastValueFrom(
                 this.contactsApiService.Add(this.info.value()!.searchedUser.user.id)
