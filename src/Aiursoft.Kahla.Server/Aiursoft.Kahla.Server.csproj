@@ -13,7 +13,7 @@
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.4" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.10" />
     <PackageReference Include="Aiursoft.DbTools.Switchable" Version="9.0.15" />
-    <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.1" />
+    <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.2" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="9.0.4" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="9.0.0" />
     <PackageReference Include="Aiursoft.Scanner" Version="9.0.5" />
