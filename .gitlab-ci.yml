@@ -127,7 +127,7 @@ deploy_docker_registry:
     - docker build . -t hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
     - echo "Logging in to Docker Registry hub.aiursoft.cn..."
     - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$LOCAL_DOCKER_USERNAME" --password-stdin
-    - docker save ${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
+    - docker save hub.aiursoft.cn/${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
     - regctl image import hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG temp.tar
     - rm ./temp.tar
   rules:
