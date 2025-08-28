@@ -249,10 +249,10 @@ public class ThreadsController(
         }
 
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Save to cache.
         quickMessageAccess.OnThreadNameChanged(id, thread.Name);
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType} to all users in the thread with WebSocket...", nameof(ThreadPropertyChangedEvent));
         kahlaPushService.QueuePushEventsToUsersInThread(threadId: id, PushMode.OnlyWebSocket, new ThreadPropertyChangedEvent
@@ -261,7 +261,7 @@ public class ThreadsController(
             ThreadName = thread.Name,
             ThreadImagePath = thread.IconFilePath
         });
-        
+
         var updatedPropertiesName = string.Join(", ", updatedProperties);
         logger.LogInformation("User with Id: {Id} updated the thread's properties: {Properties}.", currentUserId,
             updatedPropertiesName);
@@ -316,7 +316,7 @@ public class ThreadsController(
         {
             joinThreadLock.Release();
         }
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType }to user: {UserId} with WebSocket...", nameof(YouDirectJoinedEvent), currentUserId);
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouDirectJoinedEvent
@@ -375,7 +375,7 @@ public class ThreadsController(
         }
 
         thread.OwnerRelationId = targetRelation.Id;
-        
+
         // Also set the target user as an admin
         targetRelation.UserThreadRole = UserThreadRole.Admin;
         await relationalDbContext.SaveChangesAsync();
@@ -482,7 +482,7 @@ public class ThreadsController(
 
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, targetUserId);
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType }to user: {UserId} with WebSocket...", nameof(YouBeenKickedEvent), targetUserId);
         kahlaPushService.QueuePushEventToUser(targetUserId, PushMode.AllPath, new YouBeenKickedEvent
@@ -490,7 +490,7 @@ public class ThreadsController(
             ThreadId = id,
             ThreadName = thread.Name
         });
-        
+
         logger.LogInformation("User with Id: {Id} successfully kicked a member from the thread. Thread ID: {ThreadID}.",
             currentUserId, id);
         return this.Protocol(Code.JobDone, "Successfully kicked the member from the thread.");
@@ -532,7 +532,7 @@ public class ThreadsController(
 
         // Remove the thread from the cache.
         quickMessageAccess.OnUserLeftThread(id, currentUserId);
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouLeftEvent), currentUserId);
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouLeftEvent
@@ -540,7 +540,7 @@ public class ThreadsController(
             ThreadId = id,
             ThreadName = thread.Name
         });
-        
+
         logger.LogInformation("User with Id: {Id} successfully left the thread. Thread ID: {ThreadID}.", currentUserId,
             id);
         return this.Protocol(Code.JobDone, "Successfully left the thread.");
@@ -586,7 +586,7 @@ public class ThreadsController(
 
         // Remove the thread from the array database.
         await arrayDbContext.DeleteThreadAsync(id);
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType} to all users in the thread with WebSocket...", nameof(ThreadDissolvedEvent));
         kahlaPushService.QueuePushEventsToUsersInThread(threadId: id, PushMode.OnlyWebSocket, new ThreadDissolvedEvent
@@ -594,7 +594,7 @@ public class ThreadsController(
             ThreadId = id,
             ThreadName = thread.Name
         });
-        
+
         // Remove the thread from the cache.
         quickMessageAccess.OnThreadDropped(id);
 
@@ -629,11 +629,11 @@ public class ThreadsController(
         // Save the mute status in the database.
         myRelation.Muted = mute;
         await relationalDbContext.SaveChangesAsync();
-        
+
         // Save the mute status in the cache.
         // TODO: Build Unit test to cover if the user muted, don't have to web push to him.
         quickMessageAccess.SetUserMutedStatus(id, currentUserId, mute);
-        
+
         logger.LogInformation(
             "User with Id: {Id} successfully set mute as {Mute} for the thread. Thread ID: {ThreadID}.", currentUserId,
             mute, id);
@@ -689,7 +689,7 @@ public class ThreadsController(
 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
-                
+
                 // Push to the client
                 logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(CreateScratchedEvent), currentUserId);
                 kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new CreateScratchedEvent
@@ -774,6 +774,9 @@ public class ThreadsController(
                 if (currentUserId != targetUser.Id)
                 {
                     // Step 4: Add the target user to the thread
+                    logger.LogInformation(
+                        "Setting the owner of the thread to myself (ID is {MyID})... And adding the target user (ID is {OtherID}) to the thread...",
+                        currentUserId, targetUser.Id);
                     var targetRelation = new UserThreadRelation
                     {
                         UserId = targetUser.Id,
@@ -790,9 +793,6 @@ public class ThreadsController(
                 }
 
                 // Commit the transaction if everything is successful
-                logger.LogInformation(
-                    "Setting the owner of the thread to myself (ID is {ID})... And adding the target user (ID is {ID}) to the thread...",
-                    currentUserId, targetUser.Id);
                 await relationalDbContext.SaveChangesAsync(); // Save the targetRelation
                 await transaction.CommitAsync();
 
@@ -806,7 +806,7 @@ public class ThreadsController(
 
                 // Save in array database.
                 arrayDbContext.CreateNewThread(thread.Id);
-                
+
                 // Push to the client
                 logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YourHardInviteFinishedEvent), currentUserId);
                 kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YourHardInviteFinishedEvent
@@ -984,7 +984,7 @@ public class ThreadsController(
         {
             joinThreadLock.Release();
         }
-        
+
         // Push to the client
         logger.LogInformation("Pushing new {EventType} to user: {UserId} with WebSocket...", nameof(YouCompletedSoftInvitedEvent), currentUserId);
         kahlaPushService.QueuePushEventToUser(currentUserId, PushMode.OnlyWebSocket, new YouCompletedSoftInvitedEvent
