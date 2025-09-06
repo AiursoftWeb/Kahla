@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.22" />
+    <PackageReference Include="Aiursoft.DbTools.MySql" Version="9.0.23" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.Entities\Aiursoft.Kahla.Entities.csproj" />
