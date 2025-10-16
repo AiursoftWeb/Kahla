@@ -1,6 +1,5 @@
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.ServiceTests;
 
@@ -12,10 +11,10 @@ public class MessageRepoPushTests
     {
         var messagesStore = new KahlaMessagesMemoryStore();
         var emptyPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(0, emptyPush.Length);
+        Assert.IsEmpty(emptyPush);
 
         var emptyPushAgain = messagesStore.Push().ToArray();
-        Assert.AreEqual(0, emptyPushAgain.Length);
+        Assert.IsEmpty(emptyPushAgain);
     }
 
     [TestMethod]
@@ -29,7 +28,7 @@ public class MessageRepoPushTests
         messagesStore.Commit(message);
 
         var pushed = messagesStore.Push().ToArray();
-        Assert.AreEqual(1, pushed.Length);
+        Assert.HasCount(1, pushed);
     }
 
     [TestMethod]
@@ -49,7 +48,7 @@ public class MessageRepoPushTests
             Content = "message 3"
         });
         var initialPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(3, initialPush.Length);
+        Assert.HasCount(3, initialPush);
         for (int i = 0; i < 3; i++)
         {
             Assert.AreEqual($"message {i + 1}", initialPush[i].Item.Content);
@@ -64,7 +63,7 @@ public class MessageRepoPushTests
             Content = "message 5"
         });
         var secondPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(2, secondPush.Length);
+        Assert.HasCount(2, secondPush);
         for (int i = 0; i < 2; i++)
         {
             Assert.AreEqual($"message {i + 4}", secondPush[i].Item.Content);

@@ -19,7 +19,10 @@ variables:
 restore:
   stage: build
   script:
-    - dotnet restore --no-cache --configfile nuget.config
+    - |
+      dotnet restore --no-cache --configfile nuget.config || \
+      (echo "Restore failed. Retrying in 10 seconds..." && sleep 10 && dotnet restore --no-cache --configfile nuget.config) || \
+      (echo "Restore failed again. Retrying in 20 seconds..." && sleep 20 && dotnet restore --no-cache --configfile nuget.config)
 
 build:
   stage: build

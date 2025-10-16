@@ -1,6 +1,5 @@
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Kahla.Tests.TestBase;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.SdkTests;
 

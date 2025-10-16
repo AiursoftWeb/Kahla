@@ -1,6 +1,5 @@
 using Aiursoft.Kahla.SDK.Models;
 using Aiursoft.Kahla.SDK.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.ServiceTests;
 
@@ -27,7 +26,7 @@ public class MessageRepoPullTests
 
         // Push the local messages
         var initialPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(3, initialPush.Length);
+        Assert.HasCount(3, initialPush);
 
         // Simulate pulling messages that already exist locally (IDs match)
         var pulledCommits = initialPush; // Simulating same commits being pulled
@@ -63,7 +62,7 @@ public class MessageRepoPullTests
 
         // Push the local messages
         var initialPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(3, initialPush.Length);
+        Assert.HasCount(3, initialPush);
         Assert.AreEqual(3, messagesStore.PushedItemsOffset);
 
         var newPulledCommits = new List<Commit<ChatMessage>>
@@ -127,7 +126,7 @@ public class MessageRepoPullTests
         }
 
         var initialPush = messagesStore.Push().ToArray();
-        Assert.AreEqual(3, initialPush.Length);
+        Assert.HasCount(3, initialPush);
 
         foreach (var commit in localMessages)
         {
@@ -169,7 +168,7 @@ public class MessageRepoPullTests
         Assert.AreEqual(3, messagesStore.PulledItemsOffset);
 
         var pushed = messagesStore.Push().ToArray();
-        Assert.AreEqual(0, pushed.Length);
+        Assert.IsEmpty(pushed);
     }
 
     [TestMethod]
@@ -191,12 +190,12 @@ public class MessageRepoPullTests
         }
 
         var allMessages = messagesStore.GetAllMessages().ToArray();
-        Assert.AreEqual(3, allMessages.Length);
+        Assert.HasCount(3, allMessages);
         Assert.AreEqual(3, messagesStore.PushedItemsOffset);
         Assert.AreEqual(3, messagesStore.PulledItemsOffset);
 
         var pushed = messagesStore.Push().ToArray();
-        Assert.AreEqual(0, pushed.Length);
+        Assert.IsEmpty(pushed);
 
         var localMessages2 = new List<Commit<ChatMessage>>
         {
@@ -307,11 +306,11 @@ public class MessageRepoPullTests
         
         for (int i = 1; i <= 9; i++)
         {
-            Assert.IsTrue(allMessages[i - 1].Item.Content.EndsWith(i.ToString()));
+            Assert.EndsWith(i.ToString(), allMessages[i - 1].Item.Content);
         }
         
         // Push should do nothing.
         var pushed = messagesStore.Push().ToArray();
-        Assert.AreEqual(0, pushed.Length);
+        Assert.IsEmpty(pushed);
     }
 }

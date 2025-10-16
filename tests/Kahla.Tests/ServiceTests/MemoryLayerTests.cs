@@ -11,7 +11,6 @@ using Aiursoft.Kahla.Server.Models;
 using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.Kahla.Tests.TestBase;
 using Aiursoft.WebTools;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.ServiceTests;
 
@@ -162,12 +161,12 @@ public class MemoryLayerTests : KahlaTestBase
         {
             // My Threads should return the threads in the order of last message time.
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(3, myThreads.KnownThreads.Count);
+            Assert.HasCount(3, myThreads.KnownThreads);
             // Thread 2 should be the first one.
             Assert.AreEqual("Hello, world! 2", myThreads.KnownThreads[0].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 2", myThreads.KnownThreads[0].Name);
             // Thread 3 should be the second one.
-            Assert.AreEqual(null, myThreads.KnownThreads[1].MessageContext.LatestMessage);
+            Assert.IsNull(myThreads.KnownThreads[1].MessageContext.LatestMessage);
             Assert.AreEqual("Sample thread 3", myThreads.KnownThreads[1].Name);
             // Thread 1 should be the last one.
             Assert.AreEqual("Hello, world!", myThreads.KnownThreads[2].MessageContext.LatestMessage!.Preview);
@@ -175,7 +174,7 @@ public class MemoryLayerTests : KahlaTestBase
 
             // Search threads should still return the threads in the order of creation.
             var searchedThreads = await Sdk.SearchThreadsAsync();
-            Assert.AreEqual(3, searchedThreads.KnownThreads.Count);
+            Assert.HasCount(3, searchedThreads.KnownThreads);
             Assert.AreEqual("Sample thread 3", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 2", searchedThreads.KnownThreads[1].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[2].Name);
@@ -185,20 +184,20 @@ public class MemoryLayerTests : KahlaTestBase
         {
             // My Threads should return the threads in the order of last message time.
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(2, myThreads.KnownThreads.Count);
-            Assert.AreEqual(null, myThreads.KnownThreads[0].MessageContext.LatestMessage);
+            Assert.HasCount(2, myThreads.KnownThreads);
+            Assert.IsNull(myThreads.KnownThreads[0].MessageContext.LatestMessage);
             Assert.AreEqual("Sample thread 3", myThreads.KnownThreads[0].Name);
             Assert.AreEqual("Hello, world!", myThreads.KnownThreads[1].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreads.KnownThreads[1].Name);
 
             // Search threads should still return the threads in the order of creation.
             var searchedThreads = await Sdk.SearchThreadsAsync();
-            Assert.AreEqual(2, searchedThreads.KnownThreads.Count);
+            Assert.HasCount(2, searchedThreads.KnownThreads);
             Assert.AreEqual("Sample thread 3", searchedThreads.KnownThreads[0].Name);
             Assert.AreEqual("Sample thread 1", searchedThreads.KnownThreads[1].Name);
 
             var myThreadsSkip1Take1 = await Sdk.MyThreadsAsync(skipTillThreadId: myThreads.KnownThreads[0].Id, take: 1);
-            Assert.AreEqual(1, myThreadsSkip1Take1.KnownThreads.Count);
+            Assert.HasCount(1, myThreadsSkip1Take1.KnownThreads);
             Assert.AreEqual("Hello, world!", myThreadsSkip1Take1.KnownThreads[0].MessageContext.LatestMessage!.Preview);
             Assert.AreEqual("Sample thread 1", myThreadsSkip1Take1.KnownThreads[0].Name);
         }
@@ -578,10 +577,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)1, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsTrue(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
@@ -590,10 +589,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)0, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsFalse(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         // Clean
@@ -639,10 +638,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)1, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsTrue(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
@@ -651,10 +650,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)0, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsFalse(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         // Clean
@@ -707,10 +706,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)1, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(true, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsTrue(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         var repo2 = await new KahlaMessagesRepo(user2Ws).ConnectAndMonitor();
@@ -719,10 +718,10 @@ public class MemoryLayerTests : KahlaTestBase
         await RunUnderUser("wsuser2", async () =>
         {
             var myThreads = await Sdk.MyThreadsAsync();
-            Assert.AreEqual(1, myThreads.KnownThreads.Count);
+            Assert.HasCount(1, myThreads.KnownThreads);
             Assert.AreEqual((uint)0, myThreads.KnownThreads[0].MessageContext.UnReadAmount);
-            Assert.AreEqual(true, myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
-            Assert.AreEqual(false, myThreads.KnownThreads[0].UnreadAtMe);
+            Assert.IsTrue(myThreads.KnownThreads[0].MessageContext.LatestMessage!.Ats.Contains(user2Id));
+            Assert.IsFalse(myThreads.KnownThreads[0].UnreadAtMe);
         });
 
         // Clean
@@ -796,18 +795,18 @@ public class MemoryLayerTests : KahlaTestBase
             Assert.IsTrue(pushed is NewMessageEvent);
             Assert.AreEqual("Hello, world!", (pushed as NewMessageEvent)!.Message.Preview);
             Assert.AreEqual(user2Id, (pushed as NewMessageEvent)!.Message.Ats[0]);
-            Assert.AreEqual(true, (pushed as NewMessageEvent)!.Mentioned);
+            Assert.IsTrue((pushed as NewMessageEvent)!.Mentioned);
         }, autoSignOut: false);
 
         await Task.Delay(200);
-        Assert.AreEqual(2, MockWebPushService.PushedPayloads.Count);
+        Assert.HasCount(2, MockWebPushService.PushedPayloads);
         Assert.IsTrue(MockWebPushService.PushedPayloads[0] is NewMessageEvent);
         Assert.AreEqual("Hello, world!", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Message.Preview);
-        Assert.AreEqual(true, (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Mentioned);
+        Assert.IsTrue((MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Mentioned);
         Assert.AreEqual("Sample thread 1", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.ThreadName);
         Assert.IsTrue(MockWebPushService.PushedPayloads[1] is NewMessageEvent);
         Assert.AreEqual("Hello, world no at!", (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.Message.Preview);
-        Assert.AreEqual(false, (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.Mentioned);
+        Assert.IsFalse((MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.Mentioned);
         Assert.AreEqual("Sample thread 1", (MockWebPushService.PushedPayloads[1] as NewMessageEvent)!.ThreadName);
 
         // Clean
@@ -870,12 +869,12 @@ public class MemoryLayerTests : KahlaTestBase
 
             Assert.IsTrue(pushed is NewMessageEvent);
             Assert.AreEqual("Hello, world!", (pushed as NewMessageEvent)!.Message.Preview);
-            Assert.AreEqual(0, (pushed as NewMessageEvent)!.Message.Ats.Length);
-            Assert.AreEqual(false, (pushed as NewMessageEvent)!.Mentioned);
+            Assert.IsEmpty((pushed as NewMessageEvent)!.Message.Ats);
+            Assert.IsFalse((pushed as NewMessageEvent)!.Mentioned);
         }, autoSignOut: false);
 
         await Task.Delay(200);
-        Assert.AreEqual(0, MockWebPushService.PushedPayloads.Count);
+        Assert.IsEmpty(MockWebPushService.PushedPayloads);
 
         // Clean
         await repo1.Disconnect();
@@ -939,15 +938,15 @@ public class MemoryLayerTests : KahlaTestBase
 
             Assert.IsTrue(pushed is NewMessageEvent);
             Assert.AreEqual("Hello, world!", (pushed as NewMessageEvent)!.Message.Preview);
-            Assert.AreEqual(1, (pushed as NewMessageEvent)!.Message.Ats.Length);
-            Assert.AreEqual(true, (pushed as NewMessageEvent)!.Mentioned);
+            Assert.HasCount(1, (pushed as NewMessageEvent)!.Message.Ats);
+            Assert.IsTrue((pushed as NewMessageEvent)!.Mentioned);
         }, autoSignOut: false);
 
         await Task.Delay(200);
-        Assert.AreEqual(1, MockWebPushService.PushedPayloads.Count);
+        Assert.HasCount(1, MockWebPushService.PushedPayloads);
         Assert.IsTrue(MockWebPushService.PushedPayloads[0] is NewMessageEvent);
         Assert.AreEqual("Hello, world!", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Message.Preview);
-        Assert.AreEqual(true, (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Mentioned);
+        Assert.IsTrue((MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Mentioned);
         Assert.AreEqual("Sample thread 1", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.ThreadName);
         Assert.AreEqual("wsuser1", (MockWebPushService.PushedPayloads[0] as NewMessageEvent)!.Message.Sender!.NickName);
 
