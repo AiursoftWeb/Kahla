@@ -2,7 +2,6 @@ using Aiursoft.AiurObserver.DefaultConsumers;
 using Aiursoft.AiurObserver.WebSocket;
 using Aiursoft.Kahla.Server.Controllers;
 using Aiursoft.Kahla.Tests.TestBase;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.SdkTests;
 

@@ -10,9 +10,10 @@ using Aiursoft.Kahla.SDK.Services;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Server.Services.Push.WebPush;
 using Aiursoft.WebTools.Attributes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Aiursoft.WebTools.Extends;
 using Extensions = Aiursoft.Kahla.SDK.Extensions;
+
+[assembly: DoNotParallelize]
 
 namespace Aiursoft.Kahla.Tests.TestBase;
 

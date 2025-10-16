@@ -1,7 +1,6 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Kahla.Tests.TestBase;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.SdkTests;
 
@@ -16,14 +15,14 @@ public class ContactsTests : KahlaTestBase
         
         // No contacts.
         var myContacts = await Sdk.ListContactsAsync(take: 2);
-        Assert.AreEqual(0, myContacts.KnownContacts.Count);
+        Assert.IsEmpty(myContacts.KnownContacts);
 
         // Search me.
         var searchResult = await Sdk.SearchUsersGloballyAsync("user12", excluding: null);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
-        Assert.AreEqual(1, searchResult.Users.Count);
+        Assert.HasCount(1, searchResult.Users);
         Assert.AreEqual("user12", searchResult.Users.First().User.NickName);
-        Assert.AreEqual(false, searchResult.Users.First().IsKnownContact);
+        Assert.IsFalse(searchResult.Users.First().IsKnownContact);
         
         // Add me as a contact.
         var addResult = await Sdk.AddContactAsync(searchResult.Users.First().User.Id);
@@ -42,9 +41,9 @@ public class ContactsTests : KahlaTestBase
 
         // I should have one contact now.
         var myContacts2 = await Sdk.ListContactsAsync(take: 2);
-        Assert.AreEqual(1, myContacts2.KnownContacts.Count);
+        Assert.HasCount(1, myContacts2.KnownContacts);
         Assert.AreEqual("user12", myContacts2.KnownContacts.First().User.NickName);
-        Assert.AreEqual(true, myContacts2.KnownContacts.First().IsKnownContact);
+        Assert.IsTrue(myContacts2.KnownContacts.First().IsKnownContact);
 
         // Remove me as a contact.
         var removeResult = await Sdk.RemoveContactAsync(searchResult.Users.First().User.Id);
@@ -63,7 +62,7 @@ public class ContactsTests : KahlaTestBase
         
         // I should have no contact now.
         var myContacts3 = await Sdk.ListContactsAsync(take: 2);
-        Assert.AreEqual(0, myContacts3.KnownContacts.Count);
+        Assert.IsEmpty(myContacts3.KnownContacts);
     }
 
     [TestMethod]
@@ -73,7 +72,7 @@ public class ContactsTests : KahlaTestBase
         await Sdk.RegisterAsync("user13@domain.com", "password");
         var searchResult = await Sdk.SearchUsersGloballyAsync("user13", excluding: null);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
-        Assert.AreEqual(1, searchResult.Users.Count);
+        Assert.HasCount(1, searchResult.Users);
         
         var details = await Sdk.UserDetailAsync(searchResult.Users.First().User.Id);
         Assert.AreEqual("user13", details.SearchedUser.User.NickName);
@@ -86,7 +85,7 @@ public class ContactsTests : KahlaTestBase
         await Sdk.RegisterAsync("user13@domain.com", "password");
         var searchResult = await Sdk.SearchUsersGloballyAsync("user13", excluding: null);
         Assert.AreEqual(Code.ResultShown, searchResult.Code);
-        Assert.AreEqual(1, searchResult.Users.Count);
+        Assert.HasCount(1, searchResult.Users);
         
         var details = await Sdk.UserBriefAsync(searchResult.Users.First().User.Id);
         Assert.AreEqual("user13", details.BriefUser.NickName);
@@ -111,7 +110,7 @@ public class ContactsTests : KahlaTestBase
         
         // Check myself.
         var self = await Sdk.UserDetailAsync(user2Id);
-        Assert.AreEqual(null, self.DefaultThread);
+        Assert.IsNull(self.DefaultThread);
         
         // User 2 create a thread with himself.
         var notRightThread = await Sdk.HardInviteAsync(user2Id);

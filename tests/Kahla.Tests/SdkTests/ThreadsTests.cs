@@ -3,7 +3,6 @@ using Aiursoft.AiurProtocol.Models;
 using Aiursoft.Kahla.SDK.Events;
 using Aiursoft.Kahla.Server.Data;
 using Aiursoft.Kahla.Tests.TestBase;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.SdkTests;
 
@@ -26,17 +25,17 @@ public class ThreadsTests : KahlaTestBase
             // Search
             var searchResult = await Sdk.SearchThreadsAsync("Test");
             Assert.AreEqual(Code.ResultShown, searchResult.Code);
-            Assert.AreEqual(1, searchResult.KnownThreads.Count);
+            Assert.HasCount(1, searchResult.KnownThreads);
 
             // Search Non-Existed
             var searchResult2 = await Sdk.SearchThreadsAsync("Non-Existed");
             Assert.AreEqual(Code.ResultShown, searchResult2.Code);
-            Assert.AreEqual(0, searchResult2.KnownThreads.Count);
+            Assert.IsEmpty(searchResult2.KnownThreads);
 
             // Search Excluding
             var searchResult3 = await Sdk.SearchThreadsAsync("Test", excluding: "est");
             Assert.AreEqual(Code.ResultShown, searchResult3.Code);
-            Assert.AreEqual(0, searchResult3.KnownThreads.Count);
+            Assert.IsEmpty(searchResult3.KnownThreads);
         });
     }
 
@@ -121,12 +120,12 @@ public class ThreadsTests : KahlaTestBase
 
             // Search the thread by name
             var searchThread = await Sdk.SearchThreadsAsync("Patched_name");
-            Assert.AreEqual(1, searchThread.KnownThreads.Count);
+            Assert.HasCount(1, searchThread.KnownThreads);
             Assert.AreEqual(createdThread.NewThreadId, searchThread.KnownThreads.First().Id);
 
             // Search the thread by username
             var searchThread2 = await Sdk.SearchThreadsAsync("user1");
-            Assert.AreEqual(1, searchThread2.KnownThreads.Count);
+            Assert.HasCount(1, searchThread2.KnownThreads);
             Assert.AreEqual(createdThread.NewThreadId, searchThread2.KnownThreads.First().Id);
         });
     }
@@ -149,7 +148,7 @@ public class ThreadsTests : KahlaTestBase
 
             // Assert
             Assert.AreEqual(Code.ResultShown, members.Code);
-            Assert.AreEqual(1, members.Members.Count);
+            Assert.HasCount(1, members.Members);
         });
     }
 
@@ -169,7 +168,7 @@ public class ThreadsTests : KahlaTestBase
 
             // Assert
             Assert.AreEqual(Code.ResultShown, members.Code);
-            Assert.AreEqual(2, members.Members.Count);
+            Assert.HasCount(2, members.Members);
             Assert.IsTrue(members.Members.Any(t => t.User.Id == user24Id));
             Assert.IsTrue(members.Members.Any(t => t.User.Id == myId));
         });
@@ -262,7 +261,7 @@ public class ThreadsTests : KahlaTestBase
 
             // I can enlist members because I'm the admin
             Assert.AreEqual(Code.ResultShown, members.Code);
-            Assert.AreEqual(1, members.Members.Count);
+            Assert.HasCount(1, members.Members);
 
             // Set me as not admin
             await Sdk.PromoteAdminAsync(thread.NewThreadId, myId, false);
@@ -310,11 +309,11 @@ public class ThreadsTests : KahlaTestBase
             await Sdk.DirectJoinAsync(threadId);
             var searchResult = await Sdk.ThreadMembersAsync(threadId, "user1");
             Assert.AreEqual(Code.ResultShown, searchResult.Code);
-            Assert.AreEqual(2, searchResult.Members.Count);
+            Assert.HasCount(2, searchResult.Members);
 
             var searchResult2 = await Sdk.ThreadMembersAsync(threadId, "user", "2");
             Assert.AreEqual(Code.ResultShown, searchResult2.Code);
-            Assert.AreEqual(1, searchResult2.Members.Count);
+            Assert.HasCount(1, searchResult2.Members);
             Assert.AreEqual("user1", searchResult2.Members.Single().User.NickName);
         });
     }
@@ -337,7 +336,7 @@ public class ThreadsTests : KahlaTestBase
 
             // Assert
             Assert.AreEqual(Code.ResultShown, members.Code);
-            Assert.AreEqual(2, members.Members.Count);
+            Assert.HasCount(2, members.Members);
             Assert.IsTrue(members.Members.Any(t => t.User.Id == user31Id));
             Assert.IsTrue(members.Members.Any(t => t.User.Id == user32Id));
 
@@ -347,7 +346,7 @@ public class ThreadsTests : KahlaTestBase
             // Only user32 left
             var membersOnly1 = await Sdk.ThreadMembersAsync(thread.NewThreadId);
             Assert.AreEqual(Code.ResultShown, membersOnly1.Code);
-            Assert.AreEqual(1, membersOnly1.Members.Count);
+            Assert.HasCount(1, membersOnly1.Members);
             Assert.IsTrue(membersOnly1.Members.Any(t => t.User.Id == user32Id));
         });
 
@@ -384,7 +383,7 @@ public class ThreadsTests : KahlaTestBase
 
             // Assert
             Assert.AreEqual(Code.ResultShown, details.Code);
-            Assert.AreEqual(false, details.Thread.AllowSearchByName);
+            Assert.IsFalse(details.Thread.AllowSearchByName);
 
             // Kick user33
             await Sdk.KickMemberAsync(thread.NewThreadId, user33Id);
@@ -405,7 +404,7 @@ public class ThreadsTests : KahlaTestBase
             // However, he can still get the thread details anonymously
             var threadAnonymous = await Sdk.ThreadDetailsAnonymousAsync(threadId);
             Assert.AreEqual(Code.ResultShown, threadAnonymous.Code);
-            Assert.AreEqual(false, threadAnonymous.Thread.ImInIt);
+            Assert.IsFalse(threadAnonymous.Thread.ImInIt);
         });
     }
 
@@ -515,9 +514,9 @@ public class ThreadsTests : KahlaTestBase
             var details = await Sdk.ThreadDetailsJoinedAsync(thread.NewThreadId);
             Assert.AreEqual("New name", details.Thread.Name);
             Assert.AreEqual("New name", details.Thread.ImagePath);
-            Assert.AreEqual(true, details.Thread.AllowDirectJoinWithoutInvitation);
-            Assert.AreEqual(true, details.Thread.AllowMemberSoftInvitation);
-            Assert.AreEqual(true, details.Thread.AllowMembersSendMessages);
+            Assert.IsTrue(details.Thread.AllowDirectJoinWithoutInvitation);
+            Assert.IsTrue(details.Thread.AllowMemberSoftInvitation);
+            Assert.IsTrue(details.Thread.AllowMembersSendMessages);
 
             // Demote user41
             await Sdk.PromoteAdminAsync(thread.NewThreadId, user41Id, false);

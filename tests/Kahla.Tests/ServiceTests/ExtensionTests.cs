@@ -1,5 +1,4 @@
 using Aiursoft.Kahla.Server;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.ServiceTests;
 

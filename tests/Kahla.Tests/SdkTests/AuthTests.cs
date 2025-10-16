@@ -1,6 +1,5 @@
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.Kahla.Tests.TestBase;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aiursoft.Kahla.Tests.SdkTests;
 
@@ -52,7 +51,7 @@ public class AuthTests : KahlaTestBase
             Assert.AreEqual("You are already signed in!", e.Response.Message);
         }
     }
-    
+
     [TestMethod]
     public async Task SignIn_ChangePassword_SignIn()
     {
@@ -66,7 +65,7 @@ public class AuthTests : KahlaTestBase
         {
             Assert.AreEqual("Incorrect password.", e.Response.Message);
         }
-        
+
         await Sdk.ChangePasswordAsync("password", "newpassword");
         await Sdk.SignoutAsync();
         try
@@ -78,7 +77,7 @@ public class AuthTests : KahlaTestBase
         {
             Assert.AreEqual("Invalid login attempt! Please check your email and password.", e.Response.Message);
         }
-        
+
         await Sdk.SignInAsync("user11@domain.com", "newpassword");
     }
 
@@ -105,13 +104,13 @@ public class AuthTests : KahlaTestBase
         Assert.AreEqual("user3", me.User.NickName);
         Assert.AreEqual("user3@domain.com", me.User.Email);
     }
-    
+
     [TestMethod]
     public async Task GetMyInfoUnauthorized()
     {
         await Sdk.RegisterAsync("user4@domain.com", "password");
         await Sdk.SignoutAsync();
-        
+
         try
         {
             await Sdk.MeAsync();
@@ -119,7 +118,7 @@ public class AuthTests : KahlaTestBase
         }
         catch (AiurUnexpectedServerResponseException e)
         {
-            Assert.IsTrue(e.Message.StartsWith("You are unauthorized to access this API."));
+            Assert.StartsWith("You are unauthorized to access this API.", e.Message);
         }
     }
 
