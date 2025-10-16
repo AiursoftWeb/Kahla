@@ -13,7 +13,7 @@ using Aiursoft.WebTools.Attributes;
 using static Aiursoft.WebTools.Extends;
 using Extensions = Aiursoft.Kahla.SDK.Extensions;
 
-[assembly: Parallelize]
+[assembly: DoNotParallelize]
 
 namespace Aiursoft.Kahla.Tests.TestBase;
 
