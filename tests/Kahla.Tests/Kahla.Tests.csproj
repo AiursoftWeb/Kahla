@@ -16,7 +16,6 @@
     <PackageReference Include="JunitXml.TestLogger" Version="7.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="4.0.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="4.0.1" />
     <PackageReference Include="Aiursoft.AiurObserver.Extensions" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
