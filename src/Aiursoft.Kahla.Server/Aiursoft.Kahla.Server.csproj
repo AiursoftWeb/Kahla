@@ -11,7 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.9" />
-    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.22" />
+    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.24" />
     <PackageReference Include="Aiursoft.DbTools.Switchable" Version="9.0.20" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.7" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="9.0.9" />
