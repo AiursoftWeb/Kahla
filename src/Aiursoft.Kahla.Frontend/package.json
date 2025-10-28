@@ -16,7 +16,7 @@
     "prettier": "^3.4.2"
   },
   "description": "Kahla is a cross-platform business messaging app.",
-  "author": "Aiursoft <service@aiursoft.com> (https://www.aiursoft.cn/)",
+  "author": "Aiursoft <service@aiursoft.com> (https://www.aiursoft.com/)",
   "contributors": [
     "Anduin@aiursoft.com",
     "xxyzz@aiursoft.com",
@@ -34,6 +34,6 @@
   "bugs": {
     "url": "https://gitlab.aiursoft.com/aiursoft/kahla.app/-/issues"
   },
-  "homepage": "https://kahla.aiursoft.cn",
+  "homepage": "https://kahla.aiursoft.com",
   "packageManager": "yarn@4.5.3"
 }
