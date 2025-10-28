@@ -4,7 +4,7 @@
 [![Pipeline stat](https://gitlab.aiursoft.com/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/pipelines)
 [![Test Coverage](https://gitlab.aiursoft.com/aiursoft/kahla/badges/master/coverage.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/pipelines)
 [![NuGet version (Aiursoft.Kahla.Sdk)](https://img.shields.io/nuget/v/Aiursoft.Kahla.Sdk.svg)](https://www.nuget.org/packages/Aiursoft.Kahla.Sdk/)
-[![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.com/aiursoft/kahla.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/commits/master?ref_type=heads)
+[![ManHours](https://manhours.aiursoft.com/r/gitlab.aiursoft.com/aiursoft/kahla.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/commits/master?ref_type=heads)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fkahla.aiursoft.cn%2F)](https://kahla.aiursoft.cn)
 [![Docker](https://img.shields.io/docker/pulls/aiursoft/kahla.svg)](https://hub.docker.com/r/aiursoft/kahla)
 
