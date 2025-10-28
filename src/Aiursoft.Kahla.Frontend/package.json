@@ -28,11 +28,11 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://gitlab.aiursoft.cn/aiursoft/kahla.app.git"
+    "url": "https://gitlab.aiursoft.com/aiursoft/kahla.app.git"
   },
   "keywords": [],
   "bugs": {
-    "url": "https://gitlab.aiursoft.cn/aiursoft/kahla.app/-/issues"
+    "url": "https://gitlab.aiursoft.com/aiursoft/kahla.app/-/issues"
   },
   "homepage": "https://kahla.aiursoft.cn",
   "packageManager": "yarn@4.5.3"
