@@ -5,7 +5,7 @@ ARG FRONT_END_PATH="./src/Aiursoft.Kahla.Frontend"
 # ============================
 # Prepare node dist
 # ============================
-FROM hub.aiursoft.cn/node:21-alpine AS npm-env
+FROM hub.aiursoft.com/node:21-alpine AS npm-env
 ARG FRONT_END_PATH
 WORKDIR /src
 
@@ -24,7 +24,7 @@ RUN corepack yarn run build
 # ============================
 # Prepare .NET binaries
 # ============================
-FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet AS build-env
+FROM hub.aiursoft.com/aiursoft/internalimages/dotnet AS build-env
 ARG CSPROJ_PATH
 ARG PROJ_NAME
 WORKDIR /src
@@ -36,7 +36,7 @@ RUN dotnet publish ${CSPROJ_PATH}/${PROJ_NAME}.csproj --configuration Release --
 # ============================
 # Prepare runtime image
 # ============================
-FROM hub.aiursoft.cn/aiursoft/internalimages/dotnet
+FROM hub.aiursoft.com/aiursoft/internalimages/dotnet
 ARG PROJ_NAME
 WORKDIR /app
 COPY --from=build-env /app .
