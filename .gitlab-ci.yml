@@ -8,8 +8,8 @@ stages:
 before_script:
   - 'export DOTNET_CLI_TELEMETRY_OPTOUT=1'
   - 'export PATH=$PATH:$HOME/.dotnet/tools'
-  - 'which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.cn/v3/index.json --configfile ./nuget.config -v d'
-  - 'which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.cn/v3/index.json --configfile ./nuget.config -v d'
+  - 'which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d'
+  - 'which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d'
   - 'echo "Hostname: $(hostname)"'
   - 'dotnet --info'
 
@@ -97,7 +97,7 @@ deploy_local_nuget:
   script:
     - |
       for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.cn/v3/index.json" --skip-duplicate || exit 1;
+        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.com/v3/index.json" --skip-duplicate || exit 1;
       done
   only:
     - master
