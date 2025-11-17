@@ -21,7 +21,7 @@ Try a running Kahla [here](https://kahla.aiursoft.com).
 
 Requirements about how to run
 
-1. Install [.NET 9 SDK](http://dot.net/) and [Node.js](https://nodejs.org/).
+1. Install [.NET 10 SDK](http://dot.net/) and [Node.js](https://nodejs.org/).
 2. Execute `yarn install && yarn run build` at `./src/Aiursoft.Kahla.Frontend/` folder to install the dependencies.
 3. Copy the `dist` content to `./src/Aiursoft.Kahla.Server/wwwroot/`.
 4. Execute `dotnet run` to run the app.
