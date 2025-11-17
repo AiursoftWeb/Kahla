@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.Kahla.Server</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.Server</RootNamespace>
     <IsTestProject>false</IsTestProject>
@@ -10,16 +10,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="9.0.10" />
-    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="9.0.24" />
-    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="9.0.21" />
-    <PackageReference Include="Aiursoft.DocGenerator" Version="9.0.8" />
-    <PackageReference Include="Aiursoft.InMemoryKvDb" Version="9.0.10" />
+    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="10.0.0" />
+    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="10.0.1" />
+    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.1" />
+    <PackageReference Include="Aiursoft.DocGenerator" Version="10.0.1" />
+    <PackageReference Include="Aiursoft.InMemoryKvDb" Version="10.0.0" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="9.0.0" />
-    <PackageReference Include="Aiursoft.Scanner" Version="9.0.11" />
-    <PackageReference Include="Aiursoft.WebTools" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+    <PackageReference Include="Aiursoft.Scanner" Version="10.0.0" />
+    <PackageReference Include="Aiursoft.WebTools" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
