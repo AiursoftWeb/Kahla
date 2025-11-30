@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.DbTools.InMemory" Version="10.0.1" />
+    <PackageReference Include="Aiursoft.DbTools.InMemory" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aiursoft.Kahla.Entities\Aiursoft.Kahla.Entities.csproj" />
