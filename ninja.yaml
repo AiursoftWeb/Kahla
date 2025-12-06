@@ -6,6 +6,8 @@ files:
     contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/.gitignore
   - name: .gitlab-ci.yml
     contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/.gitlab-ci.yml
+  - name: lint.sh
+    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/lint.sh
   - name: LICENSE
     contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/LICENSE
   - name: CODE_OF_CONDUCT.md

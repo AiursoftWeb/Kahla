@@ -1,157 +1,151 @@
 stages:
-  - build
-  - lint
-  - test
-  - publish
-  - deploy
+    - build
+    - lint
+    - test
+    - publish
+    - deploy
 
 before_script:
-  - 'export DOTNET_CLI_TELEMETRY_OPTOUT=1'
-  - 'export PATH=$PATH:$HOME/.dotnet/tools'
-  - 'which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d'
-  - 'which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d'
-  - 'echo "Hostname: $(hostname)"'
-  - 'dotnet --info'
+    - "export DOTNET_CLI_TELEMETRY_OPTOUT=1"
+    - "export PATH=$PATH:$HOME/.dotnet/tools"
+    - "which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
+    - "which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
+    - 'echo "Hostname: $(hostname)"'
+    - "dotnet --info"
 
 variables:
-  GIT_CLONE_PATH: '$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID'
+    GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID"
 
 restore:
-  stage: build
-  script:
-    - |
-      dotnet restore --no-cache --configfile nuget.config || \
-      (echo "Restore failed. Retrying in 10 seconds..." && sleep 10 && dotnet restore --no-cache --configfile nuget.config) || \
-      (echo "Restore failed again. Retrying in 20 seconds..." && sleep 20 && dotnet restore --no-cache --configfile nuget.config)
+    stage: build
+    script:
+        - |
+            dotnet restore --no-cache --configfile nuget.config || \
+            (echo "Restore failed. Retrying in 10 seconds..." && sleep 10 && dotnet restore --no-cache --configfile nuget.config) || \
+            (echo "Restore failed again. Retrying in 20 seconds..." && sleep 20 && dotnet restore --no-cache --configfile nuget.config)
 
 build:
-  stage: build
-  needs: 
-    - restore
-  script:
-    - dotnet build -maxcpucount:1 --no-self-contained
+    stage: build
+    needs:
+        - restore
+    script:
+        - dotnet build -maxcpucount:1 --no-self-contained
 
 lint:
-  stage: lint
-  needs: 
-    - build
-  script:
-    # 3 times retry because sometimes the first time will fail
-    - jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml || jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml || jb inspectcode ./*.sln --output=analyze_output.xml --build -f=xml
-    # Remove the warning of UnusedAutoPropertyAccessor InconsistentNaming
-    - sed -i '/InconsistentNaming/d' analyze_output.xml
-    - sed -i '/AssignNullToNotNullAttribute/d' analyze_output.xml # This is because jetbrains is not smart enough to understand the nullability of C# 8.0
-    - sed -i '/UnusedAutoPropertyAccessor/d' analyze_output.xml
-    - sed -i '/DuplicateResource/d' analyze_output.xml
-    - grep 'WARNING' analyze_output.xml && cat analyze_output.xml && exit 1 || echo "No warning found"
-  artifacts:
-    when: always
-    expire_in: 1 day
-    paths:
-      - ./analyze_output.xml
+    stage: lint
+    needs:
+        - build
+    script:
+        - chmod +x ./lint.sh
+        - ./lint.sh
+    artifacts:
+        when: always
+        expire_in: 1 day
+        paths:
+            - ./analyze_output.xml
 
 test:
-  stage: test
-  needs: 
-    - build
-  coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
-  script:
-    - dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose"
-    - reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"." -reporttypes:"cobertura"
-    - COVERAGE_VALUE=$(grep -oPm 1 'line-rate="\K([0-9.]+)' "./Cobertura.xml")
-    - COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE_VALUE * 100" | bc)
-    - 'echo "TOTAL_COVERAGE=$COVERAGE_PERCENTAGE%"'
-  artifacts:
-    when: always
-    expire_in: 1 day
-    paths:
-      - ./**/TestResults.xml
-      - ./Cobertura.xml
-    reports:
-      junit:
-        - ./**/TestResults.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: ./Cobertura.xml
+    stage: test
+    needs:
+        - build
+    coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
+    script:
+        - dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+        - reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"." -reporttypes:"cobertura"
+        - COVERAGE_VALUE=$(grep -oPm 1 'line-rate="\K([0-9.]+)' "./Cobertura.xml")
+        - COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE_VALUE * 100" | bc)
+        - 'echo "TOTAL_COVERAGE=$COVERAGE_PERCENTAGE%"'
+    artifacts:
+        when: always
+        expire_in: 1 day
+        paths:
+            - ./**/TestResults.xml
+            - ./Cobertura.xml
+        reports:
+            junit:
+                - ./**/TestResults.xml
+            coverage_report:
+                coverage_format: cobertura
+                path: ./Cobertura.xml
 
 pack:
-  stage: publish
-  needs: 
-    - lint
-    - test
-  script:
-    - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
-    - dotnet pack -maxcpucount:1 --configuration Release *.sln || echo "Some packaging failed!"
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - '**/*.nupkg'
+    stage: publish
+    needs:
+        - lint
+        - test
+    script:
+        - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
+        - dotnet pack -maxcpucount:1 --configuration Release *.sln || echo "Some packaging failed!"
+    artifacts:
+        expire_in: 1 week
+        paths:
+            - "**/*.nupkg"
 
 deploy_local_nuget:
-  stage: deploy
-  environment: production
-  needs:
-    - pack
-  dependencies:
-    - pack
-  script:
-    - |
-      for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.com/v3/index.json" --skip-duplicate || exit 1;
-      done
-  only:
-    - master
+    stage: deploy
+    environment: production
+    needs:
+        - pack
+    dependencies:
+        - pack
+    script:
+        - |
+            for file in $(find . -name "*.nupkg"); do
+              dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.com/v3/index.json" --skip-duplicate || exit 1;
+            done
+    only:
+        - master
 
 deploy_public_nuget:
-  stage: deploy
-  environment: production
-  needs:
-    - pack
-    - deploy_local_nuget
-  dependencies:
-    - pack
-  script:
-    - |
-      for file in $(find . -name "*.nupkg"); do
-        dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
-      done
-  only:
-    - master
+    stage: deploy
+    environment: production
+    needs:
+        - pack
+        - deploy_local_nuget
+    dependencies:
+        - pack
+    script:
+        - |
+            for file in $(find . -name "*.nupkg"); do
+              dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
+            done
+    only:
+        - master
 
 deploy_docker_registry:
-  stage: deploy
-  environment: production
-  needs: 
-    - lint
-    - test
-  script:
-    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
-    - echo building image hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
-    - docker build . -t hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
-    - echo "Logging in to Docker Registry hub.aiursoft.com..."
-    - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
-    - docker save hub.aiursoft.com/${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
-    - regctl image import hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG temp.tar
-    - rm ./temp.tar
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      exists:
-      - Dockerfile
+    stage: deploy
+    environment: production
+    needs:
+        - lint
+        - test
+    script:
+        - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
+        - echo building image hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
+        - docker build . -t hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+        - echo "Logging in to Docker Registry hub.aiursoft.com..."
+        - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
+        - docker save hub.aiursoft.com/${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
+        - regctl image import hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG temp.tar
+        - rm ./temp.tar
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
+          exists:
+              - Dockerfile
 
 deploy_docker_hub:
-  stage: deploy
-  environment: production
-  needs: 
-    - deploy_docker_registry
-  script:
-    - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then NAMESPACE="anduin2019"; else NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
-    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
-    - echo building image $NAMESPACE/$CI_PROJECT_NAME:$TAG
-    - docker build . -t $NAMESPACE/$CI_PROJECT_NAME:$TAG
-    - echo "Logging in to Docker Hub..."
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker push $NAMESPACE/$CI_PROJECT_NAME:$TAG
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      exists:
-      - Dockerfile
+    stage: deploy
+    environment: production
+    needs:
+        - deploy_docker_registry
+    script:
+        - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then NAMESPACE="anduin2019"; else NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
+        - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
+        - echo building image $NAMESPACE/$CI_PROJECT_NAME:$TAG
+        - docker build . -t $NAMESPACE/$CI_PROJECT_NAME:$TAG
+        - echo "Logging in to Docker Hub..."
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push $NAMESPACE/$CI_PROJECT_NAME:$TAG
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
+          exists:
+              - Dockerfile
