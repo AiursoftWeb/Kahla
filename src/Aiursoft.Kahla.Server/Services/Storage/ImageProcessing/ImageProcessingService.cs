@@ -1,3 +1,4 @@
+using AsyncKeyedLock;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
@@ -9,7 +10,7 @@ namespace Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 public class ImageProcessingService(
     PathResolver pathResolver,
     ILogger<ImageProcessingService> logger,
-    FileLockProvider fileLockProvider)
+    AsyncKeyedLocker<string> fileLockProvider)
     : IImageProcessingService
 {
     /// <summary>
@@ -25,8 +26,7 @@ public class ImageProcessingService(
             return targetAbsolute;
         }
 
-        var lockOnCreatedFile = fileLockProvider.GetLock(targetAbsolute);
-        await lockOnCreatedFile.WaitAsync();
+        using var _ = await fileLockProvider.LockAsync(targetAbsolute).ConfigureAwait(false);
         try
         {
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
@@ -35,6 +35,7 @@ public class ImageProcessingService(
             image.Metadata.ExifProfile = null;
             logger.LogInformation("Clearing EXIF: {Source} -> {Target}", sourceAbsolute, targetAbsolute);
             await image.SaveAsync(targetAbsolute);
+            return targetAbsolute;
         }
         catch (UnknownImageFormatException e)
         {
@@ -47,13 +48,7 @@ public class ImageProcessingService(
             // e.g. if it's a corrupted or non-image file
             logger.LogWarning(e, "Invalid image; returning original path for {Source}", sourceAbsolute);
             return sourceAbsolute;
-        }
-        finally
-        {
-            lockOnCreatedFile.Release();
-        }
-
-        return targetAbsolute;
+        }        
     }
 
     /// <summary>
@@ -70,8 +65,7 @@ public class ImageProcessingService(
             return targetAbsolute;
         }
 
-        var lockOnCreatedFile = fileLockProvider.GetLock(targetAbsolute);
-        await lockOnCreatedFile.WaitAsync();
+        using var _ = await fileLockProvider.LockAsync(targetAbsolute).ConfigureAwait(false);
         try
         {
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
@@ -82,6 +76,7 @@ public class ImageProcessingService(
             logger.LogInformation("Compressing image {Source} -> {Target} (width={Width}, height={Height})",
                 sourceAbsolute, targetAbsolute, width, height);
             await image.SaveAsync(targetAbsolute);
+            return targetAbsolute;
         }
         catch (UnknownImageFormatException e)
         {
@@ -93,12 +88,6 @@ public class ImageProcessingService(
             logger.LogWarning(e, "Invalid image format; returning original path for {Source}", sourceAbsolute);
             return sourceAbsolute;
         }
-        finally
-        {
-            lockOnCreatedFile.Release();
-        }
-
-        return targetAbsolute;
     }
 
     private async Task WaitTillFileCanBeReadAsync(string path)

@@ -20,6 +20,7 @@ using Aiursoft.Kahla.Server.Services.Repositories;
 using Aiursoft.Kahla.Server.Services.Storage;
 using Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 using Aiursoft.WebTools.Abstractions.Models;
+using AsyncKeyedLock;
 using Microsoft.AspNetCore.Identity;
 using WebPush;
 
@@ -98,7 +99,7 @@ namespace Aiursoft.Kahla.Server
             // Storage services.
             services.AddScoped<PathResolver>();
             services.AddScoped<StorageService>();
-            services.AddSingleton<FileLockProvider>();
+            services.AddSingleton<AsyncKeyedLocker<string>>();
             services.AddScoped<IImageProcessingService, ImageProcessingService>();
 
             // Online detector
