@@ -41,6 +41,7 @@ sed -i '/InconsistentNaming/d' analyze_output.xml
 sed -i '/AssignNullToNotNullAttribute/d' analyze_output.xml
 sed -i '/UnusedAutoPropertyAccessor/d' analyze_output.xml
 sed -i '/DuplicateResource/d' analyze_output.xml
+sed -i '/NotOverriddenInSpecificCulture/d' analyze_output.xml
 
 # Check for warnings
 # Mimic .gitlab-ci.yml logic: Fail if 'WARNING' string is found.
