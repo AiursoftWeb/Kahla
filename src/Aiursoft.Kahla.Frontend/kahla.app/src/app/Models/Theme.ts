@@ -14,4 +14,7 @@ export enum Theme {
     grassAuto,
     grassLight,
     grassDark,
+    yellowAuto,
+    yellowLight,
+    yellowDark,
 }
