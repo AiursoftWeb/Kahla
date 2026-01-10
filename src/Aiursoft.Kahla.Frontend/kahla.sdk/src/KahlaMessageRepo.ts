@@ -13,6 +13,7 @@ function deserializeCommit<T>(content: string): KahlaCommit<T>[] {
 
 export class KahlaMessagesRepo {
     private _webSocket: WebSocketSubject<KahlaCommit<ChatMessage>[]> | null = null;
+    private _connecting = false;
     messages: KahlaMessagesMemoryStore = new KahlaMessagesMemoryStore();
 
     private reconnectDelay = 1000;
@@ -27,6 +28,7 @@ export class KahlaMessagesRepo {
         private autoReconnect = false
     ) {
         this.onConnected.subscribe(() => {
+            this._connecting = false;
             this.reconnectDelay = 1000; // Reset reconnect delay after a successful connection
             setTimeout(() => {
                 if (this.health) {
@@ -38,6 +40,7 @@ export class KahlaMessagesRepo {
 
     connect(): KahlaMessagesRepo {
         // start: The first offset of commit that I want.
+        this._connecting = true;
         this.shouldOpen = true;
         const realEndpoint = `${this.webSocketEndpoint}?start=${this.messages.pulledItemsOffset}`;
         this._webSocket = webSocket({
@@ -48,6 +51,7 @@ export class KahlaMessagesRepo {
         this._webSocket.subscribe({
             next: message => void this.onNewWebSocketMessage(message),
             error: err => {
+                this._connecting = false;
                 // rollback push pointer. We could not guarantee that the server has received the message we pushed just now.
                 this.messages.lastPushed = this.messages.lastPulled;
                 this.messages.pushedItemsOffset = this.messages.pulledItemsOffset;
@@ -55,6 +59,7 @@ export class KahlaMessagesRepo {
                 this.onError.next();
             },
             complete: () => {
+                this._connecting = false;
                 console.log('WebSocket connection closed');
                 this._webSocket = null;
 
@@ -85,6 +90,7 @@ export class KahlaMessagesRepo {
     }
 
     disconnect(): void {
+        this._connecting = false;
         this.shouldOpen = false;
         if (this._webSocket) {
             this._webSocket.complete();
@@ -112,6 +118,10 @@ export class KahlaMessagesRepo {
     }
 
     public get health(): boolean {
-        return !!this._webSocket && !this._webSocket.closed;
+        return !!this._webSocket && !this._webSocket.closed && !this._connecting;
+    }
+
+    public get connecting(): boolean {
+        return this._connecting;
     }
 }
