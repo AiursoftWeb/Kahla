@@ -10,6 +10,7 @@ import { PropertyNamesWithType } from '../Utils/Typing';
 })
 export class ThreadOptionsComponent {
     @Input() public showAvatarOptions = false;
+    @Input() public showName = true;
 
     public threadOptions = model.required<ThreadOptions>();
 

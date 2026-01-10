@@ -76,6 +76,7 @@ import { AutofocusDirective } from './Directives/AutoFocusDirective';
 import { ThreadNamePipe } from './Pipes/thread-name.pipe';
 import { ThreadInfoCacheDictionary } from './Caching/ThreadInfoCacheDictionary';
 import { ManageThreadComponent } from './Controllers/manage-thread.component';
+import { EditableMenuItemComponent } from './Controllers/editable-menu-item.component';
 import { MyThreadsOrderedRepository } from './Repositories/MyThreadsOrderedRepository';
 import { ThreadInfoPublicComponent } from './Controllers/thread-info-public.component';
 import { ThreadBasicInfoComponent } from './Controllers/thread-basic-info.component';
@@ -152,6 +153,7 @@ import { PlatformModule } from '@angular/cdk/platform';
         ScrollButtonComponent,
         LoadMoreButtonComponent,
         ManageThreadComponent,
+        EditableMenuItemComponent,
         ThreadInfoPublicComponent,
         ThreadBasicInfoComponent,
         UserBasicInfoComponent,

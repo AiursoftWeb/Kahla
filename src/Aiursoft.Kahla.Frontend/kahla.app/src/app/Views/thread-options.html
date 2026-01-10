@@ -1,13 +1,15 @@
-<div class="menu-header">Thread Profile</div>
-<div class="profile">
-    <label>Name</label>
-    <input
-        [ngModel]="threadOptions().name"
-        placeholder="Enter the name of the thread"
-        type="text"
-        (ngModelChange)="flipOption('name', $event)"
-    />
-</div>
+@if (showName) {
+    <div class="menu-header">Thread Profile</div>
+    <div class="profile">
+        <label>Name</label>
+        <input
+            [ngModel]="threadOptions().name"
+            placeholder="Enter the name of the thread"
+            type="text"
+            (ngModelChange)="flipOption('name', $event)"
+        />
+    </div>
+}
 <div class="menu-header">Options</div>
 <app-toggle-menu-item
     title="Allow members send messages"
