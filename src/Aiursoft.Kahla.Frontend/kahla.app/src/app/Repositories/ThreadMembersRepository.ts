@@ -12,9 +12,14 @@ export class ThreadMembersRepository extends RepositoryListBase<ThreadMemberInfo
         private threadsApiService: ThreadsApiService,
         private threadId: number,
         private searchInput?: string,
-        private searchExclude?: string
+        private searchExclude?: string,
+        initialData?: ThreadMemberInfo[]
     ) {
         super();
+        if (initialData) {
+            this.data = initialData;
+            this.status = 'synced';
+        }
     }
 
     protected async requestOnline(

@@ -19,7 +19,7 @@ import { imageFileTypes, selectFiles } from '../Utils/SystemDialog';
 import { MessageTextInputDirective } from '../Directives/MessageTextInputDirective';
 import { KahlaUser } from '../Models/KahlaUser';
 import { Logger } from '../Services/Logger';
-import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, Subscription } from 'rxjs';
 import { ThreadsApiService } from '../Services/Api/ThreadsApiService';
 import { ThreadInfoJoined } from '../Models/Threads/ThreadInfo';
 import { MessageTextAnnotatedMention } from '../Models/Messages/MessageTextAnnotated';
@@ -57,23 +57,35 @@ export class TalkingInputComponent {
     ) {
         effect(cleanup => {
             if (this.threadInfo()?.allowMembersEnlistAllMembers || this.threadInfo()?.imAdmin) {
-                const sub = this.chatInput()
+                const sub = new Subscription();
+                const wordChanged = this.chatInput()
                     .lastInputWordChanged.pipe(
                         filter(t => (t?.word?.startsWith('@') && t.word.length <= 41) ?? false),
                         map(t => t.word!.slice(1).toLowerCase()),
-                        distinctUntilChanged(),
-                        debounceTime(500)
-                    )
-                    .subscribe(t => {
+                        distinctUntilChanged()
+                    );
+
+                sub.add(
+                    wordChanged.subscribe(t => {
                         logger.debug('Update member info by word: ', t);
                         const repo = new ThreadMembersRepository(
                             this.threadApiService,
                             this.threadInfo()!.id,
-                            t || undefined
+                            t || undefined,
+                            undefined,
+                            this.threadInfo()?.topTenMembers?.filter(m =>
+                                m.user.nickName.toLowerCase().includes(t)
+                            )
                         );
-                        void repo.updateAll();
                         this.atRecommends.set(repo);
-                    });
+                    })
+                );
+
+                sub.add(
+                    wordChanged.pipe(debounceTime(200)).subscribe(() => {
+                        void this.atRecommends()?.updateAll();
+                    })
+                );
 
                 sub.add(
                     this.chatInput()
