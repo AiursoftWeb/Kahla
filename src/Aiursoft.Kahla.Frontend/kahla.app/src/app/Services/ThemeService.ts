@@ -95,6 +95,18 @@ export class ThemeService {
                     .querySelector('meta[name=theme-color]')
                     ?.setAttribute('content', '#409344');
                 break;
+            case Theme.yellowLight:
+                document.body.className = 'theme-yellow-light';
+                document
+                    .querySelector('meta[name=theme-color]')
+                    ?.setAttribute('content', '#f1c40f');
+                break;
+            case Theme.yellowDark:
+                document.body.className = 'theme-yellow-dark';
+                document
+                    .querySelector('meta[name=theme-color]')
+                    ?.setAttribute('content', '#f1c40f');
+                break;
             case Theme.kahlaDark:
                 document.body.className = 'theme-dark';
                 document
