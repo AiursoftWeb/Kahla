@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
 import { EventService } from '../Services/EventService';
 import { isThreadAddedEvent } from '../Models/Events/ThreadAddedEvent';
 import { isThreadRemovedEvent } from '../Models/Events/ThreadRemovedEvent';
+import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Models/Events/ThreadPropertyChangedEvent';
 import { KahlaEventType } from '../Models/Events/EventType';
 import { NewMessageEvent } from '../Models/Events/NewMessageEvent';
 import { ThreadInfoCacheDictionary } from '../Caching/ThreadInfoCacheDictionary';
@@ -62,6 +63,26 @@ export class MyThreadsOrderedRepository extends RepositoryBase<ThreadInfoJoined>
             this.eventService.onMessage.pipe(filter(t => isThreadRemovedEvent(t))).subscribe(t => {
                 this.data = this.data.filter(d => d.id !== t.threadId);
                 this.saveCacheTrigger$.next();
+            })
+        );
+
+        this.sub.add(
+            this.eventService.onMessage.pipe(filter(t => isThreadPropertyChangedEvent(t))).subscribe(t => {
+                const ev = t as ThreadPropertyChangedEvent;
+                const thread = this.data.find(d => d.id === ev.threadId);
+                if (thread) {
+                    thread.name = ev.threadName;
+                    thread.imagePath = ev.threadImagePath;
+                    this.threadInfoCacheDictionary.set(thread.id, thread);
+                    this.saveCacheTrigger$.next();
+                } else {
+                    // Even if not in current data, we still want to update the cache
+                    // But we don't want to trigger a fetch if it's not there.
+                    // However, set() will just overwrite or add.
+                    // Since we don't have the full ThreadInfo object here (ev only has name and image),
+                    // we can't easily update it if we don't already have it.
+                    // But if it's in the cache, we might want to update it.
+                }
             })
         );
 

@@ -13,4 +13,7 @@
     YourHardInviteFinished = 18,
     YouWasHardInvited = 19,
     YouCompletedSoftInvited = 20,
+
+    // The properties of a thread that may change.
+    ThreadPropertyChanged = 32,
 }

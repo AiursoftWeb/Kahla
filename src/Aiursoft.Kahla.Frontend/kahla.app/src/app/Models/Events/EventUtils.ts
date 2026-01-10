@@ -3,6 +3,7 @@ import { KahlaEvent } from './KahlaEvent';
 import { NewMessageEvent } from './NewMessageEvent';
 import { isThreadAddedEvent } from './ThreadAddedEvent';
 import { isThreadRemovedEvent } from './ThreadRemovedEvent';
+import { isThreadPropertyChangedEvent } from './ThreadPropertyChangedEvent';
 
 export function eventNotificationDescription(event: KahlaEvent): [string, string] {
     if (event.type === KahlaEventType.NewMessage) {
@@ -36,6 +37,8 @@ export function eventNotificationDescription(event: KahlaEvent): [string, string
             case KahlaEventType.YouLeft:
                 return ['You left a thread', event.threadName];
         }
+    } else if (isThreadPropertyChangedEvent(event)) {
+        return ['Thread properties updated', event.threadName];
     }
 
     throw new Error('Unknown event type');
@@ -49,6 +52,8 @@ export function eventNotificationUrl(event: KahlaEvent): string {
         return `/talking/${event.thread.id}`;
     } else if (isThreadRemovedEvent(event)) {
         return `/`;
+    } else if (isThreadPropertyChangedEvent(event)) {
+        return `/talking/${event.threadId}`;
     }
 
     throw new Error('Unknown event type');
