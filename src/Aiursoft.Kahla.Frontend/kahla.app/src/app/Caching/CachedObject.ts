@@ -18,7 +18,7 @@ export class CachedObject<T> {
         }
 
         this.itemUpdated$.subscribe(t => (this.item = t ?? undefined));
-        this.itemUpdated$.pipe(skip(1), debounceTime(1000)).subscribe(t => this.saveToStorage(t!));
+        this.itemUpdated$.pipe(skip(1), debounceTime(100)).subscribe(t => this.saveToStorage(t!));
     }
 
     public update(): Promise<void> {
@@ -38,6 +38,9 @@ export class CachedObject<T> {
     }
 
     public async get(): Promise<T> {
+        if (this.updatePromise) {
+            await this.updatePromise;
+        }
         if (this.item != null) {
             return this.item;
         }

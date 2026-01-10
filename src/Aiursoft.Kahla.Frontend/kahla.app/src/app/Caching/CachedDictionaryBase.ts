@@ -69,7 +69,7 @@ export abstract class CachedDictionaryBase<TKey, TValue> {
                 });
             }
 
-            this.savePersist$.pipe(debounceTime(1000)).subscribe(() => {
+            this.savePersist$.pipe(debounceTime(100)).subscribe(() => {
                 this.saveToStorage();
             });
         }
