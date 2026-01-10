@@ -1,0 +1,31 @@
+@if (!editing) {
+    <div class="menu-button" (click)="startEdit()">
+        <div class="img">
+            <i [class]="iconClasses()"></i>
+        </div>
+        <div class="text">
+            <b>{{ title() }}:</b> {{ value() }}
+        </div>
+        <div class="img-right">
+            <i class="fas fa-pencil-alt"></i>
+        </div>
+    </div>
+} @else {
+    <div class="profile">
+        <div class="img">
+            <i [class]="iconClasses()"></i>
+        </div>
+        <input
+            [(ngModel)]="editValue"
+            [placeholder]="placeholder()"
+            (keyup.enter)="saveEdit()"
+            (keyup.escape)="cancelEdit()"
+            type="text"
+            autofocus
+        />
+        <div class="img-right" style="display: flex; gap: 10px;">
+            <i class="fas fa-check" (click)="saveEdit()" style="cursor: pointer; color: var(--primary-color-depth3);"></i>
+            <i class="fas fa-times" (click)="cancelEdit()" style="cursor: pointer; color: var(--minor-textcolor);"></i>
+        </div>
+    </div>
+}

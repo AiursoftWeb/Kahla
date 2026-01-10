@@ -1,9 +1,17 @@
-<app-header title="Manage Thread" />
+<app-header title="Manage Thread" [processing]="!!updatingSetting" />
 @if (threadInfo.value() && threadProfile()) {
-    <app-thread-options [(threadOptions)]="threadProfile"></app-thread-options>
-    <div class="buttons">
-        <button class="primary one-line" (click)="saveProfile()">Save</button>
-    </div>
+    <div class="menu-header">Thread Profile</div>
+    <app-editable-menu-item
+        title="Name"
+        [value]="threadProfile().name"
+        (confirm)="updateName($event)"
+        iconClasses="fas fa-users"
+    />
+    <app-thread-options
+        [(threadOptions)]="threadProfile"
+        (threadOptionsChange)="saveProfile(true)"
+        [showName]="false"
+    />
 } @else {
     <div class="menu-hint">Loading...</div>
 }

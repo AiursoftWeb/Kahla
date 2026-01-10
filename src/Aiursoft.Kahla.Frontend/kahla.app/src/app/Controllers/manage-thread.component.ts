@@ -4,7 +4,7 @@ import { showCommonErrorDialog } from '../Utils/CommonErrorDialog';
 import { ThreadOptions } from '../Models/Threads/ThreadOptions';
 import { pickProperties } from '../Utils/ObjectUtils';
 import { ThreadsApiService } from '../Services/Api/ThreadsApiService';
-import { lastValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { SwalToast } from '../Utils/Toast';
 
 @Component({
@@ -15,6 +15,7 @@ import { SwalToast } from '../Utils/Toast';
 })
 export class ManageThreadComponent {
     id = input.required<number>();
+    public updatingSetting?: Subscription;
 
     threadInfo = resource({
         request: () => this.id(),
@@ -46,16 +47,35 @@ export class ManageThreadComponent {
         private threadsApiService: ThreadsApiService
     ) {}
 
-    public async saveProfile() {
-        try {
-            await lastValueFrom(
-                this.threadsApiService.UpdateThread(this.id(), this.threadProfile())
-            );
-            void SwalToast.fire('Saved!', '', 'success');
-            this.threadInfoCacheDictionary.delete(this.id());
-            this.threadInfo.reload();
-        } catch (err) {
-            showCommonErrorDialog(err);
+    public updateName(newName: string) {
+        this.threadProfile.set({
+            ...this.threadProfile(),
+            name: newName,
+        });
+        this.saveProfile();
+    }
+
+    public saveProfile(quiet = false) {
+        if (this.updatingSetting && !this.updatingSetting.closed) {
+            this.updatingSetting.unsubscribe();
+            this.updatingSetting = undefined;
         }
+
+        this.updatingSetting = this.threadsApiService
+            .UpdateThread(this.id(), this.threadProfile())
+            .subscribe({
+                next: () => {
+                    this.updatingSetting = undefined;
+                    if (!quiet) {
+                        void SwalToast.fire('Saved!', '', 'success');
+                    }
+                    this.threadInfoCacheDictionary.delete(this.id());
+                    void this.threadInfo.reload();
+                },
+                error: (err) => {
+                    this.updatingSetting = undefined;
+                    showCommonErrorDialog(err);
+                }
+            });
     }
 }
