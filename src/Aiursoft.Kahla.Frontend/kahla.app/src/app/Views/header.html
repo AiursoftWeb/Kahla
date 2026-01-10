@@ -30,28 +30,48 @@
 <div class="header-holder"></div>
 
 <div
-    class="header-alert"
-    [class.in-widescreen]="homeService.wideScreenEnabled"
-    *ngIf="(!this.returnButton() || !homeService.wideScreenEnabled) && eventService.connecting"
+    class="alerts-container"
+    *ngIf="showGlobalConnecting() || showGlobalDisconnected() || showThreadConnecting() || showThreadDisconnected()"
 >
-    <div class="words">
-        <i class="fas fa-spinner fa-spin"></i>
-        Connecting...
+    <div
+        class="header-alert"
+        *ngIf="showGlobalConnecting()"
+    >
+        <div class="words">
+            <i class="fas fa-spinner fa-spin"></i>
+            Global Connecting...
+        </div>
     </div>
-</div>
 
-<div
-    class="header-alert"
-    [class.in-widescreen]="homeService.wideScreenEnabled"
-    (click)="showDisconnectedDialog()"
-    *ngIf="
-        (!this.returnButton() || !homeService.wideScreenEnabled) &&
-        eventService.errorOrClose &&
-        !eventService.connecting
-    "
->
-    <div class="words">
-        <i class="fas fa-cloud"></i>
-        Disconnected
+    <div
+        class="header-alert"
+        (click)="showDisconnectedDialog()"
+        *ngIf="showGlobalDisconnected()"
+    >
+        <div class="words">
+            <i class="fas fa-cloud"></i>
+            Global Disconnected
+        </div>
+    </div>
+
+    <div
+        class="header-alert"
+        *ngIf="showThreadConnecting()"
+    >
+        <div class="words">
+            <i class="fas fa-spinner fa-spin"></i>
+            Thread Connecting...
+        </div>
+    </div>
+
+    <div
+        class="header-alert"
+        (click)="repo()?.connect()"
+        *ngIf="showThreadDisconnected()"
+    >
+        <div class="words">
+            <i class="fas fa-cloud"></i>
+            Thread Disconnected
+        </div>
     </div>
 </div>

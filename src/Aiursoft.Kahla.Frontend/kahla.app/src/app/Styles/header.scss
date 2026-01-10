@@ -95,21 +95,31 @@
   right: (-4px) !important;
 }
 
+.alerts-container {
+  @extend %full-fixed-width;
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  left: 0;
+}
+
+:host-context(.content-wrapper.in-widescreen) {
+  .alerts-container {
+    left: unset;
+    right: 0;
+  }
+}
+
 .header-alert {
   background-color: #fbe876;
   width: 100%;
   color: red;
-  z-index: 1000;
-  position: fixed;
+  flex: 1;
 
   .words {
     text-align: center;
     margin: 0;
     font-size: 12px;
-  }
-
-  &.in-widescreen {
-    width: 35%;
-    max-width: 550px;
   }
 }

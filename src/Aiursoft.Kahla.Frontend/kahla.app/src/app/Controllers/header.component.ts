@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MessageService } from '../Services/MessageService';
 import { HomeService } from '../Services/HomeService';
 import { EventService } from '../Services/EventService';
+import { KahlaMessagesRepo } from '@aiursoft/kahla.sdk';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,6 +22,7 @@ export class HeaderComponent {
     public readonly buttonIcon = input('');
     public readonly shadow = input(false);
     public readonly processing = input(false);
+    public readonly repo = input<KahlaMessagesRepo>();
 
     public readonly returnButtonClicked = output();
     public readonly toolButtonClicked = output();
@@ -44,6 +46,26 @@ export class HeaderComponent {
 
     public linkClicked() {
         this.toolButtonClicked.emit();
+    }
+
+    public showGlobalConnecting(): boolean {
+        return (!this.returnButton() || !this.homeService.wideScreenEnabled || !!this.repo()) && this.eventService.connecting;
+    }
+
+    public showGlobalDisconnected(): boolean {
+        return (
+            (!this.returnButton() || !this.homeService.wideScreenEnabled || !!this.repo()) &&
+            this.eventService.errorOrClose &&
+            !this.eventService.connecting
+        );
+    }
+
+    public showThreadConnecting(): boolean {
+        return !!this.repo() && this.repo()!.connecting;
+    }
+
+    public showThreadDisconnected(): boolean {
+        return !!this.repo() && !this.repo()!.health && !this.repo()!.connecting;
     }
 
     public async showDisconnectedDialog() {
