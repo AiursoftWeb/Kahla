@@ -36,10 +36,10 @@ export class UserDetailComponent implements OnInit {
 
     public async uploadAvatar() {
         const files = await selectFiles();
-        if (!files) {
+        if (!files || files.length === 0) {
             return;
         }
-        // this.uploadService.uploadAvatar(this.user, files[0]);
+        this.uploadService.uploadAvatar(this.user!, files[0]);
     }
 
     public async save() {
@@ -49,6 +49,7 @@ export class UserDetailComponent implements OnInit {
                 this.authApiService.UpdateMe({
                     nickName: this.user!.nickName,
                     bio: this.user!.bio,
+                    iconFilePath: this.user!.iconFilePath,
                 })
             );
             void this.cacheService.mineCache.update();

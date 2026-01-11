@@ -17,6 +17,7 @@ export class AuthApiService {
     public UpdateMe(updateModel: {
         nickName?: string;
         bio?: string;
+        iconFilePath?: string;
         themeId?: number;
         enableEmailNotification?: boolean;
         enableEnterToSendMessage?: boolean;

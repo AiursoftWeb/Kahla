@@ -10,7 +10,7 @@ import { ForwardMediaApiModel } from '../../Models/ApiModels/ForwardMediaApiMode
 
 @Injectable()
 export class FilesApiService {
-    private static serverPath = '/Storage';
+    private static serverPath = '/files';
 
     constructor(
         private apiService: ApiService,
