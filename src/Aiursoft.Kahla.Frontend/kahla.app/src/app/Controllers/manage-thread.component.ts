@@ -1,11 +1,13 @@
-import { Component, input, linkedSignal, resource } from '@angular/core';
+import { Component, effect, input, linkedSignal, resource } from '@angular/core';
 import { ThreadInfoCacheDictionary } from '../Caching/ThreadInfoCacheDictionary';
 import { showCommonErrorDialog } from '../Utils/CommonErrorDialog';
 import { ThreadOptions } from '../Models/Threads/ThreadOptions';
 import { pickProperties } from '../Utils/ObjectUtils';
 import { ThreadsApiService } from '../Services/Api/ThreadsApiService';
-import { Subscription } from 'rxjs';
+import { filter, lastValueFrom } from 'rxjs';
 import { SwalToast } from '../Utils/Toast';
+import { EventService } from '../Services/EventService';
+import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Models/Events/ThreadPropertyChangedEvent';
 
 @Component({
     selector: 'app-manage-thread',
@@ -44,8 +46,22 @@ export class ManageThreadComponent {
 
     constructor(
         private threadInfoCacheDictionary: ThreadInfoCacheDictionary,
-        private threadsApiService: ThreadsApiService
-    ) {}
+        private threadsApiService: ThreadsApiService,
+        private eventService: EventService
+    ) {
+        effect(cleanup => {
+            const threadId = this.id();
+            const sub = this.eventService.onMessage
+                .pipe(filter(t => isThreadPropertyChangedEvent(t)))
+                .subscribe(t => {
+                    const ev = t as ThreadPropertyChangedEvent;
+                    if (ev.threadId === threadId) {
+                        void this.threadInfo.reload();
+                    }
+                });
+            cleanup(() => sub.unsubscribe());
+        });
+    }
 
     public updateName(newName: string) {
         this.threadProfile.set({

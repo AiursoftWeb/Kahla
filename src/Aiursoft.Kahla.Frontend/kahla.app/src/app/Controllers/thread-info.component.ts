@@ -9,6 +9,10 @@ import Swal from 'sweetalert2';
 import { MappedRepository, StaticRepository } from '../Repositories/RepositoryBase';
 import { ContactListItem } from './contact-list.component';
 import { ThreadMemberInfo } from '../Models/Threads/ThreadMemberInfo';
+import { EventService } from '../Services/EventService';
+import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Models/Events/ThreadPropertyChangedEvent';
+import { effect } from '@angular/core';
+import { filter } from 'rxjs';
 
 @Component({
     templateUrl: '../Views/thread-info.html',
@@ -46,8 +50,22 @@ export class ThreadInfoComponent {
     constructor(
         private threadsApiService: ThreadsApiService,
         private threadInfoCacheDictionary: ThreadInfoCacheDictionary,
-        private router: Router
-    ) {}
+        private router: Router,
+        private eventService: EventService
+    ) {
+        effect(cleanup => {
+            const threadId = this.id();
+            const sub = this.eventService.onMessage
+                .pipe(filter(t => isThreadPropertyChangedEvent(t)))
+                .subscribe(t => {
+                    const ev = t as ThreadPropertyChangedEvent;
+                    if (ev.threadId === threadId) {
+                        void this.thread.reload();
+                    }
+                });
+            cleanup(() => sub.unsubscribe());
+        });
+    }
 
     public async setMute(value: boolean) {
         try {

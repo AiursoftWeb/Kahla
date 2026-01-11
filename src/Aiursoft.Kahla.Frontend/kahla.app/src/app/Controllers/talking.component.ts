@@ -19,6 +19,9 @@ import { KahlaMessagesRepo } from '@aiursoft/kahla.sdk';
 import { ThreadInfoCacheDictionary } from '../Caching/ThreadInfoCacheDictionary';
 import { showCommonErrorDialog } from '../Utils/CommonErrorDialog';
 import { MyThreadsOrderedRepository } from '../Repositories/MyThreadsOrderedRepository';
+import { EventService } from '../Services/EventService';
+import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Models/Events/ThreadPropertyChangedEvent';
+import { filter } from 'rxjs';
 
 @Component({
     templateUrl: '../Views/talking.html',
@@ -54,7 +57,8 @@ export class TalkingComponent {
         messageApiService: MessagesApiService,
         public threadApiService: ThreadsApiService,
         public threadInfoCacheDictionary: ThreadInfoCacheDictionary,
-        myThreadsOrderedRepository: MyThreadsOrderedRepository
+        myThreadsOrderedRepository: MyThreadsOrderedRepository,
+        private eventService: EventService
     ) {
         effect(async cleanup => {
             if (!this.id()) return;
@@ -97,6 +101,19 @@ export class TalkingComponent {
             } catch (err) {
                 showCommonErrorDialog(err);
             }
+        });
+
+        effect(cleanup => {
+            const threadId = this.id();
+            const sub = this.eventService.onMessage
+                .pipe(filter(t => isThreadPropertyChangedEvent(t)))
+                .subscribe(t => {
+                    const ev = t as ThreadPropertyChangedEvent;
+                    if (ev.threadId === threadId) {
+                        void this.threadInfo.reload();
+                    }
+                });
+            cleanup(() => sub.unsubscribe());
         });
 
         effect(() => {
