@@ -86,11 +86,26 @@ public class FilesController(
         }
     }
 
-    [Route("Upload/{ThreadId:int}")]
-    [HttpPost]
-    public async Task<IActionResult> Upload(int threadId)
+    [Route("InitIconUpload")]
+    [HttpGet]
+    public IActionResult InitIconUpload()
     {
-        await EnsureUserCanUpload(threadId);
+        return this.Protocol(new AiurValue<string>(
+            $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/Upload/avatar")
+        {
+            Code = Code.JobDone,
+            Message = "Success"
+        });
+    }
+
+    [Route("Upload/{subfolder}")]
+    [HttpPost]
+    public async Task<IActionResult> Upload(string subfolder)
+    {
+        if (int.TryParse(subfolder, out var threadId))
+        {
+            await EnsureUserCanUpload(threadId);
+        }
 
         try
         {
@@ -112,9 +127,12 @@ public class FilesController(
             return BadRequest($"Invalid file name '{file.FileName}'!");
         }
 
-        var storePath = Path.Combine(
-            "thread-files",
-            threadId.ToString(),
+        var storePath = int.TryParse(subfolder, out var threadIdInSubfolder)
+            ? Path.Combine("thread-files", threadIdInSubfolder.ToString())
+            : subfolder;
+
+        storePath = Path.Combine(
+            storePath,
             DateTime.UtcNow.Year.ToString("D4"),
             DateTime.UtcNow.Month.ToString("D2"),
             DateTime.UtcNow.Day.ToString("D2"),
@@ -126,8 +144,9 @@ public class FilesController(
         return this.Protocol(new UploadViewModel
         {
             Code = Code.JobDone,
-            Message =
-                $"File uploaded! Please use the Krl to save in messages. To convert a Krl to a real URL, please append the path after /server/ as {Request.Scheme}://{Request.Host}/api/files/open/*.",
+            Message = "File uploaded!",
+            FilePath = uriPath,
+            FileSize = file.Length,
             Krl = $"kahla://server/{uriPath}",
             InternetOpenPath = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/files/open/{uriPath}",
             InternetDownloadPath =
@@ -135,38 +154,40 @@ public class FilesController(
         });
     }
 
-    [Route("Download/thread-files/{ThreadId}/{**FolderNames}", Name = "File")]
-    [Route("Open/thread-files/{ThreadId}/{**FolderNames}", Name = "Open")]
-    public async Task<IActionResult> Open(OpenAddressModel model)
+    [Route("Download/{**Path}", Name = "File")]
+    [Route("Open/{**Path}", Name = "Open")]
+    public async Task<IActionResult> Open(string path)
     {
-        EnsureUserCanRead(model.ThreadId);
+        if (path.StartsWith("thread-files/", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = path.Split('/');
+            if (parts.Length > 1 && int.TryParse(parts[1], out var threadId))
+            {
+                EnsureUserCanRead(threadId);
+            }
+        }
 
-        var relativePath = Path.Combine(
-            "thread-files",
-            model.ThreadId.ToString(),
-            model.FolderNames);
+        var physicalPath = storage.GetFilePhysicalPath(path);
 
-        var path = storage.GetFilePhysicalPath(relativePath);
-
-        if (!System.IO.File.Exists(path))
+        if (!System.IO.File.Exists(physicalPath))
         {
             return NotFound();
         }
 
-        var fileName = Path.GetFileName(path);
-        var extension = Path.GetExtension(path).TrimStart('.');
+        var fileName = Path.GetFileName(physicalPath);
+        var extension = Path.GetExtension(physicalPath).TrimStart('.');
 
-        if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "Download")
+        if (ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name == "File")
         {
-            return this.WebFile(path, "do-not-open");
+            return this.WebFile(physicalPath, "do-not-open");
         }
 
-        if (fileName.IsStaticImage() && await IsValidImageAsync(path))
+        if (fileName.IsStaticImage() && await IsValidImageAsync(physicalPath))
         {
-            return await FileWithImageCompressor(path, extension);
+            return await FileWithImageCompressor(physicalPath, extension);
         }
 
-        return this.WebFile(path, extension);
+        return this.WebFile(physicalPath, extension);
     }
 
     private async Task<bool> IsValidImageAsync(string imagePath)

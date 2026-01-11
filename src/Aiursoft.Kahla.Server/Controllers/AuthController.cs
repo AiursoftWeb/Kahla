@@ -173,6 +173,11 @@ public class AuthController(
         {
             userTrackedInDb.Bio = model.Bio;
         }
+
+        if (model.IconFilePath != null)
+        {
+            userTrackedInDb.IconFilePath = model.IconFilePath;
+        }
         
         // Private information
         if (model.ThemeId.HasValue)

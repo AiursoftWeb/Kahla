@@ -9,6 +9,9 @@ namespace Aiursoft.Kahla.SDK.Models.AddressModels
         
         [StringLength(40, MinimumLength = 1)]
         public string? NickName { get; init; }
+
+        public string? IconFilePath { get; init; }
+
         public int? ThemeId { get; init; }
 
         public bool? EnableEmailNotification { get; init; }
