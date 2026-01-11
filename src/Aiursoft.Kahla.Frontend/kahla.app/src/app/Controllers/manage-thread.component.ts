@@ -4,7 +4,7 @@ import { showCommonErrorDialog } from '../Utils/CommonErrorDialog';
 import { ThreadOptions } from '../Models/Threads/ThreadOptions';
 import { pickProperties } from '../Utils/ObjectUtils';
 import { ThreadsApiService } from '../Services/Api/ThreadsApiService';
-import { filter, lastValueFrom } from 'rxjs';
+import { filter, lastValueFrom, Subscription } from 'rxjs';
 import { SwalToast } from '../Utils/Toast';
 import { EventService } from '../Services/EventService';
 import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Models/Events/ThreadPropertyChangedEvent';
