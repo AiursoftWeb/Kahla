@@ -7,7 +7,6 @@ using Aiursoft.CSTools.Tools;
 using Aiursoft.DocGenerator.Attributes;
 using Aiursoft.Kahla.Entities;
 using Aiursoft.Kahla.SDK.Models;
-using Aiursoft.Kahla.SDK.Models.AddressModels;
 using Aiursoft.Kahla.SDK.Models.ViewModels;
 using Aiursoft.Kahla.Server.Attributes;
 using Aiursoft.Kahla.Server.Data;
