@@ -1,0 +1,21 @@
+@use 'sass:color';
+@use 'default-light';
+
+//
+// Light Theme
+//
+$primary-color-depth1: #f9f1c7;
+$primary-color-depth2: #f4d03f;
+$primary-color-depth3: #f1c40f;
+
+body.theme-yellow-light {
+  @extend %default-light;
+  --primary-color-depth1: #{$primary-color-depth1};
+  --primary-color-depth2: #{$primary-color-depth2};
+  --primary-color-depth3: #{$primary-color-depth3};
+  --header-bg: linear-gradient(
+    to bottom,
+    #{$primary-color-depth3},
+    #{color.adjust($primary-color-depth2, $alpha: -0.4)}
+  );
+}

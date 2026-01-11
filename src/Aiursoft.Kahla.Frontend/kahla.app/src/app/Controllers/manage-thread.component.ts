@@ -17,6 +17,7 @@ import { isThreadPropertyChangedEvent, ThreadPropertyChangedEvent } from '../Mod
 })
 export class ManageThreadComponent {
     id = input.required<number>();
+    public updatingSetting?: Subscription;
 
     threadInfo = resource({
         request: () => this.id(),
@@ -62,16 +63,35 @@ export class ManageThreadComponent {
         });
     }
 
-    public async saveProfile() {
-        try {
-            await lastValueFrom(
-                this.threadsApiService.UpdateThread(this.id(), this.threadProfile())
-            );
-            void SwalToast.fire('Saved!', '', 'success');
-            this.threadInfoCacheDictionary.delete(this.id());
-            this.threadInfo.reload();
-        } catch (err) {
-            showCommonErrorDialog(err);
+    public updateName(newName: string) {
+        this.threadProfile.set({
+            ...this.threadProfile(),
+            name: newName,
+        });
+        this.saveProfile();
+    }
+
+    public saveProfile(quiet = false) {
+        if (this.updatingSetting && !this.updatingSetting.closed) {
+            this.updatingSetting.unsubscribe();
+            this.updatingSetting = undefined;
         }
+
+        this.updatingSetting = this.threadsApiService
+            .UpdateThread(this.id(), this.threadProfile())
+            .subscribe({
+                next: () => {
+                    this.updatingSetting = undefined;
+                    if (!quiet) {
+                        void SwalToast.fire('Saved!', '', 'success');
+                    }
+                    this.threadInfoCacheDictionary.delete(this.id());
+                    void this.threadInfo.reload();
+                },
+                error: (err) => {
+                    this.updatingSetting = undefined;
+                    showCommonErrorDialog(err);
+                }
+            });
     }
 }

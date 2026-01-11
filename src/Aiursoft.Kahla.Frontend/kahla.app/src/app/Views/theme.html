@@ -46,6 +46,15 @@
         <span>Grass</span>
         <i class="fas fa-check checked"></i>
     </span>
+    <span
+        class="select-button"
+        [class.selected]="primaryColor === 5"
+        (click)="primaryColor = 5; applyTheme()"
+    >
+        <span class="color-ellipse" style="background-color: #f1c40f"></span>
+        <span>Yellow</span>
+        <i class="fas fa-check checked"></i>
+    </span>
 </div>
 
 <div class="menu-header">Accent color</div>

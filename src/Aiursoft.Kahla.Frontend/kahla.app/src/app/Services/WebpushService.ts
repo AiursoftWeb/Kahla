@@ -9,6 +9,8 @@ import { SwalToast } from '../Utils/Toast';
 import { ServiceWorkerIpcMessage } from '../Models/ServiceWorker/ServiceWorkerIpc';
 import { Router } from '@angular/router';
 import { Logger } from './Logger';
+import { EventService } from './EventService';
+import { AiurProtocol } from '../Models/AiurProtocol';
 
 @Injectable({
     providedIn: 'root',
@@ -18,6 +20,7 @@ export class WebpushService {
         private devicesApiService: DevicesApiService,
         private cacheService: CacheService,
         private router: Router,
+        private eventService: EventService,
         private logger: Logger
     ) {}
 
@@ -60,7 +63,7 @@ export class WebpushService {
         if (settings.deviceId) {
             if (!subscriptionChanged) return;
             this.logger.info('Update push subscription for device...');
-            await lastValueFrom(
+            const resp = (await lastValueFrom(
                 this.devicesApiService.UpdateDevice(
                     settings.deviceId,
                     navigator.userAgent,
@@ -68,18 +71,31 @@ export class WebpushService {
                     pushSubscription.toJSON().keys!.p256dh,
                     pushSubscription.toJSON().keys!.auth
                 )
-            );
+            )) as AiurProtocol;
+            if (resp.code !== 0) {
+                this.logger.warn(`Update push subscription failed! Code: ${resp.code}. Resetting device id and retrying...`);
+                this.updatePushSettings({
+                    ...settings,
+                    deviceId: 0,
+                });
+                await this.bindDevice(pushSubscription, true);
+                return;
+            }
             this.logger.ok('Device updated.');
         } else {
             this.logger.info('Bind device for push subscription...');
-            const resp = await lastValueFrom(
+            const resp = (await lastValueFrom(
                 this.devicesApiService.AddDevice(
                     navigator.userAgent,
                     pushSubscription.endpoint,
                     pushSubscription.toJSON().keys!.p256dh,
                     pushSubscription.toJSON().keys!.auth
                 )
-            );
+            )) as AiurProtocol & { value: number };
+            if (resp.code !== 0) {
+                this.logger.error(`Bind device failed! Code: ${resp.code}`);
+                return;
+            }
             this.updatePushSettings({
                 enabled: true,
                 deviceId: resp.value,
@@ -124,10 +140,29 @@ export class WebpushService {
 
     public async webpushInit() {
         if (!this.notificationAvail || !this.pushSettings.enabled) return;
-        await this.subscribeUser();
-        this.initSubscriptionUpdater();
+        try {
+            await this.subscribeUser();
+            this.initSubscriptionUpdater();
+            await this.getDeviceList(); // Get the device list to make sure current device haven't been removed
+        } catch (e) {
+            this.logger.warn('Failed to initialize webpush', e);
+        }
 
-        await this.getDeviceList(); // Get the device list to make sure current device haven't been removed
+        // Aggressively check device status when the app becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.notificationAvail && this.pushSettings.enabled) {
+                this.logger.info('App became visible, checking device status...');
+                void this.getDeviceList().catch(e => this.logger.warn('Failed to check device status on visibility change', e));
+            }
+        });
+
+        // Aggressively check device status when the websocket reconnected
+        this.eventService.onReconnect.subscribe(() => {
+            if (this.notificationAvail && this.pushSettings.enabled) {
+                this.logger.info('Websocket reconnected, checking device status...');
+                void this.getDeviceList().catch(e => this.logger.warn('Failed to check device status on websocket reconnect', e));
+            }
+        });
     }
 
     public async updateEnabled(enabled: boolean) {
