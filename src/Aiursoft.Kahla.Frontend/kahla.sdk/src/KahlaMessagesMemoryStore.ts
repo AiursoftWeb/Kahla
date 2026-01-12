@@ -4,6 +4,7 @@ import { LinkedList } from './Models/LinkedList.js';
 import { LinkedListNode } from './Models/LinkedListNode.js';
 import { AsyncSemaphore } from './Tools/AsyncSemaphore.js';
 import { uuid4 } from './Tools/uuid.js';
+import { Subject } from 'rxjs';
 
 export class KahlaMessagesMemoryStore {
     public messages: LinkedList<KahlaCommit<ChatMessage>> = new LinkedList();
@@ -15,6 +16,7 @@ export class KahlaMessagesMemoryStore {
     public pushedItemsOffset: number = 0;
 
     public lock: AsyncSemaphore = new AsyncSemaphore(1);
+    public onPointersChanged = new Subject<void>();
 
     public async commit(message: ChatMessage): Promise<void> {
         const commit: KahlaCommit<ChatMessage> = {
@@ -64,6 +66,7 @@ export class KahlaMessagesMemoryStore {
 
         this.updateLastPushed(itemInserted);
         this.lock.release();
+        this.onPointersChanged.next();
     }
 
     private updateLastPushed(itemInserted: boolean): void {

@@ -13,6 +13,8 @@
 <app-message-list
     [messages]="parsedMessages()"
     [lastReadIndex]="threadInfo.value()?.messageContext?.unReadAmount ?? 0"
+    [pulledIndex]="pulledIndex()"
+    [pushedIndex]="pushedIndex()"
     (mention)="talkingInput.mention($event)"
 />
 <app-scroll-button

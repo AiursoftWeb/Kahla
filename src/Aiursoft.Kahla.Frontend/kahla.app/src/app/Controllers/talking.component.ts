@@ -34,6 +34,9 @@ export class TalkingComponent {
     public showPanel = signal(false);
     public hasNewMessages = signal(false);
 
+    public pulledIndex = signal(0);
+    public pushedIndex = signal(0);
+
     private firstPull?: number;
 
     // route input
@@ -92,10 +95,15 @@ export class TalkingComponent {
                             break;
                     }
                 });
+                const sub2 = this.repo.messages.onPointersChanged.subscribe(() => {
+                    this.pulledIndex.set(this.repo!.messages.pulledItemsOffset);
+                    this.pushedIndex.set(this.repo!.messages.pushedItemsOffset);
+                });
                 this.repo.connect();
                 this.firstPull = Date.now();
                 cleanup(() => {
                     sub.unsubscribe();
+                    sub2.unsubscribe();
                     this.repo?.disconnect();
                 });
             } catch (err) {
