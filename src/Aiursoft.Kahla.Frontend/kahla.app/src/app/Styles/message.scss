@@ -126,6 +126,12 @@
     padding-left: 7px;
     padding-right: 7px;
     transform: translateX(30px);
+
+    .delivery-status {
+      margin-left: 5px;
+      font-size: 0.8em;
+      vertical-align: middle;
+    }
   }
 
   &.left .message-block {

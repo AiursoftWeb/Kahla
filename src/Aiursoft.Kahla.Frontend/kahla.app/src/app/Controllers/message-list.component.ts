@@ -12,6 +12,8 @@ import { KahlaUser } from '../Models/KahlaUser';
 export class MessageListComponent {
     messages = input.required<ParsedMessage[]>();
     lastReadIndex = input<number>(-1);
+    pulledIndex = input<number>(0);
+    pushedIndex = input<number>(0);
 
     mention = output<KahlaUser>();
 

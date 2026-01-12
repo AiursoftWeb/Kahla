@@ -42,13 +42,24 @@
             Send failed
         </p> -->
 </div>
-<p class="sendTime" [class.show]="isSending()">
-    @if (isSending()) {
-        <label> Sending... </label>
-    } @else {
-        <label>
-            {{ message().sendTime | date: 'shortTime' }}
-        </label>
+<p class="sendTime" [class.show]="deliveryStatus() && isByMe()">
+    <label>
+        {{ message().sendTime | date: 'shortTime' }}
+    </label>
+    @if (deliveryStatus() && isByMe()) {
+        <span class="delivery-status">
+            @switch (deliveryStatus()) {
+                @case ('sending') {
+                    <i class="far fa-circle"></i>
+                }
+                @case ('sent') {
+                    <i class="fas fa-circle" style="font-size: 0.6em; vertical-align: middle;"></i>
+                }
+                @case ('pulled') {
+                    <i class="fas fa-check-circle"></i>
+                }
+            }
+        </span>
     }
 </p>
 

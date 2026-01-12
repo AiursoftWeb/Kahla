@@ -114,6 +114,7 @@ export class KahlaMessagesRepo {
         if (messages.length > 0) {
             // const content = serialize(messages);
             this._webSocket.next(messages);
+            this.messages.onPointersChanged.next();
         }
     }
 

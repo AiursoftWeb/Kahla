@@ -20,6 +20,16 @@
                     messages()[i - 1].senderId === message.senderId &&
                     message.sendTime.getTime() - messages()[i - 1].sendTime.getTime() < 60000
                 "
+                [deliveryStatus]="
+                    (i >= pulledIndex() ||
+                        (i === messages().length - 1 && pulledIndex() === messages().length))
+                        ? i < pulledIndex()
+                            ? 'pulled'
+                            : i < pushedIndex()
+                              ? 'sent'
+                              : 'sending'
+                        : null
+                "
                 (mention)="mention.emit($event)"
             />
         </li>

@@ -29,6 +29,7 @@ export class MessageComponent {
     isSending = input<boolean>(false);
     isFailed = input<boolean>(false);
     showNickNames = input<boolean>(false);
+    deliveryStatus = input<'sending' | 'sent' | 'pulled' | null>(null);
 
     mention = output<KahlaUser>();
     reply = output();
