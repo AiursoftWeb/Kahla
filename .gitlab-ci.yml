@@ -124,7 +124,7 @@ deploy_docker_registry:
     script:
         - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
         - echo building image hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
-        - docker build . -t hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+        - docker build . -t hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
         - echo "Logging in to Docker Registry hub.aiursoft.com..."
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
         - docker save hub.aiursoft.com/${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
