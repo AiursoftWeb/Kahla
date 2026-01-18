@@ -11,13 +11,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="10.0.2" />
-    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="10.0.7" />
-    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.5" />
+    <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="10.0.8" />
+    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.6" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="10.0.2" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="10.0.2" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="10.0.0" />
     <PackageReference Include="Aiursoft.Scanner" Version="10.0.2" />
-    <PackageReference Include="Aiursoft.WebTools" Version="10.0.6" />
+    <PackageReference Include="Aiursoft.WebTools" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
