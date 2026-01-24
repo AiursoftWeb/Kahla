@@ -14,7 +14,6 @@ import type { EmojiButton } from '@joeattardi/emoji-button';
 import { ThemeService } from '../Services/ThemeService';
 import { VoiceRecorder } from '../Utils/VoiceRecord';
 import { MessageSegmentText, MessageTextWithAnnotate } from '../Models/Messages/MessageSegments';
-import Swal from 'sweetalert2';
 import { imageFileTypes, selectFiles } from '../Utils/SystemDialog';
 import { SlateEditorComponent } from '../Components/SlateEditor/slate-editor.component';
 import { KahlaUser } from '../Models/KahlaUser';
@@ -25,6 +24,13 @@ import { ThreadInfoJoined } from '../Models/Threads/ThreadInfo';
 import { MessageTextAnnotatedMention } from '../Models/Messages/MessageTextAnnotated';
 import { ThreadMembersRepository } from '../Repositories/ThreadMembersRepository';
 
+export interface PendingFile {
+    file: File;
+    displayName: string;
+    previewUrl?: string;
+    type: 'image' | 'video' | 'file';
+}
+
 @Component({
     selector: 'app-talking-input',
     templateUrl: '../Views/talking-input.html',
@@ -34,6 +40,7 @@ import { ThreadMembersRepository } from '../Repositories/ThreadMembersRepository
 export class TalkingInputComponent {
     textContent = signal<MessageTextWithAnnotate[]>([]);
     showPanel = model(false);
+    pendingFiles = signal<PendingFile[]>([]);
     sendMessage = output<{
         content: MessageContent;
         ats?: string[];
@@ -189,10 +196,20 @@ export class TalkingInputComponent {
     }
 
     fileDropped(items: [File, string][]) {
-        void Swal.fire({
-            title: 'Dropped files',
-            text: items.map(([, name]) => name).join('\n'),
+        const newPendingFiles = items.map(([file]) => {
+            const type = this.detectFileType(file);
+            return this.createPendingFile(file, type);
         });
+        this.pendingFiles.update(files => [...files, ...newPendingFiles]);
+    }
+
+    private detectFileType(file: File): 'img' | 'video' | 'file' {
+        if (file.type.startsWith('image/')) {
+            return 'img';
+        } else if (file.type.startsWith('video/')) {
+            return 'video';
+        }
+        return 'file';
     }
 
     async selectFile(type: 'img' | 'video' | 'file') {
@@ -208,11 +225,41 @@ export class TalkingInputComponent {
 
         const res = await selectFiles(true, accept);
         if (!res) return;
-        console.log(res);
-        void Swal.fire({
-            title: 'Selected files',
-            text: res.map(t => t.name).join('\n'),
-        });
+
+        const newPendingFiles = res.map(file => this.createPendingFile(file, type));
+        this.pendingFiles.update(files => [...files, ...newPendingFiles]);
+    }
+
+    private createPendingFile(file: File, type: 'img' | 'video' | 'file'): PendingFile {
+        const fileType: PendingFile['type'] = type === 'img' ? 'image' : type === 'video' ? 'video' : 'file';
+        let displayName: string;
+        let previewUrl: string | undefined;
+
+        if (fileType === 'image') {
+            // For images, generate privacy-safe name: img_timestamp.extension
+            const extension = file.name.split('.').pop() ?? 'png';
+            displayName = `img_${Date.now()}.${extension}`;
+            previewUrl = URL.createObjectURL(file);
+        } else {
+            // For videos and files, keep original name
+            displayName = file.name;
+        }
+
+        return {
+            file,
+            displayName,
+            previewUrl,
+            type: fileType,
+        };
+    }
+
+    public removeFile(index: number) {
+        const files = this.pendingFiles();
+        const fileToRemove = files[index];
+        if (fileToRemove?.previewUrl) {
+            URL.revokeObjectURL(fileToRemove.previewUrl);
+        }
+        this.pendingFiles.update(f => f.filter((_, i) => i !== index));
     }
 
     public mention(targetUser: KahlaUser) {

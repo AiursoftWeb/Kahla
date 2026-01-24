@@ -1,6 +1,29 @@
 <div class="chatbox-placeholder" [appMatchHeightFor]="chatBox"></div>
 <div class="chatbox-wrapper" appDropFile (droppedFiles)="fileDropped($event)">
     <div class="chat-box" #chatBox>
+        @if (pendingFiles().length > 0) {
+            <div class="file-preview-area">
+                @for (pending of pendingFiles(); track $index) {
+                    @if (pending.type === 'image') {
+                        <div class="preview-item image-preview">
+                            <img [src]="pending.previewUrl" [alt]="pending.displayName" />
+                            <button class="remove-btn" (click)="removeFile($index)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    } @else {
+                        <div class="preview-item file-chip">
+                            <i class="fas" [class.fa-file-video]="pending.type === 'video'" 
+                               [class.fa-file-alt]="pending.type === 'file'"></i>
+                            <span class="filename">{{ pending.displayName }}</span>
+                            <button class="remove-btn" (click)="removeFile($index)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+        }
         @let enterToSend = cacheService.mine()?.privateSettings?.enableEnterToSendMessage;
         <div
             class="chat-part"
