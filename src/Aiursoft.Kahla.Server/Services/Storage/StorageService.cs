@@ -31,7 +31,14 @@ public class StorageService
     /// <returns>The actual path (relative to the workspace) where the file is saved.</returns>
     public async Task<string> Save(string saveRelativePath, IFormFile file)
     {
-        var finalFilePath = Path.Combine(_workspaceFolder, saveRelativePath);
+        var finalFilePath = Path.GetFullPath(Path.Combine(_workspaceFolder, saveRelativePath));
+        
+        // Security check: Ensure path is within workspace to prevent path traversal attacks
+        if (!finalFilePath.StartsWith(_workspaceFolder, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Path traversal attempt detected!");
+        }
+        
         var finalFolder = Path.GetDirectoryName(finalFilePath);
 
         // Create the folder if it does not exist.
@@ -74,7 +81,14 @@ public class StorageService
     /// </summary>
     public string GetFilePhysicalPath(string relativePath)
     {
-        return Path.Combine(_workspaceFolder, relativePath);
+        var physicalPath = Path.GetFullPath(Path.Combine(_workspaceFolder, relativePath));
+        
+        // Security check: Ensure path is within workspace to prevent path traversal attacks
+        if (!physicalPath.StartsWith(_workspaceFolder, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Restricted path access!");
+        }
+        return physicalPath;
     }
 
     /// <summary>

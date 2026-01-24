@@ -166,7 +166,15 @@ public class FilesController(
             }
         }
 
-        var physicalPath = storage.GetFilePhysicalPath(path);
+        string physicalPath;
+        try
+        {
+            physicalPath = storage.GetFilePhysicalPath(path);
+        }
+        catch (ArgumentException)
+        {
+            return BadRequest("Attempted to access a restricted path.");
+        }
 
         if (!System.IO.File.Exists(physicalPath))
         {

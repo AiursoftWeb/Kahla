@@ -29,6 +29,12 @@ public class ImageProcessingService(
         await lockOnCreatedFile.WaitAsync();
         try
         {
+            // Double check inside lock to avoid race condition
+            if (File.Exists(targetAbsolute) && FileCanBeRead(targetAbsolute))
+            {
+                return targetAbsolute;
+            }
+            
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
             using var image = await Image.LoadAsync(sourceAbsolute);
             image.Mutate(ctx => { ctx.AutoOrient(); });
@@ -74,6 +80,12 @@ public class ImageProcessingService(
         await lockOnCreatedFile.WaitAsync();
         try
         {
+            // Double check inside lock to avoid race condition
+            if (File.Exists(targetAbsolute) && FileCanBeRead(targetAbsolute))
+            {
+                return targetAbsolute;
+            }
+            
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
             using var image = await Image.LoadAsync(sourceAbsolute);
             image.Mutate(x => x.AutoOrient());
@@ -103,9 +115,12 @@ public class ImageProcessingService(
 
     private async Task WaitTillFileCanBeReadAsync(string path)
     {
-        while (!FileCanBeRead(path))
+        // Don't wait forever - limit to 20 retries (2 seconds max)
+        var retries = 0;
+        while (!FileCanBeRead(path) && retries < 20)
         {
             await Task.Delay(100);
+            retries++;
         }
     }
     
