@@ -1,0 +1,18 @@
+@if (showGrid()) {
+    <!-- Grid layout for 3+ members -->
+    <div class="avatar-grid" [class.grid-3]="avatarMembers().length <= 3" [class.grid-4]="avatarMembers().length === 4" [class.grid-5-6]="avatarMembers().length >= 5 && avatarMembers().length <= 6" [class.grid-7-9]="avatarMembers().length >= 7">
+        @for (member of avatarMembers(); track member.user.id) {
+            <img
+                class="grid-avatar"
+                src="{{ member.user.iconFilePath | storageUrl }}?w=64&square=true"
+                alt="{{ member.user.nickName }}"
+            />
+        }
+    </div>
+} @else {
+    <!-- Single avatar for 1-2 members or normal imagePath -->
+    <img
+        class="single-avatar"
+        src="{{ singleAvatarPath() | storageUrl }}?w=128&square=true"
+    />
+}
