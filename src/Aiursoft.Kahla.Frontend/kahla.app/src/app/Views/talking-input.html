@@ -13,15 +13,13 @@
                 (click)="emoji()"
                 style="margin-right: 7px"
             ></i>
-            <div
+            <app-slate-editor
                 class="text-input"
-                appMessageTextInput
-                appAutofocus
-                #chatInput="appMessageTextInput"
+                #chatInput
                 [(textContent)]="textContent"
-                (focus)="startInput()"
+                (onFocus)="startInput()"
                 (keydown)="inputKeydown($event)"
-            ></div>
+            ></app-slate-editor>
             @if (!enterToSend) {
                 <button class="button primary" (click)="send()">Send</button>
             }

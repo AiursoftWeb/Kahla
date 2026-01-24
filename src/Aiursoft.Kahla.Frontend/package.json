@@ -35,5 +35,8 @@
     "url": "https://gitlab.aiursoft.com/aiursoft/kahla.app/-/issues"
   },
   "homepage": "https://kahla.aiursoft.com",
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.5.3",
+  "dependencies": {
+    "slate": "^0.123.0"
+  }
 }

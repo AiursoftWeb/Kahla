@@ -170,3 +170,49 @@ i {
   bottom: calc(100vh - var(--menu-y));
   left: min(100vw - 200px, var(--menu-x));
 }
+
+// Slate editor styles
+app-slate-editor.text-input {
+  // Reset slate-angular container styles
+  slate-editable,
+  .slate-editable-container {
+    display: block !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  [data-slate-editor] {
+    min-height: 20px;
+
+    // Reset all element margins
+    > * {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+
+  // Mention tag styles
+  [kahla-mention] {
+    display: inline-block;
+    padding: 1px 4px;
+    margin: 0 1px;
+    vertical-align: baseline;
+    border-radius: 3px;
+    background-color: var(--primary-color-depth1, rgba(0, 120, 215, 0.15));
+    color: var(--primary-color-depth3, #0078d7);
+    font-size: inherit;
+    user-select: none;
+    cursor: default;
+
+    &:hover {
+      background-color: var(--primary-color-depth2, rgba(0, 120, 215, 0.25));
+    }
+
+    span {
+      pointer-events: none;
+    }
+  }
+}

@@ -86,10 +86,12 @@ import { ThreadInfoPublicCacheDictionary } from './Caching/ThreadInfoPublicCache
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { DropFileDirective } from './Directives/DropFileDirective';
 import { AutoEncodeLinkPipe } from './Pipes/auto-encode-links.pipe';
-import { MessageTextInputDirective } from './Directives/MessageTextInputDirective';
 import { MatchHeightForDirective } from './Directives/MatchHeightForDirective';
 import { Logger } from './Services/Logger';
 import { PlatformModule } from '@angular/cdk/platform';
+import { SlateModule } from 'slate-angular';
+import { SlateEditorComponent } from './Components/SlateEditor/slate-editor.component';
+import { MentionElementComponent } from './Components/SlateEditor/mention-element.component';
 
 @NgModule({
     imports: [
@@ -109,8 +111,8 @@ import { PlatformModule } from '@angular/cdk/platform';
         CdkMenuModule,
         DropFileDirective,
         AutoEncodeLinkPipe,
-        MessageTextInputDirective,
         MatchHeightForDirective,
+        SlateModule,
     ],
     declarations: [
         AboutComponent,
@@ -158,6 +160,8 @@ import { PlatformModule } from '@angular/cdk/platform';
         ThreadBasicInfoComponent,
         UserBasicInfoComponent,
         InviteMemberComponent,
+        SlateEditorComponent,
+        MentionElementComponent,
     ],
     providers: [
         ApiService,

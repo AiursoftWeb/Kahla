@@ -16,7 +16,7 @@ import { VoiceRecorder } from '../Utils/VoiceRecord';
 import { MessageSegmentText, MessageTextWithAnnotate } from '../Models/Messages/MessageSegments';
 import Swal from 'sweetalert2';
 import { imageFileTypes, selectFiles } from '../Utils/SystemDialog';
-import { MessageTextInputDirective } from '../Directives/MessageTextInputDirective';
+import { SlateEditorComponent } from '../Components/SlateEditor/slate-editor.component';
 import { KahlaUser } from '../Models/KahlaUser';
 import { Logger } from '../Services/Logger';
 import { debounceTime, distinctUntilChanged, filter, map, Subscription } from 'rxjs';
@@ -41,7 +41,7 @@ export class TalkingInputComponent {
 
     private picker: EmojiButton;
     private chatBox = viewChild.required<ElementRef<HTMLElement>>('chatBox');
-    private chatInput = viewChild.required<MessageTextInputDirective>('chatInput');
+    private chatInput = viewChild.required<SlateEditorComponent>('chatInput');
 
     atRecommends = signal<ThreadMembersRepository | null>(null);
     atRecommendsShowPos = signal<[number, number] | null>(null);
@@ -184,8 +184,7 @@ export class TalkingInputComponent {
                 },
                 ats: ats.length ? ats : undefined,
             });
-            this.textContent.set([]);
-            this.chatInput().forward();
+            this.chatInput().clear();
         }
     }
 

@@ -1,5 +1,7 @@
 @use 'themes';
+@use 'slate-angular/styles/index.scss' as slate-angular;
 @import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -71,4 +73,15 @@ body {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(127, 127, 127, 0.9);
+}
+
+/* Override slate-angular default styles */
+.slate-editable-container {
+  min-height: auto;
+  padding: 0;
+  margin: 0;
+
+  [data-slate-node='element'] {
+    margin-bottom: 0;
+  }
 }
