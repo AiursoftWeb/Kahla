@@ -1,4 +1,4 @@
-﻿<app-header
+<app-header
     [returnButton]="true"
     [shadow]="true"
     [closeDirectly]="true"
@@ -9,7 +9,15 @@
     [buttonLink]="'/thread/' + id()"
     [repo]="repo"
 />
-<!-- <app-load-more-button></app-load-more-button> -->
+@if (hasMoreMessages()) {
+    <app-load-more-button
+        [reversedDirection]="true"
+        [autoLoad]="true"
+        [loading]="loadingMessages()"
+        [disabled]="!hasMoreMessages()"
+        (requestLoadMore)="loadMoreMessages()"
+    />
+}
 <app-message-list
     [messages]="parsedMessages()"
     [lastReadIndex]="threadInfo.value()?.messageContext?.unReadAmount ?? 0"

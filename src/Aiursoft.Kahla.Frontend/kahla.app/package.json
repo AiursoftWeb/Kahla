@@ -26,7 +26,7 @@
     "autolinker": "^4.1.0",
     "blueimp-load-image": "^5.16.0",
     "direction": "^2.0.1",
-    "idb": "^8.0.1",
+    "idb": "^8.0.3",
     "is-hotkey": "^0.2.0",
     "rxjs": "^7.8.1",
     "slate": "~0.101.5",

@@ -37,6 +37,7 @@
   "homepage": "https://kahla.aiursoft.com",
   "packageManager": "yarn@4.5.3",
   "dependencies": {
+    "idb": "^8.0.3",
     "slate": "^0.123.0"
   }
 }

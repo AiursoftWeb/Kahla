@@ -34,7 +34,7 @@ __metadata:
     direction: "npm:^2.0.1"
     esbuild: "npm:^0.24.2"
     eslint: "npm:^9.17.0"
-    idb: "npm:^8.0.1"
+    idb: "npm:^8.0.3"
     is-hotkey: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
     slate: "npm:~0.101.5"
@@ -6160,10 +6160,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"idb@npm:^8.0.1":
-  version: 8.0.1
-  resolution: "idb@npm:8.0.1"
-  checksum: 10c0/01489040a91ebb0be18c0d77a92f336fcb965049014b14cce493c5f6cefdc7e3b4a95aa6a6f1024981eecb52f3745e370ac29c6e5dcb3b9e9e29e925e1120fb4
+"idb@npm:^8.0.3":
+  version: 8.0.3
+  resolution: "idb@npm:8.0.3"
+  checksum: 10c0/421cd9a3281b7564528857031cc33fd9e95753f8191e483054cb25d1ceea7303a0d1462f4f69f5b41606f0f066156999e067478abf2460dfcf9cab80dae2a2b2
   languageName: node
   linkType: hard
 
@@ -6958,6 +6958,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "kahla@workspace:."
   dependencies:
+    idb: "npm:^8.0.3"
     prettier: "npm:^3.4.2"
     slate: "npm:^0.123.0"
   languageName: unknown
