@@ -115,7 +115,7 @@ deploy_public_nuget:
     only:
         - master
 
-deploy_docker_registry:
+deploy_docker_all:
     stage: deploy
     environment: production
     needs:
@@ -123,31 +123,37 @@ deploy_docker_registry:
         - test
     script:
         - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
-        - echo building image hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
-        - docker build . -t hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG
-        - echo "Logging in to Docker Registry hub.aiursoft.com..."
+        - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then HUB_NAMESPACE="anduin2019"; else HUB_NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
+        
+        # Build once
+        - LOCAL_IMAGE="$CI_PROJECT_NAME:$TAG"
+        - echo "Building Docker image $LOCAL_IMAGE..."
+        - docker build . -t $LOCAL_IMAGE
+        
+        # Push to hub.aiursoft.com
+        - echo "Pushing to hub.aiursoft.com..."
+        - TARGET="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
+        - docker tag $LOCAL_IMAGE $TARGET
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
-        - docker save hub.aiursoft.com/${CI_PROJECT_NAMESPACE}/$CI_PROJECT_NAME:$TAG -o temp.tar
-        - regctl image import hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG temp.tar
+        - docker save $TARGET -o temp.tar
+        - regctl image import $TARGET temp.tar
         - rm ./temp.tar
-    rules:
-        - if: '$CI_COMMIT_BRANCH == "master"'
-          exists:
-              - Dockerfile
-
-deploy_docker_hub:
-    stage: deploy
-    environment: production
-    needs:
-        - deploy_docker_registry
-    script:
-        - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then NAMESPACE="anduin2019"; else NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
-        - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
-        - echo building image $NAMESPACE/$CI_PROJECT_NAME:$TAG
-        - docker build . -t $NAMESPACE/$CI_PROJECT_NAME:$TAG
-        - echo "Logging in to Docker Hub..."
+        
+        # Push to hub.aiursoft.cn
+        - echo "Pushing to hub.aiursoft.cn..."
+        - TARGET="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
+        - docker tag $LOCAL_IMAGE $TARGET
+        - echo "$CN_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$CN_DOCKER_USERNAME" --password-stdin
+        - docker save $TARGET -o temp.tar
+        - regctl image import $TARGET temp.tar
+        - rm ./temp.tar
+        
+        # Push to Docker Hub
+        - echo "Pushing to Docker Hub..."
+        - TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
+        - docker tag $LOCAL_IMAGE $TARGET
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push $NAMESPACE/$CI_PROJECT_NAME:$TAG
+        - docker push $TARGET
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
           exists:
