@@ -125,35 +125,39 @@ deploy_docker_all:
         - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
         - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then HUB_NAMESPACE="anduin2019"; else HUB_NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
         
-        # Build once
-        - LOCAL_IMAGE="$CI_PROJECT_NAME:$TAG"
-        - echo "Building Docker image $LOCAL_IMAGE..."
-        - docker build . -t $LOCAL_IMAGE
+        # 准备目标镜像名称
+        - LOCAL_TARGET_COM="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
+        - LOCAL_TARGET_CN="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
+        - PUBLIC_TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         
-        # Push to hub.aiursoft.com
-        - echo "Pushing to hub.aiursoft.com..."
-        - TARGET="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
-        - docker tag $LOCAL_IMAGE $TARGET
+        # 1. 集中进行所有的登录操作
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
-        - docker save $TARGET -o temp.tar
-        - regctl image import $TARGET temp.tar
-        - rm ./temp.tar
-        
-        # Push to hub.aiursoft.cn
-        - echo "Pushing to hub.aiursoft.cn..."
-        - TARGET="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
-        - docker tag $LOCAL_IMAGE $TARGET
         - echo "$CN_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$CN_DOCKER_USERNAME" --password-stdin
-        - docker save $TARGET -o temp.tar
-        - regctl image import $TARGET temp.tar
-        - rm ./temp.tar
-        
-        # Push to Docker Hub
-        - echo "Pushing to Docker Hub..."
-        - TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
-        - docker tag $LOCAL_IMAGE $TARGET
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push $TARGET
+        
+        # 2. 全程使用我们强大的全局多架构 Builder
+        - docker buildx use aiur-global-builder
+        
+        # ==========================================
+        # 步骤 1: 编译单架构 -> 导出 tar -> regctl 推送私服 (绕过 Zot 鉴权 Bug)
+        # ==========================================
+        - echo "Building single-arch (amd64) and exporting to tarball..."
+        # 使用 aiur-global-builder，它原生支持直接导出 tar
+        - docker buildx build . --platform linux/amd64 -t $LOCAL_TARGET_COM -o type=docker,dest=image.tar
+        
+        - echo "Pushing to internal Zot registries using regctl..."
+        # 用 regctl 读取刚才导出的 tar 并推送到两个内网节点
+        - regctl image import $LOCAL_TARGET_COM image.tar
+        - regctl image import $LOCAL_TARGET_CN image.tar
+        - rm -f image.tar
+
+        # ==========================================
+        # 步骤 2: 编译多架构 -> 原生推送到 Docker Hub
+        # ==========================================
+        - echo "Building and pushing multi-arch to Docker Hub..."
+        # 此时环境里已经有了 amd64 的超强缓存，这一步它只会去编译 ARM64 然后合并推送
+        - docker buildx build . --platform linux/amd64,linux/arm64 -t $PUBLIC_TARGET --push
+
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
           exists:
