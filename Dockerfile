@@ -5,7 +5,7 @@ ARG FRONT_END_PATH="./src/Aiursoft.Kahla.Frontend"
 # ============================
 # Prepare node dist
 # ============================
-FROM hub.aiursoft.com/node:24-alpine AS npm-env
+FROM --platform=$BUILDPLATFORM hub.aiursoft.com/node:24-alpine AS npm-env
 ARG FRONT_END_PATH
 WORKDIR /src
 
@@ -24,14 +24,23 @@ RUN corepack yarn run build
 # ============================
 # Prepare .NET binaries
 # ============================
-FROM hub.aiursoft.com/aiursoft/internalimages/dotnet AS build-env
+FROM --platform=$BUILDPLATFORM hub.aiursoft.com/aiursoft/internalimages/dotnet AS build-env
 ARG CSPROJ_PATH
 ARG PROJ_NAME
+ARG TARGETARCH
 WORKDIR /src
 
 # Build
 COPY . .
-RUN dotnet publish ${CSPROJ_PATH}/${PROJ_NAME}.csproj --configuration Release --no-self-contained --runtime linux-x64 --output /app
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        RID="linux-arm64"; \
+    elif [ "$TARGETARCH" = "amd64" ]; then \
+        RID="linux-x64"; \
+    else \
+        RID="linux-$TARGETARCH"; \
+    fi && \
+    echo "Building for arch: $TARGETARCH, using .NET RID: $RID" && \
+    dotnet publish ${CSPROJ_PATH}/${PROJ_NAME}.csproj --configuration Release --no-self-contained --runtime $RID --output /app
 
 # ============================
 # Prepare runtime image
