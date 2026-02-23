@@ -1,19 +1,19 @@
 configVersion: 1
 files:
   - name: .editorconfig
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/.editorconfig
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.editorconfig
   - name: .gitignore
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/.gitignore
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitignore
   - name: .gitlab-ci.yml
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/.gitlab-ci.yml
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitlab-ci.yml
   - name: lint.sh
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/lint.sh
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/lint.sh
   - name: LICENSE
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/LICENSE
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/LICENSE
   - name: CODE_OF_CONDUCT.md
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/CODE_OF_CONDUCT.md
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/CODE_OF_CONDUCT.md
   - name: ninja.yaml
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/ninja.yaml
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/ninja.yaml
   - name: nuget.config
-    contentUri: https://gitlab.aiursoft.com/aiursoft/tracer/-/raw/master/nuget.config
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/nuget.config
   - name: README.md
