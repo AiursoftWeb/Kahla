@@ -125,37 +125,24 @@ deploy_docker_all:
         - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
         - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then HUB_NAMESPACE="anduin2019"; else HUB_NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
         
-        # 准备目标镜像名称
         - LOCAL_TARGET_COM="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         - LOCAL_TARGET_CN="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         - PUBLIC_TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         
-        # 1. 集中进行所有的登录操作
+        # 1. 登录所有环境
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
         - echo "$CN_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$CN_DOCKER_USERNAME" --password-stdin
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         
-        # 2. 全程使用我们强大的全局多架构 Builder
+        # 2. 全程绑定极其现代且聪明的全局 Builder，它没有 Zot Bug！
         - docker buildx use aiur-global-builder
         
-        # ==========================================
-        # 步骤 1: 编译单架构 -> 导出 tar -> regctl 推送私服 (绕过 Zot 鉴权 Bug)
-        # ==========================================
-        - echo "Building single-arch (amd64) and exporting to tarball..."
-        # 使用 aiur-global-builder，它原生支持直接导出 tar
-        - docker buildx build . --platform linux/amd64 -t $LOCAL_TARGET_COM -o type=docker,dest=image.tar
-        
-        - echo "Pushing to internal Zot registries using regctl..."
-        # 用 regctl 读取刚才导出的 tar 并推送到两个内网节点
-        - regctl image import $LOCAL_TARGET_COM image.tar
-        - regctl image import $LOCAL_TARGET_CN image.tar
-        - rm -f image.tar
+        # 3. 单架构编译并直接推送到内网 Zot (BuildKit 负责安全推送)
+        - echo "Building and pushing single-arch (amd64) to internal hubs..."
+        - docker buildx build . --platform linux/amd64 -t $LOCAL_TARGET_COM -t $LOCAL_TARGET_CN --push
 
-        # ==========================================
-        # 步骤 2: 编译多架构 -> 原生推送到 Docker Hub
-        # ==========================================
+        # 4. 双架构编译并推送到公网 Docker Hub (完美复用刚才 AMD64 的层缓存)
         - echo "Building and pushing multi-arch to Docker Hub..."
-        # 此时环境里已经有了 amd64 的超强缓存，这一步它只会去编译 ARM64 然后合并推送
         - docker buildx build . --platform linux/amd64,linux/arm64 -t $PUBLIC_TARGET --push
 
     rules:
