@@ -129,21 +129,19 @@ deploy_docker_all:
         - LOCAL_TARGET_CN="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         - PUBLIC_TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         
-        # 1. 登录所有环境
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
         - echo "$CN_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$CN_DOCKER_USERNAME" --password-stdin
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         
-        # 2. 全程绑定极其现代且聪明的全局 Builder，它没有 Zot Bug！
         - docker buildx use aiur-global-builder
-        
-        # 3. 单架构编译并直接推送到内网 Zot (BuildKit 负责安全推送)
-        - echo "Building and pushing single-arch (amd64) to internal hubs..."
-        - docker buildx build . --platform linux/amd64 -t $LOCAL_TARGET_COM -t $LOCAL_TARGET_CN --push
-
-        # 4. 双架构编译并推送到公网 Docker Hub (完美复用刚才 AMD64 的层缓存)
-        - echo "Building and pushing multi-arch to Docker Hub..."
-        - docker buildx build . --platform linux/amd64,linux/arm64 -t $PUBLIC_TARGET --push
+        - echo "Building and pushing multi-arch to all registries..."
+        - |
+            docker buildx build . \
+              --platform linux/amd64,linux/arm64 \
+              -t $LOCAL_TARGET_COM \
+              -t $LOCAL_TARGET_CN \
+              -t $PUBLIC_TARGET \
+              --push
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
