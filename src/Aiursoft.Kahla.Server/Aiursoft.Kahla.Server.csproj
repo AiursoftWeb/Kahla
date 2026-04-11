@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="10.0.5" />
+    <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="10.0.6" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="10.0.18" />
     <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.16" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="10.0.8" />
