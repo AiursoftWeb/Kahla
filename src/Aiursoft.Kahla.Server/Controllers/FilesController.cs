@@ -15,7 +15,7 @@ using Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 using Aiursoft.WebTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
+using SkiaSharp;
 
 namespace Aiursoft.Kahla.Server.Controllers;
 
@@ -189,18 +189,18 @@ public class FilesController(
         return this.WebFile(physicalPath, extension);
     }
 
-    private async Task<bool> IsValidImageAsync(string imagePath)
+    private Task<bool> IsValidImageAsync(string imagePath)
     {
         try
         {
-            _ = await Image.DetectFormatAsync(imagePath);
+            using var codec = SKCodec.Create(imagePath);
             logger.LogTrace("File with path {ImagePath} is a valid image", imagePath);
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception e)
         {
             logger.LogWarning(e, "File with path {ImagePath} is not a valid image", imagePath);
-            return false;
+            return Task.FromResult(false);
         }
     }
 

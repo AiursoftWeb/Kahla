@@ -1,5 +1,4 @@
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 
 namespace Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 
@@ -13,7 +12,7 @@ public class ImageProcessingService(
     : IImageProcessingService
 {
     /// <summary>
-    /// Clears the EXIF data while retaining the same resolution, 
+    /// Clears the EXIF data while retaining the same resolution,
     /// then writes the result to the "ClearedEXIF" subdirectory.
     /// </summary>
     public async Task<string> ClearExifAsync(string sourceAbsolute)
@@ -30,22 +29,19 @@ public class ImageProcessingService(
         try
         {
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
-            using var image = await Image.LoadAsync(sourceAbsolute);
-            image.Mutate(ctx => { ctx.AutoOrient(); });
-            image.Metadata.ExifProfile = null;
+            using var image = SKBitmap.Decode(sourceAbsolute);
+            if (image == null)
+            {
+                logger.LogWarning("Unable to decode image; returning original path for {Source}", sourceAbsolute);
+                return sourceAbsolute;
+            }
+
             logger.LogInformation("Clearing EXIF: {Source} -> {Target}", sourceAbsolute, targetAbsolute);
-            await image.SaveAsync(targetAbsolute);
+            SaveImage(image, targetAbsolute);
         }
-        catch (UnknownImageFormatException e)
+        catch (Exception e)
         {
-            logger.LogWarning(e, "Not a known image format; skipping EXIF clear for {Source}", sourceAbsolute);
-            // Return original. Or you can throw an exception, up to you.
-            return sourceAbsolute;
-        }
-        catch (ImageFormatException e)
-        {
-            // e.g. if it's a corrupted or non-image file
-            logger.LogWarning(e, "Invalid image; returning original path for {Source}", sourceAbsolute);
+            logger.LogWarning(e, "Failed to process image; returning original path for {Source}", sourceAbsolute);
             return sourceAbsolute;
         }
         finally
@@ -57,7 +53,7 @@ public class ImageProcessingService(
     }
 
     /// <summary>
-    /// Compresses the image to the specified width/height. 
+    /// Compresses the image to the specified width/height.
     /// If width or height is 0, that dimension is not constrained.
     /// Also clears EXIF data.
     /// </summary>
@@ -75,22 +71,28 @@ public class ImageProcessingService(
         try
         {
             await WaitTillFileCanBeReadAsync(sourceAbsolute);
-            using var image = await Image.LoadAsync(sourceAbsolute);
-            image.Mutate(x => x.AutoOrient());
-            image.Metadata.ExifProfile = null;
-            image.Mutate(x => x.Resize(width, height));
+            using var image = SKBitmap.Decode(sourceAbsolute);
+            if (image == null)
+            {
+                logger.LogWarning("Unable to decode image; returning original path for {Source}", sourceAbsolute);
+                return sourceAbsolute;
+            }
+
+            var (newWidth, newHeight) = CalculateDimensions(image.Width, image.Height, width, height);
+            using var resized = image.Resize(new SKSizeI(newWidth, newHeight), new SKSamplingOptions(SKFilterMode.Linear));
+            if (resized == null)
+            {
+                logger.LogWarning("Unable to resize image; returning original path for {Source}", sourceAbsolute);
+                return sourceAbsolute;
+            }
+
             logger.LogInformation("Compressing image {Source} -> {Target} (width={Width}, height={Height})",
-                sourceAbsolute, targetAbsolute, width, height);
-            await image.SaveAsync(targetAbsolute);
+                sourceAbsolute, targetAbsolute, newWidth, newHeight);
+            SaveImage(resized, targetAbsolute);
         }
-        catch (UnknownImageFormatException e)
+        catch (Exception e)
         {
-            logger.LogWarning(e, "Not a known image format; skipping compression for {Source}", sourceAbsolute);
-            return sourceAbsolute;
-        }
-        catch (ImageFormatException e)
-        {
-            logger.LogWarning(e, "Invalid image format; returning original path for {Source}", sourceAbsolute);
+            logger.LogWarning(e, "Failed to process image; returning original path for {Source}", sourceAbsolute);
             return sourceAbsolute;
         }
         finally
@@ -101,6 +103,36 @@ public class ImageProcessingService(
         return targetAbsolute;
     }
 
+    private static (int width, int height) CalculateDimensions(int srcWidth, int srcHeight, int targetWidth, int targetHeight)
+    {
+        if (targetWidth > 0 && targetHeight > 0)
+            return (targetWidth, targetHeight);
+
+        if (targetWidth > 0)
+            return (targetWidth, (int)(targetWidth / (float)srcWidth * srcHeight));
+
+        if (targetHeight > 0)
+            return ((int)(targetHeight / (float)srcHeight * srcWidth), targetHeight);
+
+        return (srcWidth, srcHeight);
+    }
+
+    private static void SaveImage(SKBitmap image, string path)
+    {
+        var format = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".png" => SKEncodedImageFormat.Png,
+            ".webp" => SKEncodedImageFormat.Webp,
+            ".gif" => SKEncodedImageFormat.Gif,
+            ".bmp" => SKEncodedImageFormat.Bmp,
+            _ => SKEncodedImageFormat.Jpeg
+        };
+
+        using var encoded = image.Encode(format, 85);
+        using var stream = File.OpenWrite(path);
+        encoded.SaveTo(stream);
+    }
+
     private async Task WaitTillFileCanBeReadAsync(string path)
     {
         while (!FileCanBeRead(path))
@@ -108,7 +140,7 @@ public class ImageProcessingService(
             await Task.Delay(100);
         }
     }
-    
+
     private bool FileCanBeRead(string path)
     {
         try
