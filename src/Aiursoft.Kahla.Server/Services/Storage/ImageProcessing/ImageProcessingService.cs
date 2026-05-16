@@ -3,7 +3,7 @@ using SkiaSharp;
 namespace Aiursoft.Kahla.Server.Services.Storage.ImageProcessing;
 
 /// <summary>
-/// Implements <see cref="IImageProcessingService"/> using ImageSharp.
+/// Implements <see cref="IImageProcessingService"/> using SkiaSharp.
 /// </summary>
 public class ImageProcessingService(
     PathResolver pathResolver,
