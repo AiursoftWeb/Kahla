@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><OutputType>Library</OutputType>
-    <Version>10.0.36</Version>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Version>10.0.37</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
@@ -19,13 +20,14 @@
     <PackageProjectUrl>https://gitlab.aiursoft.com/Aiursoft/Kahla</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://gitlab.aiursoft.com/Aiursoft/Kahla.git</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile></PropertyGroup>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <None Include="../../README.md" Pack="true" PackagePath="." />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aiursoft.AiurProtocol" Version="10.0.17" />
+    <PackageReference Include="Aiursoft.AiurProtocol" Version="10.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.9" />
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket" Version="10.0.10" />
   </ItemGroup>
