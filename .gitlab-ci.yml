@@ -6,6 +6,20 @@ stages:
     - deploy
 
 before_script:
+    # Inject internal NuGet mirror for CI. The checked-in nuget.config only has
+    # nuget.org so external contributors can build; CI overwrites it at runtime
+    # to prefer the internal mirror (faster) with nuget.org as automatic fallback.
+    - |
+      cat > nuget.config << 'NUGETEOF'
+      <?xml version="1.0" encoding="utf-8"?>
+      <configuration>
+          <packageSources>
+              <clear />
+              <add key="aiursoft" value="https://nuget.aiursoft.com/v3/index.json" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+          </packageSources>
+      </configuration>
+      NUGETEOF
     - "export PATH=$PATH:$HOME/.dotnet/tools"
     - "which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
     - "which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
