@@ -18,13 +18,13 @@
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="10.0.0" />
     <PackageReference Include="Aiursoft.Scanner" Version="10.0.9" />
     <PackageReference Include="Aiursoft.WebTools" Version="10.0.13" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="SkiaSharp" Version="4.150.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.150.0" />
+    <PackageReference Include="SkiaSharp" Version="4.150.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.150.1" />
     <PackageReference Include="WebPush" Version="1.0.13" />
   </ItemGroup>
   <ItemGroup>
