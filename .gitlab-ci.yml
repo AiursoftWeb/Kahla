@@ -156,7 +156,25 @@ deploy_docker_all:
               -t $LOCAL_TARGET_COM \
               -t $LOCAL_TARGET_CN \
               -t $PUBLIC_TARGET \
-              --push
+              --push || \
+            (echo "Docker push failed. Retrying in 100 seconds..." && sleep 100 && docker buildx build . \
+              --platform linux/amd64,linux/arm64 \
+              -t $LOCAL_TARGET_COM \
+              -t $LOCAL_TARGET_CN \
+              -t $PUBLIC_TARGET \
+              --push) || \
+            (echo "Docker push failed again. Retrying in 400 seconds..." && sleep 400 && docker buildx build . \
+              --platform linux/amd64,linux/arm64 \
+              -t $LOCAL_TARGET_COM \
+              -t $LOCAL_TARGET_CN \
+              -t $PUBLIC_TARGET \
+              --push) || \
+            (echo "Docker push failed again. Retrying in 1600 seconds..." && sleep 1600 && docker buildx build . \
+              --platform linux/amd64,linux/arm64 \
+              -t $LOCAL_TARGET_COM \
+              -t $LOCAL_TARGET_CN \
+              -t $PUBLIC_TARGET \
+              --push)
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
