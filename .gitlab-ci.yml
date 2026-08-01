@@ -132,7 +132,7 @@ deploy_public_nuget:
 
 deploy_docker_all:
     stage: deploy
-    timeout: 1h
+    timeout: 3h
     environment: production
     needs:
         - lint
@@ -142,11 +142,9 @@ deploy_docker_all:
         - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then HUB_NAMESPACE="anduin2019"; else HUB_NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
         
         - LOCAL_TARGET_COM="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
-        - LOCAL_TARGET_CN="hub.aiursoft.cn/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         - PUBLIC_TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
-        - echo "$CN_DOCKER_PASSWORD" | docker login hub.aiursoft.cn -u "$CN_DOCKER_USERNAME" --password-stdin
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         
         - docker buildx use aiur-global-builder
@@ -175,11 +173,10 @@ deploy_docker_all:
               return 1
             }
 
-            # Push independently so a stalled registry cannot block every target or
-            # prevent the retry policy from running. Later builds reuse BuildKit cache.
+            # Both required destinations must succeed. China replication is handled
+            # asynchronously by puller_cn after the home-registry push completes.
             build_and_push "$LOCAL_TARGET_COM"
             build_and_push "$PUBLIC_TARGET"
-            build_and_push "$LOCAL_TARGET_CN"
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
