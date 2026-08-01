@@ -132,6 +132,7 @@ deploy_public_nuget:
 
 deploy_docker_all:
     stage: deploy
+    timeout: 1h
     environment: production
     needs:
         - lint
@@ -149,32 +150,36 @@ deploy_docker_all:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         
         - docker buildx use aiur-global-builder
-        - echo "Building and pushing multi-arch to all registries..."
         - |
-            docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              -t $LOCAL_TARGET_COM \
-              -t $LOCAL_TARGET_CN \
-              -t $PUBLIC_TARGET \
-              --push || \
-            (echo "Docker push failed. Retrying in 100 seconds..." && sleep 100 && docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              -t $LOCAL_TARGET_COM \
-              -t $LOCAL_TARGET_CN \
-              -t $PUBLIC_TARGET \
-              --push) || \
-            (echo "Docker push failed again. Retrying in 400 seconds..." && sleep 400 && docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              -t $LOCAL_TARGET_COM \
-              -t $LOCAL_TARGET_CN \
-              -t $PUBLIC_TARGET \
-              --push) || \
-            (echo "Docker push failed again. Retrying in 1600 seconds..." && sleep 1600 && docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              -t $LOCAL_TARGET_COM \
-              -t $LOCAL_TARGET_CN \
-              -t $PUBLIC_TARGET \
-              --push)
+            build_and_push() {
+              target="$1"
+              attempt=1
+
+              while [ "$attempt" -le 3 ]; do
+                echo "Building and pushing multi-arch image to $target (attempt $attempt/3)..."
+                if timeout --foreground 15m docker buildx build . \
+                  --platform linux/amd64,linux/arm64 \
+                  --tag "$target" \
+                  --push; then
+                  return 0
+                fi
+
+                if [ "$attempt" -lt 3 ]; then
+                  echo "Push to $target failed or timed out. Retrying in 30 seconds..."
+                  sleep 30
+                fi
+                attempt=$((attempt + 1))
+              done
+
+              echo "Push to $target failed after 3 attempts."
+              return 1
+            }
+
+            # Push independently so a stalled registry cannot block every target or
+            # prevent the retry policy from running. Later builds reuse BuildKit cache.
+            build_and_push "$LOCAL_TARGET_COM"
+            build_and_push "$PUBLIC_TARGET"
+            build_and_push "$LOCAL_TARGET_CN"
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
