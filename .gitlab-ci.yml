@@ -1,9 +1,17 @@
 stages:
     - build
-    - lint
-    - test
+    - validate
     - publish
     - deploy
+
+# Prefer the merge request pipeline once a branch has an open MR, so the same
+# validation suite is not run twice for a single push.
+workflow:
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+          when: never
+        - if: '$CI_COMMIT_BRANCH'
 
 before_script:
     # Inject internal NuGet mirror for CI. The checked-in nuget.config only has
@@ -21,23 +29,24 @@ before_script:
       </configuration>
       NUGETEOF
     - "export PATH=$PATH:$HOME/.dotnet/tools"
-    - "which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
-    - "which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global --add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config -v d"
+    - "which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global $CUSTOM_NUGET_ARGS -v d"
+    - "which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global $CUSTOM_NUGET_ARGS -v d"
     - 'echo "Hostname: $(hostname)"'
     - "dotnet --info"
 
 variables:
-    GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID"
+    GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID/$CI_JOB_ID"
     MSBUILDDISABLENODEREUSE: "1"
     DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    CUSTOM_NUGET_ARGS: "--add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config"
 
 restore:
     stage: build
     script:
-        - |
-            dotnet restore --no-cache --configfile nuget.config || \
-            (echo "Restore failed. Retrying in 10 seconds..." && sleep 10 && dotnet restore --no-cache --configfile nuget.config) || \
-            (echo "Restore failed again. Retrying in 20 seconds..." && sleep 20 && dotnet restore --no-cache --configfile nuget.config)
+        - dotnet restore --no-cache --configfile nuget.config
+    retry:
+        max: 2
+        when: script_failure
 
 build:
     stage: build
@@ -47,7 +56,7 @@ build:
         - dotnet build -maxcpucount:1 --no-self-contained
 
 lint:
-    stage: lint
+    stage: validate
     needs:
         - build
     script:
@@ -60,15 +69,12 @@ lint:
             - ./analyze_output.xml
 
 test:
-    stage: test
+    stage: validate
     needs:
         - build
     coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
     script:
-        - |
-            dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose" || \
-            (echo "Test failed. Retrying in 10 seconds..." && sleep 10 && dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose") || \
-            (echo "Test failed again. Retrying in 20 seconds..." && sleep 20 && dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose")
+        - dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose"
         - reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"." -reporttypes:"cobertura"
         - COVERAGE_VALUE=$(grep -oPm 1 'line-rate="\K([0-9.]+)' "./Cobertura.xml")
         - COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE_VALUE * 100" | bc)
@@ -85,15 +91,53 @@ test:
             coverage_report:
                 coverage_format: cobertura
                 path: ./Cobertura.xml
+    retry:
+        max: 2
+        when: script_failure
+
+validate_docker:
+    stage: validate
+    timeout: 3h
+    needs:
+        - build
+    script:
+        - docker buildx use aiur-global-builder
+        - docker buildx build . --platform linux/amd64,linux/arm64
+    rules:
+        - exists:
+              - Dockerfile
+
+validate_apkg:
+    stage: validate
+    needs:
+        - build
+    script:
+        - "which apkg || dotnet tool install Aiursoft.Apkg.Client --global $CUSTOM_NUGET_ARGS -v d"
+        - |
+            aosproj_files=$(find . -type f -name '*.aosproj')
+            if [ -z "$aosproj_files" ]; then
+              echo "No .aosproj files found. Skipping APKG validation."
+              exit 0
+            fi
+
+            echo "$aosproj_files" | while IFS= read -r aosproj_file; do
+              echo "Building APKG project: $aosproj_file"
+              apkg build --path "$(dirname "$aosproj_file")" --all || exit 1
+            done
 
 pack:
     stage: publish
     needs:
         - lint
         - test
+        - validate_apkg
+        # validate_docker is absent when this template has no Dockerfile. If the
+        # job exists, pack still waits for it to succeed.
+        - job: validate_docker
+          optional: true
     script:
         - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
-        - dotnet pack -maxcpucount:1 --configuration Release *.sln || echo "Some packaging failed!"
+        - dotnet pack -maxcpucount:1 --configuration Release *.sln
     artifacts:
         expire_in: 1 week
         paths:
@@ -104,79 +148,50 @@ deploy_local_nuget:
     environment: production
     needs:
         - pack
-    dependencies:
-        - pack
     script:
         - |
             for file in $(find . -name "*.nupkg"); do
               dotnet nuget push "$file" --api-key "$LOCAL_NUGET_API_KEY" --source "https://nuget.aiursoft.com/v3/index.json" --skip-duplicate || exit 1;
             done
-    only:
-        - master
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
 
 deploy_public_nuget:
     stage: deploy
     environment: production
     needs:
         - pack
-        - deploy_local_nuget
-    dependencies:
-        - pack
     script:
         - |
             for file in $(find . -name "*.nupkg"); do
               dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
             done
-    only:
-        - master
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
 
 deploy_docker_all:
     stage: deploy
     timeout: 3h
+    retry:
+        max: 2
     environment: production
     needs:
-        - lint
-        - test
+        - job: pack
+          artifacts: false
     script:
         - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="$CI_COMMIT_REF_NAME"; fi
         - if [ "$CI_PROJECT_NAMESPACE" = "anduin" ]; then HUB_NAMESPACE="anduin2019"; else HUB_NAMESPACE="$CI_PROJECT_NAMESPACE"; fi
-        
+
         - LOCAL_TARGET_COM="hub.aiursoft.com/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$TAG"
         - PUBLIC_TARGET="$HUB_NAMESPACE/$CI_PROJECT_NAME:$TAG"
-        
+
         - echo "$LOCAL_DOCKER_PASSWORD" | docker login hub.aiursoft.com -u "$LOCAL_DOCKER_USERNAME" --password-stdin
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        
+
         - docker buildx use aiur-global-builder
-        - |
-            build_and_push() {
-              target="$1"
-              attempt=1
-
-              while [ "$attempt" -le 3 ]; do
-                echo "Building and pushing multi-arch image to $target (attempt $attempt/3)..."
-                if timeout --foreground 15m docker buildx build . \
-                  --platform linux/amd64,linux/arm64 \
-                  --tag "$target" \
-                  --push; then
-                  return 0
-                fi
-
-                if [ "$attempt" -lt 3 ]; then
-                  echo "Push to $target failed or timed out. Retrying in 30 seconds..."
-                  sleep 30
-                fi
-                attempt=$((attempt + 1))
-              done
-
-              echo "Push to $target failed after 3 attempts."
-              return 1
-            }
-
-            # Both required destinations must succeed. China replication is handled
-            # asynchronously by puller_cn after the home-registry push completes.
-            build_and_push "$LOCAL_TARGET_COM"
-            build_and_push "$PUBLIC_TARGET"
+        # Both required destinations must succeed. China replication is handled
+        # asynchronously by puller_cn after the home-registry push completes.
+        - docker buildx build . --platform linux/amd64,linux/arm64 --tag "$LOCAL_TARGET_COM" --tag "$PUBLIC_TARGET" --push
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
