@@ -43,7 +43,7 @@ variables:
 restore:
     stage: build
     script:
-        - dotnet restore --no-cache --configfile nuget.config
+        - dotnet restore --disable-parallel --no-cache --configfile nuget.config
     retry:
         max: 2
         when: script_failure
@@ -67,6 +67,9 @@ lint:
         expire_in: 1 day
         paths:
             - ./analyze_output.xml
+    retry:
+        max: 2
+        when: script_failure
 
 test:
     stage: validate
