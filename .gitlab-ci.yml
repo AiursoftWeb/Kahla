@@ -139,8 +139,8 @@ pack:
         - job: validate_docker
           optional: true
     script:
-        - dotnet build -maxcpucount:1 --configuration Release --no-self-contained *.sln
-        - dotnet pack -maxcpucount:1 --configuration Release *.sln
+        - dotnet build -maxcpucount:1 --configuration Release --no-self-contained -p:GeneratePackageOnBuild=false *.sln
+        - dotnet pack -maxcpucount:1 --configuration Release --no-build *.sln
     artifacts:
         expire_in: 1 week
         paths:
