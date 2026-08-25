@@ -1,5 +1,32 @@
 #!/bin/bash
 
+# Security baseline checks.
+security_failed=0
+
+check_security_baseline() {
+    local description="$1"
+    local pattern="$2"
+    local matches
+    matches=$(grep -RInE --include='*.cs' "$pattern" src || true)
+    if [ -n "$matches" ]; then
+        echo "$description"
+        echo "$matches"
+        security_failed=1
+    fi
+}
+
+check_security_baseline "Unbounded request size is forbidden." 'DisableRequestSizeLimit'
+check_security_baseline "Unbounded multipart bodies are forbidden." 'MultipartBodyLengthLimit[[:space:]]*=[[:space:]]*long\.MaxValue'
+check_security_baseline "Generic file responses must not hard-code inline delivery." 'Content-Disposition.*inline'
+check_security_baseline "Generic WebFile must remain attachment-only." 'bool[[:space:]]+inline'
+check_security_baseline "Physical path boundaries must not use string prefix checks." 'physicalPath\.StartsWith\(root'
+check_security_baseline "OIDC subjects must not bind through preferred_username." 'FindByNameAsync\(username\)'
+
+if [ "$security_failed" -ne 0 ]; then
+    exit 1
+fi
+# End security baseline checks.
+
 # Configuration matches .gitlab-ci.yml
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export PATH=$PATH:$HOME/.dotnet/tools
