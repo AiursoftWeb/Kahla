@@ -35,7 +35,7 @@ __metadata:
     eslint: "npm:^9.17.0"
     idb: "npm:^8.0.1"
     rxjs: "npm:^7.8.1"
-    sweetalert2: "npm:^11.15.10"
+    sweetalert2: "npm:^11.22.4"
     typescript: "npm:~5.6.3"
     typescript-eslint: "npm:^8.19.1"
     video.js: "npm:8.21.1"
@@ -9396,10 +9396,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sweetalert2@npm:^11.15.10":
-  version: 11.15.10
-  resolution: "sweetalert2@npm:11.15.10"
-  checksum: 10c0/d3dec41090d85abe5b4fac269567b600310bb185850dbd49f785bd4ed931670fbc8a361a007bd9e93a9595527ad72d7345c91477c5485d418dbfb62ddd6b9033
+"sweetalert2@npm:^11.22.4":
+  version: 11.22.4
+  resolution: "sweetalert2@npm:11.22.4"
+  checksum: 10c0/5dd53ea09144230ff50a1480d5b19669e283028d426df2addfdd5c16df8e1f51320979c19369d18e577086378ae5f2b70ea907403ff521ed16f9c38a0e5508a1
   languageName: node
   linkType: hard
 
