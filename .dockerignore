@@ -1,0 +1,20 @@
+# Git metadata changes between CI jobs for the same source revision.
+.git
+
+# Build outputs are regenerated inside the image.
+**/bin
+**/obj
+**/node_modules
+**/.node_modules-keep
+
+# CI reports are not application inputs.
+**/TestResults
+**/TestResults.xml
+**/coverage.cobertura.xml
+Cobertura.xml
+analyze_output.xml
+
+# Local IDE settings are not application inputs.
+.vs
+.vscode
+.idea
