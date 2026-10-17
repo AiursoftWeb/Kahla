@@ -4,6 +4,8 @@ files:
     contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.editorconfig
   - name: .gitignore
     contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitignore
+  - name: .dockerignore
+    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.dockerignore
   - name: .gitlab-ci.yml
     contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitlab-ci.yml
   - name: lint.sh
