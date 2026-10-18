@@ -1,21 +1,27 @@
 configVersion: 1
+http:
+  profiles:
+    company-source:
+      origin: https://gitlab.aiursoft.com
+      headersFromEnv:
+        PRIVATE-TOKEN: NINJA_SOURCE_TOKEN
 files:
   - name: .editorconfig
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.editorconfig
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/.editorconfig/raw?ref=master
   - name: .gitignore
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitignore
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/.gitignore/raw?ref=master
   - name: .dockerignore
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.dockerignore
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/.dockerignore/raw?ref=master
   - name: .gitlab-ci.yml
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/.gitlab-ci.yml
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/.gitlab-ci.yml/raw?ref=master
   - name: lint.sh
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/lint.sh
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/lint.sh/raw?ref=master
   - name: LICENSE
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/LICENSE
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/LICENSE/raw?ref=master
   - name: CODE_OF_CONDUCT.md
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/CODE_OF_CONDUCT.md
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/CODE_OF_CONDUCT.md/raw?ref=master
   - name: ninja.yaml
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/ninja.yaml
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/ninja.yaml/raw?ref=master
   - name: nuget.config
-    contentUri: https://gitlab.aiursoft.com/aiursoft/template/-/raw/master/nuget.config
+    contentUri: https://gitlab.aiursoft.com/api/v4/projects/aiursoft%2Ftemplate/repository/files/nuget.config/raw?ref=master
   - name: README.md
