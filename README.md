@@ -3,7 +3,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/blob/master/LICENSE)
 [![Pipeline stat](https://gitlab.aiursoft.com/aiursoft/kahla/badges/master/pipeline.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/pipelines)
 [![Test Coverage](https://gitlab.aiursoft.com/aiursoft/kahla/badges/master/coverage.svg)](https://gitlab.aiursoft.com/aiursoft/kahla/-/pipelines)
-[![Man hours](https://manhours.aiursoft.com/r/gitlab.aiursoft.com/aiursoft/kahla.svg)](https://manhours.aiursoft.com/r/gitlab.aiursoft.com/aiursoft/kahla.html)
+[![Man hours](https://manhours.aiursoft.com/r/github.com/aiursoftweb/kahla.svg)](https://manhours.aiursoft.com/r/github.com/aiursoftweb/kahla.html)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fkahla.aiursoft.com%2F)](https://kahla.aiursoft.com)
 [![Docker](https://img.shields.io/docker/pulls/aiursoft/kahla.svg)](https://hub.docker.com/r/aiursoft/kahla)
 
