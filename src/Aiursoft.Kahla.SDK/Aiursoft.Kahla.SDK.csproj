@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Version>10.0.50</Version>
+    <Version>10.0.51</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.Kahla.SDK</AssemblyName>
     <RootNamespace>Aiursoft.Kahla.SDK</RootNamespace>
@@ -17,9 +17,9 @@
     <PackageId>Aiursoft.Kahla.SDK</PackageId>
     <PackageTags>base-class shared-component aiursoft kahla</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://gitlab.aiursoft.com/Aiursoft/Kahla</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/AiursoftWeb/kahla</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://gitlab.aiursoft.com/Aiursoft/Kahla.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/AiursoftWeb/kahla.git</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
