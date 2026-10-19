@@ -3,6 +3,7 @@ stages:
     - validate
     - publish
     - deploy
+    - notify
 
 # Prefer the merge request pipeline once a branch has an open MR, so the same
 # validation suite is not run twice for a single push.
@@ -11,12 +12,22 @@ workflow:
         - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
         - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
           when: never
+        - if: '$CI_COMMIT_BRANCH == "master"'
+          variables:
+              S360_PURPOSE: baseline
+              S360_CHECK_KEY: "$S360_BASELINE_KEY"
         - if: '$CI_COMMIT_BRANCH'
 
 before_script:
-    # Inject internal NuGet mirror for CI. The checked-in nuget.config only has
-    # nuget.org so external contributors can build; CI overwrites it at runtime
-    # to prefer the internal mirror (faster) with nuget.org as automatic fallback.
+    - |
+      set -- ./*.sln
+      if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+        echo "Expected exactly one .sln file in the repository root." >&2
+        exit 1
+      fi
+      export SOLUTION_FILE="$1"
+    # CI uses the company NuGet source approved by S360. Keep nuget.org in the
+    # checked-in config for external contributors, but do not bypass CI policy.
     - |
       cat > nuget.config << 'NUGETEOF'
       <?xml version="1.0" encoding="utf-8"?>
@@ -24,12 +35,12 @@ before_script:
           <packageSources>
               <clear />
               <add key="aiursoft" value="https://nuget.aiursoft.com/v3/index.json" />
-              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
           </packageSources>
       </configuration>
       NUGETEOF
     - "export PATH=$PATH:$HOME/.dotnet/tools"
     - "which jb || dotnet tool install JetBrains.ReSharper.GlobalTools --global $CUSTOM_NUGET_ARGS -v d"
+    - "dotnet tool update Aiursoft.S360.Client --global $CUSTOM_NUGET_ARGS"
     - "which reportgenerator || dotnet tool install dotnet-reportgenerator-globaltool --global $CUSTOM_NUGET_ARGS -v d"
     - 'echo "Hostname: $(hostname)"'
     - "dotnet --info"
@@ -38,12 +49,14 @@ variables:
     GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID/$CI_JOB_ID"
     MSBUILDDISABLENODEREUSE: "1"
     DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    S360_PURPOSE: review
+    S360_CHECK_KEY: ""
     CUSTOM_NUGET_ARGS: "--add-source https://nuget.aiursoft.com/v3/index.json --configfile ./nuget.config"
 
 restore:
     stage: build
     script:
-        - dotnet restore --disable-parallel --no-cache --configfile nuget.config
+        - dotnet restore "$SOLUTION_FILE" --disable-parallel --no-cache --configfile nuget.config
     retry:
         max: 2
         when: script_failure
@@ -53,7 +66,15 @@ build:
     needs:
         - restore
     script:
-        - dotnet build -maxcpucount:1 --no-self-contained
+        # Audit and compile the same restore output in this job. Shared caches
+        # retain their original source even after changing nuget.config.
+        - dotnet restore "$SOLUTION_FILE" --disable-parallel --no-cache --configfile nuget.config --packages "$CI_PROJECT_DIR/obj/s360-packages"
+        - s360 check --path "$SOLUTION_FILE" --ecosystem nuget --purpose "$S360_PURPOSE"
+        - dotnet build "$SOLUTION_FILE" -maxcpucount:1 --no-self-contained --no-restore
+    retry:
+        max: 2
+        # Policy rejection must stop immediately, without retrying the audit.
+        when: runner_system_failure
 
 lint:
     stage: validate
@@ -77,7 +98,7 @@ test:
         - build
     coverage: '/TOTAL_COVERAGE=(\d+.\d+)/'
     script:
-        - dotnet test *.sln --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+        - dotnet test "$SOLUTION_FILE" --collect:"XPlat Code Coverage" --logger "junit;MethodFormat=Class;FailureBodyFormat=Verbose" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute
         - reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"." -reporttypes:"cobertura"
         - COVERAGE_VALUE=$(grep -oPm 1 'line-rate="\K([0-9.]+)' "./Cobertura.xml")
         - COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE_VALUE * 100" | bc)
@@ -139,8 +160,8 @@ pack:
         - job: validate_docker
           optional: true
     script:
-        - dotnet build -maxcpucount:1 --configuration Release --no-self-contained -p:GeneratePackageOnBuild=false *.sln
-        - dotnet pack -maxcpucount:1 --configuration Release --no-build *.sln
+        - dotnet build -maxcpucount:1 --configuration Release --no-self-contained -p:GeneratePackageOnBuild=false "$SOLUTION_FILE"
+        - dotnet pack -maxcpucount:1 --configuration Release --no-build "$SOLUTION_FILE"
     artifacts:
         expire_in: 1 week
         paths:
@@ -200,3 +221,154 @@ deploy_docker_all:
         - if: '$CI_COMMIT_BRANCH == "master"'
           exists:
               - Dockerfile
+
+# Reporting shares a resource group per project/ref. Counters live on incidents,
+# not in runner caches or GitLab pipeline history. A reporting outage is visible
+# but must not turn a successful product build into a failed build.
+.alertcenter_report:
+    stage: notify
+    dependencies: []
+    resource_group: "alertcenter-$CI_COMMIT_REF_SLUG"
+    timeout: 10m
+    allow_failure: true
+    retry:
+        max: 2
+        when: script_failure
+    before_script:
+        - |
+            set +x
+            test -n "${ALERTCENTER_SERVER:-}" && test -n "${ALERTCENTER_API_KEY:-}" || {
+                echo "AlertCenter server or API key is not configured."
+                exit 1
+            }
+            mkdir -p "$CI_PROJECT_DIR/.alertcenter-tools"
+            cat > "$CI_PROJECT_DIR/.alertcenter-tools/nuget.config" <<'NUGETEOF'
+            <configuration><packageSources><clear/><add key="aiursoft" value="https://nuget.aiursoft.com/v3/index.json"/></packageSources></configuration>
+            NUGETEOF
+            dotnet tool install Aiursoft.AlertCenter.Client --version 10.7.0 --tool-path "$CI_PROJECT_DIR/.alertcenter-tools" --configfile "$CI_PROJECT_DIR/.alertcenter-tools/nuget.config"
+    script:
+        - |
+            set +x
+            python3 <<'PY'
+            import json
+            import os
+            import subprocess
+            import time
+            import uuid
+
+            server = os.environ['ALERTCENTER_SERVER']
+            key = os.environ['ALERTCENTER_API_KEY']
+            tool = os.path.join(os.environ['CI_PROJECT_DIR'], '.alertcenter-tools', 'alertcenter')
+            pipeline_id = int(os.environ['CI_PIPELINE_ID'])
+            result = os.environ['ALERTCENTER_RESULT']
+            assert result in ('failed', 'success')
+            stream = 'gitlab:{}:{}:{}'.format(os.environ['CI_SERVER_URL'].rstrip('/'), os.environ['CI_PROJECT_ID'], os.environ['CI_COMMIT_BRANCH'])
+            terminal = ('mitigated', 'resolved')
+
+
+            class Conflict(Exception):
+                pass
+
+
+            def call(*arguments):
+                try:
+                    response = subprocess.run([tool, *arguments, '--server', server, '--api-key', key, '--json'],
+                                              capture_output=True, text=True, timeout=120)
+                except subprocess.TimeoutExpired:
+                    raise SystemExit('AlertCenter request timed out; retry this reporting job.')
+                if response.returncode:
+                    error = (response.stdout + response.stderr).replace(key, '[REDACTED]')
+                    if 'Conflict (' in error:
+                        raise Conflict()
+                    raise SystemExit('AlertCenter {} failed: {}'.format(arguments[0], error))
+                return json.loads(response.stdout)
+
+
+            def latest():
+                response = call('list', '--metadata-key', 'source', '--metadata-value', stream, '--page-size', '1')
+                return response['items'][0] if response['items'] else None
+
+
+            def state(failures):
+                return {'pipelineId': pipeline_id, 'pipelineUrl': os.environ['CI_PIPELINE_URL'],
+                        'result': result, 'consecutiveFailures': failures, 'applied': False}
+
+
+            def patch(incident, value):
+                call('metadata', 'patch', '--id', incident['incidentId'], '--version', incident['version'],
+                     '--property', 'ci', '--value', json.dumps(value, separators=(',', ':')))
+
+
+            def create(value):
+                call('create', '--report-id', str(uuid.uuid5(uuid.NAMESPACE_URL, stream + ':' + str(pipeline_id))),
+                     '--title', ('GitLab CI: {} ({})'.format(os.environ['CI_PROJECT_PATH'], os.environ['CI_COMMIT_BRANCH']))[:200],
+                     '--level', 'sev2' if value['consecutiveFailures'] >= 3 else 'sev3',
+                     '--occurred-at', os.environ['CI_PIPELINE_CREATED_AT'],
+                     '--content', 'Pipeline: {}\n\nCommit: {}'.format(os.environ['CI_PIPELINE_URL'], os.environ['CI_COMMIT_SHA']),
+                     '--metadata', json.dumps({'source': stream, 'ci': value}, separators=(',', ':')))
+
+
+            for attempt in range(16):
+                try:
+                    incident = latest()
+                    if incident is None:
+                        if result == 'success':
+                            print('No incident exists; successful pipelines need no incident.')
+                            break
+                        create(state(1))
+                        continue
+                    current = incident['metadata']['ci']
+                    if (not isinstance(current['pipelineId'], int) or not isinstance(current['consecutiveFailures'], int)
+                            or current['consecutiveFailures'] < 0 or current['result'] not in ('success', 'failed')
+                            or not isinstance(current['applied'], bool)):
+                        raise SystemExit('Invalid CI metadata; refusing to reset existing state.')
+                    if not current['applied']:
+                        # Complete the persisted intent before accepting a newer result.
+                        reason = 'GitLab pipeline {}: {}'.format(current['pipelineId'], current['pipelineUrl'])
+                        if current['result'] == 'success' and incident['status'] not in terminal:
+                            call('mitigate', '--id', incident['incidentId'], '--version', incident['version'], '--reason', reason)
+                            continue
+                        if (current['result'] == 'failed' and current['consecutiveFailures'] >= 3
+                                and incident['status'] not in terminal and incident['level'] in ('sev3', 'sev4')):
+                            call('severity', '--id', incident['incidentId'], '--version', incident['version'],
+                                 '--level', 'sev2', '--reason', reason)
+                            continue
+                        patch(incident, dict(current, applied=True))
+                        continue
+                    if current['pipelineId'] > pipeline_id:
+                        print('Ignoring an older pipeline result.')
+                        break
+                    if current['pipelineId'] == pipeline_id and current['result'] == 'success' and result == 'failed':
+                        print('Ignoring a failure already superseded by success for this pipeline.')
+                        break
+                    if current['pipelineId'] < pipeline_id or current['result'] != result:
+                        next_state = state(current['consecutiveFailures'] + 1 if result == 'failed' else 0)
+                        if result == 'failed' and incident['status'] in terminal:
+                            create(next_state)
+                        else:
+                            patch(incident, next_state)
+                        continue
+                    print('Pipeline result applied: {} with {} consecutive failures.'.format(result, current['consecutiveFailures']))
+                    break
+                except Conflict:
+                    # Re-read the incident before recomputing or continuing an action.
+                    time.sleep(0.25)
+            else:
+                raise SystemExit('Incident kept changing; retry this reporting job.')
+            PY
+
+alertcenter_failure:
+    extends: .alertcenter_report
+    when: on_failure
+    variables:
+        ALERTCENTER_RESULT: failed
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
+
+alertcenter_success:
+    extends: .alertcenter_report
+    when: on_success
+    variables:
+        ALERTCENTER_RESULT: success
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master"'
