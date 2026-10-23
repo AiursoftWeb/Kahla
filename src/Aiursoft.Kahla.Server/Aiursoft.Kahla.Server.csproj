@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aiursoft.AiurObserver.WebSocket.Server" Version="10.0.15" />
     <PackageReference Include="Aiursoft.AiurProtocol.Server" Version="10.0.37" />
-    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.27" />
+    <PackageReference Include="Aiursoft.DbTools.Switchable" Version="10.0.29" />
     <PackageReference Include="Aiursoft.DocGenerator" Version="10.0.18" />
     <PackageReference Include="Aiursoft.InMemoryKvDb" Version="10.0.14" />
     <PackageReference Include="Aiursoft.ArrayDb.Partitions" Version="10.0.1" />
