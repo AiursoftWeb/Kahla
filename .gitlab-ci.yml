@@ -192,7 +192,7 @@ deploy_public_nuget:
     script:
         - |
             for file in $(find . -name "*.nupkg"); do
-              dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate || exit 1;
+              dotnet nuget push "$file" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --timeout 1200 --skip-duplicate || exit 1;
             done
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
